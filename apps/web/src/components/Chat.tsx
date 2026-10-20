@@ -245,7 +245,7 @@ export function Chat({ analysis, pob }: { analysis?: Analysis; pob?: PobAnalysis
         <button
           type="submit"
           disabled={busy || !input.trim()}
-          className="shrink-0 rounded-md bg-accent px-3 py-2 text-xs font-medium text-surface disabled:opacity-40"
+          className="shrink-0 gold-surface rounded-md px-3 py-2 text-xs font-bold disabled:opacity-40"
         >
           Ask
         </button>

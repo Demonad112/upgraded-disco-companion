@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from 'next'
-import { EB_Garamond, Geist_Mono, Inter } from 'next/font/google'
+import { IBM_Plex_Mono, Lato, Roboto_Slab } from 'next/font/google'
 import './globals.css'
 import { ServiceWorker } from '@/components/ServiceWorker'
 import { NavBar } from '@/components/layout/NavBar'
@@ -7,17 +7,17 @@ import { Footer } from '@/components/layout/Footer'
 import { PatchVersionBanner } from '@/components/layout/PatchVersionBanner'
 import { CommandPalette } from '@/components/layout/CommandPalette'
 import { HashHighlight } from '@/components/layout/HashHighlight'
+import { FxLayer } from '@/components/fx/FxLayer'
 import { PersistedStateProvider } from '@/hooks/usePersistedState'
 import { bannerBootstrap } from '@/lib/bannerDismiss'
+import { COMPACT_BOOTSTRAP } from '@/lib/compactMode'
 import { CURRENT_PATCH } from '@/lib/constants'
 
-// Inter for everything read: close to Geist in feel, and the usual partner
-// for a Garamond. Geist Mono stays for code-like figures.
-const inter = Inter({ variable: '--font-inter', subsets: ['latin'] })
-// Not preloaded: it only sets small figures, so a late swap is invisible.
-const geistMono = Geist_Mono({ variable: '--font-geist-mono', subsets: ['latin'], preload: false })
-// Display only: brand, page titles, the character name. Never data.
-const garamond = EB_Garamond({ variable: '--font-garamond', subsets: ['latin'], weight: ['500', '600', '700'] })
+// Body: Lato. Labels and numbers: IBM Plex Mono. Headings: Roboto Slab.
+// next/font self-hosts them at build time, which the CSP (font-src 'self') requires.
+const lato = Lato({ variable: '--font-lato', subsets: ['latin'], weight: ['400', '700'] })
+const plexMono = IBM_Plex_Mono({ variable: '--font-plex-mono', subsets: ['latin'], weight: ['400', '500'], preload: false })
+const robotoSlab = Roboto_Slab({ variable: '--font-roboto-slab', subsets: ['latin'], weight: ['500', '600', '700'] })
 
 const basePath = process.env.NEXT_PUBLIC_BASE_PATH ?? ''
 
@@ -50,7 +50,7 @@ export const metadata: Metadata = {
 
 export const viewport: Viewport = {
   themeColor: [
-    { media: '(prefers-color-scheme: dark)', color: '#0d0d10' },
+    { media: '(prefers-color-scheme: dark)', color: '#08080a' },
     { media: '(prefers-color-scheme: light)', color: '#f7f5f0' },
   ],
   width: 'device-width',
@@ -69,8 +69,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <head>
         <script dangerouslySetInnerHTML={{ __html: THEME_BOOTSTRAP }} />
         <script dangerouslySetInnerHTML={{ __html: bannerBootstrap(CURRENT_PATCH) }} />
+        <script dangerouslySetInnerHTML={{ __html: COMPACT_BOOTSTRAP }} />
       </head>
-      <body className={`${inter.variable} ${geistMono.variable} ${garamond.variable} font-sans antialiased`}>
+      <body className={`${lato.variable} ${plexMono.variable} ${robotoSlab.variable} font-sans antialiased`}>
         <ServiceWorker />
         <a
           href="#main"
@@ -87,9 +88,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           {/* One page container for every route. The analyser used to carry
               its own, which is how two halves of a merged site end up at
               different widths on the same viewport. */}
-          <main id="main" className="mx-auto w-full max-w-6xl px-4 py-8 sm:px-6 sm:py-12">
-            {children}
-          </main>
+          {/* The canvases sit behind the content inside this wrapper. */}
+          <div id="fx-root" className="relative isolate">
+            <FxLayer />
+            <main id="main" className="relative mx-auto w-full max-w-6xl px-4 py-8 sm:px-6 sm:py-12">
+              {children}
+            </main>
+          </div>
           <Footer />
           <CommandPalette />
           <HashHighlight />
