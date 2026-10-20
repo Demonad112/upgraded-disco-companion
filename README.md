@@ -45,7 +45,7 @@ Two consequences that surprise people, both deliberate:
 |---|---|
 | `packages/core` | Pure analysis. No I/O, no framework — `fetch` and the Path of Building transport are injected. 664 tests. |
 | `packages/data` | Generated game data artifacts and the scripts that extract them. See [PROVENANCE.md](packages/data/PROVENANCE.md). |
-| `apps/web` | Static Next.js export on GitHub Pages. Five routes. |
+| `apps/web` | Static Next.js export, deployed on Cloudflare Pages. Five routes. |
 | `apps/mcp` | 31-tool Model Context Protocol server over stdio. See [TOOLS.md](apps/mcp/TOOLS.md). |
 | `services/ninja-proxy` | Serverless functions. Needed because poe.ninja sends no CORS headers. |
 
@@ -156,9 +156,25 @@ build.
 
 ## Deployment
 
-`.github/workflows/deploy.yml` builds and publishes `apps/web/out` to GitHub
-Pages on every push to `main`. `basePath` is derived from `GITHUB_REPOSITORY`,
-so renaming the repository needs no code change.
+Deployed on Cloudflare Pages as a static site. Pages builds and deploys on every
+push to the production branch.
+
+| Setting | Value |
+|---|---|
+| Build command | `npm run build` |
+| Build output directory | `apps/web/out` |
+| Root directory | repository root |
+| `NODE_VERSION` | `22` |
+| `NEXT_PUBLIC_NINJA_PROXY_BASE` | URL of the deployed `services/ninja-proxy`, no trailing slash |
+
+`NEXT_PUBLIC_NINJA_PROXY_BASE` is inlined into the bundle at **build time**, so
+changing it needs a new build. Without it the app runs paste-only (URL import is
+disabled; pasted character JSON still works).
+
+`basePath` is applied only when `GITHUB_ACTIONS=true`, so it is empty on
+Cloudflare and the site is served from the domain root. The proxy deploys
+separately (Vercel, root `services/ninja-proxy`); it cannot run on Cloudflare
+Workers, which poe.ninja blocks. See [services/ninja-proxy/README.md](services/ninja-proxy/README.md).
 
 ## Licence
 
