@@ -8,13 +8,13 @@ and returns it with CORS headers.
 Measured against the live API on 2026-07-24:
 
 ```
-$ curl -sI -H "Origin: https://demonad112.github.io" \
+$ curl -sI -H "Origin: https://upgraded-disco-companion.pages.dev" \
     "https://poe.ninja/poe2/api/profile/characters/.../model/43"
 HTTP/2 200
 content-type: application/json; charset=utf-8
 # ...and no access-control-allow-origin header at all
 
-$ curl -sI -X OPTIONS -H "Origin: https://demonad112.github.io" \
+$ curl -sI -X OPTIONS -H "Origin: https://upgraded-disco-companion.pages.dev" \
     "https://poe.ninja/poe2/api/data/index-state"
 HTTP/2 405
 ```
@@ -53,7 +53,7 @@ Measured 2026-07-24 against the predecessor deployment, which answers the
 same contract:
 
 ```
-$ curl -sI -H "Origin: https://demonad112.github.io" \
+$ curl -sI -H "Origin: https://upgraded-disco-companion.pages.dev" \
     "https://poe2-ninja-proxy.vercel.app/api/character?account=Demonad112-2589&league=runesofaldur&character=Athrynas"
 HTTP/2 200
 access-control-allow-origin: *
