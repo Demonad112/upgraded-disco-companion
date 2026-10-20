@@ -7,8 +7,6 @@
  * figures therefore come from switching the selection and reading `TotalDPS`.
  * The RPC that switches it (`apply_step{op:'set_main_selection'}`) is an
  * ASSUMPTION, as are `get_config_input` / `set_config_input`.
- *
- * See docs/pob-mutation-design.md, section 4.
  */
 
 import type { BaselineExpectation } from './baseline-gate.js'

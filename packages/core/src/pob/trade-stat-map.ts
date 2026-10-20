@@ -7,8 +7,7 @@
  * it belongs next to `trade/query.ts` when built.
  *
  * No trade stat id is stated anywhere in this repo. Every id is `null` until
- * captured from a recorded stats response (see docs/pob-mutation-design.md,
- * section 3). Nothing here is fetched.
+ * captured from a recorded stats response. Nothing here is fetched.
  */
 
 import type { StatRequirement } from '../trade/query.js'

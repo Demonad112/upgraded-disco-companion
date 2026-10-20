@@ -1,9 +1,7 @@
 # Data provenance
 
-This file covers generated game data. For the step-by-step patch-day
-checklist, see [`docs/DATA-REFRESH.md`](../../docs/DATA-REFRESH.md). The hand-written endgame guide content
-(`apps/web/src/data`) and its source precedence are documented in
-[`docs/GUIDE_CONTENT.md`](../../docs/GUIDE_CONTENT.md).
+This file covers generated game data. The refresh commands are below. The
+hand-written endgame guide content lives in `apps/web/src/data`.
 
 ## Freshness
 
@@ -31,7 +29,7 @@ The other artifacts were last generated on **2026-07-28**, before patch 0.5.5
   the source file it was built from is not in this repository, so it cannot be
   re-checked or rebuilt offline. A payload allocating nodes the data lacks is
   reported by `analyzeCharacter` (a warning naming the ids). Refreshing it needs
-  the matching `psg_passive_nodes.json` (see `docs/DATA-REFRESH.md`).
+  the matching `psg_passive_nodes.json` .
 
 To regenerate `mod-tiers.json` and `bases.json` from Path of Building, run from
 the repository root:

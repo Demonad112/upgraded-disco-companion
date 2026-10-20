@@ -31,7 +31,7 @@ import type {
 } from '../src/pob/trade-stat-map.js'
 import type { TradeStatMap } from '../src/trade/query.js'
 
-// Compile-time checks of the design-only shapes (docs/pob-mutation-design.md).
+// Compile-time checks of the design-only shapes.
 // Nothing here runs a probe: no implementation exists.
 describe('mutation probe shapes (types only)', () => {
   it('only a measured result carries a delta', () => {

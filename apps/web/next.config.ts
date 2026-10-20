@@ -4,10 +4,10 @@ import { join } from 'node:path'
 import type { NextConfig } from 'next'
 
 /**
- * Static export for GitHub Pages.
+ * Static export, deployed on Cloudflare Pages.
  *
- * `basePath` is applied only in CI, so `npm run dev` serves from `/` locally
- * while the deployed site lives under the repository name. It is DERIVED from
+ * `basePath` is applied only under GitHub Actions, so it is empty locally and on
+ * Cloudflare Pages (served from the domain root). It is DERIVED from
  * `GITHUB_REPOSITORY` rather than written out: both projects this repo merges
  * hardcoded their own repo name here, and this one's name is long enough that
  * renaming it is plausible. Deriving it means a rename needs no code change,
@@ -19,7 +19,7 @@ import type { NextConfig } from 'next'
  * client component reading `GITHUB_ACTIONS` directly gets `undefined` and
  * builds root-relative URLs that 404 in production.
  *
- * There are no API routes by design: GitHub Pages serves static files only.
+ * There are no API routes by design: a static export has nothing to run them.
  * The poe.ninja fetch goes through services/ninja-proxy instead, because
  * poe.ninja sends no CORS headers and 405s preflight — a browser cannot call
  * it directly. See services/ninja-proxy/README.md.

@@ -20,8 +20,8 @@ export const MECHANIC_LABELS: Record<string, string> = {
  *
  * These reuse the damage-type palette rather than introducing a second
  * categorical scale. That palette is the only one in this project validated
- * against BOTH surfaces (see docs/DESIGN.md — six checks, chroma floor and
- * pairwise separation), and a mechanic chip has the same job a damage-split
+ * against BOTH surfaces (six checks: chroma floor and pairwise
+ * separation among them), and a mechanic chip has the same job a damage-split
  * segment does: be told apart at a glance. Naming a mechanic after a damage
  * type is a coincidence of the token names, not a claim about the game — the
  * chips carry their mechanic's name as text, so the colour never has to
