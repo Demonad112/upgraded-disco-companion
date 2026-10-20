@@ -33,7 +33,7 @@ export function ThemeToggle() {
       onClick={() => apply(next)}
       title={`${label} — click for ${next}`}
       aria-label={`${label}. Switch to ${next}.`}
-      className="flex shrink-0 items-center gap-1.5 rounded-md border border-line px-2.5 py-2.5 text-xs text-ink-mute transition-colors hover:border-line-strong hover:text-ink-dim sm:py-1.5"
+      className="flex shrink-0 items-center gap-1.5 rounded-md border border-line min-w-[var(--tap-min)] justify-center px-2.5 text-xs text-ink-mute transition-colors hover:border-line-strong hover:text-ink-dim"
     >
       <svg viewBox="0 0 20 20" fill="none" aria-hidden="true" className="size-3.5">
         {mode === 'light' ? (

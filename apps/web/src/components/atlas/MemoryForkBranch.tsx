@@ -22,7 +22,7 @@ export function MemoryForkBranch({ fork }: { fork: MemoryFork }) {
           checked={allocated}
           onChange={() => toggleFork(fork.id)}
           aria-label={`Allocated ${fork.title}`}
-          className="size-4 accent-emerald-500"
+          className="size-4"
         />
         <h4 className="font-semibold text-ink">{fork.title}</h4>
         <SourceFlag source={fork.source} />
