@@ -35,8 +35,8 @@ cd services/ninja-proxy && npm test                # node:test, separate from th
 
 ## Architecture
 
-- **Single analysis implementation.** `apps/web` and `apps/mcp` both import `@poe2/core` and must not contain analysis logic. Apps resolve `@poe2/core` to its built `dist/`, so core has to be built before typechecking or building them (the root scripts and `prebuild` hooks handle this; running `tsc` in an app on a fresh checkout does not).
-- **Never recompute what poe.ninja already computed; never invent a number.** Missing inputs produce an explicit "missing" result, not a guess. The build score can be a range (e.g. `D–B`) rather than a letter for this reason, and there are deliberately no DPS threshold constants.
+- **Single analysis implementation.** `apps/web` and `apps/mcp` both import `@poe2/core`. Apps resolve `@poe2/core` to its built `dist/`, so core has to be built before typechecking or building them (the root scripts and `prebuild` hooks handle this; running `tsc` in an app on a fresh checkout does not).
+- **poe.ninja numbers are used as given.** Missing inputs produce an explicit "missing" result, not a guess. The build score can be a range (e.g. `D–B`) rather than a letter for this reason, and there are deliberately no DPS threshold constants.
 - **Data flow for the web app.** `packages/data/generated/*` is copied into `apps/web/public` by `sync-data` (generated, gitignored). `next.config.ts` hashes those files into `NEXT_PUBLIC_DATA_VERSION`, which keys the service-worker caches.
 - **Character import.** The browser cannot call poe.ninja (no CORS, preflight 405), so it goes through `services/ninja-proxy`. The base URL is `NEXT_PUBLIC_NINJA_PROXY_BASE`, inlined at build time; without it the app is paste-only.
 - **`basePath`.** Applied only when `GITHUB_ACTIONS=true` (derived from `GITHUB_REPOSITORY`); empty locally and on Cloudflare Pages. Client code must read `BASE_PATH` from `apps/web/src/lib/basePath.ts`, because Next only inlines `NEXT_PUBLIC_*` env vars into client bundles.
@@ -45,4 +45,4 @@ cd services/ninja-proxy && npm test                # node:test, separate from th
 
 ## Cloud sessions
 
-Run `npm ci`, then `npm run build -w @poe2/core`, before `npm run typecheck` or anything that resolves `@poe2/core`. Do not run `playwright install`; `apps/web/playwright.config.ts` uses the preinstalled Chromium when `CLAUDE_CODE_REMOTE=true`.
+Run `npm ci`, then `npm run build -w @poe2/core`, before `npm run typecheck` or anything that resolves `@poe2/core`. `playwright install` isn't needed; `apps/web/playwright.config.ts` uses the preinstalled Chromium when `CLAUDE_CODE_REMOTE=true`.
