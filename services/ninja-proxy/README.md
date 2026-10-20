@@ -1,0 +1,108 @@
+# ninja-proxy
+
+A single serverless function that fetches a poe.ninja PoE2 character server-side
+and returns it with CORS headers.
+
+## Why it's needed
+
+Measured against the live API on 2026-07-24:
+
+```
+$ curl -sI -H "Origin: https://demonad112.github.io" \
+    "https://poe.ninja/poe2/api/profile/characters/.../model/43"
+HTTP/2 200
+content-type: application/json; charset=utf-8
+# ...and no access-control-allow-origin header at all
+
+$ curl -sI -X OPTIONS -H "Origin: https://demonad112.github.io" \
+    "https://poe.ninja/poe2/api/data/index-state"
+HTTP/2 405
+```
+
+No CORS header, and preflight is rejected. **A browser cannot call poe.ninja
+directly.** Generic CORS proxies don't solve it either: reading a character
+requires first consuming a Server-Sent Events stream to learn the model version,
+and public proxies buffer that stream instead of streaming it, so the request
+hangs.
+
+This function does the two-step read server-side and hands back the raw payload.
+
+## Contract
+
+```
+GET /api/character?account=Name-1234&league=runesofaldur&character=Athrynas
+→ 200 { "type": "found", "charModel": { … } }
+→ 404 { "error": "…" }   character unknown, private, or unindexed
+→ 502 { "error": "…" }   poe.ninja failed
+→ 504 { "error": "…" }   poe.ninja timed out
+```
+
+All data is public. No authentication, no secrets, nothing persisted.
+
+## Deployed at
+
+**https://poe2-v3-ninja-proxy.vercel.app** — this is the app's default, built from this directory.
+
+Use the bare production alias. The team-scoped alias
+(`poe2-v3-ninja-proxy-obsidian-intelligenceyyc.vercel.app`) sits behind Vercel SSO
+and answers `302` to anonymous requests, so the app would silently fail to
+import through it. Same trap applies to preview deployment URLs — only the
+production alias is public.
+
+Measured 2026-07-24 against the predecessor deployment, which answers the
+same contract:
+
+```
+$ curl -sI -H "Origin: https://demonad112.github.io" \
+    "https://poe2-ninja-proxy.vercel.app/api/character?account=Demonad112-2589&league=runesofaldur&character=Athrynas"
+HTTP/2 200
+access-control-allow-origin: *
+content-type: application/json; charset=utf-8   # 407 KB charModel
+```
+
+## Deploying from this repository
+
+The Vercel project **`poe2-v3-ninja-proxy`** (team `obsidian-intelligenceyyc`,
+Root Directory `services/ninja-proxy`) is linked to this repository through
+the Vercel GitHub integration. Pushes deploy automatically, and the app's
+default proxy is its production alias, `https://poe2-v3-ninja-proxy.vercel.app`.
+After a deploy, `GET /api/health` confirms the functions actually built.
+
+Keep deployment protection on **previews only**. The team default,
+`all_except_custom_domains`, walls the production `.vercel.app` alias behind
+Vercel login, and every anonymous browser request would get a 302.
+
+## Redeploying elsewhere
+
+Deploy it anywhere that runs a JS function, then point the web app at it.
+
+### Vercel
+
+1. Import this repository as a new Vercel project.
+2. Set **Root Directory** to `services/ninja-proxy`.
+3. Deploy. Test the **production alias** — preview URLs are SSO-walled and
+   return 401.
+
+### Cloudflare Workers
+
+Not supported. poe.ninja answers the character `model` and builds `search`
+endpoints with a Cloudflare managed challenge (403) when the request comes from
+Cloudflare Workers egress, so the proxy has to run elsewhere (Vercel here).
+
+### Wiring it up
+
+Set `NEXT_PUBLIC_NINJA_PROXY_BASE` (no trailing slash) for the web app — as a
+repository variable for the GitHub Pages workflow:
+
+```
+Settings → Secrets and variables → Actions → Variables
+NEXT_PUBLIC_NINJA_PROXY_BASE = https://your-proxy.vercel.app
+```
+
+Until it is set, the web app runs in **paste-only mode**: URL import shows a
+clear "no import service configured" message and directs the user to paste
+character JSON instead, which needs no server at all.
+
+## Being a polite client
+
+Every call to poe.ninja goes through `api/_upstream.js`: a descriptive `User-Agent` (the public repo URL, overridable with `UPSTREAM_CONTACT` for a fork; never put a personal address here), and a bounded retry on 429/502/503/504 that honours `Retry-After` up to 2 s. The character response is edge-cached for 300 s, about poe.ninja's own refresh interval. There is no ETag handling: the function keeps no state between invocations, and the edge cache already absorbs repeat reads.

@@ -1,0 +1,222 @@
+'use client'
+
+import { useState } from 'react'
+import { FOCUS_CHOICES, focusOf, type FocusChoice } from '@/lib/characterNotes'
+import { axisOf, focusView, type Cost, type Evidence, type Recommendation, type RecommendationReport } from '@poe2/core'
+import { Tag, fmt } from './ui'
+
+const CATEGORY_TONE = {
+  survivability: 'danger',
+  damage: 'accent',
+  efficiency: 'good',
+  gear: 'warn',
+  question: 'default',
+} as const
+
+const COST_LABEL: Record<Cost['kind'], string> = {
+  free: 'Free',
+  passive: 'Passive points',
+  gear: 'Gear slot',
+  currency: 'Currency',
+  unknown: 'Cost unclear',
+}
+
+function costTone(kind: Cost['kind']) {
+  return kind === 'free' ? 'good' : kind === 'unknown' ? 'default' : 'warn'
+}
+
+function EvidenceLine({ e }: { e: Evidence }) {
+  return (
+    <li className="flex gap-2 text-[11px] leading-relaxed text-ink-dim">
+      <span aria-hidden className="mt-[0.35rem] size-1 shrink-0 rounded-full bg-ink-mute" />
+      <span>{e.note}</span>
+    </li>
+  )
+}
+
+function ImpactBar({ r }: { r: Recommendation }) {
+  if (!r.impact) return null
+  const { from, to, delta, unit, label } = r.impact
+  const suffix = unit === 'percent' ? '%' : ''
+  const improving = delta > 0
+
+  return (
+    <div className="rounded-lg bg-surface-sunken px-3 py-2">
+      <div className="text-[11px] text-ink-mute">{label}</div>
+      <div className="tabular mt-0.5 flex items-baseline gap-2 text-sm">
+        <span className="text-ink-dim">
+          {fmt(from)}
+          {suffix}
+        </span>
+        <span aria-hidden className="text-ink-mute">
+          →
+        </span>
+        <span className="font-semibold text-ink">
+          {fmt(to)}
+          {suffix}
+        </span>
+        <span className={improving ? 'text-good' : 'text-ink-mute'}>
+          ({improving ? '+' : ''}
+          {fmt(delta)}
+          {suffix})
+        </span>
+      </div>
+    </div>
+  )
+}
+
+function Card({ r, rank }: { r: Recommendation; rank: number }) {
+  const [open, setOpen] = useState(false)
+  const isQuestion = r.category === 'question'
+  const axis = axisOf(r)
+
+  return (
+    <li className="card rounded-xl p-4">
+      <div className="flex flex-wrap items-center gap-1.5">
+        <span
+          aria-label={isQuestion ? 'Question' : `Finding ${rank}`}
+          className="tabular inline-flex size-5 items-center justify-center rounded-full border border-accent-line bg-accent-soft text-[11px] font-semibold text-accent"
+        >
+          {isQuestion ? '?' : rank}
+        </span>
+        <Tag tone={CATEGORY_TONE[r.category]}>{r.category}</Tag>
+        {axis === 'damage' || axis === 'survivability' ? (
+          r.category === 'damage' || r.category === 'survivability' ? null : <Tag>helps {axis}</Tag>
+        ) : null}
+        <Tag tone={costTone(r.cost.kind)}>
+          {COST_LABEL[r.cost.kind]}
+          {r.cost.amount > 0 ? ` · ${r.cost.amount}` : ''}
+          {r.cost.currencyTier && r.cost.currencyTier !== 'unknown' ? ` · ${r.cost.currencyTier}` : ''}
+        </Tag>
+      </div>
+      <h3 className="mt-2.5 text-[15px] leading-snug font-semibold text-balance text-ink">{r.action}</h3>
+      <p className="mt-1.5 text-[13px] leading-relaxed text-ink-dim">{r.rationale}</p>
+
+      <div className="mt-3 grid gap-2 sm:grid-cols-2">
+        <ImpactBar r={r} />
+        <div className="rounded-lg bg-surface-sunken px-3 py-2">
+          <div className="text-[11px] text-ink-mute">Cost</div>
+          <div className="mt-0.5 text-xs leading-relaxed text-ink-dim">{r.cost.detail}</div>
+        </div>
+      </div>
+
+      {r.tradeoff ? (
+        <p className="mt-2 text-[11px] leading-relaxed text-ink-mute">
+          <span className="text-ink-dim">Trade-off:</span> {r.tradeoff}
+        </p>
+      ) : null}
+
+      <div className="mt-2">
+        <button
+          type="button"
+          onClick={() => setOpen((v) => !v)}
+          aria-expanded={open}
+          className="hit-area text-[11px] text-accent transition-opacity hover:opacity-80"
+        >
+          {open ? 'Hide evidence' : `Evidence (${r.evidence.length})`}
+        </button>
+        {open ? (
+          <ul className="mt-2 space-y-1.5 border-l border-line pl-3">
+            {r.evidence.map((e, i) => (
+              <EvidenceLine key={i} e={e} />
+            ))}
+          </ul>
+        ) : null}
+      </div>
+    </li>
+  )
+}
+
+export function Recommendations({ report }: { report: RecommendationReport }) {
+  const [focus, setFocus] = useState<FocusChoice>('default')
+  // `default` is focusView(recs, null): the original order, untouched.
+  const ordered = focusView(report.recommendations, focusOf(focus))
+  const actionable = ordered.filter((r) => r.category !== 'question')
+  const questions = ordered.filter((r) => r.category === 'question')
+
+  return (
+    <section>
+      <div className="mb-2 flex flex-wrap items-end justify-between gap-2">
+        <div>
+          <h2 className="text-base font-semibold text-ink">Findings</h2>
+          <p className="mt-0.5 text-xs text-ink-dim">
+            Ranked by gain per unit of cost. Every claim traces to data in the character payload.
+          </p>
+        </div>
+        <div role="group" aria-label="Focus" className="flex gap-1 text-xs">
+          {FOCUS_CHOICES.map((c) => (
+            <button
+              key={c.value}
+              type="button"
+              aria-pressed={focus === c.value}
+              onClick={() => setFocus(c.value)}
+              className={`rounded-md border px-2 py-1 ${focus === c.value ? 'border-accent text-accent' : 'border-line text-ink-dim'}`}
+            >
+              {c.label}
+            </button>
+          ))}
+        </div>
+      </div>
+      {report.buildIsSound ? (
+        <p className="card rounded-xl px-4 py-5 text-sm leading-relaxed text-good">{report.summary}</p>
+      ) : (
+        <ul className="grid gap-2.5 lg:grid-cols-2 lg:items-start">
+          {actionable.map((r, i) => (
+            <Card key={r.id} r={r} rank={i + 1} />
+          ))}
+        </ul>
+      )}
+
+      {questions.length ? (
+        <div className="mt-5">
+          <h3 className="mb-2 text-xs font-medium tracking-wide text-ink-dim uppercase">Worth checking</h3>
+          <ul className="grid gap-2.5 lg:grid-cols-2 lg:items-start">
+            {questions.map((r) => (
+              <Card key={r.id} r={r} rank={0} />
+            ))}
+          </ul>
+        </div>
+      ) : null}
+
+      {report.suppressed.length ? (
+        <div className="card mt-4 rounded-xl p-4">
+          <h3 className="text-xs font-medium tracking-wide text-ink-dim uppercase">Ruled out by a keystone</h3>
+          <p className="mt-1 text-[11px] text-ink-mute">
+            Findings the engine did spot and then withdrew. Shown rather than dropped — a finding that vanishes
+            silently is indistinguishable from one that was never noticed.
+          </p>
+          <ul className="mt-3 space-y-3">
+            {report.suppressed.map((s) => (
+              <li key={s.id}>
+                <div className="flex flex-wrap items-baseline gap-x-2">
+                  <span className="text-xs font-medium text-ink-dim line-through decoration-ink-mute/50">
+                    {s.finding}
+                  </span>
+                  <Tag tone="accent">{s.keystone}</Tag>
+                </div>
+                <div className="mt-0.5 text-[11px] leading-relaxed text-ink-mute">{s.reason}</div>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ) : null}
+
+      {report.unresolved.length ? (
+        <div className="card mt-4 rounded-xl p-4">
+          <h3 className="text-xs font-medium tracking-wide text-ink-dim uppercase">Could not be determined</h3>
+          <p className="mt-1 text-[11px] text-ink-mute">
+            Stated rather than guessed — a wrong number is worse than a missing one.
+          </p>
+          <ul className="mt-3 space-y-3">
+            {report.unresolved.map((u) => (
+              <li key={u.id}>
+                <div className="text-xs font-medium text-ink-dim">{u.question}</div>
+                <div className="mt-0.5 text-[11px] leading-relaxed text-ink-mute">{u.missing}</div>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ) : null}
+    </section>
+  )
+}

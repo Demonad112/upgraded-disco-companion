@@ -1,0 +1,59 @@
+/**
+ * @poe2/core — pure analysis. No I/O, no framework.
+ *
+ * Consumed by apps/mcp and apps/web. Those adapters render and serialise;
+ * they never analyse.
+ */
+
+export * from './model/types.js'
+export * from './model/provenance.js'
+export * from './model/slots.js'
+export * from './model/passives.js'
+export * from './model/breakdowns.js'
+export * from './model/attribution.js'
+
+export * from './constraints/holding-up.js'
+export * from './constraints/ledger.js'
+export * from './dataage/index.js'
+export * from './defense/index.js'
+export * from './defense/ailments.js'
+export * from './dps/index.js'
+export * from './dps/main-skill.js'
+export * from './keystones/index.js'
+export * from './pob/export.js'
+export * from './pob/config.js'
+export * from './pob/main-skill.js'
+export * from './pob/skill-groups.js'
+export * from './pob/build.js'
+export * from './pob/analyze.js'
+export * from './pob/bridge.js'
+export * from './pob/baseline-gate.js'
+export * from './pob/probes.js'
+export * from './pob/mutation.js'
+export * from './pob/support-removal.js'
+export * from './pob/trade-stat-map.js'
+export * from './pob/per-skill-dps.js'
+export * from './pob/rank.js'
+export * from './pob/sensitivity.js'
+export * from './progress/index.js'
+export * from './recommend/index.js'
+export * from './reconcile/index.js'
+export * from './score/index.js'
+export * from './thresholds.js'
+export * from './trade/query.js'
+export * from './upgrade/index.js'
+export * from './warnings/index.js'
+
+export * from './ninja/url.js'
+export * from './ninja/client.js'
+export * from './ninja/ladder.js'
+
+export * from './cache/key.js'
+export * from './chat/index.js'
+export * from './gear/index.js'
+export * from './gems/index.js'
+export * from './mods/index.js'
+export * from './tree/index.js'
+export * from './tree/suggest.js'
+
+export * from './analyze.js'

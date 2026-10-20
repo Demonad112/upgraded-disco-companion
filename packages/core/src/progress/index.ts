@@ -1,0 +1,329 @@
+/**
+ * Progress snapshots — is what you did last week working?
+ *
+ * Every other panel answers "where are you now". None of them answered the
+ * question a player improving a character actually repeats, which is whether
+ * the last change helped. That needs history, and history needs something small
+ * enough to keep.
+ *
+ * Deliberately NOT a stored `Analysis`: gear, mods and breakdowns make one
+ * character hundreds of kilobytes, and keeping twenty of those would put real
+ * pressure on a storage budget shared with checklist and Atlas progress. These
+ * are the figures worth trending, and nothing else.
+ *
+ * Pure, like the rest of the core: the timestamp is passed in rather than read
+ * from the clock, so a snapshot is reproducible and testable.
+ */
+
+import type { Analysis } from '../analyze.js'
+import { effectivePool, NO_KEYSTONE_EFFECTS, type KeystoneEffects } from '../keystones/index.js'
+import { isHealthy } from '../thresholds.js'
+import { SNAPSHOT_SCHEMA } from './migrate.js'
+
+/** A compact record of what a character's numbers were at one point in time. */
+export interface CharacterSnapshot {
+  /** Storage schema version. Absent on snapshots written before versioning (schema 1). */
+  schema?: number
+  /** ISO timestamp this snapshot was taken. */
+  at: string
+  /** When poe.ninja last reindexed the character. Null when it did not say. */
+  updatedUtc: string | null
+  /**
+   * Game patch the snapshot was taken under (e.g. "0.5.5"). Null when the caller did not
+   * say; absent on rows written before the stamp existed. Not part of the unchanged check.
+   */
+  gameVersion?: string | null
+  /** account/name — history is per character, not per browser. */
+  key: string
+  /** Null (not 0) for every figure below that the source did not report. */
+  level: number | null
+  life: number | null
+  energyShield: number | null
+  ward: number | null
+  armour: number
+  evasion: number
+  /** Keystone-corrected defensive pool, matching what the assessment used. */
+  pool: number | null
+  /** poe.ninja's averaged effective health pool. Trended, never led with. */
+  ehp: number | null
+  fire: number | null
+  cold: number | null
+  lightning: number | null
+  chaos: number | null
+  /** Best hitting skill's total DPS. Null when none was reported. */
+  dps: number | null
+  /** Lowest maximum hit taken across damage types; null when unknown. */
+  weakestHit: number | null
+  /** Allocated passives, as poe.ninja counts them. */
+  passives: number
+}
+
+/** How many snapshots to keep per character before dropping the oldest. */
+export const MAX_SNAPSHOTS = 20
+
+export function snapshotKey(identity: Pick<Analysis['identity'], 'account' | 'name'>): string {
+  return `${identity.account}/${identity.name}`
+}
+
+export function toSnapshot(
+  analysis: Pick<Analysis, 'identity' | 'defense' | 'dps' | 'passives'>,
+  at: string,
+  keystones: KeystoneEffects = NO_KEYSTONE_EFFECTS,
+  gameVersion: string | null = null,
+): CharacterSnapshot {
+  const { identity, defense, dps, passives } = analysis
+  const res = (type: string): number | null => defense.resistances.find((r) => r.type === type)?.value ?? null
+  const hits = defense.maxHits.map((h) => h.value).filter((v) => v > 0)
+
+  return {
+    schema: SNAPSHOT_SCHEMA,
+    at,
+    updatedUtc: identity.updatedUtc,
+    gameVersion,
+    key: snapshotKey(identity),
+    level: identity.level ?? null,
+    life: defense.life,
+    energyShield: defense.energyShield,
+    ward: defense.ward,
+    armour: defense.armour,
+    evasion: defense.evasion,
+    pool: effectivePool(defense, keystones).total,
+    ehp: defense.effectiveHealthPool,
+    fire: res('fire'),
+    cold: res('cold'),
+    lightning: res('lightning'),
+    chaos: res('chaos'),
+    dps: dps.primary ? Math.round(dps.primary.totalDps) : null,
+    weakestHit: hits.length ? Math.min(...hits) : null,
+    passives: passives.counts.passives ?? passives.mainSelectionLength,
+  }
+}
+
+/** Whether a change in this metric is an improvement. */
+type Direction = 'higher' | 'lower'
+
+export interface MetricDelta {
+  field: keyof CharacterSnapshot
+  label: string
+  before: number
+  after: number
+  delta: number
+  /** True when the change moved in the helpful direction. */
+  improved: boolean
+  /** Percent change. Null when `before` was 0 and no percentage is defined. */
+  percent: number | null
+  /** Resistances read as percentages; everything else is a raw figure. */
+  unit: 'percent' | 'raw'
+}
+
+const METRICS: ReadonlyArray<{
+  field: keyof CharacterSnapshot
+  label: string
+  dir: Direction
+  unit: 'percent' | 'raw'
+}> = Object.freeze([
+  { field: 'level', label: 'Level', dir: 'higher', unit: 'raw' },
+  { field: 'pool', label: 'Defensive pool', dir: 'higher', unit: 'raw' },
+  { field: 'weakestHit', label: 'Weakest maximum hit', dir: 'higher', unit: 'raw' },
+  { field: 'ehp', label: 'Effective health pool', dir: 'higher', unit: 'raw' },
+  { field: 'life', label: 'Life', dir: 'higher', unit: 'raw' },
+  { field: 'energyShield', label: 'Energy Shield', dir: 'higher', unit: 'raw' },
+  { field: 'ward', label: 'Ward', dir: 'higher', unit: 'raw' },
+  { field: 'evasion', label: 'Evasion', dir: 'higher', unit: 'raw' },
+  { field: 'armour', label: 'Armour', dir: 'higher', unit: 'raw' },
+  { field: 'dps', label: 'Damage', dir: 'higher', unit: 'raw' },
+  { field: 'fire', label: 'Fire Resistance', dir: 'higher', unit: 'percent' },
+  { field: 'cold', label: 'Cold Resistance', dir: 'higher', unit: 'percent' },
+  { field: 'lightning', label: 'Lightning Resistance', dir: 'higher', unit: 'percent' },
+  { field: 'chaos', label: 'Chaos Resistance', dir: 'higher', unit: 'percent' },
+  { field: 'passives', label: 'Passive points', dir: 'higher', unit: 'raw' },
+])
+
+export interface SnapshotDiff {
+  from: CharacterSnapshot
+  to: CharacterSnapshot
+  /** Only metrics that actually moved, largest relative change first. */
+  changes: MetricDelta[]
+  /** Elemental resistances that newly reached their cap between the two. */
+  newlyCapped: string[]
+  /** Elemental resistances that fell below their cap between the two. */
+  newlyUncapped: string[]
+}
+
+const ELEMENTS: ReadonlyArray<{ field: keyof CharacterSnapshot; type: 'fire' | 'cold' | 'lightning'; label: string }> =
+  Object.freeze([
+    { field: 'fire', type: 'fire', label: 'Fire' },
+    { field: 'cold', type: 'cold', label: 'Cold' },
+    { field: 'lightning', type: 'lightning', label: 'Lightning' },
+  ])
+
+/**
+ * Maximum resistances, as poe.ninja reports them for this character.
+ *
+ * Per element rather than one figure, because they genuinely differ: a build can
+ * raise its cold maximum to 80 and leave fire at 75. A single scalar meant cold
+ * at 76 was announced as "reached cap" while it was still four points short —
+ * the exact failure the comment below warns against, made by the code beneath
+ * it. A bare number is still accepted and applies to all three.
+ */
+export type ResistanceMaxima = number | Partial<Record<'fire' | 'cold' | 'lightning', number>>
+
+function maxFor(maxima: ResistanceMaxima, type: 'fire' | 'cold' | 'lightning'): number {
+  if (typeof maxima === 'number') return maxima
+  return maxima[type] ?? 75
+}
+
+/**
+ * Compare two snapshots.
+ *
+ * `resistanceMax` is the character's own maximum as poe.ninja reports it, not a
+ * hardcoded 75 — a build that raised its cap to 80 has not "reached cap" at 75,
+ * and saying so would report a gap as closed.
+ */
+export function diffSnapshots(
+  from: CharacterSnapshot,
+  to: CharacterSnapshot,
+  resistanceMax: ResistanceMaxima = 75,
+): SnapshotDiff {
+  const changes: MetricDelta[] = []
+
+  for (const { field, label, dir, unit } of METRICS) {
+    const before = from[field]
+    const after = to[field]
+    if (typeof before !== 'number' || typeof after !== 'number') continue
+    if (before === after) continue
+    const delta = after - before
+    changes.push({
+      field,
+      label,
+      before,
+      after,
+      delta,
+      improved: dir === 'higher' ? delta > 0 : delta < 0,
+      percent: before !== 0 ? (delta / Math.abs(before)) * 100 : null,
+      unit,
+    })
+  }
+
+  // A metric that grew from nothing has no percentage — `before` was 0 — and it
+  // is the largest relative change there is, not the smallest. Sorting it by 0
+  // buried "gained 2,000 energy shield" underneath a single point of resistance.
+  const rank = (c: MetricDelta) => (c.percent === null ? Infinity : Math.abs(c.percent))
+  changes.sort((a, b) => rank(b) - rank(a))
+
+  // Crossing the cap is worth calling out separately: 74% to 75% is a one-point
+  // change that matters far more than a twenty-point move mid-range.
+  const newlyCapped: string[] = []
+  const newlyUncapped: string[] = []
+  for (const { field, type, label } of ELEMENTS) {
+    const before = from[field]
+    const after = to[field]
+    // An unknown figure on either side is not a crossing of the cap.
+    if (typeof before !== 'number' || typeof after !== 'number') continue
+    const max = maxFor(resistanceMax, type)
+    const wasCapped = isHealthy({ type, value: before, max })
+    const isCapped = isHealthy({ type, value: after, max })
+    if (!wasCapped && isCapped) newlyCapped.push(label)
+    if (wasCapped && !isCapped) newlyUncapped.push(label)
+  }
+
+  return { from, to, changes, newlyCapped, newlyUncapped }
+}
+
+/**
+ * Append a snapshot, dropping a duplicate of the most recent one and trimming
+ * to MAX_SNAPSHOTS. Re-importing without having played should not fill the
+ * history with identical rows.
+ */
+export function appendSnapshot(history: CharacterSnapshot[], next: CharacterSnapshot): CharacterSnapshot[] {
+  const mine = history.filter((s) => s.key === next.key)
+  const others = history.filter((s) => s.key !== next.key)
+  const last = mine[mine.length - 1]
+
+  const unchanged =
+    last !== undefined &&
+    (Object.keys(next) as Array<keyof CharacterSnapshot>)
+      .filter((k) => k !== 'at' && k !== 'updatedUtc' && k !== 'schema' && k !== 'gameVersion')
+      .every((k) => last[k] === next[k])
+
+  // Return the ORIGINAL array when nothing was recorded, so a caller can detect
+  // the no-op by identity. Returning a fresh copy made every re-analysis look
+  // like a change: one import re-runs the analysis several times as the affix
+  // data, tree and ladder land, and each pass rewrote the whole persisted state
+  // to localStorage and woke every subscriber for a history that had not moved.
+  if (unchanged) return history
+
+  // Trim THIS character's history only — `others` belong to other characters
+  // and must survive untouched.
+  return [...others, ...[...mine, next].slice(-MAX_SNAPSHOTS)]
+}
+
+/** This character's snapshots, oldest first. */
+export function historyFor(history: CharacterSnapshot[], key: string): CharacterSnapshot[] {
+  return history.filter((s) => s.key === key)
+}
+
+/**
+ * The change since the previous snapshot of this character, or null when there
+ * is only one — a single point is not a trend, and rendering it as one would
+ * invent a baseline.
+ */
+export function latestDiff(
+  history: CharacterSnapshot[],
+  key: string,
+  resistanceMax: ResistanceMaxima = 75,
+): SnapshotDiff | null {
+  const mine = historyFor(history, key)
+  if (mine.length < 2) return null
+  return diffSnapshots(mine[mine.length - 2]!, mine[mine.length - 1]!, resistanceMax)
+}
+/** One figure, side by side for two characters. */
+export interface ComparedMetric {
+  metric: 'level' | 'life' | 'energyShield' | 'pool' | 'fire' | 'cold' | 'lightning' | 'chaos' | 'dps' | 'weakestHit'
+  label: string
+  /** Null when that character's snapshot did not have the figure. */
+  a: number | null
+  b: number | null
+  /** b − a. Null when either side is missing. */
+  delta: number | null
+  /** Which side is ahead; every compared figure is better higher. Null when either side is missing. */
+  ahead: 'a' | 'b' | 'even' | null
+}
+
+// Snapshots now record an unreported figure as null. Rows saved before that
+// stored 0 for these three, where 0 meant "unknown", so they are still read so.
+const ZERO_IS_UNKNOWN = new Set<ComparedMetric['metric']>(['dps', 'weakestHit', 'level'])
+
+const COMPARED: { metric: ComparedMetric['metric']; label: string }[] = [
+  { metric: 'level', label: 'Level' },
+  { metric: 'life', label: 'Life' },
+  { metric: 'energyShield', label: 'Energy shield' },
+  { metric: 'pool', label: 'Defensive pool' },
+  { metric: 'weakestHit', label: 'Hit that kills' },
+  { metric: 'fire', label: 'Fire resistance' },
+  { metric: 'cold', label: 'Cold resistance' },
+  { metric: 'lightning', label: 'Lightning resistance' },
+  { metric: 'chaos', label: 'Chaos resistance' },
+  { metric: 'dps', label: 'Main skill DPS' },
+]
+
+/**
+ * Two characters' latest snapshots, figure by figure. Raw values only: no
+ * blended score, and a figure one side is missing is shown as missing rather
+ * than as a loss.
+ */
+export function compareSnapshots(a: CharacterSnapshot, b: CharacterSnapshot): ComparedMetric[] {
+  return COMPARED.map(({ metric, label }) => {
+    const read = (s: CharacterSnapshot): number | null =>
+      ZERO_IS_UNKNOWN.has(metric) && s[metric] === 0 ? null : (s[metric] ?? null)
+    const av = read(a)
+    const bv = read(b)
+    const delta = av === null || bv === null ? null : bv - av
+    const ahead = delta === null ? null : delta > 0 ? 'b' : delta < 0 ? 'a' : 'even'
+    return { metric, label, a: av, b: bv, delta, ahead }
+  })
+}
+
+export * from './changed.js'
+export * from './readiness.js'
+export * from './migrate.js'

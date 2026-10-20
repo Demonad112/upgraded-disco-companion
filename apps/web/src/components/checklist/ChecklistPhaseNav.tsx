@@ -1,0 +1,59 @@
+"use client";
+
+import { ROADMAP_PHASE_LABELS } from "@/lib/constants";
+import { phaseAnchor, stepsByPhase } from "@/lib/roadmapOrder";
+import { useChecklistState } from "@/hooks/useChecklistState";
+import { ScrollFade } from "@/components/shared/ScrollFade";
+
+/** Sticky phase jump bar with per-phase counts and the hide-completed toggle. */
+export function ChecklistPhaseNav() {
+  const { completedStepIds, hideCompleted, setHideCompleted } = useChecklistState();
+  const done = new Set(completedStepIds);
+  const firstOpen = stepsByPhase.find((g) => g.steps.some((s) => !done.has(s.id)))?.phase;
+
+  return (
+    <nav
+      aria-label="Checklist phases"
+      className="sticky top-14 z-10 -mx-4 flex items-center gap-1.5 border-b border-line bg-surface/95 px-4 py-2 backdrop-blur-md sm:mx-0 sm:rounded-xl sm:border"
+    >
+      <ScrollFade className="flex min-w-0 flex-1 items-center gap-1.5 sm:flex-wrap">
+      {stepsByPhase.map(({ phase, steps }, i) => {
+        const count = steps.filter((s) => done.has(s.id)).length;
+        const complete = count === steps.length;
+        const current = phase === firstOpen;
+        return (
+          <a
+            key={phase}
+            href={`#${phaseAnchor(phase)}`}
+            title={ROADMAP_PHASE_LABELS[phase]}
+            className={`flex shrink-0 items-center gap-1.5 rounded-md border px-2 py-1 text-xs transition-colors ${
+              complete
+                ? "border-good/30 bg-good/10 text-ink"
+                : current
+                  ? "border-[var(--accent)]/50 bg-accent-soft text-ink"
+                  : "border-line text-ink-mute hover:text-ink-dim"
+            }`}
+          >
+            <span className="font-mono">{complete ? "✓" : i + 1}</span>
+            <span className="hidden whitespace-nowrap md:inline">
+              {(ROADMAP_PHASE_LABELS[phase] ?? phase).split(" — ")[0]}
+            </span>
+            <span className="font-mono text-[10px]">
+              {count}/{steps.length}
+            </span>
+          </a>
+        );
+      })}
+      </ScrollFade>
+      <label className="ml-auto flex shrink-0 cursor-pointer items-center gap-1.5 px-1 text-xs whitespace-nowrap text-ink-mute">
+        <input
+          type="checkbox"
+          checked={hideCompleted}
+          onChange={(e) => setHideCompleted(e.target.checked)}
+          className="size-3.5 accent-emerald-500"
+        />
+        Hide completed
+      </label>
+    </nav>
+  );
+}
