@@ -49,15 +49,14 @@ and answers `302` to anonymous requests, so the app would silently fail to
 import through it. Same trap applies to preview deployment URLs — only the
 production alias is public.
 
-Measured 2026-07-24 against the predecessor deployment, which answers the
-same contract:
+Measured 2026-10-20:
 
 ```
 $ curl -sI -H "Origin: https://upgraded-disco-companion.pages.dev" \
-    "https://poe2-ninja-proxy.vercel.app/api/character?account=Demonad112-2589&league=runesofaldur&character=Athrynas"
+    "https://poe2-v3-ninja-proxy.vercel.app/api/character?account=Demonad112-2589&league=runesofaldur&character=Athrynas"
 HTTP/2 200
 access-control-allow-origin: *
-content-type: application/json; charset=utf-8   # 407 KB charModel
+content-type: application/json; charset=utf-8   # 442 KB charModel
 ```
 
 ## Deploying from this repository

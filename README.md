@@ -168,8 +168,12 @@ push to the production branch.
 | `NEXT_PUBLIC_NINJA_PROXY_BASE` | URL of the deployed `services/ninja-proxy`, no trailing slash |
 
 `NEXT_PUBLIC_NINJA_PROXY_BASE` is inlined into the bundle at **build time**, so
-changing it needs a new build. Without it the app runs paste-only (URL import is
-disabled; pasted character JSON still works).
+changing it needs a new build. It is optional: when unset the app uses the default
+proxy in `apps/web/src/lib/proxy.ts` (`https://poe2-v3-ninja-proxy.vercel.app`).
+If you set it, use the bare production alias (team-scoped and preview URLs sit behind
+Vercel SSO and answer `302`), and add the same origin to `connect-src` in
+`apps/web/public/_headers`, otherwise the browser's CSP blocks the request and the
+import bar reports "Could not reach the import service".
 
 `basePath` is applied only when `GITHUB_ACTIONS=true`, so it is empty on
 Cloudflare and the site is served from the domain root. The proxy deploys
