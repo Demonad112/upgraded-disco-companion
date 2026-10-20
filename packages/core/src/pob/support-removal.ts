@@ -5,8 +5,6 @@
  * The mutated field is `enabled` on one `<Gem>` of one `<Skill>` group (both
  * attributes exist in recorded exports; see main-skill.ts and skill-groups.ts).
  * The RPC that edits it (`apply_step{op:'set_gem_field'}`) is an ASSUMPTION.
- *
- * See docs/pob-mutation-design.md, section 2.
  */
 
 import type { BaselineExpectation } from './baseline-gate.js'

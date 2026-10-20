@@ -6,7 +6,7 @@
  * affixes because an item tag was renamed. These catch that. The bands are wide
  * enough for a normal patch's drift and narrow enough to fail a broken file —
  * if a real patch moves a count outside them, check the data, then widen the
- * band in the same commit. The refresh steps are in docs/DATA-REFRESH.md.
+ * band in the same commit.
  *
  * atlas-tree.json has its own checks in atlasTree.test.ts.
  */

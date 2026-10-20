@@ -9,8 +9,6 @@
  * `reset_tree`, `get_custom_mods`, `set_custom_mods` and `get_stat_breakdown`
  * (`get_config_input` / `set_config_input` are used by `bridgeProbe` in
  * sensitivity.ts and are also unverified).
- *
- * See docs/pob-mutation-design.md, section 1.
  */
 
 import type { LedgerStat } from '../constraints/ledger.js'

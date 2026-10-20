@@ -290,7 +290,7 @@ export interface SoulCoreValueChange {
 /**
  * Soul Cores whose values changed in 0.5.5, from the official patch notes
  * (https://www.pathofexile.com/forum/view-thread/4000864, 2026-09-04). Values
- * are quoted from the notes; see docs/patch-0.5.5-notes.md. A core not listed
+ * are quoted from the notes. A core not listed
  * here is not claimed to be unchanged: the notes may have been read in part.
  * Display only; nothing scores from this table.
  */

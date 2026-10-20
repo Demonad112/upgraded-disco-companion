@@ -51,7 +51,7 @@ jobs:
         run: npx playwright install --with-deps chromium
         working-directory: apps/web
       - name: Smoke-test the built site
-        # Serves apps/web/out under the same base path Pages uses and drives
+        # Serves apps/web/out under the same base path this CI build used and drives
         # it offline with the captured fixture character.
         run: npm run e2e --workspace @poe2/web
       - name: Upload the smoke-test report

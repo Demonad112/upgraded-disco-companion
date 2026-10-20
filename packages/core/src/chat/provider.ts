@@ -3,7 +3,7 @@
  *
  * ## Where the key lives, and why
  *
- * This app is a **static export on GitHub Pages**. There is no server. Next
+ * This app is a **static export hosted as plain static files**. There is no server. Next
  * inlines every `NEXT_PUBLIC_*` value into the JavaScript bundle at build time,
  * so an API key put in repository secrets and exposed that way would be sitting
  * in the published bundle for anyone to read. That is not a hypothetical: it is

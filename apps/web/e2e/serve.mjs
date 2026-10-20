@@ -1,5 +1,5 @@
-// Serves the static export the way GitHub Pages does: under the repository's
-// base path when the build used one (CI), with trailing-slash directories
+// Serves the static export from apps/web/out: under the repository's
+// base path when the build used one (GitHub Actions), with trailing-slash directories
 // resolving to their index.html. No dependencies, so the e2e job needs nothing
 // beyond the build it already has.
 import { createReadStream, statSync } from 'node:fs'

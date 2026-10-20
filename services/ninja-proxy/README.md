@@ -91,11 +91,10 @@ Cloudflare Workers egress, so the proxy has to run elsewhere (Vercel here).
 
 ### Wiring it up
 
-Set `NEXT_PUBLIC_NINJA_PROXY_BASE` (no trailing slash) for the web app — as a
-repository variable for the GitHub Pages workflow:
+Set `NEXT_PUBLIC_NINJA_PROXY_BASE` (no trailing slash) as a build environment
+variable for the web app (Cloudflare Pages: Settings → Variables and Secrets):
 
 ```
-Settings → Secrets and variables → Actions → Variables
 NEXT_PUBLIC_NINJA_PROXY_BASE = https://your-proxy.vercel.app
 ```
 

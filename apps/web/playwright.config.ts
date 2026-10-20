@@ -6,11 +6,11 @@ import { defineConfig, devices } from '@playwright/test'
  * Smoke tests against the static export in `out/` — build first
  * (`npm run build -w @poe2/web`), then `npm run e2e -w @poe2/web`.
  *
- * The base path mirrors next.config.ts: CI builds under the repository name,
+ * The base path mirrors next.config.ts: GitHub Actions builds under the repository name,
  * so the served site must live there too or every asset 404s.
  *
  * E2E_BASE_URL runs the same suite against a deployed site instead (the
- * post-deploy smoke run in .github/workflows/deploy.yml): no local server, and
+ * post-deploy smoke run): no local server, and
  * the fixtures let that host through.
  */
 const isCI = process.env.GITHUB_ACTIONS === 'true'
