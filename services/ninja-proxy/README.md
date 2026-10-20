@@ -80,7 +80,7 @@ Deploy it anywhere that runs a JS function, then point the web app at it.
 1. Import this repository as a new Vercel project.
 2. Set **Root Directory** to `services/ninja-proxy`.
 3. Deploy. Test the **production alias** — preview URLs are SSO-walled and
-   return 401.
+   return 302.
 
 ### Cloudflare Workers
 
@@ -97,9 +97,10 @@ variable for the web app (Cloudflare Pages: Settings → Variables and Secrets):
 NEXT_PUBLIC_NINJA_PROXY_BASE = https://your-proxy.vercel.app
 ```
 
-Until it is set, the web app runs in **paste-only mode**: URL import shows a
-clear "no import service configured" message and directs the user to paste
-character JSON instead, which needs no server at all.
+Optional: if it is unset, the web app uses `https://poe2-v3-ninja-proxy.vercel.app`
+(`apps/web/src/lib/proxy.ts`). A different host must also be added to
+`connect-src` in `apps/web/public/_headers`, or the CSP blocks it. Pasting
+character JSON always works without any proxy.
 
 ## Being a polite client
 
