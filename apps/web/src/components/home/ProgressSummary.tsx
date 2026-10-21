@@ -27,14 +27,14 @@ export function ProgressSummary({ stepIds, atlasTotal }: { stepIds: string[]; at
   const started = completionPercent > 0 || allocationPercent > 0;
 
   return (
-    <div className="card h-full p-6">
+    <div className="rounded-xl card p-6">
       <div className="mb-4 flex items-center justify-between">
         <h2 className="font-semibold text-ink">
           {started ? "Your progress" : "Track your progress"}
         </h2>
         <span className="text-xs text-ink-mute">Saved in this browser</span>
       </div>
-      <div className="grid gap-5">
+      <div className="grid gap-5 sm:grid-cols-2">
         <div>
           <ProgressBar percent={completionPercent} label="Checklist" />
           <Link

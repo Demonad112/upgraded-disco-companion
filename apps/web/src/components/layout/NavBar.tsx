@@ -5,7 +5,6 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 import { usePathname } from "next/navigation";
 import { useSyncExternalStore, type ReactNode } from "react";
 import { OPEN_SEARCH_EVENT } from "./CommandPalette";
-import { NavMenu } from "./NavMenu";
 
 const noSubscribe = () => () => {};
 /** "⌘K" on Apple devices, "Ctrl K" elsewhere. The static HTML says "Ctrl K". */
@@ -86,20 +85,20 @@ export function NavBar() {
   const shortcut = useShortcutLabel();
 
   return (
-    <nav className="gilt-nav sticky top-0 z-20 flex h-[var(--nav-h)] items-center gap-1 bg-[var(--page)]/80 px-2 backdrop-blur-xl sm:px-4">
-      <Link href="/" aria-label="PoE2 Endgame Companion" className="mr-1 flex shrink-0 items-center gap-2 sm:mr-2 lg:mr-5">
-        <svg viewBox="0 0 24 24" className="size-8 shrink-0" fill="none">
+    <nav className="sticky top-0 z-20 flex items-center gap-1 border-b border-accent-line/40 bg-surface/75 px-3 py-2.5 shadow-[0_8px_24px_-16px_rgb(0_0_0/0.6)] backdrop-blur-xl sm:px-4">
+      <Link href="/" aria-label="PoE2 Endgame Companion" className="mr-2 flex shrink-0 items-center gap-2 lg:mr-5">
+        <svg viewBox="0 0 24 24" className="size-5 shrink-0" fill="none">
           <path
             d="M12 2 L20 12 L12 22 L4 12 Z"
             stroke="var(--accent)"
             strokeWidth="1.5"
-            fill="var(--accent-soft)"
+            fill="rgba(227,179,65,0.12)"
           />
           <path d="M12 6 L16 12 L12 18 L8 12 Z" fill="var(--accent)" opacity="0.8" />
         </svg>
         {/* Full wordmark only where there's room for it alongside the nav —
             below lg the links themselves take priority. */}
-        <span className="font-display hidden text-base font-semibold text-ink lg:inline">
+        <span className="font-display text-gradient-gold hidden text-[15px] font-bold tracking-[0.06em] uppercase lg:inline">
           PoE2 Endgame Companion
         </span>
       </Link>
@@ -118,9 +117,9 @@ export function NavBar() {
               title={link.label}
               // Taller hit area on touch screens; unchanged on desktop.
               aria-current={active ? "page" : undefined}
-              className={`relative flex items-center gap-1.5 rounded-md px-2.5 text-sm font-medium transition-colors sm:px-3 ${
+              className={`relative flex items-center gap-1.5 rounded-md px-2.5 py-2.5 text-sm font-medium transition-colors sm:px-3 sm:py-1.5 ${
                 active
-                  ? "bg-accent-soft text-ink after:absolute after:inset-x-3 after:bottom-1 after:h-0.5 after:bg-accent [&_svg]:text-accent"
+                  ? "bg-accent-soft text-ink after:absolute after:inset-x-3 after:-bottom-[11px] after:h-0.5 after:rounded-full after:bg-accent [&_svg]:text-accent"
                   : "text-ink-mute hover:bg-surface-raised hover:text-ink"
               }`}
             >
@@ -136,7 +135,7 @@ export function NavBar() {
         onPointerEnter={() => void import("./SearchDialog")}
         onFocus={() => void import("./SearchDialog")}
         aria-label="Search"
-        className="nav-search ml-auto flex shrink-0 items-center gap-2 rounded-md border border-line bg-surface-sunken/60 min-w-[var(--tap-min)] justify-center px-2.5 text-xs text-ink-mute transition-colors hover:border-line-strong hover:text-ink-dim"
+        className="ml-auto flex shrink-0 items-center gap-2 rounded-md border border-line bg-surface-sunken/60 px-2.5 py-2.5 text-xs text-ink-mute transition-colors hover:border-line-strong hover:text-ink-dim sm:py-1.5"
       >
         <svg viewBox="0 0 20 20" fill="none" className="size-3.5">
           <circle cx="8.5" cy="8.5" r="5.5" stroke="currentColor" strokeWidth="1.5" />
@@ -149,7 +148,6 @@ export function NavBar() {
         </kbd>
       </button>
       <ThemeToggle />
-      <NavMenu />
     </nav>
   );
 }

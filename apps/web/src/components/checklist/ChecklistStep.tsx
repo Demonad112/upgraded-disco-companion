@@ -42,7 +42,7 @@ export function ChecklistStep({
         checked={complete}
         onChange={() => toggleStep(step.id)}
         aria-label={`Done: ${step.title}`}
-        className="absolute top-[0.9rem] left-3 z-[1] size-4"
+        className="absolute top-[0.9rem] left-3 z-[1] size-4 accent-emerald-500"
       />
       <details
         id={step.id}
@@ -120,7 +120,7 @@ export function ChecklistStep({
                         type="checkbox"
                         checked={done}
                         onChange={() => toggleActionItem(key)}
-                        className="mt-0.5 size-3.5 shrink-0"
+                        className="mt-0.5 size-3.5 shrink-0 accent-emerald-500"
                       />
                       <span className={done ? "text-ink-mute line-through" : "text-ink-dim"}>{item}</span>
                     </label>

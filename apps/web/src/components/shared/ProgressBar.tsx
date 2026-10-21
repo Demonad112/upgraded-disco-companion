@@ -15,9 +15,9 @@ export function ProgressBar({
           <span className="font-medium text-ink-dim">{clamped}%</span>
         </div>
       )}
-      <div className="h-2 w-full overflow-hidden bg-surface-sunken ring-1 ring-line">
+      <div className="h-2 w-full overflow-hidden rounded-full bg-surface-sunken ring-1 ring-line">
         <div
-          className="gold-surface h-full transition-all duration-500 ease-out"
+          className="h-full rounded-full bg-good transition-all duration-500 ease-out"
           style={{ width: `${clamped}%` }}
         />
       </div>
