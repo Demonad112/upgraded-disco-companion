@@ -40,7 +40,7 @@ export function GearShoppingList() {
                   type="checkbox"
                   checked={e.done}
                   onChange={() => toggle(e.id)}
-                  className="mt-1 size-4 accent-emerald-500"
+                  className="mt-1 size-4"
                   aria-label={`Mark the ${e.slotLabel} ${e.kind === "draft" ? "rework" : "replacement"} as ${e.kind === "draft" ? "done" : "found"}`}
                 />
                 <span className="min-w-0">
