@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { CircleToggle } from "@/components/shared/CircleToggle";
 import type { StepSummary } from "@/lib/stepSummary";
 import { actionItemKey, useChecklistActions } from "@/hooks/useChecklistActions";
 
@@ -25,14 +26,11 @@ export function NextStepCard({
 
   if (!step) {
     return (
-      <div className="card h-full p-5">
+      <div className="card h-full p-6">
         <h2 className="font-semibold text-ink">Checklist complete</h2>
         <p className="mt-1 text-sm text-ink-mute">
-          Every step is ticked off. Pick a farm on the{" "}
-          <Link href="/dashboard" className="text-[var(--accent)] hover:underline">
-            dashboard
-          </Link>{" "}
-          and keep your Atlas allocation up to date.
+          Every step is ticked off. Pick a farm on the Farming Dashboard and keep
+          your Atlas allocation up to date.
         </p>
       </div>
     );
@@ -40,12 +38,12 @@ export function NextStepCard({
 
   const position = steps.indexOf(step) + 1;
   const { gates, avoid } = step;
-  const href = onChecklistPage ? `#${step.id}` : `/checklist#${step.id}`;
+  const href = `#${step.id}`;
 
   return (
     <section
       aria-labelledby="next-step-title"
-      className="card relative h-full overflow-hidden p-5"
+      className="card relative h-full overflow-hidden p-6"
     >
       <div className="flex flex-wrap items-center justify-between gap-2">
         <span className="text-xs font-semibold tracking-wide text-[var(--accent)] uppercase">
@@ -68,17 +66,9 @@ export function NextStepCard({
             const done = isActionItemComplete(key);
             return (
               <li key={key}>
-                <label className="flex cursor-pointer items-start gap-2 text-sm">
-                  <input
-                    type="checkbox"
-                    checked={done}
-                    onChange={() => toggleActionItem(key)}
-                    className="mt-0.5 size-3.5"
-                  />
-                  <span className={done ? "text-ink-mute line-through" : "text-ink-dim"}>
-                    {item}
-                  </span>
-                </label>
+                <CircleToggle done={done} onToggle={() => toggleActionItem(key)} className="text-sm">
+                  <span className={done ? "text-ink-mute line-through" : "text-ink-dim"}>{item}</span>
+                </CircleToggle>
               </li>
             );
           })}
@@ -110,12 +100,14 @@ export function NextStepCard({
         >
           ✓ Mark done
         </button>
-        <Link
-          href={href}
-          className="rounded-md border border-line px-3 py-1.5 text-sm text-ink-dim transition-colors hover:border-[var(--accent)]/40 hover:text-ink"
-        >
-          {onChecklistPage ? "Jump to step" : "Open in checklist"} →
-        </Link>
+        {onChecklistPage ? (
+          <Link
+            href={href}
+            className="rounded-md border border-line px-3 py-1.5 text-sm text-ink-dim transition-colors hover:border-[var(--accent)] hover:text-ink"
+          >
+            Jump to step →
+          </Link>
+        ) : null}
       </div>
     </section>
   );

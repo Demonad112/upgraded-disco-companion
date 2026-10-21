@@ -43,7 +43,7 @@ export function NavMenu() {
         aria-controls="changelog-panel"
         aria-label={`Patch ${CURRENT_PATCH}: what changed and display options`}
         onClick={() => setOpen((v) => !v)}
-        className="flex min-w-[var(--tap-min)] items-center justify-center gap-1 border border-accent-line bg-accent-soft px-2 font-mono text-xs text-accent hover:border-accent"
+        className="flex min-w-[var(--tap-min)] items-center justify-center gap-1 rounded-md border border-accent-line bg-surface-sunken px-2 font-mono text-xs text-accent hover:border-accent"
       >
         <span className="hidden sm:inline">Patch</span>
         {CURRENT_PATCH}

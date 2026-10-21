@@ -73,13 +73,13 @@ export function LastCharacterCard() {
   return (
     <section
       aria-labelledby="last-character-title"
-      className="card relative overflow-hidden rounded-xl p-5"
+      className="card relative overflow-hidden p-6"
     >
       <div className="flex flex-wrap items-baseline justify-between gap-2">
         <span className="eyebrow">Last character</span>
         <span className="text-xs text-ink-mute">Analysed {ago(latest.at)}</span>
       </div>
-      <h2 id="last-character-title" className="mt-1 font-display text-2xl font-semibold text-ink">
+      <h2 id="last-character-title" className="mt-1 font-display text-xl font-semibold text-ink">
         {name}
         <span className="ml-2 font-sans text-sm font-normal text-ink-mute">
           {latest.level === null ? "Level unknown" : `Level ${latest.level}`}
@@ -124,7 +124,7 @@ export function LastCharacterCard() {
           {recent ? "Re-import and analyse" : "Open character page"} →
         </Link>
         {previous ? (
-          <span className="text-[11px] text-ink-mute">▲▼ change since the import before, {ago(previous.at)}</span>
+          <span className="text-xs text-ink-mute">▲▼ change since the import before, {ago(previous.at)}</span>
         ) : null}
       </div>
     </section>

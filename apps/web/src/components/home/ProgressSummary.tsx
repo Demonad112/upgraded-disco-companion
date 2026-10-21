@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { usePersistedState } from "@/hooks/usePersistedState";
 import { ProgressBar } from "@/components/shared/ProgressBar";
 
@@ -28,32 +27,17 @@ export function ProgressSummary({ stepIds, atlasTotal }: { stepIds: string[]; at
 
   return (
     <div className="card h-full p-6">
-      <div className="mb-4 flex items-center justify-between">
-        <h2 className="font-semibold text-ink">
-          {started ? "Your progress" : "Track your progress"}
-        </h2>
+      <div className="mb-5 flex flex-wrap items-baseline justify-between gap-x-3">
+        <h2 className="text-base">Progress</h2>
         <span className="text-xs text-ink-mute">Saved in this browser</span>
       </div>
-      <div className="grid gap-5">
-        <div>
-          <ProgressBar percent={completionPercent} label="Checklist" />
-          <Link
-            href="/checklist"
-            className="mt-2 inline-block text-xs font-medium text-[var(--accent)] hover:underline"
-          >
-            {completionPercent > 0 ? "Continue checklist" : "Start checklist"} →
-          </Link>
-        </div>
-        <div>
-          <ProgressBar percent={allocationPercent} label="Atlas allocation" />
-          <Link
-            href="/atlas"
-            className="mt-2 inline-block text-xs font-medium text-[var(--accent)] hover:underline"
-          >
-            {allocationPercent > 0 ? "Continue planning" : "Start planning"} →
-          </Link>
-        </div>
+      <div className="grid gap-6">
+        <ProgressBar percent={completionPercent} label="Checklist" />
+        <ProgressBar percent={allocationPercent} label="Atlas allocation" />
       </div>
+      {started ? null : (
+        <p className="mt-5 text-sm text-ink-dim">Nothing ticked yet. Press “Mark done” on step 1 to start.</p>
+      )}
     </div>
   );
 }

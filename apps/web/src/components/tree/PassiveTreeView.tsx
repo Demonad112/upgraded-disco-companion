@@ -11,17 +11,17 @@ function readPalette(el: HTMLElement): TreePalette {
   const s = getComputedStyle(el)
   const v = (name: string, fallback: string) => s.getPropertyValue(name).trim() || fallback
   return {
-    dimEdge: v('--line', '#26262c'),
-    dimNode: v('--ink-mute', '#6f6c66'),
-    edge: v('--accent', '#e3b341'),
-    node: v('--ink-dim', '#a8a49c'),
-    notable: v('--accent', '#e3b341'),
-    keystone: v('--dmg-chaos', '#9085e9'),
-    jewel: v('--dmg-cold', '#3987e5'),
-    start: v('--good', '#199e70'),
-    ascendancy: v('--dmg-fire', '#d95926'),
-    surface: v('--surface-raised', '#141417'),
-    text: v('--ink', '#f2ede4'),
+    dimEdge: v('--line', 'currentColor'),
+    dimNode: v('--ink-mute', 'currentColor'),
+    edge: v('--accent', 'currentColor'),
+    node: v('--ink-dim', 'currentColor'),
+    notable: v('--accent', 'currentColor'),
+    keystone: v('--dmg-chaos', 'currentColor'),
+    jewel: v('--dmg-cold', 'currentColor'),
+    start: v('--good', 'currentColor'),
+    ascendancy: v('--dmg-fire', 'currentColor'),
+    surface: v('--surface-raised', 'currentColor'),
+    text: v('--ink', 'currentColor'),
   }
 }
 
