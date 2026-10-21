@@ -3,6 +3,7 @@
 import { useRef } from "react";
 import { usePersistedState } from "@/hooks/usePersistedState";
 import { useResetProgress } from "@/hooks/useResetProgress";
+import { SkyDimToggle } from "@/components/fx/SkySettings";
 
 export function Footer() {
   const resetProgress = useResetProgress();
@@ -17,7 +18,8 @@ export function Footer() {
           Unofficial fan project — not affiliated with or endorsed by Grinding
           Gear Games. MIT licensed.
         </p>
-        <div className="flex items-center gap-4">
+        <div className="flex flex-wrap items-center justify-center gap-4">
+          <SkyDimToggle />
           <button
             type="button"
             onClick={() => dialog.current?.showModal()}

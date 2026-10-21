@@ -121,6 +121,11 @@
   --line-strength: 0.44;
   --grain-opacity: 0.07;
 
+  /* Clear glass: blocks are see-through so the constellation sky shows. */
+  --glass-fill: 14%;
+  --glass-blur: 4px;
+  --halo: 0 1px 12px #000, 0 0 3px #000b;
+
   /* The home title is fixed at its pre-restyle look (Garamond, these two
      colours) and must not follow the palette above. */
   --hero-title-font: var(--font-garamond), ui-serif, Georgia, serif;
@@ -165,14 +170,17 @@ h2,
 h3,
 h4 {
   font-family: var(--font-heading);
-  font-weight: 600;
-  letter-spacing: var(--heading-tracking);
+  font-weight: 700;
+  font-style: normal;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
+  text-wrap: balance;
 }
 
 /* The home title keeps its pre-restyle font and colours (see --hero-title-*). */
 h1.hero-title {
   font-family: var(--hero-title-font);
+  font-weight: 600;
   letter-spacing: normal;
   text-transform: none;
   color: var(--hero-title-ink);
@@ -279,9 +287,11 @@ code,
     isolation: isolate;
     border: 1px solid var(--card-edge);
     border-radius: var(--card-radius);
-    background: color-mix(in srgb, var(--surface) var(--card-opacity), transparent);
-    -webkit-backdrop-filter: blur(var(--card-blur));
-    backdrop-filter: blur(var(--card-blur));
+    border-top: 2px solid var(--accent);
+    background: color-mix(in srgb, var(--surface) var(--glass-fill), transparent);
+    -webkit-backdrop-filter: blur(var(--glass-blur));
+    backdrop-filter: blur(var(--glass-blur));
+    text-shadow: var(--halo);
     box-shadow: var(--card-highlight), var(--card-shadow);
     transition:
       transform 0.18s ease,
@@ -296,6 +306,24 @@ code,
     border-radius: inherit;
     pointer-events: none;
     background: linear-gradient(135deg, var(--card-sheen) 0%, transparent 45%);
+  }
+  /* Corner brackets: eight 1px, 12px-long gold lines inset 7px. */
+  .card::after {
+    content: '';
+    position: absolute;
+    inset: 7px;
+    pointer-events: none;
+    opacity: 0.55;
+    background:
+      linear-gradient(var(--accent), var(--accent)) left top / 12px 1px,
+      linear-gradient(var(--accent), var(--accent)) left top / 1px 12px,
+      linear-gradient(var(--accent), var(--accent)) right top / 12px 1px,
+      linear-gradient(var(--accent), var(--accent)) right top / 1px 12px,
+      linear-gradient(var(--accent), var(--accent)) left bottom / 12px 1px,
+      linear-gradient(var(--accent), var(--accent)) left bottom / 1px 12px,
+      linear-gradient(var(--accent), var(--accent)) right bottom / 12px 1px,
+      linear-gradient(var(--accent), var(--accent)) right bottom / 1px 12px;
+    background-repeat: no-repeat;
   }
   .card:hover {
     transform: translateY(calc(-1 * var(--lift-distance)));
@@ -335,6 +363,8 @@ code,
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
+    /* The halo would show through the transparent fill and dim the gold. */
+    text-shadow: none;
   }
 
   /* Gold surfaces: primary buttons, progress fills, the S-tier badge. */
@@ -401,8 +431,20 @@ code,
   .site-nav {
     position: relative;
     z-index: 20;
-    background: transparent;
+    background: color-mix(in srgb, var(--surface) var(--glass-fill), transparent);
+    -webkit-backdrop-filter: blur(var(--glass-blur));
+    backdrop-filter: blur(var(--glass-blur));
+    text-shadow: var(--halo);
     border: 0;
+  }
+  footer {
+    background: color-mix(in srgb, var(--surface) var(--glass-fill), transparent);
+    -webkit-backdrop-filter: blur(var(--glass-blur));
+    backdrop-filter: blur(var(--glass-blur));
+    text-shadow: var(--halo);
+  }
+  .hero-rule {
+    text-shadow: var(--halo);
   }
 
   /* Triad ornament under page titles. */
@@ -549,6 +591,7 @@ main [id] {
 :root[data-compact] footer,
 :root[data-compact] .patch-banner,
 :root[data-compact] canvas[data-fx],
+:root[data-compact] .sky-scrim,
 :root[data-compact] .nav-search,
 :root[data-compact] .nav-label,
 :root[data-compact] body::after {
@@ -567,4 +610,137 @@ main [id] {
 }
 :root[data-compact] .compact-alerts {
   display: grid;
+}
+
+/* --- Clear glass, unlayered ------------------------------------------------
+   Square corners must beat Tailwind's rounded-* utilities, which live in a
+   layer; unlayered rules win over any layer. */
+.card,
+.site-nav,
+footer {
+  border-radius: 0;
+}
+/* A panel's inner header is part of the glass, not a second surface. */
+.card header {
+  background: transparent;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+
+/* Variants: set data-glass on <html> or on a single block. */
+[data-glass='frost'] {
+  --glass-fill: 30%;
+  --glass-blur: 9px;
+  --halo: 0 1px 6px #0008, 0 0 2px #0006;
+}
+[data-glass='shadow'] {
+  --glass-fill: 0%;
+  --glass-blur: 0px;
+  --halo: 0 1px 14px #000, 0 0 4px #000, 0 0 2px #000;
+}
+
+/* --- Constellation sky ------------------------------------------------------
+   Fixed behind everything (page content is z-index 1). Dark theme only. */
+.sky-canvas,
+.sky-scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+.sky-canvas {
+  width: 100vw;
+  height: 100vh;
+}
+.sky-scrim {
+  background:
+    radial-gradient(ellipse 55% 50% at 22% 26%, color-mix(in srgb, var(--page) 62%, transparent), transparent 72%),
+    radial-gradient(ellipse 120% 120% at 50% 50%, transparent 55%, color-mix(in srgb, var(--page) 70%, transparent) 100%);
+}
+:root[data-theme='light'] .sky-canvas,
+:root[data-theme='light'] .sky-scrim {
+  display: none;
+}
+
+/* --- Threads (home tool cards) ----------------------------------------------
+   Four across with a rail over the tops; 2 columns under 980px, 1 under 560px.
+   The rail, stems and diamonds only exist at the four-across width. */
+.thread-row {
+  --thread-gap: calc(var(--spacing) * 5);
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--thread-gap);
+}
+@media (max-width: 559.98px) {
+  .thread-row {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+.thread-stem,
+.thread-diamond {
+  display: none;
+}
+@media (min-width: 980px) {
+  .thread-row {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    position: relative;
+    padding-top: 33px;
+  }
+  /* From the first card's centre to the last card's centre. */
+  .thread-row::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: calc((100% - 3 * var(--thread-gap)) / 8);
+    right: calc((100% - 3 * var(--thread-gap)) / 8);
+    height: 1px;
+    background: var(--accent-line);
+  }
+  .thread-card {
+    --lift-distance: 4px;
+    --l: 0px;
+  }
+  .thread-card:hover {
+    --l: 4px;
+  }
+  /* Offsets are from the padding box, which sits 2px inside the gold top rule.
+     --l keeps both ends pinned to the rail while the card lifts. */
+  .thread-stem {
+    display: block;
+    position: absolute;
+    left: calc(50% - 0.5px);
+    top: calc(-35px + var(--l));
+    height: calc(35px - var(--l));
+    width: 1px;
+    background: var(--accent-line);
+    pointer-events: none;
+    transition:
+      top 0.18s ease,
+      height 0.18s ease;
+  }
+  .thread-diamond {
+    display: block;
+    position: absolute;
+    left: calc(50% - 5.5px);
+    top: calc(-35px + var(--l) - 5.5px);
+    width: 11px;
+    height: 11px;
+    border: 1px solid var(--accent);
+    background: var(--page);
+    transform: rotate(45deg);
+    pointer-events: none;
+    transition:
+      top 0.18s ease,
+      background-color 0.18s ease,
+      box-shadow 0.18s ease;
+  }
+  .thread-card:hover .thread-diamond {
+    background: var(--accent);
+    box-shadow: 0 0 10px color-mix(in srgb, var(--accent) 80%, transparent);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .thread-card:hover {
+    --l: 0px;
+  }
 }
