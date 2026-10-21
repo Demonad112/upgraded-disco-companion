@@ -11,9 +11,14 @@
 
 @theme inline {
   --color-surface: var(--surface);
-  --color-surface-raised: var(--surface-raised);
-  --color-surface-sunken: var(--surface-sunken);
-  --color-surface-overlay: var(--surface-overlay);
+  --color-page: var(--page);
+  --color-surface-raised: var(--raised);
+  --color-surface-sunken: var(--sunken);
+  --color-surface-overlay: var(--overlay);
+  --color-raised: var(--raised);
+  --color-sunken: var(--sunken);
+  --color-overlay: var(--overlay);
+  --color-on-accent: var(--on-accent);
   --color-line: var(--line);
   --color-line-strong: var(--line-strong);
   --color-ink: var(--ink);
@@ -38,41 +43,48 @@
   --font-mono: var(--font-label);
   --font-display: var(--font-heading);
 
-  /* Buttons and chips (rounded-md) use the button radius; panels the card's. */
-  --radius-md: var(--btn-radius);
-  --radius-lg: var(--card-radius);
-  --radius-xl: var(--card-radius);
+  /* Square everywhere. Every radius step is 0 (see also the unlayered
+     border-radius rule below, which covers rounded-full and arbitrary values). */
+  --radius-xs: 0;
+  --radius-sm: 0;
+  --radius-md: 0;
+  --radius-lg: 0;
+  --radius-xl: 0;
+  --radius-2xl: 0;
+  --radius-3xl: 0;
+  --radius-4xl: 0;
+
+  /* "Desktop" is 981px and up; everything at 980px and below is the mobile set. */
+  --breakpoint-desk: 981px;
 }
 
 :root {
   color-scheme: dark;
 
-  /* Palette */
+  /* Palette (design system 2.1) */
   --page: #08080a;
-  --surface: #111114;
-  --surface-raised: #19191d;
-  --surface-sunken: color-mix(in srgb, var(--page) 55%, var(--surface));
-  --surface-overlay: var(--surface-raised);
-  --border: #2b2a2e;
-  --ink: #efe9da;
-  --accent: #e0b24f;
+  --surface: #0d0d10;
+  --raised: #151519;
+  --sunken: #09090b;
+  --overlay: #1c1b21;
+  --line: #27262c;
+  --line-strong: #36343c;
+  --ink: #f3eee4;
+  --ink-dim: #b1aca3;
+  --ink-mute: #8f897f;
+  --accent: #e3b341;
+  --accent-dim: #8a6d22;
+  --accent-soft: #e3b3411a;
+  --accent-line: #e3b34159;
   --on-accent: #1b1204;
-  --good: #5bbf86;
-  --warn: #e0b04a;
+  --good: #199e70;
+  --warn: #c98500;
   --danger: #e66767;
-
-  /* High contrast: muted text sits at 82% of the text colour over the page,
-     and borders are 55% border / 45% text, so small copy and hairlines stay
-     readable on the frosted cards. (The #9a968c muted grey of the brief is
-     what these replace.) */
-  --ink-mute: color-mix(in srgb, var(--ink) 82%, var(--page));
-  --ink-dim: color-mix(in srgb, var(--ink) 92%, var(--page));
-  --line: color-mix(in srgb, var(--border) 55%, var(--ink));
-  --line-strong: color-mix(in srgb, var(--border) 40%, var(--ink));
-
-  --accent-dim: color-mix(in srgb, var(--accent) 55%, var(--page));
-  --accent-soft: color-mix(in srgb, var(--accent) 10%, transparent);
-  --accent-line: color-mix(in srgb, var(--accent) 35%, transparent);
+  /* Aliases kept for components written against the earlier names. */
+  --surface-raised: var(--raised);
+  --surface-sunken: var(--sunken);
+  --surface-overlay: var(--overlay);
+  --border: var(--line);
 
   /* Validated dark steps — dataviz validator, ALL CHECKS PASS */
   --dmg-physical: #199e70;
@@ -81,37 +93,45 @@
   --dmg-lightning: #c98500;
   --dmg-chaos: #9085e9;
 
-  /* Gold surfaces: accent +14% light at the top, accent, accent -18% at the bottom. */
-  --gold-top: color-mix(in srgb, var(--accent) 86%, white);
-  --gold-mid: var(--accent);
-  --gold-bot: color-mix(in srgb, var(--accent) 82%, black);
+  /* Gold surfaces (2.1): fill for buttons and gauges, text gradient for headings. */
+  --gold-top: color-mix(in srgb, #e3b341 86%, white);
+  --gold-mid: #e3b341;
+  --gold-bot: color-mix(in srgb, #e3b341 82%, black);
   --gold-gradient: linear-gradient(180deg, var(--gold-top) 0%, var(--gold-mid) 50%, var(--gold-bot) 100%);
+  --gold-text: linear-gradient(180deg, #f6dc92 0%, #e3b341 55%, #b98a24 100%);
 
-  /* Frost cards */
-  --card-opacity: 15%;
-  --card-blur: 9px;
-  --card-radius: calc(18px - 3px);
-  --btn-radius: 9px;
-  --card-edge: color-mix(in srgb, var(--ink) 14%, transparent);
-  --card-sheen: color-mix(in srgb, white 9%, transparent);
-  --card-highlight: inset 0 1px 0 color-mix(in srgb, white 12%, transparent);
-  --card-shadow: 0 10px 28px -14px color-mix(in srgb, black 60%, transparent);
-  --lift: var(--card-highlight), var(--card-shadow);
+  /* Glass is shadow only (2.2): no fill, no blur, readable through a halo and
+     the 35% sky dim pass. One token set for every page. */
+  --glass-fill: 0%;
+  --glass-blur: 0px;
+  --halo: 0 1px 12px #000, 0 0 3px #000b;
+  --card-edge: var(--line);
+  --card-highlight: inset 0 1px 0 #ffffff0b;
+  --lift: var(--card-highlight);
   --lift-raised: var(--card-highlight), 0 16px 40px -14px color-mix(in srgb, black 75%, transparent);
   --lift-distance: 3px;
 
-  /* Type */
-  --font-heading: var(--font-cinzel), ui-serif, Georgia, serif;
-  --font-body: var(--font-crimson), ui-serif, Georgia, serif;
-  --font-label: var(--font-plex), ui-monospace, monospace;
-  --font-size-base: 17.3px;
-  --lh-body: 1.46;
-  --heading-tracking: 0.05em;
+  /* Type (2.5). Families are wired in layout.tsx through next/font. */
+  --font-heading: var(--font-garamond), ui-serif, Georgia, serif;
+  --font-body: var(--font-inter), ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-label: var(--font-geist-mono), ui-monospace, 'SFMono-Regular', Menlo, monospace;
+  --lh-body: 1.6;
+  --heading-tracking: 0.04em;
+
+  /* Breakpoint-dependent values: MOBILE set (<= 980px). The desktop set is in
+     the single @media (min-width: 981px) block directly below. */
+  --fs-body: 17px; /* Z2 */
+  --card-pad: 20px; /* S2 */
+  --section-pad: 46px;
+  --title-pad-top: 36px;
+  --title-pad-bottom: 14px;
+  --card-gap: 20px;
+  --block-border: 1px solid var(--line);
+  --block-border-top: 1px solid var(--line-strong); /* B3 quiet line */
 
   /* Layout */
-  --space-scale: 0.96;
-  --page-max: 1240px;
-  --gutter: clamp(1rem, 4vw, 2rem);
+  --page-max: 1180px;
+  --gutter: max(20px, env(safe-area-inset-left), env(safe-area-inset-right));
   --tap-min: 44px;
   --nav-h: 4rem;
   --focus-ring: 2px solid var(--accent);
@@ -121,11 +141,6 @@
   --line-strength: 0.44;
   --grain-opacity: 0.07;
 
-  /* Clear glass: blocks are see-through so the constellation sky shows. */
-  --glass-fill: 14%;
-  --glass-blur: 4px;
-  --halo: 0 1px 12px #000, 0 0 3px #000b;
-
   /* The home title is fixed at its pre-restyle look (Garamond, these two
      colours) and must not follow the palette above. */
   --hero-title-font: var(--font-garamond), ui-serif, Georgia, serif;
@@ -133,10 +148,21 @@
   --hero-title-gold: #e3b341;
 }
 
+/* Desktop set (>= 981px): the one place breakpoint-dependent values change. */
+@media (min-width: 981px) {
+  :root {
+    --fs-body: 15.5px; /* Z1. Flip to 17px here for "large" on desktop too. */
+    --card-pad: 28px; /* S1 */
+    --section-pad: 72px;
+    --title-pad-top: 56px;
+    --title-pad-bottom: 28px;
+    --block-border: 1px solid var(--accent); /* B2 gold frame */
+    --block-border-top: 2px solid var(--accent);
+  }
+}
+
 html {
   background: var(--page);
-  /* Tailwind spacing reads --spacing at runtime; scale it once, here. */
-  --spacing: calc(0.25rem * var(--space-scale));
 }
 
 body {
@@ -145,7 +171,7 @@ body {
   background: var(--page);
   color: var(--ink);
   font-family: var(--font-body);
-  font-size: var(--font-size-base);
+  font-size: var(--fs-body);
   line-height: var(--lh-body);
   -webkit-font-smoothing: antialiased;
   /* Wide content scrolls inside its own container; the page never does. */
@@ -186,10 +212,11 @@ h1.hero-title {
   color: var(--hero-title-ink);
 }
 h1.hero-title .text-gradient-gold {
-  background: linear-gradient(180deg, #f6dc92 0%, var(--hero-title-gold) 55%, #b98a24 100%);
+  background: var(--gold-text);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
+  text-shadow: none;
 }
 h1.hero-title .hero-title-ink {
   color: var(--hero-title-ink);
@@ -210,8 +237,7 @@ code,
 
 :focus-visible {
   outline: var(--focus-ring);
-  outline-offset: 2px;
-  border-radius: 3px;
+  outline-offset: 3px;
 }
 
 /* Recessive scrollbars so data, not chrome, carries the weight. */
@@ -280,32 +306,24 @@ code,
    In the components layer so Tailwind utilities on the same element (a gold
    border, a text colour) still win over them. */
 @layer components {
-  /* Frost card: heavily blurred glass, a diagonal white sheen from the
-     top-left, an inner top highlight, a faint light edge. No gold edge. */
+  /* Card (2.3): glass is shadow only, so there is no fill, blur or sheen.
+     Edge and padding come from the breakpoint tokens: a quiet top line on
+     mobile (B3), a gold frame on desktop (B2). Utilities still win. */
   .card {
     position: relative;
     isolation: isolate;
-    border: 1px solid var(--card-edge);
-    border-radius: var(--card-radius);
-    border-top: 2px solid var(--accent);
+    border: var(--block-border);
+    border-top: var(--block-border-top);
+    padding: var(--card-pad);
     background: color-mix(in srgb, var(--surface) var(--glass-fill), transparent);
     -webkit-backdrop-filter: blur(var(--glass-blur));
     backdrop-filter: blur(var(--glass-blur));
     text-shadow: var(--halo);
-    box-shadow: var(--card-highlight), var(--card-shadow);
+    box-shadow: var(--card-highlight);
     transition:
       transform 0.18s ease,
       border-color 0.18s ease,
       box-shadow 0.18s ease;
-  }
-  .card::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    z-index: -1;
-    border-radius: inherit;
-    pointer-events: none;
-    background: linear-gradient(135deg, var(--card-sheen) 0%, transparent 45%);
   }
   /* Corner brackets: eight 1px, 12px-long gold lines inset 7px. */
   .card::after {
@@ -359,7 +377,7 @@ code,
 
   /* Gold lettering for the brand and hero title. */
   .text-gradient-gold {
-    background: linear-gradient(180deg, var(--gold-top) 0%, var(--accent) 55%, var(--gold-bot) 100%);
+    background: var(--gold-text);
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
@@ -373,7 +391,7 @@ code,
     color: var(--on-accent);
   }
 
-  /* Round checklist markers. */
+  /* Checklist markers (square like everything else). */
   input[type='checkbox'],
   .mark {
     appearance: none;
@@ -384,8 +402,7 @@ code,
     width: 1.1rem;
     height: 1.1rem;
     border: 1px solid var(--line-strong);
-    border-radius: 50%;
-    background: var(--surface-sunken);
+    background: var(--sunken);
     cursor: pointer;
   }
   input[type='checkbox']:checked,
@@ -428,7 +445,8 @@ code,
   .patch-banner p {
     text-shadow: 0 0 6px var(--page), 0 0 2px var(--page);
   }
-  .site-nav {
+  .site-nav,
+  .bar {
     position: relative;
     z-index: 20;
     background: color-mix(in srgb, var(--surface) var(--glass-fill), transparent);
@@ -436,6 +454,21 @@ code,
     backdrop-filter: blur(var(--glass-blur));
     text-shadow: var(--halo);
     border: 0;
+  }
+  /* A 1px gold rule under the header bar (3.3). */
+  .site-nav::after {
+    content: '';
+    position: absolute;
+    inset: auto 0 0 0;
+    height: 1px;
+    pointer-events: none;
+    opacity: 0.8;
+    background: linear-gradient(90deg, transparent, var(--accent) 50%, transparent);
+  }
+  @media (max-width: 720px) {
+    .site-nav .nav-label {
+      display: none;
+    }
   }
   footer {
     background: color-mix(in srgb, var(--surface) var(--glass-fill), transparent);
@@ -496,13 +529,11 @@ code,
     position: relative;
     height: 0.28em;
     margin-inline: 0.5em;
-    border-radius: 999px;
     background: color-mix(in srgb, var(--ink) 16%, transparent);
   }
   .glow-fill {
     position: relative;
     height: 100%;
-    border-radius: 999px;
     background: var(--gold-gradient);
     box-shadow: 0 0 0.6em color-mix(in srgb, var(--accent) 70%, transparent);
     transition: width 0.5s ease-out;
@@ -513,8 +544,7 @@ code,
     right: 0;
     width: 0.9em;
     height: 0.9em;
-    border-radius: 50%;
-    transform: translate(50%, -50%);
+    transform: translate(50%, -50%) rotate(45deg);
     background: var(--gold-gradient);
     box-shadow: 0 0 0.8em color-mix(in srgb, var(--accent) 85%, transparent);
   }
@@ -534,12 +564,11 @@ code,
     color: var(--ink);
     background: var(--surface-raised);
     border: 1px solid var(--line);
-    border-radius: var(--card-radius);
     box-shadow: var(--lift-raised);
   }
   dialog.confirm::backdrop {
     background: color-mix(in srgb, var(--page) 75%, transparent);
-    backdrop-filter: blur(var(--card-blur));
+    backdrop-filter: blur(4px);
   }
 }
 
@@ -612,13 +641,57 @@ main [id] {
   display: grid;
 }
 
-/* --- Clear glass, unlayered ------------------------------------------------
-   Square corners must beat Tailwind's rounded-* utilities, which live in a
-   layer; unlayered rules win over any layer. */
-.card,
-.site-nav,
-footer {
-  border-radius: 0;
+/* --- Section tab bar (3.4) --------------------------------------------------
+   Solid page colour: no glass fill, no blur, no text halo. Sticky under the
+   header, scrolls sideways with a hidden scrollbar. */
+.bar.idx {
+  position: sticky;
+  top: env(safe-area-inset-top, 0px);
+  z-index: 15;
+  display: flex;
+  overflow-x: auto;
+  margin-inline: calc(-1 * var(--gutter));
+  padding-inline: var(--gutter);
+  background: var(--page);
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  text-shadow: none;
+  border-bottom: 1px solid var(--line);
+  scrollbar-width: none;
+}
+.bar.idx::-webkit-scrollbar {
+  display: none;
+}
+.bar.idx a {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+  min-height: 48px;
+  padding-inline: 14px;
+  border-bottom: 2px solid transparent;
+  font-family: var(--font-label);
+  font-size: 11.5px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: var(--ink-mute);
+}
+.bar.idx a:hover {
+  color: var(--ink);
+}
+.bar.idx a[aria-current='true'] {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+
+/* --- Square corners, unlayered ----------------------------------------------
+   Every radius in the app is 0. Unlayered rules beat Tailwind's layered
+   rounded-* utilities, including rounded-full and arbitrary values. */
+*,
+*::before,
+*::after {
+  border-radius: 0 !important;
 }
 /* A panel's inner header is part of the glass, not a second surface. */
 .card header {
@@ -626,17 +699,8 @@ footer {
   -webkit-backdrop-filter: none;
   backdrop-filter: none;
 }
-
-/* Variants: set data-glass on <html> or on a single block. */
-[data-glass='frost'] {
-  --glass-fill: 30%;
-  --glass-blur: 9px;
-  --halo: 0 1px 6px #0008, 0 0 2px #0006;
-}
-[data-glass='shadow'] {
-  --glass-fill: 0%;
-  --glass-blur: 0px;
-  --halo: 0 1px 14px #000, 0 0 4px #000, 0 0 2px #000;
+[hidden] {
+  display: none !important;
 }
 
 /* --- Constellation sky ------------------------------------------------------

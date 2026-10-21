@@ -61,16 +61,19 @@ function makeGlow(): HTMLCanvasElement {
   return c
 }
 
+/** Seeded, so the sky is identical on every load. */
+const SEED = 20261020
+/** Star density multiplier: 1.8 is the dense (K3) setting. */
+const STAR = 1.8
+
 function buildField(w: number, h: number): Field {
-  const rand = mulberry32(20260)
+  const rand = mulberry32(SEED)
   const px = w * PIVOT_X
   const py = h * PIVOT_Y
   const rm = Math.hypot(Math.max(px, w - px), Math.max(py, h - py)) * 1.03
-  const phone = w < 700
-  const mult = phone ? 0.55 : 1
-  // Counts are specified per viewport area; the field is a disk that is larger
-  // than the viewport, so scale up to keep the visible density as specified.
-  const spread = (Math.PI * rm * rm) / (w * h)
+  const small = w < 700
+  // K3 dense (design system 3.2).
+  const k = (small ? 0.55 : 1) * STAR
 
   const inDisk = (limit = 1) => {
     const r = rm * limit * Math.sqrt(rand())
@@ -78,7 +81,7 @@ function buildField(w: number, h: number): Field {
     return { x: Math.cos(a) * r, y: Math.sin(a) * r }
   }
 
-  const starCount = Math.round(Math.min(560, Math.max(60, (w * h) / 7500)) * mult * spread)
+  const starCount = Math.max(40, Math.min(Math.round(560 * Math.max(1, STAR)), Math.round(((w * h) / 7500) * k)))
   const gold: Star[] = []
   const pale: Star[] = []
   const sparkles: Star[] = []
@@ -97,7 +100,7 @@ function buildField(w: number, h: number): Field {
     else gold.push(star)
   }
 
-  const conCount = Math.max(5, Math.round((w * h) / 95000)) * mult * spread
+  const conCount = Math.max(5, Math.round(((w * h) / 95000) * Math.sqrt(Math.min(k, 1.2))))
   const constellations: Constellation[] = []
   for (let i = 0; i < Math.round(conCount); i++) {
     const total = 5 + Math.floor(rand() * 4)

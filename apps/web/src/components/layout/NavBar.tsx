@@ -18,7 +18,7 @@ function useShortcutLabel() {
 
 function ChecklistIcon() {
   return (
-    <svg viewBox="0 0 20 20" fill="none" className="size-4">
+    <svg viewBox="0 0 20 20" fill="none" className="size-6" aria-hidden>
       <path
         d="M4 5.5h12M4 10h12M4 14.5h7"
         stroke="currentColor"
@@ -34,7 +34,7 @@ function ChecklistIcon() {
 
 function AtlasIcon() {
   return (
-    <svg viewBox="0 0 20 20" fill="none" className="size-4">
+    <svg viewBox="0 0 20 20" fill="none" className="size-6" aria-hidden>
       <circle cx="10" cy="3.5" r="1.6" stroke="currentColor" strokeWidth="1.4" />
       <circle cx="4" cy="16" r="1.6" stroke="currentColor" strokeWidth="1.4" />
       <circle cx="16" cy="16" r="1.6" stroke="currentColor" strokeWidth="1.4" />
@@ -50,18 +50,18 @@ function AtlasIcon() {
 
 function DashboardIcon() {
   return (
-    <svg viewBox="0 0 20 20" fill="none" className="size-4">
-      <rect x="3" y="3" width="6" height="7" rx="1" stroke="currentColor" strokeWidth="1.4" />
-      <rect x="11" y="3" width="6" height="4" rx="1" stroke="currentColor" strokeWidth="1.4" />
-      <rect x="11" y="9" width="6" height="8" rx="1" stroke="currentColor" strokeWidth="1.4" />
-      <rect x="3" y="12" width="6" height="5" rx="1" stroke="currentColor" strokeWidth="1.4" />
+    <svg viewBox="0 0 20 20" fill="none" className="size-6" aria-hidden>
+      <rect x="3" y="3" width="6" height="6" stroke="currentColor" strokeWidth="1.4" />
+      <rect x="11" y="3" width="6" height="6" stroke="currentColor" strokeWidth="1.4" />
+      <rect x="11" y="11" width="6" height="6" stroke="currentColor" strokeWidth="1.4" />
+      <rect x="3" y="11" width="6" height="6" stroke="currentColor" strokeWidth="1.4" />
     </svg>
   );
 }
 
 function CharacterIcon() {
   return (
-    <svg viewBox="0 0 20 20" fill="none" className="size-4">
+    <svg viewBox="0 0 20 20" fill="none" className="size-6" aria-hidden>
       <circle cx="10" cy="6" r="3" stroke="currentColor" strokeWidth="1.4" />
       <path
         d="M4 17c0-3.3 2.7-6 6-6s6 2.7 6 6"
@@ -86,7 +86,7 @@ export function NavBar() {
 
   return (
     <nav className="site-nav" aria-label="Primary">
-      <div className="shell flex flex-wrap items-center gap-x-1 gap-y-1 py-2">
+      <div className="shell flex items-center gap-x-1 py-2">
         <Link href="/" aria-label="PoE2 Endgame Companion" className="mr-2 flex shrink-0 items-center gap-2 sm:mr-4">
           <svg viewBox="0 0 24 24" className="size-8 shrink-0" fill="none" aria-hidden>
             <path d="M12 2 L20 12 L12 22 L4 12 Z" stroke="var(--accent)" strokeWidth="1.5" fill="var(--accent-soft)" />
@@ -96,8 +96,8 @@ export function NavBar() {
             PoE2 Endgame Companion
           </span>
         </Link>
-        {/* Links wrap onto their own row on phones instead of squeezing. */}
-        <div className="order-last flex w-full flex-wrap gap-x-1 sm:order-none sm:w-auto">
+        {/* Icons only at 720px and below (labels hide in CSS); icon and label above. */}
+        <div className="flex gap-x-1">
           {LINKS.map((link) => {
             const active = pathname?.startsWith(link.href);
             return (
@@ -105,14 +105,15 @@ export function NavBar() {
                 key={link.href}
                 href={link.href}
                 aria-current={active ? "page" : undefined}
-                className={`relative flex items-center gap-1.5 px-2.5 text-sm max-sm:[&_svg]:hidden font-medium transition-colors sm:px-3 ${
+                aria-label={link.label}
+                className={`relative flex min-w-[var(--tap-min)] items-center justify-center gap-1.5 border px-2.5 text-sm font-medium transition-colors sm:px-3 ${
                   active
-                    ? "text-ink after:absolute after:inset-x-2.5 after:bottom-1.5 after:h-0.5 after:bg-accent [&_svg]:text-accent"
-                    : "text-ink-mute hover:text-ink"
+                    ? "border-accent-line bg-accent-soft text-accent"
+                    : "border-transparent text-ink-mute hover:text-ink"
                 }`}
               >
                 {link.icon}
-                <span>{link.label}</span>
+                <span className="nav-label">{link.label}</span>
               </Link>
             );
           })}
@@ -123,15 +124,15 @@ export function NavBar() {
           onPointerEnter={() => void import("./SearchDialog")}
           onFocus={() => void import("./SearchDialog")}
           aria-label="Search"
-          className="nav-search ml-auto flex min-w-[var(--tap-min)] shrink-0 items-center justify-center gap-2 rounded-md border border-line bg-surface-sunken/60 px-2.5 text-xs text-ink-mute transition-colors hover:border-accent hover:text-ink"
+          className="nav-search ml-auto flex min-w-[var(--tap-min)] shrink-0 items-center justify-center gap-2 border border-line-strong bg-surface-sunken/60 px-2.5 text-xs text-ink-mute transition-colors hover:border-accent hover:text-ink"
         >
-          <svg viewBox="0 0 20 20" fill="none" className="size-3.5" aria-hidden>
+          <svg viewBox="0 0 20 20" fill="none" className="size-4" aria-hidden>
             <circle cx="8.5" cy="8.5" r="5.5" stroke="currentColor" strokeWidth="1.5" />
             <path d="M16 16l-3.5-3.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
           </svg>
           <span className="hidden sm:inline">Search</span>
           {/* Keyboard hint is noise on touch devices. */}
-          <kbd className="hidden rounded border border-line px-1 py-0.5 font-mono text-[10px] text-ink-mute sm:inline">
+          <kbd className="hidden border border-line px-1 py-0.5 font-mono text-[10px] text-ink-mute sm:inline">
             {shortcut}
           </kbd>
         </button>
