@@ -17,7 +17,7 @@ export function CharacterNotes({ analysis }: { analysis: Analysis }) {
   const idleItems = inactiveSet.items
 
   return (
-    <section className="card space-y-4 rounded-xl p-4" aria-label="Character notes">
+    <section className="space-y-4" aria-label="Character notes">
       <div>
         <h3 className="text-xs font-medium tracking-wide text-ink-dim uppercase">Ailment immunities</h3>
         <div className="mt-1.5 flex flex-wrap gap-1.5">

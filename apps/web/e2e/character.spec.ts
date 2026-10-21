@@ -18,7 +18,7 @@ test('?import= analyses the character and records it for the home page', async (
 test('closed analysis panels mount while idle, so their text is findable', async ({ page }) => {
   await page.goto(importUrl)
   await expect(page.getByRole('heading', { name: /Athrynas/ }).first()).toBeVisible({ timeout: 30_000 })
-  const gear = page.locator('details#gear')
+  const gear = page.locator('details#gear-workbench')
   await expect(gear).not.toHaveAttribute('open')
   // The workbench's own heading exists inside the still-closed panel.
   await expect(gear.getByText('Gear workbench', { exact: true })).toBeAttached({ timeout: 15_000 })
@@ -27,7 +27,7 @@ test('closed analysis panels mount while idle, so their text is findable', async
 test('a workbench edit is saved and restored after a reload', async ({ page }) => {
   await page.goto(importUrl)
   await expect(page.getByRole('heading', { name: /Athrynas/ }).first()).toBeVisible({ timeout: 30_000 })
-  const gear = page.locator('details#gear')
+  const gear = page.locator('details#gear-workbench')
   await gear.locator('summary').click()
   await gear.locator('li button[aria-expanded]').first().click()
   await gear.getByRole('button', { name: /^Remove / }).first().click()
@@ -35,8 +35,8 @@ test('a workbench edit is saved and restored after a reload', async ({ page }) =
 
   await page.reload()
   await expect(page.getByRole('heading', { name: /Athrynas/ }).first()).toBeVisible({ timeout: 30_000 })
-  await page.locator('details#gear summary').click()
-  await expect(page.locator('details#gear').getByRole('button', { name: /1 change · reset/ })).toBeVisible({
+  await page.locator('details#gear-workbench summary').click()
+  await expect(page.locator('details#gear-workbench').getByRole('button', { name: /1 change · reset/ })).toBeVisible({
     timeout: 15_000,
   })
 })
@@ -44,6 +44,8 @@ test('a workbench edit is saved and restored after a reload', async ({ page }) =
 test('the defences checklist lists resistances and never reads missing ailment proof as a fail', async ({ page }) => {
   await page.goto(importUrl)
   await expect(page.getByRole('heading', { name: /Athrynas/ }).first()).toBeVisible({ timeout: 30_000 })
+  // The full checklist is collapsed under the resist chip row.
+  await page.locator('#defence-checklist-disclosure > summary').click()
   const list = page.locator('#defence-checklist')
   await expect(list.locator('[data-check="res-fire"]')).toBeVisible({ timeout: 15_000 })
   await expect(list.locator('[data-check="max-hit"]')).toBeVisible()

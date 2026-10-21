@@ -9,7 +9,7 @@ async function importCharacter(page: import('@playwright/test').Page) {
 
 test('a workbench draft goes onto the shopping list', async ({ page }) => {
   await importCharacter(page)
-  const gear = page.locator('details#gear')
+  const gear = page.locator('details#gear-workbench')
   await gear.locator('summary').click()
   await gear.locator('li button[aria-expanded]').first().click()
   await gear.getByRole('button', { name: /^Remove / }).first().click()

@@ -362,6 +362,83 @@ code,
     color: var(--ink-mute);
   }
 
+  /* Chips (2.6). */
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    min-height: 22px;
+    padding: 1px 8px;
+    border: 1px solid var(--line-strong);
+    font-family: var(--font-label);
+    font-size: 10.5px;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    line-height: 1.3;
+    text-transform: uppercase;
+    text-shadow: none;
+  }
+
+  /* Headings inside blocks: gold gradient display type (D2). */
+  .h3 {
+    font-family: var(--font-heading);
+    font-size: 19px;
+    font-weight: 700;
+    letter-spacing: var(--heading-tracking);
+    text-transform: uppercase;
+    background: var(--gold-text);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    text-shadow: none;
+  }
+
+  /* Resistance and skill labels: white serif capitals. */
+  .serif-label {
+    font-family: var(--font-heading);
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    color: var(--ink);
+  }
+
+  /* Damage-type marker: a small diamond in the damage colour. */
+  .diamond {
+    display: inline-block;
+    width: 9px;
+    height: 9px;
+    flex-shrink: 0;
+    transform: rotate(45deg);
+  }
+
+  /* Collapsible cards carry padding on summary and body, not the card. */
+  details.card {
+    padding: 0;
+  }
+  details.card > summary {
+    padding: 14px 18px;
+  }
+  details.card > .dbody,
+  details.card > .dbody-pad {
+    padding: var(--card-pad);
+  }
+  @media (min-width: 621px) {
+    details.card > summary {
+      padding: 14px 28px;
+    }
+  }
+
+  /* Form controls (2.6). */
+  .field {
+    min-height: 48px;
+    padding: 0 12px;
+    border: 1px solid var(--line-strong);
+    background: color-mix(in srgb, var(--sunken) 70%, transparent);
+    color: var(--ink);
+    color-scheme: dark;
+    text-shadow: none;
+  }
+
   /* Display type: brand, page titles, the character name. Never data. */
   .font-display {
     font-family: var(--font-heading);
@@ -641,6 +718,34 @@ main [id] {
   display: grid;
 }
 
+/* --- Page sections (2.4) ----------------------------------------------------
+   Padding comes from the breakpoint tokens in :root. */
+.page-section {
+  padding-top: var(--section-pad);
+}
+.page-title {
+  padding-top: var(--title-pad-top);
+  padding-bottom: var(--title-pad-bottom);
+}
+.section-title {
+  font-family: var(--font-heading);
+  font-size: clamp(26px, 3.2vw, 38px);
+  font-weight: 700;
+  letter-spacing: var(--heading-tracking);
+  text-transform: uppercase;
+  line-height: 1.1;
+  margin-bottom: 20px;
+  background: var(--gold-text);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  text-shadow: none;
+}
+.grid-cards {
+  display: grid;
+  gap: var(--card-gap);
+}
+
 /* --- Section tab bar (3.4) --------------------------------------------------
    Solid page colour: no glass fill, no blur, no text halo. Sticky under the
    header, scrolls sideways with a hidden scrollbar. */
@@ -806,5 +911,37 @@ main [id] {
 @media (prefers-reduced-motion: reduce) {
   .thread-card:hover {
     --l: 0px;
+  }
+}
+
+/* Pools: 6 columns on desktop, 3 at 980px and below, 2 at 620px and below.
+   A class, never an inline grid-template-columns, or the queries won't apply. */
+.pools {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+@media (min-width: 621px) {
+  .pools {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+@media (min-width: 981px) {
+  .pools {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+  }
+}
+
+/* Damage rows: the chevron turns when a row is open. */
+details.drow[open] .chev {
+  transform: rotate(180deg);
+}
+
+/* Very narrow windows (280px): shrink the nav's tap targets so the row fits. */
+@media (max-width: 360px) {
+  .site-nav .shell { gap: 0; }
+  .site-nav .shell > a, .site-nav .shell button, .site-nav .shell > div > a {
+    min-width: 34px;
+    padding-inline: 4px;
   }
 }

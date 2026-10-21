@@ -26,15 +26,15 @@ export function Panel({
     // min-w-0: a grid/flex child defaults to min-width:auto and refuses to
     // shrink below its content, which pushes the page into horizontal scroll on
     // narrow viewports. Wide content scrolls inside its own container instead.
-    <section className={`card min-w-0 overflow-hidden rounded-xl ${className}`}>
-      <header className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 border-b border-line bg-surface-overlay/60 px-4 py-3.5 sm:px-5">
+    <section className={`card min-w-0 overflow-hidden ${className}`}>
+      <header className="mb-4 flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 border-b border-line pb-3">
         <div className="min-w-0">
-          <h2 className="text-base font-semibold text-ink">{title}</h2>
+          <h2 className="h3">{title}</h2>
           {subtitle ? <p className="mt-1 max-w-3xl text-xs leading-relaxed text-ink-dim">{subtitle}</p> : null}
         </div>
         {action}
       </header>
-      <div className="p-4 sm:p-5">{children}</div>
+      <div>{children}</div>
     </section>
   )
 }
@@ -81,7 +81,7 @@ export function Stat({
           ? 'text-good'
           : 'text-ink'
   return (
-    <div className="rounded-lg border border-line/70 bg-surface-sunken px-3.5 py-3">
+    <div className="border border-line/70 bg-surface-sunken px-3.5 py-3">
       <div className="eyebrow leading-tight">{label}</div>
       <div className={`tabular mt-1.5 text-xl leading-none font-semibold ${color}`}>{value}</div>
       {hint ? <div className="mt-1 text-[11px] leading-tight text-ink-mute">{hint}</div> : null}
@@ -89,19 +89,16 @@ export function Stat({
   )
 }
 
+/** Chip (2.6): mono micro label, status colour only for meaning. */
 export function Tag({ children, tone = 'default' }: { children: ReactNode; tone?: 'default' | 'danger' | 'warn' | 'good' | 'accent' }) {
   const map = {
-    default: 'border-line-strong bg-surface-overlay/60 text-ink-dim',
-    danger: 'border-danger/40 bg-danger/10 text-danger',
-    warn: 'border-warn/40 bg-warn/10 text-warn',
-    good: 'border-good/40 bg-good/10 text-good',
-    accent: 'border-accent/40 bg-accent/10 text-accent',
+    default: 'border-line-strong text-ink-dim',
+    danger: 'border-danger/50 bg-danger/10 text-danger',
+    warn: 'border-warn/50 bg-warn/10 text-warn',
+    good: 'border-good/45 bg-good/10 text-good',
+    accent: 'border-accent/45 bg-accent/10 text-accent',
   } as const
-  return (
-    <span className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[11px] leading-tight ${map[tone]}`}>
-      {children}
-    </span>
-  )
+  return <span className={`chip ${map[tone]}`}>{children}</span>
 }
 
 export function Empty({ children }: { children: ReactNode }) {

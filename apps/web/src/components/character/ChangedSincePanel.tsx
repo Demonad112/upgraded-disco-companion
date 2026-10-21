@@ -33,8 +33,8 @@ export function ChangedSincePanel({ analysis, snapshots }: { analysis: Analysis;
   const ch = changedFor(analysis, snapshots)
 
   return (
-    <section className="card mb-3 rounded-xl p-4" aria-label="Changed since last report">
-      <h3 className="text-xs font-medium tracking-wide text-ink-dim uppercase">Changed since last report</h3>
+    <section className="card" aria-label="Changed since last report">
+      <h3 className="h3">Changed since last report</h3>
       {!ch.available ? (
         <p className="mt-1.5 text-xs text-ink-dim">Import again after playing; two reports are needed to compare.</p>
       ) : (

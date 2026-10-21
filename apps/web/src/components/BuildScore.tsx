@@ -11,50 +11,25 @@
  */
 
 import type { BuildAssessment, KeystoneEffects } from '@poe2/core'
-import { Panel, Tag, fmt } from './ui'
-
-const TIER_TONE: Record<'A' | 'B' | 'C' | 'D', string> = {
-  A: 'text-good',
-  B: 'text-ink',
-  C: 'text-warn',
-  D: 'text-danger',
-}
+import { Tag, fmt } from './ui'
 
 /**
- * The headline, which is a range whenever damage could not be graded.
+ * The headline grade, which is a range whenever damage could not be graded.
  *
  * A single letter over one measured half would be a guess, and the guess the
  * arithmetic used to make was the flattering one — perfect defences and no
  * ladder sample read as a confident A. A range says the same thing without
  * claiming the half nobody measured.
- *
- * The tone follows the WORST end. A build that might be a D should not be
- * painted in the colour reserved for an A.
  */
-function Verdict({ assessment }: { assessment: BuildAssessment }) {
+export function gradeText(assessment: BuildAssessment): { letter: string; score: string } | null {
   const { tier, tierRange, score, scoreRange } = assessment
-
-  if (tier && score !== null) {
-    return (
-      <div className="flex items-baseline gap-2">
-        <span className={`text-3xl leading-none font-semibold ${TIER_TONE[tier]}`}>{tier}</span>
-        <span className="tabular text-sm text-ink-dim">{score.toFixed(2)}</span>
-      </div>
-    )
-  }
+  if (tier && score !== null) return { letter: tier, score: score.toFixed(2) }
   if (!tierRange || !scoreRange) return null
-
   const same = tierRange.worst === tierRange.best
-  return (
-    <div className="flex items-baseline gap-2">
-      <span className={`text-3xl leading-none font-semibold ${TIER_TONE[tierRange.worst]}`}>
-        {same ? tierRange.worst : `${tierRange.worst}–${tierRange.best}`}
-      </span>
-      <span className="tabular text-sm text-ink-dim">
-        {same ? scoreRange.min.toFixed(2) : `${scoreRange.min.toFixed(2)}–${scoreRange.max.toFixed(2)}`}
-      </span>
-    </div>
-  )
+  return {
+    letter: same ? tierRange.worst : `${tierRange.worst}–${tierRange.best}`,
+    score: same ? scoreRange.min.toFixed(2) : `${scoreRange.min.toFixed(2)}–${scoreRange.max.toFixed(2)}`,
+  }
 }
 
 function Half({ label, value, of, unscored }: { label: string; value: number | null; of: number; unscored?: string }) {
@@ -67,13 +42,13 @@ function Half({ label, value, of, unscored }: { label: string; value: number | n
           {value === null ? 'not assessed' : `${value.toFixed(2)} of ${of.toFixed(2)}`}
         </span>
       </div>
-      <div className="mt-1.5 h-1.5 w-full overflow-hidden rounded-full bg-surface-sunken">
+      <div className="mt-1.5 h-2 w-full overflow-hidden bg-surface-sunken">
         {value === null ? (
           // Drawn as absent, not as zero. A build is never punished for data
           // that was unavailable, and the bar must not imply it was.
           <div className="h-full w-full bg-[repeating-linear-gradient(45deg,var(--color-line)_0_4px,transparent_4px_8px)]" />
         ) : (
-          <div className="h-full rounded-full bg-accent" style={{ width: `${Math.max(2, pct)}%` }} />
+          <div className="h-full bg-accent" style={{ width: `${Math.max(2, pct)}%` }} />
         )}
       </div>
       {unscored ? <p className="mt-1.5 text-[11px] leading-relaxed text-ink-mute">{unscored}</p> : null}
@@ -86,12 +61,16 @@ export function BuildScore({ assessment, keystones }: { assessment: BuildAssessm
   const warnings = assessment.weaknesses.filter((w) => w.severity === 'warning')
 
   return (
-    <Panel
-      title="Assessment"
-      subtitle="Defence and damage weighted evenly. Damage is graded only against figures observed on the ladder — never against invented thresholds."
-      action={<Verdict assessment={assessment} />}
-    >
+    <details id="assessment" className="card group">
+      <summary className="flex cursor-pointer list-none items-center justify-between gap-3 [&::-webkit-details-marker]:hidden">
+        <span className="h3">Why this grade</span>
+        <span className="eyebrow">Defence and damage, weighted evenly</span>
+      </summary>
+      <div className="dbody border-t border-line">
       <p className="max-w-prose text-sm leading-relaxed text-balance text-ink">{assessment.note}</p>
+      <p className="mt-2 max-w-prose text-xs leading-relaxed text-ink-mute">
+        Damage is graded only against figures observed on the ladder — never against invented thresholds.
+      </p>
 
       <div className="mt-4 grid gap-4 sm:grid-cols-2">
         <Half label="Defence" value={assessment.defence} of={0.5} />
@@ -123,7 +102,7 @@ export function BuildScore({ assessment, keystones }: { assessment: BuildAssessm
       </p>
 
       <div className="mt-5 grid gap-4 sm:grid-cols-2">
-        <div className="min-w-0">
+        <div className="min-w-0 border border-good/40 bg-good/5 p-3">
           <h3 className="mb-2 text-[11px] font-medium tracking-wide text-good uppercase">Holding up</h3>
           <ul className="space-y-1.5">
             {assessment.strengths.map((s) => (
@@ -159,10 +138,10 @@ export function BuildScore({ assessment, keystones }: { assessment: BuildAssessm
       </div>
 
       {assessment.caveats.length ? (
-        <div className="mt-5 rounded-lg border border-line bg-surface-sunken p-4">
-          <h3 className="text-[11px] font-medium tracking-wide text-ink-dim uppercase">
+        <details className="mt-5 border border-line bg-surface-sunken p-4">
+          <summary className="cursor-pointer text-[11px] font-medium tracking-wide text-ink-dim uppercase">
             What this verdict assumes
-          </h3>
+          </summary>
           <ul className="mt-2 space-y-1.5">
             {assessment.caveats.map((c) => (
               <li key={c} className="text-[11px] leading-relaxed text-ink-mute">
@@ -170,7 +149,7 @@ export function BuildScore({ assessment, keystones }: { assessment: BuildAssessm
               </li>
             ))}
           </ul>
-        </div>
+        </details>
       ) : null}
 
       {keystones.notes.length ? (
@@ -180,7 +159,7 @@ export function BuildScore({ assessment, keystones }: { assessment: BuildAssessm
           </h3>
           <ul className="space-y-2">
             {keystones.notes.map((n) => (
-              <li key={n.keystone} className="rounded-lg bg-surface-sunken px-3 py-2">
+              <li key={n.keystone} className="bg-surface-sunken px-3 py-2">
                 <span className="text-xs font-medium text-ink">{n.keystone}</span>
                 <p className="mt-0.5 text-[11px] leading-relaxed text-ink-dim">{n.text}</p>
               </li>
@@ -190,7 +169,7 @@ export function BuildScore({ assessment, keystones }: { assessment: BuildAssessm
       ) : null}
 
       {keystones.unverified.length ? (
-        <div className="mt-4 rounded-lg border border-warn/40 p-4">
+        <div className="mt-4 border border-warn/40 p-4">
           <h3 className="text-[11px] font-medium tracking-wide text-warn uppercase">Allocated but not in effect</h3>
           <p className="mt-1 text-[11px] leading-relaxed text-ink-mute">
             These keystones are on the tree, but this character&rsquo;s own stats contradict them, so none of their
@@ -205,6 +184,7 @@ export function BuildScore({ assessment, keystones }: { assessment: BuildAssessm
           </ul>
         </div>
       ) : null}
-    </Panel>
+      </div>
+    </details>
   )
 }
