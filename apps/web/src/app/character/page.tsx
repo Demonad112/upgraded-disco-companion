@@ -39,9 +39,6 @@ import { fmtCompact } from '@/components/ui'
 import { useCharacterHistory } from '@/lib/useCharacterHistory'
 import { recordRecent } from '@/lib/recentCharacters'
 import { useLadder } from '@/lib/useLadder'
-import { ScrollSpyNav } from '@/components/shared/ScrollSpyNav'
-import { WhatIfPanel } from '@/components/character/WhatIfPanel'
-import { Triad } from '@/components/layout/Triad'
 import { useModTiers } from '@/lib/useModTiers'
 import { useSupportCatalog } from '@/lib/useSupportCatalog'
 import { usePassiveTree } from '@/lib/usePassiveTree'
@@ -54,16 +51,6 @@ interface WorkspacePanel {
   instrument?: ReactNode
   content: ReactNode
 }
-
-/** The character page's sections, in reading order, for the scroll-spy index. */
-const SECTIONS = [
-  { id: 'overview', label: 'Overview' },
-  { id: 'defences', label: 'Defences' },
-  { id: 'what-if', label: 'What-if' },
-  { id: 'assessment', label: 'Assessment' },
-  { id: 'findings', label: 'Findings' },
-  { id: 'full-analysis', label: 'Full analysis' },
-]
 
 export default function Home() {
   const [analysis, setAnalysis] = useState<Analysis | null>(null)
@@ -95,20 +82,14 @@ export default function Home() {
   // Memoised so the gear panels' own memos don't recompute on every render.
   const attributes = useMemo(() => attributesFrom(analysis?.pobStats ?? null), [analysis])
 
-  // One options object for the main analysis and the what-if re-runs.
-  const analysisOptions = useMemo(
-    () => ({
-      ...(tiersState.status === 'ready' ? { tiers: tiersState.tiers } : {}),
-      ...(treeState.status === 'ready' ? { tree: treeState.tree } : {}),
-      ladder,
-    }),
-    [tiersState, treeState, ladder],
-  )
-
   useEffect(() => {
     if (!raw) return
     let cancelled = false
-    void analyzeCharacter(raw, analysisOptions)
+    void analyzeCharacter(raw, {
+      ...(tiersState.status === 'ready' ? { tiers: tiersState.tiers } : {}),
+      ...(treeState.status === 'ready' ? { tree: treeState.tree } : {}),
+      ladder,
+    })
       .then((next) => {
         if (!cancelled) setAnalysis(next)
       })
@@ -123,7 +104,7 @@ export default function Home() {
     return () => {
       cancelled = true
     }
-  }, [raw, analysisOptions])
+  }, [raw, tiersState, treeState, ladder])
 
   // Only recorded once the tree has settled, either way. A snapshot taken
   // before then carries an uncorrected pool, and would be followed by a
@@ -356,8 +337,8 @@ export default function Home() {
   return (
     <>
       <header className="mb-6">
-        <h1 className="font-display text-3xl font-semibold text-ink sm:text-4xl">Character analysis</h1>
-        <Triad />
+        <h1 className="font-display text-3xl font-bold text-ink sm:text-4xl">Character analysis</h1>
+        <div className="mt-3 h-px w-24 bg-gradient-to-r from-[var(--accent)] to-transparent" />
         <p className="mt-4 max-w-prose text-sm leading-relaxed text-ink-dim">
           Reads poe.ninja&rsquo;s own computed character data and turns it into ranked, quantified findings. Nothing
           here is re-derived from scratch, and nothing is invented — where a number can&rsquo;t be established, it says
@@ -415,12 +396,8 @@ export default function Home() {
         ) : null}
 
         {!busy && analysis ? (
-          <div className="lg:grid lg:grid-cols-[9rem_minmax(0,1fr)] lg:gap-6">
-          <ScrollSpyNav label="On this page" items={SECTIONS} />
-          <div className="min-w-0 space-y-4">
-            <div id="overview">
-              <CharacterHero analysis={analysis} />
-            </div>
+          <div className="space-y-4">
+            <CharacterHero analysis={analysis} />
             {sourceUrl ? <CopyLink url={sourceUrl} name={analysis.identity.name} /> : null}
 
             {analysis.warnings.map((w) => (
@@ -429,21 +406,13 @@ export default function Home() {
               </p>
             ))}
 
-            <div id="defences">
-              <DefenceChecklist analysis={analysis} />
-            </div>
+            <DefenceChecklist analysis={analysis} />
 
             <CharacterNotes analysis={analysis} />
 
-            <div id="assessment" className="scroll-mt-24">
-              <BuildScore assessment={analysis.assessment} keystones={analysis.keystones} />
-            </div>
+            <BuildScore assessment={analysis.assessment} keystones={analysis.keystones} />
 
-            <WhatIfPanel analysis={analysis} options={analysisOptions} />
-
-            <div id="findings" className="scroll-mt-24">
-              <Recommendations report={analysis.recommendations} />
-            </div>
+            <Recommendations report={analysis.recommendations} />
 
             <div>
               <div className="mb-2 flex items-center">
@@ -468,7 +437,6 @@ export default function Home() {
             </div>
 
             <Chat analysis={analysis} />
-          </div>
           </div>
         ) : null}
       </div>

@@ -34,9 +34,9 @@
   --color-lightning: var(--dmg-lightning);
   --color-chaos: var(--dmg-chaos);
 
-  --font-sans: var(--font-lato), ui-sans-serif, system-ui, sans-serif;
-  --font-mono: var(--font-plex-mono), ui-monospace, monospace;
-  --font-display: var(--font-roboto-slab), ui-serif, Georgia, serif;
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+  --font-display: var(--font-garamond), ui-serif, Georgia, serif;
 }
 
 :root {
@@ -44,28 +44,26 @@
 
   /* Warm charcoal, stepped far enough apart that a card reads as raised off
      the page and a well reads as cut into the card. */
-  --page: #08080a;
-  --surface: #111114;
-  --surface-raised: #19191d;
-  --surface-sunken: #0b0b0d;
-  --surface-overlay: #19191d;
-  --line: #2b2a2e;
-  --line-strong: #3a383e;
-  --ink: #efe9da;
-  --ink-dim: #b9b4a8;
-  --ink-mute: #9a968c;
-  --accent: #e0b24f;
-  --on-accent: #1b1204;
+  --surface: #0d0d10;
+  --surface-raised: #151519;
+  --surface-sunken: #09090b;
+  --surface-overlay: #1c1b21;
+  --line: #27262c;
+  --line-strong: #36343c;
+  --ink: #f3eee4;
+  --ink-dim: #b1aca3;
+  --ink-mute: #8f897f;
+  --accent: #e3b341;
   --accent-dim: #8a6d22;
-  --accent-soft: rgb(224 178 79 / 0.1);
-  --accent-line: rgb(224 178 79 / 0.35);
+  --accent-soft: rgb(227 179 65 / 0.1);
+  --accent-line: rgb(227 179 65 / 0.35);
   /* Home hero: the art is dark, so a light page shows less of it and no black scrim. */
   --hero-image-opacity: 0.55;
   --hero-scrim: rgb(0 0 0 / 0.1);
 
   --danger: #e66767;
-  --warn: #e0b04a;
-  --good: #5bbf86;
+  --warn: #c98500;
+  --good: #199e70;
 
   /* Validated dark steps — dataviz validator, surface #1a1a19, ALL CHECKS PASS */
   --dmg-physical: #199e70;
@@ -79,8 +77,6 @@
   :root:where(:not([data-theme='dark'])) {
     color-scheme: light;
 
-    --page: #f1eee6;
-    --on-accent: #fff8e6;
     --surface: #f7f5f0;
     --surface-raised: #ffffff;
     --surface-sunken: #efece5;
@@ -114,8 +110,6 @@
 :root[data-theme='light'] {
   color-scheme: light;
 
-  --page: #f1eee6;
-  --on-accent: #fff8e6;
   --surface: #f7f5f0;
   --surface-raised: #ffffff;
   --surface-sunken: #efece5;
@@ -173,86 +167,50 @@
   --lift-raised: var(--card-highlight), 0 2px 4px rgb(40 30 10 / 0.07), 0 14px 32px -14px rgb(40 30 10 / 0.18);
 }
 
-/*
- * Look tokens — the single place the restyle's colours, fonts, card fill,
- * blur, radius, spacing and grain are defined. Everything else reads these.
- */
-:root {
-  --font-heading: var(--font-roboto-slab), ui-serif, Georgia, serif;
-  --font-body: var(--font-lato), ui-sans-serif, system-ui, sans-serif;
-  --font-label: var(--font-plex-mono), ui-monospace, monospace;
-  --font-size-base: 14.7px;
-  --lh-body: 1.59;
-  --heading-scale: 1;
-
-  --card-opacity: 18%;
-  --card-blur: 9px;
-  --card-radius: 12px; /* 3px index-card radius + 9px */
-  --card-border: 1px;
-  --card-rule: 2px;
-  --space-scale: 0.85;
-  --tap-min: 44px;
-  --nav-h: 4rem;
-
-  /* Gold surfaces: accent +14% light at the top, accent, accent -18% at the bottom. */
-  --gold-top: color-mix(in srgb, var(--accent) 86%, white);
-  --gold-mid: var(--accent);
-  --gold-bot: color-mix(in srgb, var(--accent) 82%, black);
-  --gold-gradient: linear-gradient(180deg, var(--gold-top) 0%, var(--gold-mid) 50%, var(--gold-bot) 100%);
-
-  --grain-opacity: 0.07;
-  --constellation-density: 0.72;
-  --line-strength: 0.68;
+html {
+  background: var(--surface);
 }
 
-html {
-  background: var(--page);
-  /* Tailwind spacing reads --spacing at runtime; scale it once, here. */
-  --spacing: calc(0.25rem * var(--space-scale));
+/*
+ * Page atmosphere: a low gold glow behind the top of the page and a soft
+ * vignette, on a fixed layer so it doesn't scroll or repaint with content.
+ * Flat black read as unfinished; this gives the dark surface depth without
+ * competing with the data.
+ */
+:root {
+  --atmosphere:
+    radial-gradient(ellipse 80% 55% at 50% -12%, rgb(227 179 65 / 0.075), transparent 70%),
+    radial-gradient(ellipse 120% 90% at 50% 120%, rgb(0 0 0 / 0.55), transparent 60%);
+}
+@media (prefers-color-scheme: light) {
+  :root:where(:not([data-theme='dark'])) {
+    --atmosphere:
+      radial-gradient(ellipse 80% 55% at 50% -12%, rgb(154 116 18 / 0.08), transparent 70%);
+  }
+}
+:root[data-theme='light'] {
+  --atmosphere: radial-gradient(ellipse 80% 55% at 50% -12%, rgb(154 116 18 / 0.08), transparent 70%);
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background: var(--atmosphere);
 }
 
 body {
   position: relative;
   isolation: isolate;
-  background: var(--page);
+  background: var(--surface);
   color: var(--ink);
-  font-family: var(--font-body);
-  font-size: var(--font-size-base);
-  line-height: var(--lh-body);
   -webkit-font-smoothing: antialiased;
+  /* Inter's straight-sided l and open digits keep it close to Geist. */
+  font-feature-settings: 'cv11', 'ss01';
   /* Wide content scrolls inside its own container; the page never does. */
   overflow-x: hidden;
-}
-
-/* Film grain: SVG noise, soft-light, on a fixed layer above everything and
-   inert to input. */
-body::after {
-  content: '';
-  position: fixed;
-  inset: 0;
-  z-index: 60;
-  pointer-events: none;
-  opacity: var(--grain-opacity);
-  mix-blend-mode: soft-light;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 1 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-}
-
-h1,
-h2,
-h3,
-h4 {
-  font-family: var(--font-heading);
-  font-weight: 600;
-  letter-spacing: 0;
-  text-transform: none;
-}
-
-/* Labels and figures */
-kbd,
-code,
-.tabular,
-.font-mono {
-  font-family: var(--font-label);
 }
 
 ::selection {
@@ -315,37 +273,18 @@ code,
    In the components layer so Tailwind utilities on the same element (a gold
    border, a text colour) still win over them. */
 @layer components {
-  /* Index card: flat translucent fill, hairline border, 2px gold rule across
-     the top edge. The page canvas shows through the fill. */
+  /* A raised card: the standard container across every route. */
   .card {
-    position: relative;
-    border: var(--card-border) solid var(--line);
-    border-top: var(--card-rule) solid var(--accent);
-    border-radius: var(--card-radius);
-    background: color-mix(in srgb, var(--surface) var(--card-opacity), transparent);
-    -webkit-backdrop-filter: blur(var(--card-blur));
-    backdrop-filter: blur(var(--card-blur));
-    box-shadow: 0 1px 2px rgb(0 0 0 / 0.35), 0 10px 28px -14px rgb(0 0 0 / 0.55);
-    transition:
-      transform 0.18s ease,
-      border-color 0.18s ease,
-      box-shadow 0.18s ease;
-  }
-  .card:hover {
-    transform: translateY(-3px);
-    border-color: var(--accent);
-  }
-  /* A card that holds a sticky map / wide scroller must not create a lifted
-     stacking surprise. */
-  .card[data-no-lift]:hover {
-    transform: none;
+    border: 1px solid var(--line);
+    background: linear-gradient(180deg, color-mix(in oklab, var(--surface-raised) 100%, white 1.5%), var(--surface-raised));
+    box-shadow: var(--lift);
   }
 
-  /* Small uppercase section labels. */
+  /* Small uppercase section labels. Tracking is set once here — the old mix of
+     tracking-wide values rendered with uneven gaps ("CO ULD NOT"). */
   .eyebrow {
-    font-family: var(--font-label);
     font-size: 11px;
-    font-weight: 500;
+    font-weight: 600;
     letter-spacing: 0.08em;
     text-transform: uppercase;
     color: var(--ink-mute);
@@ -354,9 +293,10 @@ code,
 
   /* Display type: brand, page titles, the character name. Never data. */
   .font-display {
-    font-family: var(--font-heading);
+    /* --font-garamond directly: @theme inline doesn't emit --font-display at runtime. */
+    font-family: var(--font-garamond), ui-serif, Georgia, serif;
     font-weight: 600;
-    letter-spacing: 0;
+    letter-spacing: 0.01em;
   }
 
   /* A gold hairline that fades out at both ends. */
@@ -364,123 +304,27 @@ code,
     height: 1px;
     background: linear-gradient(90deg, transparent, var(--accent-line), transparent);
   }
+}
 
-  /* Gold surfaces: primary buttons, progress fills, the S-tier badge. */
-  .gold-surface {
-    background: var(--gold-gradient);
-    color: var(--on-accent);
+@layer components {
+  /* Gold lettering for the brand and hero title. Used before, never defined. */
+  .text-gradient-gold {
+    background: linear-gradient(180deg, #f6dc92 0%, var(--accent) 55%, #b98a24 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
   }
-
-  /* Plain square checklist markers. */
-  input[type='checkbox'] {
-    appearance: none;
-    -webkit-appearance: none;
-    display: inline-grid;
-    place-content: center;
-    flex-shrink: 0;
-    width: 1.1rem;
-    height: 1.1rem;
-    border: 1px solid var(--line-strong);
-    border-radius: 0;
-    background: var(--surface-sunken);
-    cursor: pointer;
+  :root[data-theme='light'] .text-gradient-gold {
+    background: linear-gradient(180deg, #b58a1c, #7e5d0b);
+    -webkit-background-clip: text;
+    background-clip: text;
   }
-  input[type='checkbox']:checked {
-    background: var(--gold-gradient);
-    border-color: var(--accent);
-  }
-  input[type='checkbox']:checked::after {
-    content: '';
-    width: 0.55rem;
-    height: 0.3rem;
-    border-left: 2px solid var(--on-accent);
-    border-bottom: 2px solid var(--on-accent);
-    transform: translateY(-1px) rotate(-45deg);
-  }
-
-  /* Large tap targets for everything you press. */
-  button:not([data-compact-ok]),
-  select,
-  [role='tab'],
-  summary,
-  nav a {
-    min-height: var(--tap-min);
-  }
-  /* The one-line patch notice stays one line (its dismiss target is hit-area). */
-  .patch-banner button {
-    min-height: 0;
-  }
-  .tap-pill {
-    display: inline-flex;
-    align-items: center;
-    min-height: var(--tap-min);
-  }
-
-  /* Header: taller bar closed by a 2px gold rule that fades at both ends. */
-  .gilt-nav {
-    position: sticky;
-    border-bottom: 0;
-  }
-  .gilt-nav::after {
-    content: '';
-    position: absolute;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    height: 2px;
-    background: linear-gradient(90deg, transparent, var(--gold-top), var(--gold-mid) 50%, var(--gold-bot), transparent);
-    pointer-events: none;
-  }
-
-  /* Triad ornament under page titles. */
-  .triad {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    margin-top: 0.75rem;
-  }
-  .triad > i {
-    display: block;
-    border: 1px solid var(--accent);
-    background: var(--accent-soft);
-    transform: rotate(45deg);
-  }
-  .triad > i:nth-child(1),
-  .triad > i:nth-child(3) {
-    width: 6px;
-    height: 6px;
-  }
-  .triad > i:nth-child(2) {
-    width: 10px;
-    height: 10px;
-    background: var(--accent);
-  }
-  .triad > span {
-    height: 1px;
-    width: 7rem;
-    background: linear-gradient(90deg, var(--accent-line), transparent);
-  }
-
-  /* Hero: a 2px gold rule down the left edge, fading out at the bottom. */
-  .hero-rule {
-    position: relative;
-    padding-left: 1.4em;
-  }
-  .hero-rule::before {
-    content: '';
-    position: absolute;
-    left: 0;
-    top: 0;
-    bottom: 0;
-    width: 2px;
-    background: linear-gradient(180deg, var(--accent), transparent);
-  }
-
-  /* Search / hash-jump highlight (class was set by HashHighlight but unstyled). */
-  .search-highlight {
-    outline: 2px solid var(--accent);
-    outline-offset: 3px;
-    background: var(--accent-soft);
+  @media (prefers-color-scheme: light) {
+    :root:where(:not([data-theme='dark'])) .text-gradient-gold {
+      background: linear-gradient(180deg, #b58a1c, #7e5d0b);
+      -webkit-background-clip: text;
+      background-clip: text;
+    }
   }
 }
 
@@ -501,11 +345,6 @@ code,
   }
 }
 
-/* Fragment targets clear the sticky header and any sticky index under it. */
-main [id] {
-  scroll-margin-top: calc(var(--nav-h) + 3.5rem);
-}
-
 /* Set before paint by the banner bootstrap in layout.tsx, so a dismissed
    patch banner never flashes. */
 :root[data-banner-dismissed] .patch-banner {
@@ -523,31 +362,4 @@ main [id] {
 }
 [data-scroll-fade][data-overflow-start][data-overflow-end] {
   mask-image: linear-gradient(90deg, transparent, #000 2rem, #000 calc(100% - 2rem), transparent);
-}
-
-/* --- Compact second-monitor mode -------------------------------------------
-   Set on <html> before paint (lib/compactMode). A narrow, glanceable column:
-   Up next, progress and one or two alerts; chrome and decoration drop away. */
-:root[data-compact] [data-compact-hide],
-:root[data-compact] footer,
-:root[data-compact] .patch-banner,
-:root[data-compact] canvas[data-fx],
-:root[data-compact] .nav-search,
-:root[data-compact] .nav-label,
-:root[data-compact] body::after {
-  display: none;
-}
-:root[data-compact] main {
-  max-width: 30rem;
-  padding: 0.75rem;
-}
-:root[data-compact] .home-bento {
-  grid-template-columns: minmax(0, 1fr);
-  gap: 0.5rem;
-}
-:root[data-compact] .home-bento > * {
-  grid-column: 1 / -1;
-}
-:root[data-compact] .compact-alerts {
-  display: grid;
 }

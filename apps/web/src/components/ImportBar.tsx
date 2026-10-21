@@ -157,7 +157,7 @@ export function ImportBar({
           <button
             type="submit"
             disabled={busy}
-            className="gold-surface rounded-lg px-4 py-2.5 text-sm font-bold transition-[filter] hover:brightness-110 disabled:opacity-50"
+            className="rounded-lg bg-accent px-4 py-2.5 text-sm font-medium text-[#0b0b0d] transition-opacity hover:opacity-90 disabled:opacity-50"
           >
             {busy ? 'Analysing…' : 'Analyse'}
           </button>
@@ -175,7 +175,7 @@ export function ImportBar({
           <button
             type="submit"
             disabled={busy}
-            className="self-start gold-surface rounded-lg px-4 py-2.5 text-sm font-bold transition-[filter] hover:brightness-110 disabled:opacity-50"
+            className="self-start rounded-lg bg-accent px-4 py-2.5 text-sm font-medium text-[#0b0b0d] transition-opacity hover:opacity-90 disabled:opacity-50"
           >
             Analyse pasted data
           </button>

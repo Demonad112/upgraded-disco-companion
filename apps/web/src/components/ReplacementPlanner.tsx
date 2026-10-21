@@ -95,7 +95,7 @@ export function ReplacementPlanner({
             type="checkbox"
             checked={cap82}
             onChange={(e) => setCap82(e.target.checked)}
-            className="size-3"
+            className="size-3 accent-emerald-500"
           />
           Cap at item level 82
         </label>
