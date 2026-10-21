@@ -18,13 +18,14 @@ const DATA_URL = `${process.env.NEXT_PUBLIC_BASE_PATH ?? ''}/monster-stats.json`
 const WINDOW = 6
 const DEFAULT_FROM = 11
 
-// SVG geometry: viewBox 520 × 240.
-const W = 520
-const H = 240
-const X0 = 44
-const X1 = 508
-const Y0 = 16
-const Y1 = 188
+// SVG geometry: viewBox 760 × 270, the reference chart's proportions, so the
+// 9–10px labels render small instead of being scaled up with a narrow box.
+const W = 760
+const H = 270
+const X0 = 46
+const X1 = 750
+const Y0 = 26
+const Y1 = 236
 
 const GOLD = '#e3b341'
 const GOLD_DIM = '#8a6d22'
@@ -109,7 +110,7 @@ export function Headroom({ defense }: { defense: DefenseSummary }) {
   const ymax = Math.max(6, Math.ceil(peak / 6) * 6)
   const y = (v: number) => Y1 - (Math.max(0, v) / ymax) * (Y1 - Y0)
   const slot = (X1 - X0) / Math.max(1, bars.length)
-  const bw = Math.min(36, slot * 0.62)
+  const bw = Math.min(30, slot * 0.62)
   const ticks = Array.from({ length: ymax / 6 + 1 }, (_, i) => i * 6)
   const label = `Survivability against a physical hit of ${fmt(report.lowestMaximumHit)}, as a multiple of a base monster hit. ${bars
     .map((b) => `${b.top} ${b.value}×`)
@@ -142,31 +143,34 @@ export function Headroom({ defense }: { defense: DefenseSummary }) {
         </div>
       </div>
 
-      <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label={label} className="mx-auto mt-4 block h-auto w-full max-w-[640px]">
+      <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label={label} className="mx-auto mt-4 block h-auto w-full">
         {ticks.map((t) => (
           <g key={t}>
             <line x1={X0} x2={X1} y1={y(t)} y2={y(t)} stroke="#27262c" strokeWidth="1" />
-            <text x={X0 - 6} y={y(t) + 4} textAnchor="end" fontSize="11" fill="#8f897f" style={{ fontFamily: 'var(--font-label)' }}>
+            <text x={X0 - 6} y={y(t) + 4} textAnchor="end" fontSize="10" fill="#8f897f" style={{ fontFamily: 'var(--font-label)' }}>
               {t}×
             </text>
           </g>
         ))}
         <line x1={X0} x2={X1} y1={y(COMFORT_THRESHOLDS.comfortable)} y2={y(COMFORT_THRESHOLDS.comfortable)} stroke="#199e70" strokeWidth="1.2" strokeDasharray="5 4" />
         <line x1={X0} x2={X1} y1={y(COMFORT_THRESHOLDS.dangerous)} y2={y(COMFORT_THRESHOLDS.dangerous)} stroke="#e66767" strokeWidth="1.2" strokeDasharray="5 4" />
+        <text x={X1 - 2} y={y(COMFORT_THRESHOLDS.comfortable) - 6} textAnchor="end" fontSize="10" fill="#199e70" style={{ fontFamily: 'var(--font-label)' }}>
+          comfortable {COMFORT_THRESHOLDS.comfortable}×
+        </text>
+        <text x={X1 - 2} y={y(COMFORT_THRESHOLDS.dangerous) - 6} textAnchor="end" fontSize="10" fill="#e66767" style={{ fontFamily: 'var(--font-label)' }}>
+          dangerous under {COMFORT_THRESHOLDS.dangerous}×
+        </text>
         {bars.map((b, i) => {
           const cx = X0 + slot * i + slot / 2
           return (
             <g key={b.key}>
               <title>{b.title}</title>
               <rect x={cx - bw / 2} y={y(b.value)} width={bw} height={Math.max(0, Y1 - y(b.value))} fill={b.fill} />
-              <text x={cx} y={y(b.value) - 5} textAnchor="middle" fontSize="11" fill="#f3eee4" style={{ fontFamily: 'var(--font-label)' }}>
-                {b.value}×
+              <text x={cx} y={y(b.value) - 5} textAnchor="middle" fontSize="9" fill="#f3eee4" style={{ fontFamily: 'var(--font-label)' }}>
+                {b.value}
               </text>
-              <text x={cx} y={Y1 + 15} textAnchor="middle" fontSize="11" fill="#f3eee4" style={{ fontFamily: 'var(--font-label)' }}>
+              <text x={cx} y={Y1 + 16} textAnchor="middle" fontSize="9.5" fill="#b1aca3" style={{ fontFamily: 'var(--font-label)' }}>
                 {b.top}
-              </text>
-              <text x={cx} y={Y1 + 29} textAnchor="middle" fontSize="10" fill="#8f897f" style={{ fontFamily: 'var(--font-label)' }}>
-                {b.bottom}
               </text>
             </g>
           )
@@ -182,12 +186,6 @@ export function Headroom({ defense }: { defense: DefenseSummary }) {
         </li>
         <li className="flex items-center gap-1.5">
           <span aria-hidden className="inline-block size-2.5" style={{ background: AMBER }} /> Boss (P = pinnacle, L = highest level)
-        </li>
-        <li className="flex items-center gap-1.5">
-          <span aria-hidden className="inline-block w-4 border-t border-dashed" style={{ borderColor: '#199e70' }} /> {COMFORT_THRESHOLDS.comfortable}×
-        </li>
-        <li className="flex items-center gap-1.5">
-          <span aria-hidden className="inline-block w-4 border-t border-dashed" style={{ borderColor: '#e66767' }} /> {COMFORT_THRESHOLDS.dangerous}×
         </li>
       </ul>
 
