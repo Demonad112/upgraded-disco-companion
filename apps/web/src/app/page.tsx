@@ -5,12 +5,14 @@ import { BASE_PATH } from "@/lib/basePath";
 import { TIER_LIST_PATCH } from "@/data/strategies";
 import { ProgressSummary } from "@/components/home/ProgressSummary";
 import { NextStepCard } from "@/components/checklist/NextStepCard";
+import { CompactAlerts } from "@/components/compact/CompactAlerts";
 import { LastCharacterCard } from "@/components/home/LastCharacterCard";
 import { progressTotals, stepSummaries } from "@/lib/stepSummary";
 
 const CARDS = [
   {
     href: "/checklist",
+    span: "lg:col-span-3",
     title: "Progression Checklist",
     description:
       "Step-by-step roadmap from campaign end to a juiced farm: Waystone planner, readiness check, Master and league quest chains, and the mistakes to avoid at each step.",
@@ -25,6 +27,7 @@ const CARDS = [
   },
   {
     href: "/atlas",
+    span: "lg:col-span-3",
     title: "Atlas Tree Planner",
     description:
       "Allocation order for early sustain, the trap nodes to skip (points can't be refunded), biome picks, memory forks and per-mechanic sub-trees.",
@@ -44,6 +47,7 @@ const CARDS = [
   },
   {
     href: "/dashboard",
+    span: "lg:col-span-2",
     title: "Farming Dashboard",
     description:
       `${TIER_LIST_PATCH} farming tier list, a quick strategy-picker quiz, pinnacle boss requirements, and current meta builds.`,
@@ -58,6 +62,7 @@ const CARDS = [
   },
   {
     href: "/character",
+    span: "lg:col-span-4",
     title: "Character Import",
     description:
       "Paste a poe.ninja profile URL to see your character's defenses, skills, and gear — parsed entirely in your browser.",
@@ -78,8 +83,10 @@ const CARDS = [
 export default function Home() {
   const totals = progressTotals();
   return (
-    <div className="flex flex-col gap-14">
-      <div className="relative overflow-hidden rounded-2xl border border-line">
+    // Bento on 6 columns: hero across the top, Up next (4) beside Progress (2),
+    // then four feature cards of different widths (3, 3, 2, 4).
+    <div className="home-bento grid grid-cols-1 gap-4 sm:grid-cols-6">
+      <section className="relative overflow-hidden sm:col-span-6" data-compact-hide>
         <Image
           src={`${BASE_PATH}/images/atlas-constant.webp`}
           alt=""
@@ -90,9 +97,9 @@ export default function Home() {
           className="object-cover"
           style={{ objectPosition: "50% 38%", opacity: "var(--hero-image-opacity)" }}
         />
-        <div className="absolute inset-0 bg-gradient-to-b from-[var(--hero-scrim)] via-[var(--surface)]/55 to-[var(--surface)]" />
-        <div className="relative z-10 flex flex-col items-start gap-4 px-6 py-16 sm:px-10 sm:py-24">
-          <span className="rounded-full border border-[var(--accent)]/25 bg-accent-soft px-3 py-1 text-xs font-medium tracking-wide text-[var(--accent)] uppercase backdrop-blur-sm">
+        <div className="absolute inset-0 bg-gradient-to-b from-[var(--hero-scrim)] via-[var(--page)]/70 to-[var(--page)]" />
+        <div className="hero-rule relative z-10 my-10 flex flex-col items-start gap-4 sm:my-16">
+          <span className="eyebrow text-[var(--accent)]">
             Patch {CURRENT_PATCH} · {LEAGUE_LABEL}
           </span>
           <h1 className="font-display text-4xl font-bold tracking-[0.04em] text-balance uppercase sm:text-6xl">
@@ -106,38 +113,43 @@ export default function Home() {
             Atlas nodes to skip, and which farm to commit to.
           </p>
         </div>
-      </div>
+      </section>
 
-      <div className="flex flex-col gap-4">
+      <div className="flex min-w-0 flex-col gap-4 sm:col-span-6 lg:col-span-4" data-compact-keep>
         <NextStepCard steps={stepSummaries()} />
-        <LastCharacterCard />
+        <div data-compact-hide>
+          <LastCharacterCard />
+        </div>
+      </div>
+      <div className="min-w-0 sm:col-span-6 lg:col-span-2" data-compact-keep>
         <ProgressSummary stepIds={totals.stepIds} atlasTotal={totals.atlasTotal} />
       </div>
-
-      <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
-        {CARDS.map((card) => (
-          <Link
-            key={card.href}
-            href={card.href}
-            className="group relative overflow-hidden rounded-xl card p-6 shadow-[0_1px_0_rgba(255,255,255,0.04)_inset] transition-all duration-200 hover:-translate-y-0.5 hover:border-[var(--accent)]/40 hover:bg-surface-sunken hover:shadow-[0_8px_30px_-8px_rgba(227,179,65,0.25)]"
-          >
-            <div className="mb-4 flex size-10 items-center justify-center rounded-lg border border-[var(--accent)]/25 bg-accent-soft text-[var(--accent)] transition-transform duration-200 group-hover:scale-110">
-              <svg viewBox="0 0 24 24" fill="none" className="size-5">
-                {card.icon}
-              </svg>
-            </div>
-            <h2 className="flex items-center gap-1.5 font-semibold text-ink">
-              {card.title}
-              <span className="translate-x-0 text-[var(--accent)] opacity-0 transition-all duration-200 group-hover:translate-x-1 group-hover:opacity-100">
-                →
-              </span>
-            </h2>
-            <p className="mt-2 text-sm leading-relaxed text-ink-mute">
-              {card.description}
-            </p>
-          </Link>
-        ))}
+      <div className="sm:col-span-6">
+        <CompactAlerts />
       </div>
+
+      {CARDS.map((card) => (
+        <Link
+          key={card.href}
+          href={card.href}
+          data-linkable
+          data-compact-hide
+          className={`group card p-6 sm:col-span-3 ${card.span}`}
+        >
+          <div className="mb-4 flex size-10 items-center justify-center border border-[var(--accent)]/30 bg-accent-soft text-[var(--accent)]">
+            <svg viewBox="0 0 24 24" fill="none" className="size-5">
+              {card.icon}
+            </svg>
+          </div>
+          <h2 className="flex items-center gap-1.5 font-semibold text-ink">
+            {card.title}
+            <span className="translate-x-0 text-[var(--accent)] opacity-0 transition-all duration-200 group-hover:translate-x-1 group-hover:opacity-100">
+              →
+            </span>
+          </h2>
+          <p className="mt-2 text-sm text-ink-mute">{card.description}</p>
+        </Link>
+      ))}
     </div>
   );
 }

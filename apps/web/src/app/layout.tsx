@@ -7,23 +7,23 @@ import { Footer } from '@/components/layout/Footer'
 import { PatchVersionBanner } from '@/components/layout/PatchVersionBanner'
 import { CommandPalette } from '@/components/layout/CommandPalette'
 import { HashHighlight } from '@/components/layout/HashHighlight'
+import { FxLayer } from '@/components/fx/FxLayer'
 import { PersistedStateProvider } from '@/hooks/usePersistedState'
 import { bannerBootstrap } from '@/lib/bannerDismiss'
+import { COMPACT_BOOTSTRAP } from '@/lib/compactMode'
 import { CURRENT_PATCH } from '@/lib/constants'
 
-// Inter for everything read: close to Geist in feel, and the usual partner
-// for a Garamond. Geist Mono stays for code-like figures.
+// Inter for everything read, EB Garamond for display (brand, titles), Geist Mono
+// for figures. next/font self-hosts them at build time (CSP: font-src 'self').
 const inter = Inter({ variable: '--font-inter', subsets: ['latin'] })
-// Not preloaded: it only sets small figures, so a late swap is invisible.
 const geistMono = Geist_Mono({ variable: '--font-geist-mono', subsets: ['latin'], preload: false })
-// Display only: brand, page titles, the character name. Never data.
 const garamond = EB_Garamond({ variable: '--font-garamond', subsets: ['latin'], weight: ['500', '600', '700'] })
 
 const basePath = process.env.NEXT_PUBLIC_BASE_PATH ?? ''
 
 // Absolute base for the og/twitter image URLs, which crawlers will not resolve
 // relative to the page.
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://poe2-v3-0.pages.dev'
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://upgraded-disco-companion.pages.dev'
 const title = 'PoE2 Endgame Companion'
 const description =
   'Path of Exile 2 character analysis grounded in poe.ninja’s own computed data — ranked, quantified, evidence-backed findings — plus an endgame progression checklist, Atlas planner and farming dashboard.'
@@ -50,7 +50,7 @@ export const metadata: Metadata = {
 
 export const viewport: Viewport = {
   themeColor: [
-    { media: '(prefers-color-scheme: dark)', color: '#0d0d10' },
+    { media: '(prefers-color-scheme: dark)', color: '#08080a' },
     { media: '(prefers-color-scheme: light)', color: '#f7f5f0' },
   ],
   width: 'device-width',
@@ -65,12 +65,13 @@ const THEME_BOOTSTRAP = `(function(){try{var t=localStorage.getItem('poe2-theme'
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" className={`${inter.variable} ${geistMono.variable} ${garamond.variable}`} suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: THEME_BOOTSTRAP }} />
         <script dangerouslySetInnerHTML={{ __html: bannerBootstrap(CURRENT_PATCH) }} />
+        <script dangerouslySetInnerHTML={{ __html: COMPACT_BOOTSTRAP }} />
       </head>
-      <body className={`${inter.variable} ${geistMono.variable} ${garamond.variable} font-sans antialiased`}>
+      <body className="font-sans antialiased">
         <ServiceWorker />
         <a
           href="#main"
@@ -87,9 +88,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           {/* One page container for every route. The analyser used to carry
               its own, which is how two halves of a merged site end up at
               different widths on the same viewport. */}
-          <main id="main" className="mx-auto w-full max-w-6xl px-4 py-8 sm:px-6 sm:py-12">
-            {children}
-          </main>
+          {/* The canvases sit behind the content inside this wrapper. */}
+          <div id="fx-root" className="relative isolate">
+            <FxLayer />
+            <main id="main" className="relative mx-auto w-full max-w-6xl px-4 py-8 sm:px-6 sm:py-12">
+              {children}
+            </main>
+          </div>
           <Footer />
           <CommandPalette />
           <HashHighlight />

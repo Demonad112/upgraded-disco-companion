@@ -30,7 +30,7 @@ export function ClusterNode({ cluster }: { cluster: AtlasCluster }) {
           checked={allocated}
           onChange={() => toggleCluster(cluster.id)}
           aria-label={`Allocated ${cluster.name}`}
-          className="mt-0.5 size-4 shrink-0 accent-emerald-500"
+          className="mt-0.5 size-4 shrink-0"
         />
         <span className="tabular mt-px flex size-5 shrink-0 items-center justify-center rounded-full bg-surface-sunken text-[10px] text-ink-mute">
           {cluster.order}

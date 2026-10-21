@@ -25,7 +25,7 @@ export function NextStepCard({
 
   if (!step) {
     return (
-      <div className="rounded-xl border border-good/30 bg-good/5 p-5">
+      <div className="card h-full p-5">
         <h2 className="font-semibold text-ink">Checklist complete</h2>
         <p className="mt-1 text-sm text-ink-mute">
           Every step is ticked off. Pick a farm on the{" "}
@@ -45,9 +45,8 @@ export function NextStepCard({
   return (
     <section
       aria-labelledby="next-step-title"
-      className="relative overflow-hidden rounded-xl border border-[var(--accent)]/35 bg-[var(--surface-raised)] p-5 shadow-[0_8px_30px_-12px_rgba(227,179,65,0.35)]"
+      className="card relative h-full overflow-hidden p-5"
     >
-      <div className="pointer-events-none absolute inset-y-0 left-0 w-1 bg-[var(--accent)]" />
       <div className="flex flex-wrap items-center justify-between gap-2">
         <span className="text-xs font-semibold tracking-wide text-[var(--accent)] uppercase">
           Up next · {step.phaseLabel}
@@ -74,7 +73,7 @@ export function NextStepCard({
                     type="checkbox"
                     checked={done}
                     onChange={() => toggleActionItem(key)}
-                    className="mt-0.5 size-3.5 accent-emerald-500"
+                    className="mt-0.5 size-3.5"
                   />
                   <span className={done ? "text-ink-mute line-through" : "text-ink-dim"}>
                     {item}
@@ -107,7 +106,7 @@ export function NextStepCard({
       <div className="mt-4 flex flex-wrap items-center gap-2">
         <button
           onClick={() => toggleStep(step.id)}
-          className="rounded-md border border-good/40 bg-good/10 px-3 py-1.5 text-sm font-medium text-[var(--good)] transition-colors hover:bg-good/20"
+          className="gold-surface rounded-md border border-[var(--accent)] px-4 py-1.5 text-sm font-bold transition-[filter] hover:brightness-110"
         >
           ✓ Mark done
         </button>
