@@ -113,23 +113,24 @@ export default function Home() {
         <CompactAlerts />
       </div>
 
-      {CARDS.map((card) => (
-        <Link
-          key={card.href}
-          href={card.href}
-          data-linkable
-          data-compact-hide
-          className="group card p-6 sm:col-span-5"
-        >
-          <div className="mb-3 text-ink-mute">
-            <svg viewBox="0 0 24 24" fill="none" className="size-5" aria-hidden>
-              {card.icon}
-            </svg>
-          </div>
-          <h2 className="text-base text-ink">{card.title}</h2>
-          <p className="mt-2 text-sm text-ink-dim">{card.description}</p>
-        </Link>
-      ))}
+      {/* Threads: a rail across the tops with a stem and diamond per card
+          (wide screens). Opted out of the card-links canvas, which would
+          otherwise add its own links across the gaps. */}
+      <div className="thread-row sm:col-span-10" data-compact-hide data-no-links>
+        {CARDS.map((card) => (
+          <Link key={card.href} href={card.href} data-linkable className="group card thread-card p-6">
+            <span className="thread-stem" aria-hidden />
+            <span className="thread-diamond" aria-hidden />
+            <div className="mb-3 text-ink-mute">
+              <svg viewBox="0 0 24 24" fill="none" className="size-5" aria-hidden>
+                {card.icon}
+              </svg>
+            </div>
+            <h2 className="text-base text-ink">{card.title}</h2>
+            <p className="mt-2 text-sm text-ink-dim">{card.description}</p>
+          </Link>
+        ))}
+      </div>
     </div>
   );
 }

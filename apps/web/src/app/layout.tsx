@@ -8,6 +8,7 @@ import { PatchVersionBanner } from '@/components/layout/PatchVersionBanner'
 import { CommandPalette } from '@/components/layout/CommandPalette'
 import { HashHighlight } from '@/components/layout/HashHighlight'
 import { FxLayer } from '@/components/fx/FxLayer'
+import { ConstellationSky } from '@/components/fx/ConstellationSky'
 import { PersistedStateProvider } from '@/hooks/usePersistedState'
 import { bannerBootstrap } from '@/lib/bannerDismiss'
 import { COMPACT_BOOTSTRAP } from '@/lib/compactMode'
@@ -77,11 +78,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         {/* Progress for the reference routes is client-side only; the provider
             reads localStorage through useSyncExternalStore so a static export
             renders identically before and after hydration. */}
+        {/* Fixed gold sky behind everything; the page wrapper below sits above it. */}
+        <ConstellationSky />
         <PersistedStateProvider>
           {/* One wrapper for the whole page, so the canvases behind it run the
               full document height. Banner, header, main and footer share the
               .shell width and side padding. */}
-          <div id="fx-root" className="relative isolate flex min-h-screen flex-col">
+          <div id="fx-root" className="relative isolate z-[1] flex min-h-screen flex-col">
             <FxLayer />
             <PatchVersionBanner />
             <NavBar />
