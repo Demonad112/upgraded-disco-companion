@@ -334,8 +334,9 @@ export function ConstellationSky() {
 
     const frame = (now: number) => {
       raf = requestAnimationFrame(frame)
-      const phone = window.innerWidth < 700
-      if (phone && now - last < 33) return
+      // 30fps everywhere: the drift is slow, and the dense sky is the page's
+      // biggest per-frame cost.
+      if (now - last < 33) return
       last = now
       draw((now - start) / 1000)
     }
