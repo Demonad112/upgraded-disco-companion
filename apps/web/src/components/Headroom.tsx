@@ -1,29 +1,49 @@
 'use client'
 
 /**
- * Survivability against waystone tier and against bosses.
+ * Survivability against waystone tier and against bosses, drawn to scale.
  *
- * The tier→area level mapping is real (64 + tier, from the waystone item bases)
- * and so is the base monster damage. What is NOT modelled is rare, unique and
- * map-modifier damage, which is what actually kills characters — so the caveat
- * sits next to the number rather than below the fold.
+ * The tier→area level mapping is real (waystone n is area level 64 + n, from
+ * the waystone item bases) and so is the base monster damage. What is NOT
+ * modelled is rare, unique and map-modifier damage, which is what actually
+ * kills characters — so the caveat sits next to the number.
  */
 
-import { useEffect, useState } from 'react'
-import { analyzeContent, type DefenseSummary, type MonsterStatData } from '@poe2/core'
-import { Empty, Panel } from './ui'
+import { useEffect, useId, useState } from 'react'
+import { COMFORT_THRESHOLDS, analyzeContent, type DefenseSummary, type MonsterStatData } from '@poe2/core'
+import { Empty, fmt } from './ui'
 
 const DATA_URL = `${process.env.NEXT_PUBLIC_BASE_PATH ?? ''}/monster-stats.json`
 
-const COMFORT: Record<string, { bar: string; text: string; label: string }> = {
-  comfortable: { bar: 'bg-good/70', text: 'text-good', label: 'comfortable' },
-  thin: { bar: 'bg-warn/70', text: 'text-warn', label: 'thin' },
-  dangerous: { bar: 'bg-danger/70', text: 'text-danger', label: 'dangerous' },
+const WINDOW = 6
+const DEFAULT_FROM = 11
+
+// SVG geometry: viewBox 520 × 240.
+const W = 520
+const H = 240
+const X0 = 44
+const X1 = 508
+const Y0 = 16
+const Y1 = 188
+
+const GOLD = '#e3b341'
+const GOLD_DIM = '#8a6d22'
+const AMBER = '#c98500'
+
+interface Bar {
+  key: string
+  value: number
+  top: string
+  bottom: string
+  fill: string
+  title: string
 }
 
-export function Headroom({ defense, bare = false }: { defense: DefenseSummary; bare?: boolean }) {
+export function Headroom({ defense }: { defense: DefenseSummary }) {
   const [data, setData] = useState<MonsterStatData | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [from, setFrom] = useState(DEFAULT_FROM)
+  const selectId = useId()
 
   useEffect(() => {
     let cancelled = false
@@ -39,104 +59,184 @@ export function Headroom({ defense, bare = false }: { defense: DefenseSummary; b
     }
   }, [])
 
+  const head = (
+    <h3 className="h3">Survivability by waystone tier</h3>
+  )
+
   if (error) {
     return (
-      <Panel title="Survivability by map tier" bare={bare}>
+      <section className="card" aria-label="Survivability by waystone tier">
+        {head}
         <Empty>Could not load the monster data ({error}).</Empty>
-      </Panel>
+      </section>
     )
   }
   if (!data) {
     return (
-      <Panel title="Survivability by map tier" bare={bare}>
-        <div className="h-20 animate-pulse rounded-lg bg-surface-sunken" />
-      </Panel>
+      <section className="card" aria-label="Survivability by waystone tier">
+        {head}
+        <div className="mt-4 h-40 animate-pulse bg-sunken" />
+      </section>
     )
   }
 
   const report = analyzeContent(defense, data)
-  const max = Math.max(...report.tiers.map((t) => t.headroom), 1)
+  const tiers = report.tiers
+  // Window starts a tier can open so that a full window of six fits.
+  const starts = tiers.slice(0, Math.max(0, tiers.length - WINDOW + 1))
+  const start = starts.find((t) => t.tier === from) ?? starts.find((t) => t.tier >= DEFAULT_FROM) ?? starts.at(-1)
+  const shown = start ? tiers.filter((t) => t.tier >= start.tier).slice(0, WINDOW) : tiers.slice(0, WINDOW)
+
+  const bars: Bar[] = [
+    ...shown.map((t) => ({
+      key: `t${t.tier}`,
+      value: t.headroom,
+      top: `T${t.tier}`,
+      bottom: `lvl ${t.areaLevel}`,
+      fill: t.headroom >= COMFORT_THRESHOLDS.comfortable ? GOLD : GOLD_DIM,
+      title: `Waystone ${t.tier}, area level ${t.areaLevel}: ${t.headroom}× a base monster hit`,
+    })),
+    ...report.bosses.map((b) => ({
+      key: `b${b.level}`,
+      value: b.headroom,
+      top: b.label.startsWith('Pinnacle') ? `P${b.level}` : `L${b.level}`,
+      bottom: 'boss',
+      fill: AMBER,
+      title: `${b.label}, level ${b.level}: ${b.headroom}× a base monster hit`,
+    })),
+  ]
+  const peak = Math.max(...bars.map((b) => b.value), 0)
+  const ymax = Math.max(6, Math.ceil(peak / 6) * 6)
+  const y = (v: number) => Y1 - (Math.max(0, v) / ymax) * (Y1 - Y0)
+  const slot = (X1 - X0) / Math.max(1, bars.length)
+  const bw = Math.min(36, slot * 0.62)
+  const ticks = Array.from({ length: ymax / 6 + 1 }, (_, i) => i * 6)
+  const label = `Survivability against a physical hit of ${fmt(report.lowestMaximumHit)}, as a multiple of a base monster hit. ${bars
+    .map((b) => `${b.top} ${b.value}×`)
+    .join(', ')}.`
 
   return (
-    <Panel
-      title="Survivability by map tier"
-      bare={bare}
-      subtitle={
-        <>
-          A {report.lowestMaximumHitType} hit of{' '}
-          <span className="tabular font-semibold text-ink">{report.lowestMaximumHit.toLocaleString()}</span> kills you.
-          Waystone tier {report.tiers[0]?.tier}–{report.tiers.at(-1)?.tier} opens area level{' '}
-          {report.tiers[0]?.areaLevel}–{report.tiers.at(-1)?.areaLevel}.
-        </>
-      }
-    >
-      <p className="mb-3 rounded-lg bg-surface-sunken px-3 py-2 text-xs leading-relaxed text-ink-dim">
-        {report.summary}
-      </p>
+    <section className="card" aria-label="Survivability by waystone tier" id="headroom">
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div className="min-w-0">
+          {head}
+          <p className="mt-1 max-w-prose text-sm leading-relaxed text-ink-dim">
+            Against a {report.lowestMaximumHitType} hit of{' '}
+            <span className="tabular font-mono text-ink">{fmt(report.lowestMaximumHit)}</span>, as a multiple of a base monster hit.{' '}
+            {report.highestComfortableTier !== null
+              ? `Comfortable up to waystone tier ${report.highestComfortableTier}.`
+              : 'No waystone tier reads as comfortable.'}
+          </p>
+        </div>
+        <div className="flex flex-col gap-1">
+          <label htmlFor={selectId} className="eyebrow">
+            Show from
+          </label>
+          <select id={selectId} className="field" value={start?.tier ?? from} onChange={(e) => setFrom(Number(e.target.value))}>
+            {starts.map((t) => (
+              <option key={t.tier} value={t.tier}>
+                Waystone {t.tier} · area {t.areaLevel}
+              </option>
+            ))}
+          </select>
+        </div>
+      </div>
 
-      <ul className="space-y-1">
-        {report.tiers.map((row) => {
-          const tone = COMFORT[row.comfort]!
+      <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label={label} className="mx-auto mt-4 block h-auto w-full max-w-[640px]">
+        {ticks.map((t) => (
+          <g key={t}>
+            <line x1={X0} x2={X1} y1={y(t)} y2={y(t)} stroke="#27262c" strokeWidth="1" />
+            <text x={X0 - 6} y={y(t) + 4} textAnchor="end" fontSize="11" fill="#8f897f" style={{ fontFamily: 'var(--font-label)' }}>
+              {t}×
+            </text>
+          </g>
+        ))}
+        <line x1={X0} x2={X1} y1={y(COMFORT_THRESHOLDS.comfortable)} y2={y(COMFORT_THRESHOLDS.comfortable)} stroke="#199e70" strokeWidth="1.2" strokeDasharray="5 4" />
+        <line x1={X0} x2={X1} y1={y(COMFORT_THRESHOLDS.dangerous)} y2={y(COMFORT_THRESHOLDS.dangerous)} stroke="#e66767" strokeWidth="1.2" strokeDasharray="5 4" />
+        {bars.map((b, i) => {
+          const cx = X0 + slot * i + slot / 2
           return (
-            <li key={row.tier} className="grid grid-cols-[2.5rem_1fr_3.5rem] items-center gap-2">
-              <span className="tabular text-[11px] text-ink-dim">
-                T{row.tier}
-                <span className="ml-1 text-ink-mute">·{row.areaLevel}</span>
-              </span>
-              <span className="relative h-4 overflow-hidden rounded bg-surface-sunken">
-                <span
-                  className={`absolute inset-y-0 left-0 rounded ${tone.bar}`}
-                  style={{ width: `${(row.headroom / max) * 100}%` }}
-                />
-                {row.maps.length ? (
-                  <span className="absolute inset-y-0 left-1.5 flex items-center truncate text-[10px] text-ink-mute">
-                    {row.maps.slice(0, 2).join(', ')}
-                  </span>
-                ) : null}
-              </span>
-              <span className={`tabular text-right text-[11px] font-semibold ${tone.text}`}>{row.headroom}×</span>
-            </li>
+            <g key={b.key}>
+              <title>{b.title}</title>
+              <rect x={cx - bw / 2} y={y(b.value)} width={bw} height={Math.max(0, Y1 - y(b.value))} fill={b.fill} />
+              <text x={cx} y={y(b.value) - 5} textAnchor="middle" fontSize="11" fill="#f3eee4" style={{ fontFamily: 'var(--font-label)' }}>
+                {b.value}×
+              </text>
+              <text x={cx} y={Y1 + 15} textAnchor="middle" fontSize="11" fill="#f3eee4" style={{ fontFamily: 'var(--font-label)' }}>
+                {b.top}
+              </text>
+              <text x={cx} y={Y1 + 29} textAnchor="middle" fontSize="10" fill="#8f897f" style={{ fontFamily: 'var(--font-label)' }}>
+                {b.bottom}
+              </text>
+            </g>
           )
         })}
+      </svg>
+
+      <ul className="mt-3 flex flex-wrap justify-center gap-x-5 gap-y-1 text-[11px] text-ink-mute">
+        <li className="flex items-center gap-1.5">
+          <span aria-hidden className="inline-block size-2.5" style={{ background: GOLD }} /> Comfortable ({COMFORT_THRESHOLDS.comfortable}× or more)
+        </li>
+        <li className="flex items-center gap-1.5">
+          <span aria-hidden className="inline-block size-2.5" style={{ background: GOLD_DIM }} /> Below comfortable
+        </li>
+        <li className="flex items-center gap-1.5">
+          <span aria-hidden className="inline-block size-2.5" style={{ background: AMBER }} /> Boss (P = pinnacle, L = highest level)
+        </li>
+        <li className="flex items-center gap-1.5">
+          <span aria-hidden className="inline-block w-4 border-t border-dashed" style={{ borderColor: '#199e70' }} /> {COMFORT_THRESHOLDS.comfortable}×
+        </li>
+        <li className="flex items-center gap-1.5">
+          <span aria-hidden className="inline-block w-4 border-t border-dashed" style={{ borderColor: '#e66767' }} /> {COMFORT_THRESHOLDS.dangerous}×
+        </li>
       </ul>
 
-      <h3 className="mt-4 mb-1.5 text-[11px] font-medium tracking-wide text-ink-dim uppercase">Bosses</h3>
-      <ul className="space-y-1">
-        {report.bosses.map((boss) => {
-          const tone = COMFORT[boss.comfort]!
-          return (
-            <li key={boss.label} className="rounded-md bg-surface-sunken px-3 py-2">
-              <div className="flex flex-wrap items-baseline justify-between gap-x-3">
-                <span className="text-xs font-medium text-ink">
-                  {boss.label} <span className="text-ink-mute">· level {boss.level}</span>
-                </span>
-                <span className={`tabular text-xs font-semibold ${tone.text}`}>
-                  {boss.headroom}× <span className="text-[10px] font-normal">{tone.label}</span>
-                </span>
-              </div>
-              <p className="mt-0.5 text-[10px] leading-relaxed text-ink-mute">{boss.note}</p>
-            </li>
-          )
-        })}
-      </ul>
+      <details className="mt-4 border border-line">
+        <summary className="flex cursor-pointer items-center px-4 text-sm text-ink-dim">Show all {tiers.length} tiers as a table</summary>
+        <div className="overflow-x-auto border-t border-line">
+          <table className="w-full border-collapse text-sm">
+            <caption className="sr-only">Headroom against a base monster hit, by waystone tier</caption>
+            <thead>
+              <tr className="eyebrow text-left">
+                <th scope="col" className="px-4 py-2 font-medium">Waystone</th>
+                <th scope="col" className="px-4 py-2 font-medium">Area level</th>
+                <th scope="col" className="px-4 py-2 text-right font-medium">Headroom</th>
+              </tr>
+            </thead>
+            <tbody>
+              {tiers.map((t) => (
+                <tr key={t.tier} className="border-t border-line">
+                  <th scope="row" className="tabular px-4 py-2 text-left font-mono font-normal">{t.tier}</th>
+                  <td className="tabular px-4 py-2 font-mono">{t.areaLevel}</td>
+                  <td className="tabular px-4 py-2 text-right font-mono">{t.headroom}×</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </details>
 
-      <div className="mt-4 rounded-lg border border-warn/30 bg-warn/5 p-3">
-        <h3 className="text-[11px] font-medium tracking-wide text-warn uppercase">Read this with the number</h3>
+      <div className="mt-4 border border-warn/40 bg-warn/5 p-3">
+        <h4 className="text-[11px] font-medium tracking-wide text-warn uppercase">Read this with the number</h4>
         <ul className="mt-1.5 space-y-1">
           {report.caveats.map((c) => (
-            <li key={c} className="text-[11px] leading-relaxed text-ink-dim">
+            <li key={c} className="text-xs leading-relaxed text-ink-dim">
               {c}
             </li>
           ))}
+          <li className="text-xs leading-relaxed text-ink-dim">
+            &ldquo;Comfortable&rdquo; ({COMFORT_THRESHOLDS.comfortable}× or more) and &ldquo;dangerous&rdquo; (under {COMFORT_THRESHOLDS.dangerous}×) are this
+            project&rsquo;s judgement, not game constants.
+          </li>
         </ul>
       </div>
 
       {report.unresolved.map((u) => (
-        <div key={u.question} className="mt-2 rounded-lg bg-surface-sunken p-3">
-          <h3 className="text-[11px] font-medium text-ink-dim">{u.question}</h3>
-          <p className="mt-1 text-[11px] leading-relaxed text-ink-mute">{u.missing}</p>
+        <div key={u.question} className="mt-2 bg-sunken p-3">
+          <h4 className="text-xs font-medium text-ink-dim">{u.question}</h4>
+          <p className="mt-1 text-xs leading-relaxed text-ink-mute">{u.missing}</p>
         </div>
       ))}
-    </Panel>
+    </section>
   )
 }

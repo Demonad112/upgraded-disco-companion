@@ -47,9 +47,9 @@ export function Accordion({
     <details
       id={id}
       open={defaultOpen}
-      className="card group overflow-clip transition-[border-color,box-shadow,transform] open:border-accent-line"
+      className="card group overflow-clip transition-[border-color,box-shadow,transform]"
     >
-      <summary className="relative flex cursor-pointer list-none items-center gap-3 px-4 py-3.5 transition-colors group-open:bg-surface-overlay/70 before:absolute before:inset-y-2 before:left-0 before:w-0.5 before:rounded-full before:bg-accent before:opacity-0 before:transition-opacity group-open:before:opacity-100 hover:bg-surface-overlay/50 focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-[var(--accent)]/60 [&::-webkit-details-marker]:hidden">
+      <summary className="relative flex cursor-pointer list-none items-center gap-3 transition-colors hover:bg-accent-soft focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-[var(--accent)]/60 [&::-webkit-details-marker]:hidden">
         <svg
           viewBox="0 0 20 20"
           fill="none"
@@ -67,7 +67,7 @@ export function Accordion({
 
         <span className="min-w-0 flex-1">
           <span className="flex flex-wrap items-center gap-x-2 gap-y-1">
-            <span className="font-semibold text-ink/90 group-open:text-ink">
+            <span className="h3">
               {title}
             </span>
             {badge}
@@ -86,7 +86,7 @@ export function Accordion({
         )}
       </summary>
 
-      <div className="border-t border-accent-line/50 px-4 py-5 sm:px-5">
+      <div className="dbody border-t border-line">
         {lazy ? <LazyMount>{children}</LazyMount> : children}
       </div>
     </details>

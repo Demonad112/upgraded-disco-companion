@@ -17,7 +17,7 @@ export function ProvenanceBadge({ provenance, label }: { provenance?: Provenance
   return (
     <span
       title={info.detail}
-      className={`inline-flex cursor-help items-center rounded border px-1.5 py-px text-[10px] leading-tight ${TONE[info.label]}`}
+      className={`chip cursor-help ${TONE[info.label]}`}
     >
       {info.text}
     </span>

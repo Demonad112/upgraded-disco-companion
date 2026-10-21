@@ -10,16 +10,16 @@ import {
 } from '@poe2/core'
 import { Accordion } from '@/components/shared/Accordion'
 import { PanelControls } from '@/components/shared/PanelControls'
-import { NumberReadout, ResistancePips, StatusChip } from '@/components/shared/Instruments'
+import { StatusChip } from '@/components/shared/Instruments'
 import { Attribution } from '@/components/Attribution'
 import { BuildScore } from '@/components/BuildScore'
 import { DefensePanel } from '@/components/DefensePanel'
 import { DpsMatrix } from '@/components/DpsMatrix'
 import { DamageReview } from '@/components/DamageReview'
 import { GearWorkbench } from '@/components/GearWorkbench'
-import { CharacterHero } from '@/components/character/CharacterHero'
+import { CharacterVerdict } from '@/components/character/CharacterVerdict'
+import { DefencesGlance, SinceLastImport, SpareToTrade, TreeDataNote } from '@/components/character/OverviewCards'
 import { CharacterNotes } from '@/components/character/CharacterNotes'
-import { DefenceChecklist } from '@/components/character/DefenceChecklist'
 import { ChangedSincePanel } from '@/components/character/ChangedSincePanel'
 import { CompareCharacters } from '@/components/character/CompareCharacters'
 import { CopyLink } from '@/components/character/CopyLink'
@@ -35,7 +35,6 @@ import { Reconciliation } from '@/components/Reconciliation'
 import { Recommendations } from '@/components/Recommendations'
 import { Skeleton } from '@/components/Skeleton'
 import { TreePanel } from '@/components/tree/TreePanel'
-import { fmtCompact } from '@/components/ui'
 import { useCharacterHistory } from '@/lib/useCharacterHistory'
 import { recordRecent } from '@/lib/recentCharacters'
 import { useLadder } from '@/lib/useLadder'
@@ -46,24 +45,27 @@ import { useModTiers } from '@/lib/useModTiers'
 import { useSupportCatalog } from '@/lib/useSupportCatalog'
 import { usePassiveTree } from '@/lib/usePassiveTree'
 
-interface WorkspacePanel {
-  id: string
-  title: string
-  summary?: ReactNode
-  badge?: ReactNode
-  instrument?: ReactNode
-  content: ReactNode
-}
-
-/** The character page's sections, in reading order, for the scroll-spy index. */
+/** The character page's sections, in tab-bar and DOM order. */
 const SECTIONS = [
   { id: 'overview', label: 'Overview' },
-  { id: 'defences', label: 'Defences' },
-  { id: 'what-if', label: 'What-if' },
-  { id: 'assessment', label: 'Assessment' },
   { id: 'findings', label: 'Findings' },
-  { id: 'full-analysis', label: 'Full analysis' },
+  { id: 'defences', label: 'Defences' },
+  { id: 'damage', label: 'Damage' },
+  { id: 'gear', label: 'Gear' },
+  { id: 'checks', label: 'Checks' },
+  { id: 'progress', label: 'Progress' },
 ]
+
+function Section({ id, title, children }: { id: string; title: string; children: ReactNode }) {
+  return (
+    <section id={id} className="page-section" aria-labelledby={`${id}-title`}>
+      <h2 id={`${id}-title`} className="section-title">
+        {title}
+      </h2>
+      <div className="grid-cards">{children}</div>
+    </section>
+  )
+}
 
 export default function Home() {
   const [analysis, setAnalysis] = useState<Analysis | null>(null)
@@ -197,166 +199,17 @@ export default function Home() {
     }
   }, [handleResult])
 
-  // Declared as data so the accordion list can be reordered or re-themed in
-  // one place, without touching how any individual panel is built. Each
-  // panel keeps its own component and its own logic — only the collapsed
-  // row's summary/badge/instrument is computed here, from the same
-  // `analysis` every open panel already reads.
-  const panelsFor = (a: Analysis): WorkspacePanel[] => {
-    const uncappedCount = a.defense.resistances.filter((r) => !r.capped).length
-    const primary = a.dps.primary
-    const overcapped = a.attribution.stats.filter((s) => s.overcap > 0)
-
-    const panels: WorkspacePanel[] = [
-      {
-        id: 'defence',
-        title: 'Defence',
-        summary:
-          a.defense.lowestMaximumHit !== null
-            ? `A ${a.defense.lowestMaximumHitType} hit of ${a.defense.lowestMaximumHit.toLocaleString()} kills you`
-            : 'Max hit not available',
-        badge: uncappedCount > 0 ? <StatusChip tone="danger">{uncappedCount} uncapped</StatusChip> : undefined,
-        instrument: <ResistancePips resistances={a.defense.resistances} />,
-        content: <DefensePanel d={a.defense} bare />,
-      },
-      {
-        id: 'headroom',
-        title: 'Survivability by map tier',
-        summary:
-          a.defense.lowestMaximumHit !== null
-            ? `Against a ${a.defense.lowestMaximumHitType} hit of ${a.defense.lowestMaximumHit.toLocaleString()}`
-            : undefined,
-        content: <Headroom defense={a.defense} bare />,
-      },
-      {
-        id: 'damage',
-        title: 'Damage',
-        summary: a.dps.unresolved ?? (primary ? `${primary.name} · ${primary.totalDps.toLocaleString()} dps` : undefined),
-        instrument: primary ? <NumberReadout value={fmtCompact(primary.totalDps)} tone="accent" /> : undefined,
-        content: (
-          <DpsMatrix
-            dps={a.dps}
-            pobConfig={a.pobConfig}
-            configApplies={a.reconciliation?.checks.find((c) => c.stat.startsWith('dps:'))?.severity === 'match'}
-            bare
-          />
-        ),
-      },
-      {
-        id: 'damage-review',
-        title: 'Damage review — gems and gear',
-        summary: primary
-          ? `Support-gem swaps and damage-mod upgrades for ${primary.name}`
-          : 'Support-gem swaps and damage-mod upgrades',
-        content: (
-          <DamageReview
-            dps={a.dps}
-            model={a.model}
-            items={a.items}
-            defense={a.defense}
-            tiersState={tiersState}
-            catalogState={catalogState}
-            bare
-          />
-        ),
-      },
-      {
-        id: 'progress',
-        title: 'Progress',
-        summary: history.diff
-          ? `${history.diff.changes.length} figure${history.diff.changes.length === 1 ? '' : 's'} moved since your last import`
-          : 'Import again after playing to see what moved',
-        instrument: history.diff?.newlyUncapped.length ? (
-          <StatusChip tone="danger">Dropped below cap</StatusChip>
-        ) : history.diff?.newlyCapped.length ? (
-          <StatusChip tone="good">Capped</StatusChip>
-        ) : (
-          <StatusChip>
-            {history.snapshots.length} snapshot{history.snapshots.length === 1 ? '' : 's'}
-          </StatusChip>
-        ),
-        content: (
-          <>
-            <ChangedSincePanel analysis={a} snapshots={history.snapshots} />
-            <Progress history={history} bare />
-          </>
-        ),
-      },
-      {
-        id: 'compare',
-        title: 'Compare with another character',
-        summary: 'Side by side with a character you imported before, from saved snapshots',
-        content: <CompareCharacters currentKey={snapshotKey(a.identity)} currentName={a.identity.name} bare />,
-      },
-      {
-        id: 'attribution',
-        title: 'What each item is holding up',
-        summary: `${a.attribution.items.length} item${a.attribution.items.length === 1 ? '' : 's'} attributed`,
-        badge:
-          overcapped.length > 0 ? (
-            <StatusChip tone="muted">
-              {overcapped.length} over cap
-            </StatusChip>
-          ) : undefined,
-        content: <Attribution report={a.attribution} bare />,
-      },
-      {
-        id: 'gear',
-        title: 'Gear workbench',
-        summary:
-          tiersState.status === 'error'
-            ? 'Affix tier data unavailable'
-            : 'Replace-first ranking · remove, re-tier or swap affixes and watch your resistances',
-        badge: (() => {
-          const open = shopping.entries.filter((e) => e.characterName === a.identity.name && !e.done).length
-          return open ? <StatusChip tone="good">{open} on shopping list</StatusChip> : undefined
-        })(),
-        content: (
-          <GearWorkbench
-            items={a.items}
-            defense={a.defense}
-            attribution={a.attribution}
-            state={tiersState}
-            characterName={a.identity.name}
-            recommendations={a.recommendations.recommendations}
-            {...(attributes ? { attributes } : {})}
-            bare
-          />
-        ),
-      },
-      {
-        id: 'passive-tree',
-        title: 'Passive tree',
-        summary: `${a.passives.counts.passives} points allocated`,
-        instrument: <NumberReadout value={String(a.passives.counts.passives)} />,
-        content: <TreePanel allocation={a.passives} state={treeState} bare />,
-      },
-      {
-        id: 'detail-checks',
-        title: 'Detail checks',
-        summary: 'Sockets, gem quality, jewels and spare attributes',
-        content: <AuditPanel model={a.model} pobStats={a.pobStats} state={tiersState} bare />,
-      },
-    ]
-
-    if (a.reconciliation) {
-      const r = a.reconciliation
-      panels.push({
-        id: 'reconciliation',
-        title: 'Cross-validation',
-        summary: `${r.matches} agree${r.minor ? ` · ${r.minor} minor` : ''}${r.unmapped ? ` · ${r.unmapped} unmapped` : ''}`,
-        badge: r.major > 0 ? <StatusChip tone="danger">{r.major} major</StatusChip> : undefined,
-        content: <Reconciliation report={r} bare />,
-      })
-    }
-
-    return panels
-  }
+  const a = analysis
+  const treeForNote = treeState.status === 'ready' ? treeState.tree : null
+  const overcapped = a ? a.attribution.stats.filter((st) => st.overcap > 0) : []
 
   return (
     <>
-      <header className="mb-6">
-        <h1 className="font-display text-3xl font-bold tracking-[0.02em] text-ink sm:text-4xl">Character analysis</h1>
+      <header className="page-title">
+        <div className="eyebrow">poe.ninja import</div>
+        <h1 className="mt-2 font-display text-[clamp(34px,5.2vw,64px)] leading-[1.04] font-bold text-ink">
+          Character <span className="text-gradient-gold">analysis</span>
+        </h1>
         <Triad />
         <p className="mt-4 max-w-prose text-sm leading-relaxed text-ink-dim">
           Reads poe.ninja&rsquo;s own computed character data and turns it into ranked, quantified findings. Nothing
@@ -365,11 +218,11 @@ export default function Home() {
         </p>
       </header>
 
-      {analysis || pobAnalysis ? (
-        // Once a character is loaded the import box steps aside, so the stat
-        // sheet leads the page. Keyed so it closes again on the next load.
-        <details className="group">
-          <summary className="inline-flex cursor-pointer list-none items-center gap-2 rounded-lg border border-line bg-surface-raised/70 px-3.5 py-2 text-sm text-ink-dim shadow-[var(--lift)] transition-colors hover:border-line-strong hover:text-ink [&::-webkit-details-marker]:hidden">
+      {a || pobAnalysis ? (
+        // Once a character is loaded the import box steps aside, so the verdict
+        // sits near the top. Keyed so it closes again on the next load.
+        <details className="card group">
+          <summary className="flex cursor-pointer list-none items-center gap-3 text-sm text-ink-dim [&::-webkit-details-marker]:hidden">
             <svg
               viewBox="0 0 20 20"
               fill="none"
@@ -380,7 +233,7 @@ export default function Home() {
             </svg>
             Load another character
           </summary>
-          <div className="mt-3">
+          <div className="dbody border-t border-line">
             <ImportBar onResult={handleResult} busy={busy} setBusy={setBusy} />
           </div>
         </details>
@@ -389,7 +242,7 @@ export default function Home() {
       )}
 
       {error ? (
-        <p role="alert" className="mt-4 rounded-lg border border-danger/40 px-4 py-3 text-sm text-danger">
+        <p role="alert" className="mt-4 border border-danger/40 px-4 py-3 text-sm text-danger">
           {error}
         </p>
       ) : null}
@@ -397,8 +250,8 @@ export default function Home() {
       <div className="mt-6">
         {busy ? <Skeleton /> : null}
 
-        {!busy && !analysis && !pobAnalysis ? (
-          <div className="rounded-xl border border-dashed border-line-strong bg-surface-raised/40 px-6 py-16 text-center">
+        {!busy && !a && !pobAnalysis ? (
+          <div className="border border-dashed border-line-strong bg-surface-raised/40 px-6 py-16 text-center">
             <p className="text-sm text-ink-dim">Import a character to see its analysis.</p>
             <p className="mx-auto mt-2 max-w-md text-xs leading-relaxed text-ink-mute">
               Survivability is led by the smallest hit that kills, not by an averaged effective health pool — which on
@@ -414,62 +267,167 @@ export default function Home() {
           </div>
         ) : null}
 
-        {!busy && analysis ? (
-          <div className="lg:grid lg:grid-cols-[9rem_minmax(0,1fr)] lg:gap-6">
-          <ScrollSpyNav label="On this page" items={SECTIONS} />
-          <div className="min-w-0 space-y-4">
-            <div id="overview">
-              <CharacterHero analysis={analysis} />
-            </div>
-            {sourceUrl ? <CopyLink url={sourceUrl} name={analysis.identity.name} /> : null}
+        {!busy && a ? (
+          <>
+            <ScrollSpyNav label="On this page" items={SECTIONS} />
 
-            {analysis.warnings.map((w) => (
-              <p key={w} className="rounded-lg border border-warn/40 px-4 py-3 text-xs leading-relaxed text-warn">
-                {w}
-              </p>
-            ))}
-
-            <div id="defences">
-              <DefenceChecklist analysis={analysis} />
-            </div>
-
-            <CharacterNotes analysis={analysis} />
-
-            <div id="assessment" className="scroll-mt-24">
-              <BuildScore assessment={analysis.assessment} keystones={analysis.keystones} />
-            </div>
-
-            <WhatIfPanel analysis={analysis} options={analysisOptions} />
-
-            <div id="findings" className="scroll-mt-24">
-              <Recommendations report={analysis.recommendations} />
-            </div>
-
-            <div>
-              <div className="mb-2 flex items-center">
-                <h2 className="text-base font-semibold text-ink">Full analysis</h2>
-                <PanelControls targetId="full-analysis" />
+            <Section id="overview" title="Overview">
+              <CharacterVerdict analysis={a}>{sourceUrl ? <CopyLink url={sourceUrl} name={a.identity.name} /> : null}</CharacterVerdict>
+              {a.warnings.map((w) => (
+                <p key={w} className="card border-warn/50 text-xs leading-relaxed text-warn">
+                  {w}
+                </p>
+              ))}
+              <div className="grid-cards desk:grid-cols-2">
+                <SpareToTrade analysis={a} />
+                <SinceLastImport diff={history.diff} />
               </div>
-              <div id="full-analysis" className="flex flex-col gap-1.5">
-                {panelsFor(analysis).map((panel) => (
+              <DefencesGlance analysis={a} />
+              <TreeDataNote analysis={a} tree={treeForNote} />
+              <BuildScore assessment={a.assessment} keystones={a.keystones} />
+            </Section>
+
+            <Section id="findings" title="Findings">
+              <Recommendations report={a.recommendations} />
+            </Section>
+
+            <Section id="defences" title="Defences">
+              <DefensePanel d={a.defense} />
+              <Headroom defense={a.defense} />
+              <WhatIfPanel analysis={a} options={analysisOptions} />
+            </Section>
+
+            <Section id="damage" title="Damage">
+              <DpsMatrix
+                dps={a.dps}
+                pobConfig={a.pobConfig}
+                configApplies={a.reconciliation?.checks.find((c) => c.stat.startsWith('dps:'))?.severity === 'match'}
+              />
+              <Accordion
+                id="damage-review"
+                title="Supports and gear changes for this skill"
+                summary={
+                  a.dps.primary
+                    ? `Support-gem swaps and damage-mod upgrades for ${a.dps.primary.name}`
+                    : 'Support-gem swaps and damage-mod upgrades'
+                }
+                lazy
+              >
+                <DamageReview
+                  dps={a.dps}
+                  model={a.model}
+                  items={a.items}
+                  defense={a.defense}
+                  tiersState={tiersState}
+                  catalogState={catalogState}
+                  bare
+                />
+              </Accordion>
+            </Section>
+
+            <Section id="gear" title="Gear">
+              <Accordion
+                id="gear-workbench"
+                title="Gear workbench"
+                summary={
+                  tiersState.status === 'error'
+                    ? 'Affix tier data unavailable'
+                    : 'Replace-first ranking · remove, re-tier or swap affixes and watch your resistances'
+                }
+                badge={(() => {
+                  const open = shopping.entries.filter((e) => e.characterName === a.identity.name && !e.done).length
+                  return open ? <StatusChip tone="good">{open} on shopping list</StatusChip> : undefined
+                })()}
+              >
+                <GearWorkbench
+                  items={a.items}
+                  defense={a.defense}
+                  attribution={a.attribution}
+                  state={tiersState}
+                  characterName={a.identity.name}
+                  recommendations={a.recommendations.recommendations}
+                  {...(attributes ? { attributes } : {})}
+                  bare
+                />
+              </Accordion>
+              <Accordion
+                id="attribution"
+                title="What each item is holding up"
+                summary={`${a.attribution.items.length} item${a.attribution.items.length === 1 ? '' : 's'} attributed`}
+                badge={overcapped.length > 0 ? <StatusChip tone="muted">{overcapped.length} over cap</StatusChip> : undefined}
+              >
+                <Attribution report={a.attribution} bare />
+              </Accordion>
+            </Section>
+
+            <Section id="checks" title="Checks">
+              <div className="flex items-center">
+                <PanelControls targetId="checks-list" />
+              </div>
+              <div id="checks-list" className="grid-cards">
+                <Accordion
+                  id="detail-checks"
+                  title="Detail checks"
+                  summary="Sockets, gem quality, jewels and spare attributes"
+                >
+                  <AuditPanel model={a.model} pobStats={a.pobStats} state={tiersState} bare />
+                </Accordion>
+                <Accordion id="character-notes" title="Ailments and inactive weapon set" summary="Immunities, main-skill note, idle gear">
+                  <CharacterNotes analysis={a} />
+                </Accordion>
+                <Accordion
+                  id="passive-tree"
+                  title="Passive tree"
+                  summary={`${a.passives.counts.passives} points allocated`}
+                  lazy
+                >
+                  <TreePanel allocation={a.passives} state={treeState} bare />
+                </Accordion>
+                {a.reconciliation ? (
                   <Accordion
-                    key={panel.id}
-                    id={panel.id}
-                    title={panel.title}
-                    summary={panel.summary}
-                    badge={panel.badge}
-                    instrument={panel.instrument}
-                    lazy
+                    id="reconciliation"
+                    title="Cross-validation"
+                    summary={`${a.reconciliation.matches} agree${a.reconciliation.minor ? ` · ${a.reconciliation.minor} minor` : ''}${a.reconciliation.unmapped ? ` · ${a.reconciliation.unmapped} unmapped` : ''}`}
+                    badge={
+                      a.reconciliation.major > 0 ? <StatusChip tone="danger">{a.reconciliation.major} major</StatusChip> : undefined
+                    }
                   >
-                    {panel.content}
+                    <Reconciliation report={a.reconciliation} bare />
                   </Accordion>
-                ))}
+                ) : null}
               </div>
-            </div>
+              <Chat analysis={a} />
+            </Section>
 
-            <Chat analysis={analysis} />
-          </div>
-          </div>
+            <Section id="progress" title="Progress">
+              <ChangedSincePanel analysis={a} snapshots={history.snapshots} />
+              <Accordion
+                id="progress-history"
+                title="Trends across imports"
+                summary={
+                  history.diff
+                    ? `${history.diff.changes.length} figure${history.diff.changes.length === 1 ? '' : 's'} moved since your last import`
+                    : 'Import again after playing to see what moved'
+                }
+                badge={
+                  history.diff?.newlyUncapped.length ? (
+                    <StatusChip tone="danger">Dropped below cap</StatusChip>
+                  ) : history.diff?.newlyCapped.length ? (
+                    <StatusChip tone="good">Capped</StatusChip>
+                  ) : undefined
+                }
+              >
+                <Progress history={history} bare />
+              </Accordion>
+              <Accordion
+                id="compare"
+                title="Compare with another character"
+                summary="Side by side with a character you imported before, from saved snapshots"
+              >
+                <CompareCharacters currentKey={snapshotKey(a.identity)} currentName={a.identity.name} bare />
+              </Accordion>
+            </Section>
+          </>
         ) : null}
       </div>
 

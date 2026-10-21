@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from 'next'
-import { Cinzel, Crimson_Pro, EB_Garamond, IBM_Plex_Mono } from 'next/font/google'
+import { EB_Garamond, Geist_Mono, Inter } from 'next/font/google'
 import './globals.css'
 import { ServiceWorker } from '@/components/ServiceWorker'
 import { NavBar } from '@/components/layout/NavBar'
@@ -14,14 +14,12 @@ import { bannerBootstrap } from '@/lib/bannerDismiss'
 import { COMPACT_BOOTSTRAP } from '@/lib/compactMode'
 import { CURRENT_PATCH } from '@/lib/constants'
 
-// Cinzel for headings, Crimson Pro for reading, IBM Plex Mono for labels and
-// figures. next/font self-hosts them at build time (CSP: font-src 'self') with
-// font-display: swap and preloads the faces used above the fold. EB Garamond
-// is kept only for the home title, which is deliberately unchanged.
-const cinzel = Cinzel({ variable: '--font-cinzel', subsets: ['latin'], weight: ['500', '600', '700'], display: 'swap' })
-const crimson = Crimson_Pro({ variable: '--font-crimson', subsets: ['latin'], weight: ['400', '500', '600'], display: 'swap' })
-const plexMono = IBM_Plex_Mono({ variable: '--font-plex', subsets: ['latin'], weight: ['400', '500'], display: 'swap' })
+// EB Garamond for display (headings, grade, skill and resistance labels), Inter
+// for reading, Geist Mono for figures and micro labels. next/font self-hosts
+// them at build time (CSP: font-src 'self') with font-display: swap.
 const garamond = EB_Garamond({ variable: '--font-garamond', subsets: ['latin'], weight: ['500', '600', '700'], display: 'swap' })
+const inter = Inter({ variable: '--font-inter', subsets: ['latin'], weight: ['400', '500', '600'], display: 'swap' })
+const geistMono = Geist_Mono({ variable: '--font-geist-mono', subsets: ['latin'], weight: ['400', '500'], display: 'swap' })
 
 const basePath = process.env.NEXT_PUBLIC_BASE_PATH ?? ''
 
@@ -62,7 +60,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${cinzel.variable} ${crimson.variable} ${plexMono.variable} ${garamond.variable}`} suppressHydrationWarning>
+    <html lang="en" className={`${garamond.variable} ${inter.variable} ${geistMono.variable}`} suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: bannerBootstrap(CURRENT_PATCH) }} />
         <script dangerouslySetInnerHTML={{ __html: COMPACT_BOOTSTRAP }} />

@@ -52,7 +52,7 @@ test('the section index highlights the section being read', async ({ page }) => 
   await expect(page.locator('#what-if')).toBeVisible({ timeout: 30_000 })
   const nav = page.getByRole('navigation', { name: 'On this page' })
   await nav.getByRole('link', { name: 'Findings' }).click()
-  await expect(nav.getByRole('link', { name: 'Findings' })).toHaveAttribute('aria-current', 'location')
+  await expect(nav.getByRole('link', { name: 'Findings' })).toHaveAttribute('aria-current', 'true')
 })
 
 test('nav links and buttons are at least 44px tall', async ({ page }) => {

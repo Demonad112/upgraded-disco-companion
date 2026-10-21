@@ -21,8 +21,8 @@ test('the Progress panel charts each figure across imports', async ({ page }) =>
   await page.reload()
   await expect(page.getByRole('heading', { name: /Athrynas/ }).first()).toBeVisible({ timeout: 30_000 })
 
-  const panel = page.locator('details#progress')
-  await panel.locator('summary').click()
+  const panel = page.locator('details#progress-history')
+  await panel.locator('summary').first().click()
   const chart = panel.getByRole('img', { name: /Trends across 3 imports/ })
   await expect(chart).toBeVisible()
   await expect(chart.locator('li')).toHaveCount(4)
