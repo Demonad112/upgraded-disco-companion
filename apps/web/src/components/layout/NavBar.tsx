@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { ThemeToggle } from "@/components/ThemeToggle";
 import { usePathname } from "next/navigation";
 import { useSyncExternalStore, type ReactNode } from "react";
 import { OPEN_SEARCH_EVENT } from "./CommandPalette";
@@ -86,70 +85,58 @@ export function NavBar() {
   const shortcut = useShortcutLabel();
 
   return (
-    <nav className="gilt-nav sticky top-0 z-20 flex h-[var(--nav-h)] items-center gap-1 bg-[var(--page)]/80 px-2 backdrop-blur-xl sm:px-4">
-      <Link href="/" aria-label="PoE2 Endgame Companion" className="mr-1 flex shrink-0 items-center gap-2 sm:mr-2 lg:mr-5">
-        <svg viewBox="0 0 24 24" className="size-8 shrink-0" fill="none">
-          <path
-            d="M12 2 L20 12 L12 22 L4 12 Z"
-            stroke="var(--accent)"
-            strokeWidth="1.5"
-            fill="var(--accent-soft)"
-          />
-          <path d="M12 6 L16 12 L12 18 L8 12 Z" fill="var(--accent)" opacity="0.8" />
-        </svg>
-        {/* Full wordmark only where there's room for it alongside the nav —
-            below lg the links themselves take priority. */}
-        <span className="font-display text-gradient-gold hidden text-[15px] font-bold tracking-[0.06em] uppercase lg:inline">
-          PoE2 Endgame Companion
-        </span>
-      </Link>
-      <div className="flex gap-1">
-        {LINKS.map((link) => {
-          const active = pathname?.startsWith(link.href);
-          return (
-            <Link
-              key={link.href}
-              href={link.href}
-              // Labels are hidden on small screens (four of them plus the
-              // wordmark overflowed a 390px viewport and forced the whole
-              // document to scroll sideways); the icon carries the meaning,
-              // with the label exposed to assistive tech and tooltips.
-              aria-label={link.label}
-              title={link.label}
-              // Taller hit area on touch screens; unchanged on desktop.
-              aria-current={active ? "page" : undefined}
-              className={`relative flex items-center gap-1.5 rounded-md px-2.5 text-sm font-medium transition-colors sm:px-3 ${
-                active
-                  ? "bg-accent-soft text-ink after:absolute after:inset-x-3 after:bottom-1 after:h-0.5 after:bg-accent [&_svg]:text-accent"
-                  : "text-ink-mute hover:bg-surface-raised hover:text-ink"
-              }`}
-            >
-              {link.icon}
-              <span className="hidden sm:inline">{link.label}</span>
-            </Link>
-          );
-        })}
+    <nav className="site-nav" aria-label="Primary">
+      <div className="shell flex flex-wrap items-center gap-x-1 gap-y-1 py-2">
+        <Link href="/" aria-label="PoE2 Endgame Companion" className="mr-2 flex shrink-0 items-center gap-2 sm:mr-4">
+          <svg viewBox="0 0 24 24" className="size-8 shrink-0" fill="none" aria-hidden>
+            <path d="M12 2 L20 12 L12 22 L4 12 Z" stroke="var(--accent)" strokeWidth="1.5" fill="var(--accent-soft)" />
+            <path d="M12 6 L16 12 L12 18 L8 12 Z" fill="var(--accent)" opacity="0.8" />
+          </svg>
+          <span className="font-display text-gradient-gold hidden text-[15px] font-bold uppercase sm:inline">
+            PoE2 Endgame Companion
+          </span>
+        </Link>
+        {/* Links wrap onto their own row on phones instead of squeezing. */}
+        <div className="order-last flex w-full flex-wrap gap-x-1 sm:order-none sm:w-auto">
+          {LINKS.map((link) => {
+            const active = pathname?.startsWith(link.href);
+            return (
+              <Link
+                key={link.href}
+                href={link.href}
+                aria-current={active ? "page" : undefined}
+                className={`relative flex items-center gap-1.5 px-2.5 text-sm max-sm:[&_svg]:hidden font-medium transition-colors sm:px-3 ${
+                  active
+                    ? "text-ink after:absolute after:inset-x-2.5 after:bottom-1.5 after:h-0.5 after:bg-accent [&_svg]:text-accent"
+                    : "text-ink-mute hover:text-ink"
+                }`}
+              >
+                {link.icon}
+                <span>{link.label}</span>
+              </Link>
+            );
+          })}
+        </div>
+        <button
+          onClick={() => window.dispatchEvent(new Event(OPEN_SEARCH_EVENT))}
+          // Warm the lazily loaded dialog before the click lands.
+          onPointerEnter={() => void import("./SearchDialog")}
+          onFocus={() => void import("./SearchDialog")}
+          aria-label="Search"
+          className="nav-search ml-auto flex min-w-[var(--tap-min)] shrink-0 items-center justify-center gap-2 rounded-md border border-line bg-surface-sunken/60 px-2.5 text-xs text-ink-mute transition-colors hover:border-accent hover:text-ink"
+        >
+          <svg viewBox="0 0 20 20" fill="none" className="size-3.5" aria-hidden>
+            <circle cx="8.5" cy="8.5" r="5.5" stroke="currentColor" strokeWidth="1.5" />
+            <path d="M16 16l-3.5-3.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+          </svg>
+          <span className="hidden sm:inline">Search</span>
+          {/* Keyboard hint is noise on touch devices. */}
+          <kbd className="hidden rounded border border-line px-1 py-0.5 font-mono text-[10px] text-ink-mute sm:inline">
+            {shortcut}
+          </kbd>
+        </button>
+        <NavMenu />
       </div>
-      <button
-        onClick={() => window.dispatchEvent(new Event(OPEN_SEARCH_EVENT))}
-        // Warm the lazily loaded dialog before the click lands.
-        onPointerEnter={() => void import("./SearchDialog")}
-        onFocus={() => void import("./SearchDialog")}
-        aria-label="Search"
-        className="nav-search ml-auto flex shrink-0 items-center gap-2 rounded-md border border-line bg-surface-sunken/60 min-w-[var(--tap-min)] justify-center px-2.5 text-xs text-ink-mute transition-colors hover:border-line-strong hover:text-ink-dim"
-      >
-        <svg viewBox="0 0 20 20" fill="none" className="size-3.5">
-          <circle cx="8.5" cy="8.5" r="5.5" stroke="currentColor" strokeWidth="1.5" />
-          <path d="M16 16l-3.5-3.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-        </svg>
-        <span className="hidden sm:inline">Search</span>
-        {/* Keyboard hint is noise on touch devices. */}
-        <kbd className="hidden rounded border border-line px-1 py-0.5 font-mono text-[10px] text-ink-mute sm:inline">
-          {shortcut}
-        </kbd>
-      </button>
-      <ThemeToggle />
-      <NavMenu />
     </nav>
   );
 }

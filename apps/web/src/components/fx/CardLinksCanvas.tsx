@@ -31,12 +31,12 @@ function link(a: Box, b: Box): [number, number, number, number] | null {
 }
 
 /**
- * Dashed 1px accent lines with small dot nodes linking neighbouring cards
- * across the gaps. Boxes are measured relative to #fx-root.
+ * "Threads": short solid 1px accent lines with small ringed nodes linking
+ * neighbouring cards across the gaps, so the cards read as nodes in one graph.
+ * Boxes are measured relative to #fx-root.
  */
 export function CardLinksCanvas() {
-  const ref = useCanvas((ctx, w, _h, root) => {
-    void w
+  const ref = useCanvas((ctx, _w, _h, root) => {
     const origin = root.getBoundingClientRect()
     const boxes: Box[] = Array.from(root.querySelectorAll<HTMLElement>('main .card'))
       .filter((el) => !el.closest('[data-no-links]') && el.offsetParent !== null)
@@ -44,33 +44,36 @@ export function CardLinksCanvas() {
         const r = el.getBoundingClientRect()
         return { x: r.left - origin.left, y: r.top - origin.top, w: r.width, h: r.height }
       })
-    const accent = cssColor('--accent', '#e0b24f')
-    const strength = cssNumber('--line-strength', 0.68)
+    const accent = cssColor('--accent')
+    const page = cssColor('--page')
+    const strength = cssNumber('--line-strength', 0.44)
     ctx.strokeStyle = accent
-    ctx.fillStyle = accent
+    ctx.fillStyle = page
     ctx.lineWidth = 1
-    ctx.setLineDash([4, 4])
-    ctx.globalAlpha = 0.55 * strength
-    const dots: [number, number][] = []
+    const segs: [number, number, number, number][] = []
     for (let i = 0; i < boxes.length; i++) {
       for (let j = i + 1; j < boxes.length; j++) {
         const seg = link(boxes[i], boxes[j])
-        if (!seg) continue
-        ctx.beginPath()
-        ctx.moveTo(seg[0], seg[1])
-        ctx.lineTo(seg[2], seg[3])
-        ctx.stroke()
-        dots.push([seg[0], seg[1]], [seg[2], seg[3]])
+        if (seg) segs.push(seg)
       }
     }
-    ctx.setLineDash([])
-    ctx.globalAlpha = 0.9
-    for (const [x, y] of dots) {
+    ctx.globalAlpha = Math.min(1, 1.4 * strength + 0.25)
+    for (const [x1, y1, x2, y2] of segs) {
       ctx.beginPath()
-      ctx.arc(x, y, 2.5, 0, Math.PI * 2)
-      ctx.fill()
+      ctx.moveTo(x1, y1)
+      ctx.lineTo(x2, y2)
+      ctx.stroke()
     }
+    // Ringed nodes where a thread meets a card: page-coloured centre, accent ring.
     ctx.globalAlpha = 1
+    for (const [x1, y1, x2, y2] of segs) {
+      for (const [x, y] of [[x1, y1], [x2, y2]]) {
+        ctx.beginPath()
+        ctx.arc(x, y, 3.5, 0, Math.PI * 2)
+        ctx.fill()
+        ctx.stroke()
+      }
+    }
   }, FX_LINKS_EVENT)
 
   // Cards load and resize after route paint (progress state hydrates); redraw
@@ -83,7 +86,8 @@ export function CardLinksCanvas() {
     const ro = new ResizeObserver(kick)
     ro.observe(main)
     const mo = new MutationObserver(kick)
-    mo.observe(main, { childList: true, subtree: true })
+    // Cards showing or hiding (tabs, disclosure, conditional panels).
+    mo.observe(main, { childList: true, subtree: true, attributes: true, attributeFilter: ['class', 'hidden', 'style', 'open'] })
     return () => {
       ro.disconnect()
       mo.disconnect()

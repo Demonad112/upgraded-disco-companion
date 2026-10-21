@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * One roadmap step, collapsed to a single line until opened: checkbox, title,
+ * One roadmap step, collapsed to a single line until opened: round marker, title,
  * and what's inside (action items done, warnings, a benchmark gate). The next
  * step to do opens by default; a completed step closes itself.
  *
@@ -11,6 +11,7 @@
  */
 
 import type { BenchmarkGate as BenchmarkGateType, RoadmapStep } from "@/lib/types";
+import { CircleToggle } from "@/components/shared/CircleToggle";
 import { BenchmarkGate } from "@/components/shared/BenchmarkGate";
 import { SourceFlag } from "@/components/shared/SourceFlag";
 import { actionItemKey, useChecklistState } from "@/hooks/useChecklistState";
@@ -37,12 +38,11 @@ export function ChecklistStep({
   return (
     <li className="relative">
       {/* A sibling of <details>, not a child of <summary>: interactive content inside a summary is invalid (axe nested-interactive). */}
-      <input
-        type="checkbox"
-        checked={complete}
-        onChange={() => toggleStep(step.id)}
-        aria-label={`Done: ${step.title}`}
-        className="absolute top-[0.9rem] left-3 z-[1] size-4"
+      <CircleToggle
+        done={complete}
+        onToggle={() => toggleStep(step.id)}
+        label={`Done: ${step.title}`}
+        className="absolute top-[0.9rem] left-3 z-[1]"
       />
       <details
         id={step.id}
@@ -51,7 +51,7 @@ export function ChecklistStep({
           complete
             ? "border-good/25 bg-good/[0.04]"
             : isNext
-              ? "border-accent-line bg-surface-raised shadow-[var(--lift)]"
+              ? "border-accent bg-surface-raised shadow-[var(--lift)]"
               : "border-line bg-surface-raised shadow-[var(--lift)] hover:border-line-strong"
         }`}
       >
@@ -115,15 +115,9 @@ export function ChecklistStep({
                 const done = isActionItemComplete(key);
                 return (
                   <li key={key}>
-                    <label className="flex cursor-pointer items-start gap-2 text-sm">
-                      <input
-                        type="checkbox"
-                        checked={done}
-                        onChange={() => toggleActionItem(key)}
-                        className="mt-0.5 size-3.5 shrink-0"
-                      />
+                    <CircleToggle done={done} onToggle={() => toggleActionItem(key)} className="text-sm">
                       <span className={done ? "text-ink-mute line-through" : "text-ink-dim"}>{item}</span>
-                    </label>
+                    </CircleToggle>
                   </li>
                 );
               })}

@@ -1,12 +1,12 @@
 @import 'tailwindcss';
 
 /*
- * Dark-first. The viewer's theme toggle stamps data-theme on the root and must
- * win over the OS preference in both directions.
+ * Dark only. Every colour, font, radius, blur and opacity of the restyle is
+ * defined once in the token blocks below; components read the variables.
  *
  * Damage-type colours are NOT decorative — they were validated with the dataviz
- * palette validator against both surfaces (all six checks pass; see
- * DESIGN.md). Do not hand-tweak them without re-running the validator.
+ * palette validator against both surfaces (see DESIGN.md). Do not hand-tweak
+ * them without re-running the validator.
  */
 
 @theme inline {
@@ -34,165 +34,52 @@
   --color-lightning: var(--dmg-lightning);
   --color-chaos: var(--dmg-chaos);
 
-  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
-  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
-  --font-display: var(--font-garamond), ui-serif, Georgia, serif;
+  --font-sans: var(--font-body);
+  --font-mono: var(--font-label);
+  --font-display: var(--font-heading);
+
+  /* Buttons and chips (rounded-md) use the button radius; panels the card's. */
+  --radius-md: var(--btn-radius);
+  --radius-lg: var(--card-radius);
+  --radius-xl: var(--card-radius);
 }
 
 :root {
   color-scheme: dark;
 
-  /* Warm charcoal, stepped far enough apart that a card reads as raised off
-     the page and a well reads as cut into the card. */
+  /* Palette */
   --page: #08080a;
-  --surface: #0d0d10;
-  --surface-raised: #151519;
-  --surface-sunken: #09090b;
-  --surface-overlay: #1c1b21;
-  --line: #27262c;
-  --line-strong: #36343c;
-  --ink: #f3eee4;
-  --ink-dim: #b1aca3;
-  --ink-mute: #8f897f;
-  --accent: #e3b341;
+  --surface: #111114;
+  --surface-raised: #19191d;
+  --surface-sunken: color-mix(in srgb, var(--page) 55%, var(--surface));
+  --surface-overlay: var(--surface-raised);
+  --border: #2b2a2e;
+  --ink: #efe9da;
+  --accent: #e0b24f;
   --on-accent: #1b1204;
-  --accent-dim: #8a6d22;
-  --accent-soft: rgb(227 179 65 / 0.1);
-  --accent-line: rgb(227 179 65 / 0.35);
-  /* Home hero: the art is dark, so a light page shows less of it and no black scrim. */
-  --hero-image-opacity: 0.55;
-  --hero-scrim: rgb(0 0 0 / 0.1);
-
+  --good: #5bbf86;
+  --warn: #e0b04a;
   --danger: #e66767;
-  --warn: #c98500;
-  --good: #199e70;
 
-  /* Validated dark steps — dataviz validator, surface #1a1a19, ALL CHECKS PASS */
+  /* High contrast: muted text sits at 82% of the text colour over the page,
+     and borders are 55% border / 45% text, so small copy and hairlines stay
+     readable on the frosted cards. (The #9a968c muted grey of the brief is
+     what these replace.) */
+  --ink-mute: color-mix(in srgb, var(--ink) 82%, var(--page));
+  --ink-dim: color-mix(in srgb, var(--ink) 92%, var(--page));
+  --line: color-mix(in srgb, var(--border) 55%, var(--ink));
+  --line-strong: color-mix(in srgb, var(--border) 40%, var(--ink));
+
+  --accent-dim: color-mix(in srgb, var(--accent) 55%, var(--page));
+  --accent-soft: color-mix(in srgb, var(--accent) 10%, transparent);
+  --accent-line: color-mix(in srgb, var(--accent) 35%, transparent);
+
+  /* Validated dark steps — dataviz validator, ALL CHECKS PASS */
   --dmg-physical: #199e70;
   --dmg-fire: #d95926;
   --dmg-cold: #3987e5;
   --dmg-lightning: #c98500;
   --dmg-chaos: #9085e9;
-}
-
-@media (prefers-color-scheme: light) {
-  :root:where(:not([data-theme='dark'])) {
-    color-scheme: light;
-
-    --page: #f1eee6;
-    --on-accent: #fff8e6;
-    --surface: #f7f5f0;
-    --surface-raised: #ffffff;
-    --surface-sunken: #efece5;
-    --surface-overlay: #faf8f3;
-    --line: #e0dbd0;
-    --line-strong: #cbc4b5;
-    --ink: #16161a;
-    --ink-dim: #4d4b47;
-    --ink-mute: #67645d;
-    --accent: #86650e;
-    --accent-dim: #d8c48a;
-    --accent-soft: rgb(154 116 18 / 0.09);
-    --accent-line: rgb(154 116 18 / 0.32);
-    --hero-image-opacity: 0.2;
-    --hero-scrim: transparent;
-
-    --danger: #c4302f;
-    --warn: #8a5c00;
-    --good: #10704e;
-
-    /* Validated light steps — surface #fcfcfb. Contrast WARN on aqua/yellow is
-       relieved by the direct labels shipped on every damage-split bar. */
-    --dmg-physical: #1baf7a;
-    --dmg-fire: #eb6834;
-    --dmg-cold: #2a78d6;
-    --dmg-lightning: #eda100;
-    --dmg-chaos: #4a3aa7;
-  }
-}
-
-:root[data-theme='light'] {
-  color-scheme: light;
-
-  --page: #f1eee6;
-  --on-accent: #fff8e6;
-  --surface: #f7f5f0;
-  --surface-raised: #ffffff;
-  --surface-sunken: #efece5;
-  --surface-overlay: #faf8f3;
-  --line: #e0dbd0;
-  --line-strong: #cbc4b5;
-  --ink: #16161a;
-  --ink-dim: #4d4b47;
-  --ink-mute: #67645d;
-  --accent: #86650e;
-  --accent-dim: #d8c48a;
-  --accent-soft: rgb(154 116 18 / 0.09);
-  --accent-line: rgb(154 116 18 / 0.32);
-  --hero-image-opacity: 0.2;
-  --hero-scrim: transparent;
-
-  --danger: #c4302f;
-  --warn: #8a5c00;
-  --good: #10704e;
-
-  --dmg-physical: #1baf7a;
-  --dmg-fire: #eb6834;
-  --dmg-cold: #2a78d6;
-  --dmg-lightning: #eda100;
-  --dmg-chaos: #4a3aa7;
-}
-
-/*
- * Elevation shadows.
- *
- * Defined once here rather than inline because they must differ per surface: a
- * black-alpha shadow that reads as depth on the dark surface is invisible on
- * the light one, and a shadow strong enough for light looks like a smear on
- * dark. Consumers reference --lift / --lift-raised and get the right one.
- */
-:root {
-  /* The inset top highlight is what makes a card read as bevelled rather than
-     outlined on a dark surface. */
-  --card-highlight: inset 0 1px 0 rgb(255 255 255 / 0.045);
-  --lift: var(--card-highlight), 0 1px 2px rgb(0 0 0 / 0.45), 0 8px 24px -12px rgb(0 0 0 / 0.6);
-  --lift-raised: var(--card-highlight), 0 2px 4px rgb(0 0 0 / 0.4), 0 16px 40px -14px rgb(0 0 0 / 0.75);
-}
-
-@media (prefers-color-scheme: light) {
-  :root:where(:not([data-theme='dark'])) {
-    --card-highlight: inset 0 1px 0 rgb(255 255 255 / 0.7);
-    --lift: var(--card-highlight), 0 1px 2px rgb(40 30 10 / 0.06), 0 6px 18px -10px rgb(40 30 10 / 0.12);
-    --lift-raised: var(--card-highlight), 0 2px 4px rgb(40 30 10 / 0.07), 0 14px 32px -14px rgb(40 30 10 / 0.18);
-  }
-}
-
-:root[data-theme='light'] {
-  --card-highlight: inset 0 1px 0 rgb(255 255 255 / 0.7);
-  --lift: var(--card-highlight), 0 1px 2px rgb(40 30 10 / 0.06), 0 6px 18px -10px rgb(40 30 10 / 0.12);
-  --lift-raised: var(--card-highlight), 0 2px 4px rgb(40 30 10 / 0.07), 0 14px 32px -14px rgb(40 30 10 / 0.18);
-}
-
-/*
- * Look tokens — the single place the restyle's colours, fonts, card fill,
- * blur, radius, spacing and grain are defined. Everything else reads these.
- */
-:root {
-  --font-heading: var(--font-garamond), ui-serif, Georgia, serif;
-  --font-body: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
-  --font-label: var(--font-geist-mono), ui-monospace, monospace;
-  --font-size-base: 15px;
-  --lh-body: 1.6;
-  --heading-scale: 1;
-
-  --card-opacity: 18%;
-  --card-blur: 9px;
-  --card-radius: 12px; /* 3px index-card radius + 9px */
-  --card-border: 1px;
-  --card-rule: 2px;
-  --space-scale: 0.85;
-  --tap-min: 44px;
-  --nav-h: 4rem;
 
   /* Gold surfaces: accent +14% light at the top, accent, accent -18% at the bottom. */
   --gold-top: color-mix(in srgb, var(--accent) 86%, white);
@@ -200,9 +87,45 @@
   --gold-bot: color-mix(in srgb, var(--accent) 82%, black);
   --gold-gradient: linear-gradient(180deg, var(--gold-top) 0%, var(--gold-mid) 50%, var(--gold-bot) 100%);
 
+  /* Frost cards */
+  --card-opacity: 15%;
+  --card-blur: 9px;
+  --card-radius: calc(18px - 3px);
+  --btn-radius: 9px;
+  --card-edge: color-mix(in srgb, var(--ink) 14%, transparent);
+  --card-sheen: color-mix(in srgb, white 9%, transparent);
+  --card-highlight: inset 0 1px 0 color-mix(in srgb, white 12%, transparent);
+  --card-shadow: 0 10px 28px -14px color-mix(in srgb, black 60%, transparent);
+  --lift: var(--card-highlight), var(--card-shadow);
+  --lift-raised: var(--card-highlight), 0 16px 40px -14px color-mix(in srgb, black 75%, transparent);
+  --lift-distance: 3px;
+
+  /* Type */
+  --font-heading: var(--font-cinzel), ui-serif, Georgia, serif;
+  --font-body: var(--font-crimson), ui-serif, Georgia, serif;
+  --font-label: var(--font-plex), ui-monospace, monospace;
+  --font-size-base: 17.3px;
+  --lh-body: 1.46;
+  --heading-tracking: 0.05em;
+
+  /* Layout */
+  --space-scale: 0.96;
+  --page-max: 1240px;
+  --gutter: clamp(1rem, 4vw, 2rem);
+  --tap-min: 44px;
+  --nav-h: 4rem;
+  --focus-ring: 2px solid var(--accent);
+
+  /* Canvases */
+  --constellation-density: 0.64;
+  --line-strength: 0.44;
   --grain-opacity: 0.07;
-  --constellation-density: 0.72;
-  --line-strength: 0.68;
+
+  /* The home title is fixed at its pre-restyle look (Garamond, these two
+     colours) and must not follow the palette above. */
+  --hero-title-font: var(--font-garamond), ui-serif, Georgia, serif;
+  --hero-title-ink: #f3eee4;
+  --hero-title-gold: #e3b341;
 }
 
 html {
@@ -220,7 +143,6 @@ body {
   font-size: var(--font-size-base);
   line-height: var(--lh-body);
   -webkit-font-smoothing: antialiased;
-  font-feature-settings: 'cv11', 'ss01';
   /* Wide content scrolls inside its own container; the page never does. */
   overflow-x: hidden;
 }
@@ -244,16 +166,34 @@ h3,
 h4 {
   font-family: var(--font-heading);
   font-weight: 600;
-  letter-spacing: 0;
-  text-transform: none;
+  letter-spacing: var(--heading-tracking);
+  text-transform: uppercase;
 }
 
-/* Labels and figures */
+/* The home title keeps its pre-restyle font and colours (see --hero-title-*). */
+h1.hero-title {
+  font-family: var(--hero-title-font);
+  letter-spacing: normal;
+  text-transform: none;
+  color: var(--hero-title-ink);
+}
+h1.hero-title .text-gradient-gold {
+  background: linear-gradient(180deg, #f6dc92 0%, var(--hero-title-gold) 55%, #b98a24 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+h1.hero-title .hero-title-ink {
+  color: var(--hero-title-ink);
+}
+
+/* Labels and figures: IBM Plex Mono with tabular figures. */
 kbd,
 code,
 .tabular,
 .font-mono {
   font-family: var(--font-label);
+  font-variant-numeric: tabular-nums;
 }
 
 ::selection {
@@ -261,7 +201,7 @@ code,
 }
 
 :focus-visible {
-  outline: 2px solid var(--accent);
+  outline: var(--focus-ring);
   outline-offset: 2px;
   border-radius: 3px;
 }
@@ -298,13 +238,21 @@ code,
   animation: shimmer 1.6s infinite;
 }
 
+/* Reduced motion: nothing lifts, pulses or shimmers. */
 @media (prefers-reduced-motion: reduce) {
   .skeleton::after {
     animation: none;
   }
+  .animate-pulse {
+    animation: none;
+  }
+  .card:hover {
+    transform: none;
+  }
   * {
     transition-duration: 0.01ms !important;
     animation-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }
 
@@ -312,51 +260,67 @@ code,
   font-variant-numeric: tabular-nums;
 }
 
+/* One page width for header, banner, main and footer. */
+.shell {
+  width: 100%;
+  max-width: var(--page-max);
+  margin-inline: auto;
+  padding-inline: var(--gutter);
+}
+
 /* --- Shared finishes ------------------------------------------------------
    In the components layer so Tailwind utilities on the same element (a gold
    border, a text colour) still win over them. */
 @layer components {
-  /* Index card: flat translucent fill, hairline border, 2px gold rule across
-     the top edge. The page canvas shows through the fill. */
+  /* Frost card: heavily blurred glass, a diagonal white sheen from the
+     top-left, an inner top highlight, a faint light edge. No gold edge. */
   .card {
     position: relative;
-    border: var(--card-border) solid var(--line);
-    border-top: var(--card-rule) solid var(--accent);
+    isolation: isolate;
+    border: 1px solid var(--card-edge);
     border-radius: var(--card-radius);
     background: color-mix(in srgb, var(--surface) var(--card-opacity), transparent);
     -webkit-backdrop-filter: blur(var(--card-blur));
     backdrop-filter: blur(var(--card-blur));
-    box-shadow: 0 1px 2px rgb(0 0 0 / 0.35), 0 10px 28px -14px rgb(0 0 0 / 0.55);
+    box-shadow: var(--card-highlight), var(--card-shadow);
     transition:
       transform 0.18s ease,
       border-color 0.18s ease,
       box-shadow 0.18s ease;
   }
+  .card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    border-radius: inherit;
+    pointer-events: none;
+    background: linear-gradient(135deg, var(--card-sheen) 0%, transparent 45%);
+  }
   .card:hover {
-    transform: translateY(-3px);
+    transform: translateY(calc(-1 * var(--lift-distance)));
     border-color: var(--accent);
   }
-  /* A card that holds a sticky map / wide scroller must not create a lifted
-     stacking surprise. */
+  /* A card that holds a sticky map / wide scroller or a dialog must not lift. */
   .card[data-no-lift]:hover {
     transform: none;
   }
 
-  /* Small uppercase section labels. */
+  /* Small mono labels. */
   .eyebrow {
+    font-family: var(--font-label);
     font-size: 11px;
-    font-weight: 600;
+    font-weight: 500;
     letter-spacing: 0.08em;
     text-transform: uppercase;
     color: var(--ink-mute);
-    word-spacing: 0.04em;
   }
 
   /* Display type: brand, page titles, the character name. Never data. */
   .font-display {
     font-family: var(--font-heading);
     font-weight: 600;
-    letter-spacing: 0.01em;
+    letter-spacing: var(--heading-tracking);
   }
 
   /* A gold hairline that fades out at both ends. */
@@ -367,22 +331,10 @@ code,
 
   /* Gold lettering for the brand and hero title. */
   .text-gradient-gold {
-    background: linear-gradient(180deg, #f6dc92 0%, var(--accent) 55%, #b98a24 100%);
+    background: linear-gradient(180deg, var(--gold-top) 0%, var(--accent) 55%, var(--gold-bot) 100%);
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
-  }
-  :root[data-theme='light'] .text-gradient-gold {
-    background: linear-gradient(180deg, #b58a1c, #7e5d0b);
-    -webkit-background-clip: text;
-    background-clip: text;
-  }
-  @media (prefers-color-scheme: light) {
-    :root:where(:not([data-theme='dark'])) .text-gradient-gold {
-      background: linear-gradient(180deg, #b58a1c, #7e5d0b);
-      -webkit-background-clip: text;
-      background-clip: text;
-    }
   }
 
   /* Gold surfaces: primary buttons, progress fills, the S-tier badge. */
@@ -391,8 +343,9 @@ code,
     color: var(--on-accent);
   }
 
-  /* Plain square checklist markers. */
-  input[type='checkbox'] {
+  /* Round checklist markers. */
+  input[type='checkbox'],
+  .mark {
     appearance: none;
     -webkit-appearance: none;
     display: inline-grid;
@@ -401,18 +354,22 @@ code,
     width: 1.1rem;
     height: 1.1rem;
     border: 1px solid var(--line-strong);
-    border-radius: 0;
+    border-radius: 50%;
     background: var(--surface-sunken);
     cursor: pointer;
   }
-  input[type='checkbox']:checked {
+  input[type='checkbox']:checked,
+  [aria-pressed='true'] > .mark,
+  .mark[aria-pressed='true'] {
     background: var(--gold-gradient);
     border-color: var(--accent);
   }
-  input[type='checkbox']:checked::after {
+  input[type='checkbox']:checked::after,
+  [aria-pressed='true'] > .mark::after,
+  .mark[aria-pressed='true']::after {
     content: '';
-    width: 0.55rem;
-    height: 0.3rem;
+    width: 0.5rem;
+    height: 0.28rem;
     border-left: 2px solid var(--on-accent);
     border-bottom: 2px solid var(--on-accent);
     transform: translateY(-1px) rotate(-45deg);
@@ -436,20 +393,16 @@ code,
     min-height: var(--tap-min);
   }
 
-  /* Header: taller bar closed by a 2px gold rule that fades at both ends. */
-  .gilt-nav {
-    position: sticky;
-    border-bottom: 0;
+  /* Header: a transparent bar, no border. */
+  .site-nav a,
+  .patch-banner p {
+    text-shadow: 0 0 6px var(--page), 0 0 2px var(--page);
   }
-  .gilt-nav::after {
-    content: '';
-    position: absolute;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    height: 2px;
-    background: linear-gradient(90deg, transparent, var(--gold-top), var(--gold-mid) 50%, var(--gold-bot), transparent);
-    pointer-events: none;
+  .site-nav {
+    position: relative;
+    z-index: 20;
+    background: transparent;
+    border: 0;
   }
 
   /* Triad ornament under page titles. */
@@ -496,11 +449,55 @@ code,
     background: linear-gradient(180deg, var(--accent), transparent);
   }
 
+  /* Progress: a thin glowing gold line ending in a round bead. */
+  .glow-track {
+    position: relative;
+    height: 0.28em;
+    margin-inline: 0.5em;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--ink) 16%, transparent);
+  }
+  .glow-fill {
+    position: relative;
+    height: 100%;
+    border-radius: 999px;
+    background: var(--gold-gradient);
+    box-shadow: 0 0 0.6em color-mix(in srgb, var(--accent) 70%, transparent);
+    transition: width 0.5s ease-out;
+  }
+  .glow-bead {
+    position: absolute;
+    top: 50%;
+    right: 0;
+    width: 0.9em;
+    height: 0.9em;
+    border-radius: 50%;
+    transform: translate(50%, -50%);
+    background: var(--gold-gradient);
+    box-shadow: 0 0 0.8em color-mix(in srgb, var(--accent) 85%, transparent);
+  }
+
   /* Search / hash-jump highlight (class was set by HashHighlight but unstyled). */
   .search-highlight {
     outline: 2px solid var(--accent);
     outline-offset: 3px;
     background: var(--accent-soft);
+  }
+
+  /* In-page confirm. */
+  dialog.confirm {
+    margin: auto;
+    width: min(26rem, calc(100vw - 2rem));
+    padding: 1.5rem;
+    color: var(--ink);
+    background: var(--surface-raised);
+    border: 1px solid var(--line);
+    border-radius: var(--card-radius);
+    box-shadow: var(--lift-raised);
+  }
+  dialog.confirm::backdrop {
+    background: color-mix(in srgb, var(--page) 75%, transparent);
+    backdrop-filter: blur(var(--card-blur));
   }
 }
 
@@ -536,13 +533,13 @@ main [id] {
    A strip that scrolls sideways fades out at whichever edge has more to
    show. ScrollFade sets the attributes. */
 [data-scroll-fade][data-overflow-end] {
-  mask-image: linear-gradient(90deg, #000 calc(100% - 2rem), transparent);
+  mask-image: linear-gradient(90deg, black calc(100% - 2rem), transparent);
 }
 [data-scroll-fade][data-overflow-start] {
-  mask-image: linear-gradient(90deg, transparent, #000 2rem);
+  mask-image: linear-gradient(90deg, transparent, black 2rem);
 }
 [data-scroll-fade][data-overflow-start][data-overflow-end] {
-  mask-image: linear-gradient(90deg, transparent, #000 2rem, #000 calc(100% - 2rem), transparent);
+  mask-image: linear-gradient(90deg, transparent, black 2rem, black calc(100% - 2rem), transparent);
 }
 
 /* --- Compact second-monitor mode -------------------------------------------

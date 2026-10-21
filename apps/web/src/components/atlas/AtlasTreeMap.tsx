@@ -25,15 +25,15 @@ function readPalette(el: HTMLElement): AtlasPalette {
   const css = getComputedStyle(el)
   const v = (name: string, fallback: string) => css.getPropertyValue(name).trim() || fallback
   return {
-    edge: v('--line-strong', '#36343c'),
-    node: v('--ink-mute', '#8f897f'),
-    notable: v('--ink-dim', '#b1aca3'),
-    guide: v('--accent', '#e3b341'),
-    trap: v('--danger', '#e66767'),
-    allocated: v('--good', '#199e70'),
-    surface: v('--surface-sunken', '#09090b'),
-    text: v('--ink', '#f3eee4'),
-    focus: v('--accent', '#e3b341'),
+    edge: v('--line-strong', 'currentColor'),
+    node: v('--ink-mute', 'currentColor'),
+    notable: v('--ink-dim', 'currentColor'),
+    guide: v('--accent', 'currentColor'),
+    trap: v('--danger', 'currentColor'),
+    allocated: v('--good', 'currentColor'),
+    surface: v('--surface-sunken', 'currentColor'),
+    text: v('--ink', 'currentColor'),
+    focus: v('--accent', 'currentColor'),
     font: css.fontFamily || 'ui-sans-serif, system-ui, sans-serif',
   }
 }

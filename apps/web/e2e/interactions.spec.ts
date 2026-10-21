@@ -2,21 +2,6 @@ import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { expect, test } from './fixtures'
 
-test('the theme toggle cycles dark → light → system and survives a reload', async ({ page }) => {
-  await page.goto('')
-  const toggle = page.getByRole('button', { name: /Switch to/ })
-  const html = page.locator('html')
-  // Starts on system; one click is dark, the next light.
-  await toggle.click()
-  await expect(html).toHaveAttribute('data-theme', 'dark')
-  await toggle.click()
-  await expect(html).toHaveAttribute('data-theme', 'light')
-  await page.reload()
-  await expect(html).toHaveAttribute('data-theme', 'light')
-  await page.getByRole('button', { name: /Switch to/ }).click()
-  await expect(html).not.toHaveAttribute('data-theme', /.+/)
-})
-
 test('an Atlas "Map" button focuses that node on the tree', async ({ page }) => {
   await page.goto('atlas/')
   await page.getByRole('button', { name: 'Show Trapped Subordinate on the Atlas tree' }).click()
@@ -55,8 +40,10 @@ test('"Hide completed" hides a ticked step, and reset clears progress', async ({
   await page.getByLabel('Hide completed').check()
   await expect(step).toBeHidden()
 
-  page.once('dialog', (d) => void d.accept())
   await page.getByRole('button', { name: 'Reset all progress' }).click()
+  const confirm = page.getByRole('dialog', { name: /Reset all progress/ })
+  await expect(confirm).toContainText('1 completed step')
+  await confirm.getByRole('button', { name: 'Reset progress' }).click()
   await expect(page.getByText('Step 1 of 32 · 0 done')).toBeVisible()
 })
 

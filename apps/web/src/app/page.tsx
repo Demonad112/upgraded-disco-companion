@@ -1,18 +1,16 @@
-import Image from "next/image";
 import Link from "next/link";
 import { CURRENT_PATCH, LEAGUE_LABEL } from "@/lib/constants";
-import { BASE_PATH } from "@/lib/basePath";
 import { TIER_LIST_PATCH } from "@/data/strategies";
 import { ProgressSummary } from "@/components/home/ProgressSummary";
 import { NextStepCard } from "@/components/checklist/NextStepCard";
 import { CompactAlerts } from "@/components/compact/CompactAlerts";
+import { Triad } from "@/components/layout/Triad";
 import { LastCharacterCard } from "@/components/home/LastCharacterCard";
 import { progressTotals, stepSummaries } from "@/lib/stepSummary";
 
 const CARDS = [
   {
     href: "/checklist",
-    span: "lg:col-span-3",
     title: "Progression Checklist",
     description:
       "Step-by-step roadmap from campaign end to a juiced farm: Waystone planner, readiness check, Master and league quest chains, and the mistakes to avoid at each step.",
@@ -27,7 +25,6 @@ const CARDS = [
   },
   {
     href: "/atlas",
-    span: "lg:col-span-3",
     title: "Atlas Tree Planner",
     description:
       "Allocation order for early sustain, the trap nodes to skip (points can't be refunded), biome picks, memory forks and per-mechanic sub-trees.",
@@ -47,7 +44,6 @@ const CARDS = [
   },
   {
     href: "/dashboard",
-    span: "lg:col-span-2",
     title: "Farming Dashboard",
     description:
       `${TIER_LIST_PATCH} farming tier list, a quick strategy-picker quiz, pinnacle boss requirements, and current meta builds.`,
@@ -62,7 +58,6 @@ const CARDS = [
   },
   {
     href: "/character",
-    span: "lg:col-span-4",
     title: "Character Import",
     description:
       "Paste a poe.ninja profile URL to see your character's defenses, skills, and gear — parsed entirely in your browser.",
@@ -83,30 +78,20 @@ const CARDS = [
 export default function Home() {
   const totals = progressTotals();
   return (
-    // Bento on 6 columns: hero across the top, Up next (4) beside Progress (2),
-    // then four feature cards of different widths (3, 3, 2, 4).
-    <div className="home-bento grid grid-cols-1 gap-4 sm:grid-cols-6">
-      <section className="relative overflow-hidden sm:col-span-6" data-compact-hide>
-        <Image
-          src={`${BASE_PATH}/images/atlas-constant.webp`}
-          alt=""
-          aria-hidden
-          fill
-          priority
-          sizes="(min-width: 1152px) 1152px, 100vw"
-          className="object-cover"
-          style={{ objectPosition: "50% 38%", opacity: "var(--hero-image-opacity)" }}
-        />
-        <div className="absolute inset-0 bg-gradient-to-b from-[var(--hero-scrim)] via-[var(--page)]/70 to-[var(--page)]" />
-        <div className="hero-rule relative z-10 my-10 flex flex-col items-start gap-4 sm:my-16">
+    // 10-column grid: hero across the top; Up next (6) beside Progress (4), a
+    // 1.5 : 1 split; then the four tools as a 2x2 grid of equal cards (5 + 5).
+    <div className="home-bento grid grid-cols-1 gap-5 sm:grid-cols-10">
+      <section className="sm:col-span-10" data-compact-hide>
+        <div className="hero-rule flex flex-col items-start gap-3 py-2 sm:py-6">
           <span className="eyebrow text-[var(--accent)]">
             Patch {CURRENT_PATCH} · {LEAGUE_LABEL}
           </span>
-          <h1 className="font-display text-4xl font-bold tracking-[0.04em] text-balance uppercase sm:text-6xl">
+          <h1 className="hero-title font-display text-4xl font-bold tracking-[0.04em] text-balance uppercase sm:text-6xl">
             <span className="text-gradient-gold">Path of Exile 2</span>
             <br />
-            <span className="text-ink">Endgame Companion</span>
+            <span className="hero-title-ink text-ink">Endgame Companion</span>
           </h1>
+          <Triad />
           <p className="max-w-2xl text-lg text-ink-dim">
             A second-monitor guide for the {CURRENT_PATCH} endgame, built on what
             top creators teach: what to do next, which Waystones to run, which
@@ -115,16 +100,16 @@ export default function Home() {
         </div>
       </section>
 
-      <div className="flex min-w-0 flex-col gap-4 sm:col-span-6 lg:col-span-4" data-compact-keep>
+      <div className="flex min-w-0 flex-col gap-5 sm:col-span-10 lg:col-span-6 [&>section]:flex-1" data-compact-keep>
         <NextStepCard steps={stepSummaries()} />
         <div data-compact-hide>
           <LastCharacterCard />
         </div>
       </div>
-      <div className="min-w-0 sm:col-span-6 lg:col-span-2" data-compact-keep>
+      <div className="min-w-0 sm:col-span-10 lg:col-span-4" data-compact-keep>
         <ProgressSummary stepIds={totals.stepIds} atlasTotal={totals.atlasTotal} />
       </div>
-      <div className="sm:col-span-6">
+      <div className="sm:col-span-10">
         <CompactAlerts />
       </div>
 
@@ -134,20 +119,15 @@ export default function Home() {
           href={card.href}
           data-linkable
           data-compact-hide
-          className={`group card p-6 sm:col-span-3 ${card.span}`}
+          className="group card p-6 sm:col-span-5"
         >
-          <div className="mb-4 flex size-10 items-center justify-center border border-[var(--accent)]/30 bg-accent-soft text-[var(--accent)]">
-            <svg viewBox="0 0 24 24" fill="none" className="size-5">
+          <div className="mb-3 text-ink-mute">
+            <svg viewBox="0 0 24 24" fill="none" className="size-5" aria-hidden>
               {card.icon}
             </svg>
           </div>
-          <h2 className="flex items-center gap-1.5 font-semibold text-ink">
-            {card.title}
-            <span className="translate-x-0 text-[var(--accent)] opacity-0 transition-all duration-200 group-hover:translate-x-1 group-hover:opacity-100">
-              →
-            </span>
-          </h2>
-          <p className="mt-2 text-sm text-ink-mute">{card.description}</p>
+          <h2 className="text-base text-ink">{card.title}</h2>
+          <p className="mt-2 text-sm text-ink-dim">{card.description}</p>
         </Link>
       ))}
     </div>

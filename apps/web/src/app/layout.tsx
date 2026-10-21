@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from 'next'
-import { EB_Garamond, Geist_Mono, Inter } from 'next/font/google'
+import { Cinzel, Crimson_Pro, EB_Garamond, IBM_Plex_Mono } from 'next/font/google'
 import './globals.css'
 import { ServiceWorker } from '@/components/ServiceWorker'
 import { NavBar } from '@/components/layout/NavBar'
@@ -13,11 +13,14 @@ import { bannerBootstrap } from '@/lib/bannerDismiss'
 import { COMPACT_BOOTSTRAP } from '@/lib/compactMode'
 import { CURRENT_PATCH } from '@/lib/constants'
 
-// Inter for everything read, EB Garamond for display (brand, titles), Geist Mono
-// for figures. next/font self-hosts them at build time (CSP: font-src 'self').
-const inter = Inter({ variable: '--font-inter', subsets: ['latin'] })
-const geistMono = Geist_Mono({ variable: '--font-geist-mono', subsets: ['latin'], preload: false })
-const garamond = EB_Garamond({ variable: '--font-garamond', subsets: ['latin'], weight: ['500', '600', '700'] })
+// Cinzel for headings, Crimson Pro for reading, IBM Plex Mono for labels and
+// figures. next/font self-hosts them at build time (CSP: font-src 'self') with
+// font-display: swap and preloads the faces used above the fold. EB Garamond
+// is kept only for the home title, which is deliberately unchanged.
+const cinzel = Cinzel({ variable: '--font-cinzel', subsets: ['latin'], weight: ['500', '600', '700'], display: 'swap' })
+const crimson = Crimson_Pro({ variable: '--font-crimson', subsets: ['latin'], weight: ['400', '500', '600'], display: 'swap' })
+const plexMono = IBM_Plex_Mono({ variable: '--font-plex', subsets: ['latin'], weight: ['400', '500'], display: 'swap' })
+const garamond = EB_Garamond({ variable: '--font-garamond', subsets: ['latin'], weight: ['500', '600', '700'], display: 'swap' })
 
 const basePath = process.env.NEXT_PUBLIC_BASE_PATH ?? ''
 
@@ -49,29 +52,21 @@ export const metadata: Metadata = {
 }
 
 export const viewport: Viewport = {
-  themeColor: [
-    { media: '(prefers-color-scheme: dark)', color: '#08080a' },
-    { media: '(prefers-color-scheme: light)', color: '#f7f5f0' },
-  ],
+  themeColor: '#08080a',
+  colorScheme: 'dark',
   width: 'device-width',
   initialScale: 1,
   viewportFit: 'cover',
 }
 
-/**
- * Applied before paint so a stored light preference never flashes dark.
- */
-const THEME_BOOTSTRAP = `(function(){try{var t=localStorage.getItem('poe2-theme');if(t==='light'||t==='dark')document.documentElement.setAttribute('data-theme',t)}catch(e){}})()`
-
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${inter.variable} ${geistMono.variable} ${garamond.variable}`} suppressHydrationWarning>
+    <html lang="en" className={`${cinzel.variable} ${crimson.variable} ${plexMono.variable} ${garamond.variable}`} suppressHydrationWarning>
       <head>
-        <script dangerouslySetInnerHTML={{ __html: THEME_BOOTSTRAP }} />
         <script dangerouslySetInnerHTML={{ __html: bannerBootstrap(CURRENT_PATCH) }} />
         <script dangerouslySetInnerHTML={{ __html: COMPACT_BOOTSTRAP }} />
       </head>
-      <body className="font-sans antialiased">
+      <body className="antialiased">
         <ServiceWorker />
         <a
           href="#main"
@@ -83,19 +78,18 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             reads localStorage through useSyncExternalStore so a static export
             renders identically before and after hydration. */}
         <PersistedStateProvider>
-          <PatchVersionBanner />
-          <NavBar />
-          {/* One page container for every route. The analyser used to carry
-              its own, which is how two halves of a merged site end up at
-              different widths on the same viewport. */}
-          {/* The canvases sit behind the content inside this wrapper. */}
-          <div id="fx-root" className="relative isolate">
+          {/* One wrapper for the whole page, so the canvases behind it run the
+              full document height. Banner, header, main and footer share the
+              .shell width and side padding. */}
+          <div id="fx-root" className="relative isolate flex min-h-screen flex-col">
             <FxLayer />
-            <main id="main" className="relative mx-auto w-full max-w-6xl px-4 py-8 sm:px-6 sm:py-12">
+            <PatchVersionBanner />
+            <NavBar />
+            <main id="main" className="shell relative flex-1 py-8 sm:py-12">
               {children}
             </main>
+            <Footer />
           </div>
-          <Footer />
           <CommandPalette />
           <HashHighlight />
         </PersistedStateProvider>

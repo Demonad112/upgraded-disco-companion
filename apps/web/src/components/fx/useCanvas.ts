@@ -10,14 +10,15 @@ export function cssNumber(name: string, fallback: number): number {
   return Number.isFinite(n) ? n : fallback
 }
 
-export function cssColor(name: string, fallback: string): string {
+export function cssColor(name: string, fallback = ''): string {
   return getComputedStyle(document.documentElement).getPropertyValue(name).trim() || fallback
 }
 
 /**
  * Owns a full-size canvas inside #fx-root: sizes it for the device pixel
- * ratio and calls `draw` on mount, on resize, on route change and when the
- * theme attribute changes. Draws are coalesced to one per frame.
+ * ratio and calls `draw` on mount, on resize, on route change, when web fonts
+ * finish loading (text reflows) and when the compact attribute changes. Draws
+ * are coalesced to one per frame.
  */
 export function useCanvas(
   draw: (ctx: CanvasRenderingContext2D, w: number, h: number, root: HTMLElement) => void,
@@ -57,10 +58,15 @@ export function useCanvas(
     const ro = new ResizeObserver(schedule)
     ro.observe(root)
     const mo = new MutationObserver(schedule)
-    mo.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme', 'data-compact'] })
+    mo.observe(document.documentElement, { attributes: true, attributeFilter: ['data-compact'] })
     window.addEventListener('resize', schedule)
     if (extraEvent) window.addEventListener(extraEvent, schedule)
+    // Web fonts reflow text and move every card; redraw when they land.
+    const fonts = document.fonts
+    void fonts?.ready.then(schedule)
+    fonts?.addEventListener?.('loadingdone', schedule)
     return () => {
+      fonts?.removeEventListener?.('loadingdone', schedule)
       if (extraEvent) window.removeEventListener(extraEvent, schedule)
       if (frame) cancelAnimationFrame(frame)
       ro.disconnect()

@@ -37,7 +37,7 @@ function SplitBar({ skill }: { skill: SkillDamage }) {
             style={{
               width: `${s.percent}%`,
               background: DMG_VAR[s.type],
-              color: s.type === 'lightning' || s.type === 'physical' ? '#0b0b0d' : '#ffffff',
+              color: s.type === 'lightning' || s.type === 'physical' ? 'var(--page)' : 'var(--ink)',
             }}
           >
             {s.percent >= 12 ? `${s.percent}%` : ''}

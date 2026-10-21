@@ -21,7 +21,7 @@ export function StrategyCard({ strategy }: { strategy: FarmingStrategy }) {
       id={strategy.id}
       className={`scroll-mt-24 flex flex-col gap-2 rounded-lg border p-4 transition-all ${
         pinned
-          ? "border-[var(--accent)]/40 bg-accent-soft shadow-[0_0_16px_-4px_rgba(227,179,65,0.3)]"
+          ? "border-[var(--accent)]/40 bg-accent-soft shadow-[0_0_16px_-4px_color-mix(in_srgb,var(--accent)_30%,transparent)]"
           : "border-[var(--line)] bg-[var(--surface-raised)] shadow-[var(--lift)] hover:border-line-strong"
       }`}
     >

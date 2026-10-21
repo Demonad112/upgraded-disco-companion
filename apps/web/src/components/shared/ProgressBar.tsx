@@ -5,21 +5,27 @@ export function ProgressBar({
   percent: number;
   label?: string;
 }) {
-  const clamped = Math.min(100, Math.max(0, percent));
+  const clamped = Math.min(100, Math.max(0, Math.round(percent)));
 
   return (
     <div className="w-full">
       {label && (
-        <div className="mb-1.5 flex justify-between text-xs text-ink-mute">
+        <div className="mb-2 flex justify-between text-xs text-ink-mute">
           <span>{label}</span>
-          <span className="font-medium text-ink-dim">{clamped}%</span>
+          <span className="tabular font-medium text-ink">{clamped}%</span>
         </div>
       )}
-      <div className="h-2 w-full overflow-hidden bg-surface-sunken ring-1 ring-line">
-        <div
-          className="gold-surface h-full transition-all duration-500 ease-out"
-          style={{ width: `${clamped}%` }}
-        />
+      <div
+        className="glow-track"
+        role="progressbar"
+        aria-label={label ?? "Progress"}
+        aria-valuemin={0}
+        aria-valuemax={100}
+        aria-valuenow={clamped}
+      >
+        <div className="glow-fill" style={{ width: `${clamped}%` }}>
+          <span className="glow-bead" aria-hidden />
+        </div>
       </div>
     </div>
   );
