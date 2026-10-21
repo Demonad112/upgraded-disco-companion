@@ -71,7 +71,7 @@ function Card({ r, rank }: { r: Recommendation; rank: number }) {
   const axis = axisOf(r)
 
   return (
-    <li className="card rounded-xl p-4">
+    <li className="card flex flex-col">
       <div className="flex flex-wrap items-center gap-1.5">
         <span
           aria-label={isQuestion ? 'Question' : `Finding ${rank}`}
@@ -106,7 +106,7 @@ function Card({ r, rank }: { r: Recommendation; rank: number }) {
         </p>
       ) : null}
 
-      <div className="mt-2">
+      <div className="mt-auto pt-2">
         <button
           type="button"
           onClick={() => setOpen((v) => !v)}
@@ -138,7 +138,7 @@ export function Recommendations({ report }: { report: RecommendationReport }) {
     <section>
       <div className="mb-2 flex flex-wrap items-end justify-between gap-2">
         <div>
-          <h2 className="text-base font-semibold text-ink">Findings</h2>
+          <h2 className="h3">Findings</h2>
           <p className="mt-0.5 text-xs text-ink-dim">
             Ranked by gain per unit of cost. Every claim traces to data in the character payload.
           </p>
@@ -158,9 +158,9 @@ export function Recommendations({ report }: { report: RecommendationReport }) {
         </div>
       </div>
       {report.buildIsSound ? (
-        <p className="card rounded-xl px-4 py-5 text-sm leading-relaxed text-good">{report.summary}</p>
+        <p className="card px-4 py-5 text-sm leading-relaxed text-good">{report.summary}</p>
       ) : (
-        <ul className="grid gap-2.5 lg:grid-cols-2 lg:items-start">
+        <ul className="grid gap-2.5 lg:grid-cols-2 lg:items-stretch">
           {actionable.map((r, i) => (
             <Card key={r.id} r={r} rank={i + 1} />
           ))}
@@ -170,7 +170,7 @@ export function Recommendations({ report }: { report: RecommendationReport }) {
       {questions.length ? (
         <div className="mt-5">
           <h3 className="mb-2 text-xs font-medium tracking-wide text-ink-dim uppercase">Worth checking</h3>
-          <ul className="grid gap-2.5 lg:grid-cols-2 lg:items-start">
+          <ul className="grid gap-2.5 lg:grid-cols-2 lg:items-stretch">
             {questions.map((r) => (
               <Card key={r.id} r={r} rank={0} />
             ))}
@@ -179,7 +179,7 @@ export function Recommendations({ report }: { report: RecommendationReport }) {
       ) : null}
 
       {report.suppressed.length ? (
-        <div className="card mt-4 rounded-xl p-4">
+        <div className="card mt-4 p-4">
           <h3 className="text-xs font-medium tracking-wide text-ink-dim uppercase">Ruled out by a keystone</h3>
           <p className="mt-1 text-[11px] text-ink-mute">
             Findings the engine did spot and then withdrew. Shown rather than dropped — a finding that vanishes
@@ -202,7 +202,7 @@ export function Recommendations({ report }: { report: RecommendationReport }) {
       ) : null}
 
       {report.unresolved.length ? (
-        <div className="card mt-4 rounded-xl p-4">
+        <div className="card mt-4 p-4">
           <h3 className="text-xs font-medium tracking-wide text-ink-dim uppercase">Could not be determined</h3>
           <p className="mt-1 text-[11px] text-ink-mute">
             Stated rather than guessed — a wrong number is worse than a missing one.
