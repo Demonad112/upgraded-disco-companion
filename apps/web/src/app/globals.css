@@ -316,8 +316,8 @@ code,
     border-top: var(--block-border-top);
     padding: var(--card-pad);
     background: color-mix(in srgb, var(--surface) var(--glass-fill), transparent);
-    -webkit-backdrop-filter: blur(var(--glass-blur));
-    backdrop-filter: blur(var(--glass-blur));
+    /* G3 (shadow only): no backdrop-filter at all. Even blur(0) makes every
+       block its own compositor layer. */
     text-shadow: var(--halo);
     box-shadow: var(--card-highlight);
     transition:
@@ -343,9 +343,16 @@ code,
       linear-gradient(var(--accent), var(--accent)) right bottom / 1px 12px;
     background-repeat: no-repeat;
   }
-  .card:hover {
-    transform: translateY(calc(-1 * var(--lift-distance)));
-    border-color: var(--accent);
+  /* Hover feedback only on devices that hover (touch leaves it stuck on),
+     and never on collapsible cards: those go gold only while open. */
+  @media (hover: hover) {
+    .card:not(details):hover {
+      transform: translateY(calc(-1 * var(--lift-distance)));
+      border-color: var(--accent);
+    }
+  }
+  details.card[open] {
+    border-color: var(--accent-line);
   }
   /* A card that holds a sticky map / wide scroller or a dialog must not lift. */
   .card[data-no-lift]:hover {
@@ -527,8 +534,8 @@ code,
     position: relative;
     z-index: 20;
     background: color-mix(in srgb, var(--surface) var(--glass-fill), transparent);
-    -webkit-backdrop-filter: blur(var(--glass-blur));
-    backdrop-filter: blur(var(--glass-blur));
+    /* G3 (shadow only): no backdrop-filter at all. Even blur(0) makes every
+       block its own compositor layer. */
     text-shadow: var(--halo);
     border: 0;
   }
@@ -549,8 +556,8 @@ code,
   }
   footer {
     background: color-mix(in srgb, var(--surface) var(--glass-fill), transparent);
-    -webkit-backdrop-filter: blur(var(--glass-blur));
-    backdrop-filter: blur(var(--glass-blur));
+    /* G3 (shadow only): no backdrop-filter at all. Even blur(0) makes every
+       block its own compositor layer. */
     text-shadow: var(--halo);
   }
   .hero-rule {
