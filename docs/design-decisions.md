@@ -30,3 +30,4 @@ Source spec: *PoE2 Endgame Companion — Design System and Character Page Spec* 
 13. **Waystone chart.** Window of six waystones, default 11–16, y-scale `max(6, ceil(peak/6)*6)` taken from the data. Area level is shown as given by existing content analysis.
 14. **Expand all / Collapse all.** Scoped to the disclosures inside the section's own page body; the shared Accordion/PanelControls write `open` on nested details.
 15. **Narrow nav.** At ≤360 px the nav tap targets shrink to 34 px so 280 px windows do not scroll sideways (existing e2e).
+16. **Header at 721–1099 px.** The brand title now shows from 1100 px and the Search label/kbd from 1024 px, so the single-row nav fits at 768 px (it overflowed by 254 px in verification). Below 361 px without compact mode, the home page still scrolls 16 px at 280 px; compact mode (the existing e2e) is clean.
