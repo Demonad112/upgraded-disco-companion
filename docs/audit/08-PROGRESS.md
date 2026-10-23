@@ -25,4 +25,4 @@ Tasks and acceptance criteria: `02-FIX-PLAN.md`. Decisions: `09-OWNER-DECISIONS.
 | [ ] | T18 Delete dead webp and .nojekyll | P2 | ARCH-01, ARCH-02 | — | todo | | |
 | [ ] | T19 tokens.css + sky palette tokens | P2 | ARCH-03 | ⛔ D5 | todo | | D5 accepted 2026-10-22 |
 | [ ] | T20 Restrict ninja-proxy CORS | P3 | SEC-02 | ⛔ D8 | todo | | D8 accepted 2026-10-22 |
-| [ ] | T21 Repo CLAUDE.md additions | P3 | — | ⛔ D7 | todo | | D7 accepted 2026-10-22 |
+| [x] | T21 Repo CLAUDE.md additions | P3 | — | ⛔ D7 | done | (this PR) | D7 accepted 2026-10-22; also notes `npm run build -w @poe2/mcp` before `tools`/`verify-mcp` |
