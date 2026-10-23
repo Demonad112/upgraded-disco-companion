@@ -82,17 +82,17 @@ export default function Home() {
     // 1.5 : 1 split; then the four tools as a 2x2 grid of equal cards (5 + 5).
     <div className="home-bento grid grid-cols-1 gap-5 sm:grid-cols-10">
       <section className="sm:col-span-10" data-compact-hide>
-        <div className="hero-rule flex flex-col items-start gap-3 py-2 sm:py-6">
+        <div className="hero-rule flex flex-col items-center gap-3 py-2 sm:py-6">
           <span className="eyebrow text-[var(--accent)]">
             Patch {CURRENT_PATCH} · {LEAGUE_LABEL}
           </span>
-          <h1 className="hero-title font-display text-4xl font-bold tracking-[0.04em] text-balance uppercase sm:text-6xl">
+          <h1 className="hero-title font-display text-3xl font-bold text-balance uppercase sm:text-[44px] sm:leading-tight">
             <span className="text-gradient-gold">Path of Exile 2</span>
             <br />
             <span className="hero-title-ink text-ink">Endgame Companion</span>
           </h1>
           <Triad />
-          <p className="max-w-2xl text-lg text-ink-dim">
+          <p className="max-w-2xl text-base text-ink-dim sm:text-lg">
             A second-monitor guide for the {CURRENT_PATCH} endgame, built on what
             top creators teach: what to do next, which Waystones to run, which
             Atlas nodes to skip, and which farm to commit to.
