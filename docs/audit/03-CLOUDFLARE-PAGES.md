@@ -45,8 +45,8 @@
 4. **Custom-domain readiness.** Before attaching a domain: set `NEXT_PUBLIC_SITE_URL` (OG/canonical, `layout.tsx:28`),
    add the domain to the proxy CORS allowlist if T20 lands, and decide on HSTS `includeSubDomains` (D9). The CSP needs no change
    (`'self'`).
-5. **Node drift.** Local is Node 24.18.0, CI is 22, Pages is 22 per README. Behaviour matched in this audit, but run `nvm use`
-   locally.
+5. **Node drift.** Local is Node 24.18.0, CI is 22, Pages is 22 per README. Behaviour matched in this audit, but there is no nvm on this machine:
+   CI on Node 22 is the check for version-specific behaviour.
 
 ## Recommended build settings
 
