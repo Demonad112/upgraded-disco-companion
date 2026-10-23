@@ -27,6 +27,7 @@ npm test -w @poe2/core -- -t "<test name>"         # single test by name
 npm run test:coverage -w @poe2/core                # enforces 90% statements / 75% branches
 npm run e2e -w @poe2/web                           # Playwright smoke tests against apps/web/out (build first)
 
+npm run build -w @poe2/mcp                         # needed before the next two lines
 npm run tools -w @poe2/mcp                         # regenerate apps/mcp/TOOLS.md; CI fails if stale
 node scripts/verify-mcp.mjs                        # drive the built MCP binary over stdio
 
@@ -42,6 +43,19 @@ cd services/ninja-proxy && npm test                # node:test, separate from th
 - **`basePath`.** Applied only when `GITHUB_ACTIONS=true` (derived from `GITHUB_REPOSITORY`); empty locally and on Cloudflare Pages. Client code must read `BASE_PATH` from `apps/web/src/lib/basePath.ts`, because Next only inlines `NEXT_PUBLIC_*` env vars into client bundles.
 - **PoB (Path of Building) probes** under `packages/core/src/pob/` are interfaces only; nothing implements them. Results must pass the baseline gate before use.
 - Web state is client-side only (`localStorage`); reference content lives in hand-edited files in `apps/web/src/data/`.
+
+## Design (decided; change only with the owner)
+
+Dark palette; bold uppercase EB Garamond headings; square corners everywhere, no script fonts, no rounded shapes; gold constellation sky rotating slowly; clear-glass blocks; Threads-style tool cards; sky dimmed behind blocks with a footer toggle (`poe2-sky-dim`); lighter sky on phones (width-based); "Up next" block kept. Light theme and cursor effects are deferred.
+
+- Never restyle the live site directly. Design variants go on `variant/<yyyymmdd>-<slug>` branches and are reviewed on their Cloudflare Pages preview URL (`docs/audit/06-VARIANT-STRATEGY.md`).
+- Prefer the `:root` tokens in `apps/web/src/app/globals.css` over hex values in components.
+
+## Cloudflare Pages
+
+- Build `npm run build`, output `apps/web/out`, Node 22. No Functions or wrangler config; headers live in `apps/web/public/_headers`.
+- Local parity check: `npx wrangler@4 pages dev apps/web/out`.
+- Audit and fix tracker: `docs/audit/` (`08-PROGRESS.md`).
 
 ## Cloud sessions
 
