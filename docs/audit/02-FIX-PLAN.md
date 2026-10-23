@@ -194,7 +194,7 @@ T19 ⛔ ──► uses tokens; do after T05/T07 if those are approved
 ### T13 — Local static server matches Cloudflare for RSC segment files (DX-02)
 - Files: `apps/web/e2e/serve.mjs`, `README.md` (Development section).
 - Change: before `statSync`, rewrite `/(__next\.[^/]+?)\.(__PAGE__\.txt)$/` → `$1/$2` when the dotted file doesn't exist.
-  README: add `npx wrangler@4 pages dev apps/web/out` as the parity check, and "use Node 22 (`nvm use`)".
+  README: add `npx wrangler@4 pages dev apps/web/out` as the parity check. Do not add an `nvm use` line (no nvm on this machine; CI covers Node 22).
 - Acceptance: in the Playwright run, the console 404 count per page is 0 (an assertion in `polish.spec.ts` or a new test).
 
 ### T14 — Cache headers for unhashed static assets (CF-01)

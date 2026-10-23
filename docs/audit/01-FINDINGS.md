@@ -363,7 +363,7 @@ Facts: on every page, Next's client requests `/<route>/__next.<route>.__PAGE__.t
 137 KB). Local Node is v24.18.0, while `.nvmrc` and CI use 22.
 Interpretation: local runs see console noise that production doesn't, and local prefetch differs from production.
 Fix: map `__next.<seg>.__PAGE__.txt` → `__next.<seg>/__PAGE__.txt` in `serve.mjs`, and document
-`npx wrangler@4 pages dev apps/web/out` for exact parity (no new dependency). Use `nvm use` before local runs.
+`npx wrangler@4 pages dev apps/web/out` for exact parity (no new dependency). There is no nvm on this machine (Node 24 locally): rely on CI for Node 22 behaviour. (Correction 2026-10-22: an earlier version said to run `nvm use`.)
 
 ### ARCH-01 — Dead asset and large screenshots in git
 **Low · Confirmed · Effort S · Risk Low**
