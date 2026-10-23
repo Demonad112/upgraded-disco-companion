@@ -34,7 +34,7 @@ function Meter({ r }: { r: DefenseSummary['resistances'][number] }) {
             ? `${cap(r.type)} resistance ${value}% of a ${r.max}% cap${under ? `, ${r.underCap} under cap` : over ? `, ${r.overCap} over cap` : ''}`
             : `${cap(r.type)} resistance unknown`
         }
-        className="relative block h-[14px] bg-sunken"
+        className="relative block h-[16px] bg-sunken"
       >
         {known ? (
           <>
@@ -63,7 +63,7 @@ function Meter({ r }: { r: DefenseSummary['resistances'][number] }) {
             ) : null}
           </>
         ) : null}
-        <span className="absolute -top-[5px] -bottom-[5px] w-0.5 bg-white" style={{ left: `calc(${pos(r.max)} - 1px)` }} />
+        <span className="absolute -top-1 -bottom-1 w-0.5 bg-white" style={{ left: `calc(${pos(r.max)} - 1px)` }} />
       </span>
       <span className="flex flex-wrap items-center gap-2 min-[621px]:justify-end">
         <span className="tabular font-mono text-sm text-ink">{known ? `${value}%` : 'unknown'}</span>
@@ -117,22 +117,17 @@ function LargestHit({ d }: { d: DefenseSummary }) {
                 ? `${d.physicalDamageReduction}% reduction from armour`
                 : null
           return (
-            <li key={h.type} className="grid grid-cols-[6.5rem_minmax(0,1fr)_auto] items-start gap-x-3 gap-y-1">
+            <li key={h.type} className="grid items-center gap-x-4 gap-y-1 min-[621px]:grid-cols-[7.5rem_minmax(0,1fr)_auto]">
               <span>
                 <span className="flex items-center gap-2">
                   <Diamond type={h.type} />
                   <span className="serif-label">{cap(h.type)}</span>
                 </span>
-                {h.isLowest ? (
-                  <span className="mt-1 block">
-                    <Tag tone="danger">Kills first</Tag>
-                  </span>
-                ) : null}
               </span>
               <span
                 role="img"
                 aria-label={`${cap(h.type)} maximum hit ${fmt(h.value)}`}
-                className="relative mt-0.5 block h-[18px] bg-sunken"
+                className="relative block h-[16px] bg-sunken"
               >
                 <span
                   className="absolute inset-y-0 left-0"
@@ -145,8 +140,11 @@ function LargestHit({ d }: { d: DefenseSummary }) {
                   />
                 ) : null}
               </span>
-              <span className="tabular font-mono text-sm font-medium text-ink">{fmt(h.value)}</span>
-              {note ? <span className="tabular col-start-2 font-mono text-[11px] text-ink-mute">{note}</span> : null}
+              <span className="flex flex-wrap items-center gap-2 min-[621px]:justify-end">
+                <span className="tabular font-mono text-sm text-ink">{fmt(h.value)}</span>
+                {h.isLowest ? <Tag tone="danger">Kills first</Tag> : null}
+              </span>
+              {note ? <span className="tabular font-mono text-[11px] text-ink-mute min-[621px]:col-start-2">{note}</span> : null}
             </li>
           )
         })}

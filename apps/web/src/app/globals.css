@@ -156,8 +156,8 @@
     --section-pad: 72px;
     --title-pad-top: 56px;
     --title-pad-bottom: 28px;
-    --block-border: 1px solid var(--accent); /* B2 gold frame */
-    --block-border-top: 2px solid var(--accent);
+    --block-border: 1px solid var(--line); /* quiet line, no gold frame */
+    --block-border-top: 1px solid var(--line-strong);
   }
 }
 
@@ -207,8 +207,8 @@ h4 {
 h1.hero-title {
   font-family: var(--hero-title-font);
   font-weight: 600;
-  letter-spacing: normal;
-  text-transform: none;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
   color: var(--hero-title-ink);
 }
 h1.hero-title .text-gradient-gold {
@@ -319,36 +319,17 @@ code,
     /* G3 (shadow only): no backdrop-filter at all. Even blur(0) makes every
        block its own compositor layer. */
     text-shadow: var(--halo);
-    box-shadow: var(--card-highlight);
+    box-shadow: var(--card-highlight), 0 2px 10px -2px color-mix(in srgb, black 55%, transparent);
     transition:
       transform 0.18s ease,
       border-color 0.18s ease,
       box-shadow 0.18s ease;
   }
-  /* Corner brackets: eight 1px, 12px-long gold lines inset 7px. */
-  .card::after {
-    content: '';
-    position: absolute;
-    inset: 7px;
-    pointer-events: none;
-    opacity: 0.55;
-    background:
-      linear-gradient(var(--accent), var(--accent)) left top / 12px 1px,
-      linear-gradient(var(--accent), var(--accent)) left top / 1px 12px,
-      linear-gradient(var(--accent), var(--accent)) right top / 12px 1px,
-      linear-gradient(var(--accent), var(--accent)) right top / 1px 12px,
-      linear-gradient(var(--accent), var(--accent)) left bottom / 12px 1px,
-      linear-gradient(var(--accent), var(--accent)) left bottom / 1px 12px,
-      linear-gradient(var(--accent), var(--accent)) right bottom / 12px 1px,
-      linear-gradient(var(--accent), var(--accent)) right bottom / 1px 12px;
-    background-repeat: no-repeat;
-  }
   /* Hover feedback only on devices that hover (touch leaves it stuck on),
      and never on collapsible cards: those go gold only while open. */
   @media (hover: hover) {
     .card:not(details):hover {
-      transform: translateY(calc(-1 * var(--lift-distance)));
-      border-color: var(--accent);
+      border-color: var(--line-strong);
     }
   }
   details.card[open] {
@@ -593,19 +574,10 @@ code,
     background: linear-gradient(90deg, var(--accent-line), transparent);
   }
 
-  /* Hero: a 2px gold rule down the left edge, fading out at the bottom. */
+  /* Hero: centred, no side rule. */
   .hero-rule {
     position: relative;
-    padding-left: 1.4em;
-  }
-  .hero-rule::before {
-    content: '';
-    position: absolute;
-    left: 0;
-    top: 0;
-    bottom: 0;
-    width: 2px;
-    background: linear-gradient(180deg, var(--accent), transparent);
+    text-align: center;
   }
 
   /* Progress: a thin glowing gold line ending in a round bead. */
