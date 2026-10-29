@@ -60,7 +60,7 @@ export function ServiceWorker() {
       <button type="button" data-primary onClick={() => dispatch('reload')}>
         Reload
       </button>
-      <button type="button" onClick={() => dispatch('dismiss')} aria-label="Dismiss">
+      <button type="button" onClick={() => dispatch('dismiss')}>
         Later
       </button>
     </div>
