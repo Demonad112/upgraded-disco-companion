@@ -7,10 +7,11 @@ it skips them.
 
 ## How every session works
 
-Start a new Claude Code session (Sonnet 5.5 is enough) in `C:\Dev\projects\POE2 Endgame Companion App`, on an
+Start a new Claude Code session (model per the Model column in docs/ui/UI-PROGRESS.md) in `C:\Dev\projects\POE2 Endgame Companion App`, on an
 up-to-date `main`, and paste the prompt for that session from the list below. The prompt points back here, so the
 rules are written once:
 
+0. Also follow docs/SESSION-PROTOCOL.md: its Start step (check the previous wave, carry-over) runs before rule 1, and its Finish step (carry file, PR sections) replaces rule 8's report.
 1. **Read:** `CLAUDE.md`, this file (your session's block), and for each of your tasks its section in `02-FIX-PLAN.md`
    (files, change, acceptance, verification) and its finding in `01-FINDINGS.md`.
 2. **Branch:** work in a worktree or branch off `main` (the name doesn't matter). Never commit to `main`,
