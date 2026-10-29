@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
+  "sideEffects": false,
   "description": "Pure analysis core. No I/O, no framework — fetch is injected. Shared by the MCP server and the web app.",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
