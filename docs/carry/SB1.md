@@ -1,5 +1,5 @@
 # SB1 carry-over · 2026-10-29
-PR: #TBD · Branch: claude/sb1-owner-decisions · Preview: https://claude-sb1-owner-decisions.upgraded-disco-companion.pages.dev
+PR: #41 · Branch: claude/sb1-owner-decisions · Preview: https://claude-sb1-owner-decisions.upgraded-disco-companion.pages.dev
 
 Side batch between wave 6 and wave 7. No tracker wave row.
 
