@@ -8,6 +8,7 @@ import { atlasTrapNodes } from "@/data/trapNodes";
 import { biomes } from "@/data/biomes";
 import { primerFacts } from "@/data/mechanicsPrimer";
 import { glossary } from "@/data/glossary";
+import { METHODOLOGY_SECTIONS } from "@/data/methodology";
 import type { Stage } from "@/lib/types";
 
 export type SearchCategory =
@@ -18,7 +19,8 @@ export type SearchCategory =
   | "Build"
   | "Mistake"
   | "Glossary"
-  | "Character";
+  | "Character"
+  | "Page";
 
 export interface SearchEntry {
   id: string;
@@ -48,6 +50,28 @@ export const searchIndex: SearchEntry[] = [
       "Paste a poe.ninja profile URL to see defenses, skills, and gear",
     category: "Character",
     href: "/character",
+  },
+  {
+    id: "methodology",
+    title: "Methodology",
+    subtitle:
+      "How the grade, the largest hit and the findings ranking are worked out, and what is never guessed",
+    category: "Page",
+    href: "/methodology",
+  },
+  ...METHODOLOGY_SECTIONS.map((s): SearchEntry => ({
+    id: s.id,
+    title: `Methodology: ${s.title}`,
+    subtitle: s.summary,
+    category: "Page",
+    href: "/methodology",
+  })),
+  {
+    id: "whats-new",
+    title: "What's new",
+    subtitle: "Every app change and data regeneration, newest first",
+    category: "Page",
+    href: "/whats-new",
   },
   ...roadmapSteps.map((s): SearchEntry => ({
     id: s.id,
