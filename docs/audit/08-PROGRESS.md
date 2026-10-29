@@ -6,7 +6,7 @@ Tasks and acceptance criteria: `02-FIX-PLAN.md`. Decisions: `09-OWNER-DECISIONS.
 | ✓ | Task | Phase | Findings | Needs decision | Status | Commit SHA | Notes |
 |---|---|---|---|---|---|---|---|
 | [x] | T01 Bump Next/React to patched versions | P0 | DEP-01 | — | done | see commit | next 16.4.2, react 19.3.1; `npm audit fix` cleared 4 transitive (body-parser high, hono/fast-uri/qs moderate). Clean build passed first try, no SecurityFatalError. `--omit=dev` audit: next 2 crit + 1 high → 0; **1 high left: zod 3.25.76 (apps/mcp, GHSA-mrhx-c7xc-m3w5, needs zod 4 → owner)**, so `--audit-level=high` still exits 1 |
-| [ ] | T02 Chat origins in CSP + sync test | P0 | SEC-01 | D1 (A accepted) | todo | | |
+| [x] | T02 Chat origins in CSP + sync test | P0 | SEC-01 | D1 (A accepted) | done | see commit | connect-src + openai, anthropic, generativelanguage.googleapis. New test fails on old `_headers`, passes on new (web tests 98 → 99). Post-deploy `curl -sI` check pending |
 | [ ] | T03 Core `sideEffects: false` / subpath import | P1 | PERF-01 | — | todo | | |
 | [ ] | T04 Build-keyed SW shell cache | P1 | SW-01 | — | todo | | |
 | [ ] | T05 Sky dim via CSS | P1 | SKY-01 | ⛔ D2 | todo | | D2 accepted 2026-10-22 |
