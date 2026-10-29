@@ -13,6 +13,7 @@ test('?import= analyses the character and records it for the home page', async (
   const card = page.getByRole('region', { name: /Athrynas/ })
   await expect(card).toBeVisible()
   await expect(card.getByRole('link', { name: /Re-import/ })).toHaveAttribute('href', /import=/)
+  await expect(page.locator('[data-tool-status="character"]')).toContainText('Last import: Athrynas')
 })
 
 test('closed analysis panels mount while idle, so their text is findable', async ({ page }) => {

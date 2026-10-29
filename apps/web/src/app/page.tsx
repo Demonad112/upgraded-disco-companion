@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import Link from "next/link";
 import { CURRENT_PATCH, LEAGUE_LABEL } from "@/lib/constants";
 import { TIER_LIST_PATCH } from "@/data/strategies";
@@ -6,77 +7,73 @@ import { NextStepCard } from "@/components/checklist/NextStepCard";
 import { CompactAlerts } from "@/components/compact/CompactAlerts";
 import { Triad } from "@/components/layout/Triad";
 import { LastCharacterCard } from "@/components/home/LastCharacterCard";
+import { ToolStatus, type ToolStatusProps } from "@/components/home/ToolStatus";
+import { dataUpdated, guideCounts, strategyNames } from "@/lib/homeStats";
 import { progressTotals, stepSummaries } from "@/lib/stepSummary";
 
-const CARDS = [
-  {
-    href: "/checklist",
-    title: "Progression Checklist",
-    description:
-      "Step-by-step roadmap from campaign end to a juiced farm: Waystone planner, readiness check, Master and league quest chains, and the mistakes to avoid at each step.",
-    icon: (
-      <path
-        d="M5 6h14M5 12h14M5 18h9"
-        stroke="currentColor"
-        strokeWidth="1.6"
-        strokeLinecap="round"
-      />
-    ),
-  },
-  {
-    href: "/atlas",
-    title: "Atlas Tree Planner",
-    description:
-      "Allocation order for early sustain, the trap nodes to skip (points can't be refunded), biome picks, memory forks and per-mechanic sub-trees.",
-    icon: (
-      <>
-        <circle cx="12" cy="4" r="1.8" stroke="currentColor" strokeWidth="1.4" />
-        <circle cx="5" cy="19" r="1.8" stroke="currentColor" strokeWidth="1.4" />
-        <circle cx="19" cy="19" r="1.8" stroke="currentColor" strokeWidth="1.4" />
-        <path
-          d="M12 5.8V11M12 11L5 17.3M12 11l7 6.3"
-          stroke="currentColor"
-          strokeWidth="1.4"
-          strokeLinecap="round"
-        />
-      </>
-    ),
-  },
-  {
-    href: "/dashboard",
-    title: "Farming Dashboard",
-    description:
-      `${TIER_LIST_PATCH} farming tier list, a quick strategy-picker quiz, pinnacle boss requirements, and current meta builds.`,
-    icon: (
-      <>
-        <rect x="3.5" y="3.5" width="7" height="8" rx="1.2" stroke="currentColor" strokeWidth="1.4" />
-        <rect x="13.5" y="3.5" width="7" height="5" rx="1.2" stroke="currentColor" strokeWidth="1.4" />
-        <rect x="13.5" y="11" width="7" height="9.5" rx="1.2" stroke="currentColor" strokeWidth="1.4" />
-        <rect x="3.5" y="14.5" width="7" height="6" rx="1.2" stroke="currentColor" strokeWidth="1.4" />
-      </>
-    ),
-  },
-  {
-    href: "/character",
-    title: "Character Import",
-    description:
-      "Paste a poe.ninja profile URL to see your character's defenses, skills, and gear — parsed entirely in your browser.",
-    icon: (
-      <>
-        <circle cx="12" cy="8" r="3.2" stroke="currentColor" strokeWidth="1.4" />
-        <path
-          d="M5.5 19.5c0-3.6 2.9-6.5 6.5-6.5s6.5 2.9 6.5 6.5"
-          stroke="currentColor"
-          strokeWidth="1.4"
-          strokeLinecap="round"
-        />
-      </>
-    ),
-  },
-];
+const ICONS = {
+  checklist: <path d="M5 6h14M5 12h14M5 18h9" />,
+  atlas: (
+    <>
+      <circle cx="12" cy="4" r="1.8" />
+      <circle cx="5" cy="19" r="1.8" />
+      <circle cx="19" cy="19" r="1.8" />
+      <path d="M12 5.8V11M12 11L5 17.3M12 11l7 6.3" />
+    </>
+  ),
+  dashboard: (
+    <>
+      <rect x="3.5" y="3.5" width="7" height="8" />
+      <rect x="13.5" y="3.5" width="7" height="5" />
+      <rect x="13.5" y="11" width="7" height="9.5" />
+      <rect x="3.5" y="14.5" width="7" height="6" />
+    </>
+  ),
+  character: (
+    <>
+      <circle cx="12" cy="8" r="3.2" />
+      <path d="M5.5 19.5c0-3.6 2.9-6.5 6.5-6.5s6.5 2.9 6.5 6.5" />
+    </>
+  ),
+};
+
+function toolCards(): { href: string; title: string; purpose: string; icon: ReactNode; status: ToolStatusProps }[] {
+  const { stepIds, atlasIds } = progressTotals();
+  return [
+    {
+      href: "/checklist",
+      title: "Progression Checklist",
+      purpose: "What to do next, from campaign end to a juiced farm.",
+      icon: ICONS.checklist,
+      status: { tool: "checklist", stepIds },
+    },
+    {
+      href: "/atlas",
+      title: "Atlas Tree Planner",
+      purpose: "Allocation order, trap nodes to skip and memory forks.",
+      icon: ICONS.atlas,
+      status: { tool: "atlas", atlasIds },
+    },
+    {
+      href: "/dashboard",
+      title: "Farming Dashboard",
+      purpose: `${TIER_LIST_PATCH} tier list, strategy quiz, pinnacle bosses and meta builds.`,
+      icon: ICONS.dashboard,
+      status: { tool: "dashboard", strategyNames: strategyNames() },
+    },
+    {
+      href: "/character",
+      title: "Character Import",
+      purpose: "A poe.ninja profile's defences, skills and gear, read in your browser.",
+      icon: ICONS.character,
+      status: { tool: "character" },
+    },
+  ];
+}
 
 export default function Home() {
   const totals = progressTotals();
+  const updated = dataUpdated();
   return (
     // 10-column grid: hero across the top; Up next (6) beside Progress (4), a
     // 1.5 : 1 split; then the four tools as a 2x2 grid of equal cards (5 + 5).
@@ -97,6 +94,23 @@ export default function Home() {
             top creators teach: what to do next, which Waystones to run, which
             Atlas nodes to skip, and which farm to commit to.
           </p>
+          {/* Counted from the guide data at build time; never typed in. No
+              separators: a wrapped line would start with one. */}
+          <ul
+            aria-label="What the guide covers"
+            className="eyebrow flex max-w-2xl flex-wrap justify-center gap-x-4 gap-y-1"
+          >
+            {guideCounts().map((c) => (
+              <li key={c.label}>
+                <span className="tabular text-ink">{c.value}</span> {c.label}
+              </li>
+            ))}
+          </ul>
+          {updated ? (
+            <p className="eyebrow -mt-2">
+              Data updated <time dateTime={updated} className="tabular text-ink-dim">{updated}</time>
+            </p>
+          ) : null}
         </div>
       </section>
 
@@ -117,17 +131,29 @@ export default function Home() {
           (wide screens). Opted out of the card-links canvas, which would
           otherwise add its own links across the gaps. */}
       <div className="thread-row sm:col-span-10" data-compact-hide data-no-links>
-        {CARDS.map((card) => (
-          <Link key={card.href} href={card.href} data-linkable className="group card thread-card p-6">
+        {toolCards().map((card) => (
+          <Link
+            key={card.href}
+            href={card.href}
+            data-linkable
+            className="group card thread-card flex flex-col p-6"
+          >
             <span className="thread-stem" aria-hidden />
             <span className="thread-diamond" aria-hidden />
-            <div className="mb-3 text-ink-mute">
-              <svg viewBox="0 0 24 24" fill="none" className="size-5" aria-hidden>
-                {card.icon}
-              </svg>
-            </div>
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.3"
+              strokeLinecap="square"
+              className="mb-4 size-8 text-accent"
+              aria-hidden
+            >
+              {card.icon}
+            </svg>
             <h2 className="text-base text-ink">{card.title}</h2>
-            <p className="mt-2 text-sm text-ink-dim">{card.description}</p>
+            <p className="mt-2 mb-4 text-sm text-ink-dim">{card.purpose}</p>
+            <ToolStatus {...card.status} />
           </Link>
         ))}
       </div>

@@ -12,7 +12,7 @@ session's row in its last commit. Audit rows are tracked in `docs/audit/08-PROGR
 | 3 | A3 bundle and service worker | Local + Cloud | Opus 5.5 · high | done | ccr-08fbadda-bnx58s | #25, #26 | https://ccr-08fbadda-bnx58s.upgraded-disco-companion.pages.dev | tracked in docs/audit/08-PROGRESS.md; T03+T04 in #25 |
 | 3 | U9 Methodology and What's new | Cloud | Opus 5.5 · high | done | variant/20261029-pages | #24 | https://variant-20261029-pages.upgraded-disco-companion.pages.dev | `/methodology`, `/whats-new`, Ctrl K entries, patch-menu link; sitemap for A6, footer for U7 |
 | 4 | A4 canvases and a11y | Cloud | Opus 5.5 · medium | done | ccr-95ecf788-uv8w93 | #28 | https://ccr-95ecf788-uv8w93.upgraded-disco-companion.pages.dev | tracked in docs/audit/08-PROGRESS.md; T09, T10, T11 |
-| 4 | U8 home page | Cloud | Opus 5.5 · high | todo | | | | |
+| 4 | U8 home page | Cloud | Opus 5.5 · high | done | variant/20261029-home | #27 | https://variant-20261029-home.upgraded-disco-companion.pages.dev | Meta strip and tool-card status lines, all counted from data; no grade on the Character card (U8-4) |
 | 5 | A5 constellation sky | Local | Opus 5.5 · high | todo | | | | tracked in docs/audit/08-PROGRESS.md |
 | 6 | A6 SEO, landmarks, CI | Cloud | Sonnet 5.5 · medium | todo | | | | tracked in docs/audit/08-PROGRESS.md |
 | 6 | U12 installable app | Cloud | Sonnet 5.5 · high | todo | | | | U12: after A3 |
