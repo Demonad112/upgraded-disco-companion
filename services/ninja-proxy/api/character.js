@@ -114,7 +114,7 @@ export default async function handler(req, res) {
     if (!model.ok) return res.status(502).json({ error: `poe.ninja returned ${model.status} for the model.` })
 
     res.setHeader('Content-Type', 'application/json; charset=utf-8')
-    res.setHeader('Cache-Control', 's-maxage=300, stale-while-revalidate=600')
+    res.setHeader('Cache-Control', 's-maxage=60, stale-while-revalidate=600')
     // Passed on so the CDN and the browser can revalidate with If-None-Match.
     if (model.etag) {
       res.setHeader('ETag', model.etag)
