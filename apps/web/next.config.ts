@@ -47,13 +47,21 @@ const dataVersion = (() => {
   return hash.digest('hex').slice(0, 12)
 })()
 
+/**
+ * Identifies this build, so the service worker can key the app-shell cache on
+ * it. Without this, a code-only deploy kept the old shell cache name and an
+ * offline visitor could get old HTML pointing at chunks that no longer exist.
+ * The commit SHA on Pages and Actions; the build time anywhere else.
+ */
+const buildId = (process.env.CF_PAGES_COMMIT_SHA ?? process.env.GITHUB_SHA ?? String(Date.now())).slice(0, 12)
+
 const nextConfig: NextConfig = {
   output: 'export',
   trailingSlash: true,
   images: { unoptimized: true },
   basePath,
   assetPrefix: basePath || undefined,
-  env: { NEXT_PUBLIC_BASE_PATH: basePath, NEXT_PUBLIC_DATA_VERSION: dataVersion },
+  env: { NEXT_PUBLIC_BASE_PATH: basePath, NEXT_PUBLIC_DATA_VERSION: dataVersion, NEXT_PUBLIC_BUILD_ID: buildId },
 }
 
 export default nextConfig
