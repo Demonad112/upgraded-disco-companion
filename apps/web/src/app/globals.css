@@ -789,6 +789,21 @@ main [id] {
 
 /* --- Constellation sky ------------------------------------------------------
    Fixed behind everything (page content is z-index 1). Dark theme only. */
+
+/* Dim behind blocks (footer toggle, lib/skyDim): the outermost blocks take 65%
+   of the page colour over the sky, so 35% of it shows through and the dim
+   scrolls with them. In the components layer, so a block's own bg-* utility
+   still wins; a block that needs its own fill under this needs it as an image
+   layer instead. data-sky-dim-off is set before paint. */
+:root {
+  --sky-dim-fill: color-mix(in srgb, var(--page) 65%, transparent);
+}
+@layer components {
+  :root:not([data-sky-dim-off])
+    :is([data-sky-dim], .card, header, footer, .site-nav):not(:is([data-sky-dim], .card, header, footer, .site-nav) *) {
+    background-color: var(--sky-dim-fill);
+  }
+}
 .sky-canvas,
 .sky-scrim {
   position: fixed;

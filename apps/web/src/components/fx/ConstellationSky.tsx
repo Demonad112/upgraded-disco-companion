@@ -2,7 +2,6 @@
 
 import { useEffect, useRef } from 'react'
 import { usePathname } from 'next/navigation'
-import { skyDimStore } from '@/lib/skyDim'
 
 const GOLD = '#e3b341'
 const PALE_GOLD = '#f6dc92'
@@ -19,8 +18,6 @@ const RING_DIAMONDS = [2, 3, 2]
 const LEVELS = 8
 /** A square of this side times the radius has a circle's area: sub-pixel stars keep their brightness. */
 const SQRT_PI = Math.sqrt(Math.PI)
-/** Everything the dimming pass erases behind. Nested matches are skipped. */
-const DIM_SELECTOR = '[data-sky-dim], .card, header, footer, .site-nav'
 
 function mulberry32(seed: number) {
   return () => {
@@ -162,18 +159,16 @@ function buildField(w: number, h: number): Field {
 
 /**
  * Fixed, slowly rotating gold constellation sky behind the whole site. Dark
- * theme only. After each frame the blocks are punched out of it (dimming) so
- * the sky reads at 35% behind them and at full strength in the gaps.
+ * theme only. The dim behind blocks is CSS (globals.css, lib/skyDim), so the
+ * sky reads at 35% behind them and at full strength in the gaps.
  */
 export function ConstellationSky() {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const pathname = usePathname()
   // Set by the effect below; lets a route change or toggle repaint a still sky.
   const kickRef = useRef<() => void>(() => {})
-  const dirtyRef = useRef(true)
 
   useEffect(() => {
-    dirtyRef.current = true
     kickRef.current()
   }, [pathname])
 
@@ -190,7 +185,6 @@ export function ConstellationSky() {
     let dpr = 1
     let raf = 0
     let last = 0
-    let blocks: HTMLElement[] = []
     const start = performance.now()
 
     const hidden = () => root.dataset.theme === 'light' || root.hasAttribute('data-compact')
@@ -214,13 +208,6 @@ export function ConstellationSky() {
       canvas.style.height = `${h}px`
       field = buildField(w, h)
       ticks = buildTicks(field)
-    }
-
-    const refreshBlocks = () => {
-      dirtyRef.current = false
-      blocks = Array.from(document.querySelectorAll<HTMLElement>(DIM_SELECTOR)).filter(
-        (el) => !el.parentElement?.closest(DIM_SELECTOR),
-      )
     }
 
     const draw = (t: number) => {
@@ -355,19 +342,6 @@ export function ConstellationSky() {
         ctx.stroke(p)
       })
 
-      // Dim the sky behind blocks: erase 65% so 35% shows through.
-      if (skyDimStore.get()) {
-        if (dirtyRef.current) refreshBlocks()
-        ctx.globalAlpha = 1
-        ctx.globalCompositeOperation = 'destination-out'
-        ctx.fillStyle = 'rgba(0,0,0,0.65)'
-        for (const el of blocks) {
-          const r = el.getBoundingClientRect()
-          if (r.width === 0 || r.height === 0 || r.bottom < 0 || r.top > h) continue
-          ctx.fillRect(r.left, r.top, r.width, r.height)
-        }
-        ctx.globalCompositeOperation = 'source-over'
-      }
       ctx.globalAlpha = 1
     }
 
@@ -385,7 +359,7 @@ export function ConstellationSky() {
       draw((now - start) / 1000)
     }
 
-    // Reduced motion: one still frame, repainted when something moves under it.
+    // Reduced motion: one still frame, repainted after a resize or route change.
     let stillQueued = 0
     const paintStill = () => {
       if (stillQueued) return
@@ -406,7 +380,6 @@ export function ConstellationSky() {
     }
 
     rebuild()
-    refreshBlocks()
     run()
 
     let debounce = 0
@@ -414,42 +387,22 @@ export function ConstellationSky() {
       window.clearTimeout(debounce)
       debounce = window.setTimeout(() => {
         rebuild()
-        dirtyRef.current = true
         if (motion.matches) paintStill()
       }, 120)
-    }
-    const onScroll = () => {
-      if (motion.matches) paintStill()
     }
     const onMotion = () => run()
     const rootMo = new MutationObserver(run)
     rootMo.observe(root, { attributes: true, attributeFilter: ['data-compact', 'data-theme'] })
-    const mo = new MutationObserver(() => {
-      dirtyRef.current = true
-      if (motion.matches) paintStill()
-    })
-    mo.observe(document.body, { childList: true, subtree: true })
-    const unsubDim = skyDimStore.subscribe(() => {
-      if (motion.matches) paintStill()
-    })
     window.addEventListener('resize', onResize)
-    window.addEventListener('scroll', onScroll, { passive: true })
     motion.addEventListener('change', onMotion)
-    void document.fonts?.ready.then(() => {
-      dirtyRef.current = true
-      if (motion.matches) paintStill()
-    })
 
     return () => {
       kickRef.current = () => {}
       cancelAnimationFrame(raf)
       cancelAnimationFrame(stillQueued)
       window.clearTimeout(debounce)
-      mo.disconnect()
       rootMo.disconnect()
-      unsubDim()
       window.removeEventListener('resize', onResize)
-      window.removeEventListener('scroll', onScroll)
       motion.removeEventListener('change', onMotion)
     }
   }, [])

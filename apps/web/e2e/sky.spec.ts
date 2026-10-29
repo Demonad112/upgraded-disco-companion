@@ -59,3 +59,33 @@ test('stops animating while hidden by compact mode, and resumes after', async ({
   await page.evaluate(() => document.documentElement.removeAttribute('data-compact'))
   await expect.poll(count).toBeGreaterThan(hidden)
 })
+
+test('the footer toggle dims behind blocks without a reload, and a reload keeps it off before paint', async ({ page }) => {
+  // Records, as <body> arrives, whether the dim was already off.
+  await page.addInitScript(() => {
+    const w = window as unknown as { __offAtBody?: boolean }
+    new MutationObserver((_, mo) => {
+      if (!document.body) return
+      w.__offAtBody = document.documentElement.hasAttribute('data-sky-dim-off')
+      mo.disconnect()
+    }).observe(document, { childList: true, subtree: true })
+  })
+  await page.goto('')
+  const card = page.locator('main .card').first()
+  const fill = () => card.evaluate((el) => getComputedStyle(el).backgroundColor)
+  const dimmed = await fill()
+  expect(dimmed).not.toMatch(/^(rgba\(0, 0, 0, 0\)|color\(srgb 0 0 0 \/ 0\))$/)
+
+  // The label's hit-area overlay takes the click, as it does for a user.
+  const toggle = page.locator('label', { hasText: 'Dim sky behind blocks' })
+  await toggle.click()
+  await expect(page.locator('html')).toHaveAttribute('data-sky-dim-off', '')
+  expect(await fill()).not.toBe(dimmed)
+
+  await page.reload()
+  expect(await page.evaluate(() => (window as unknown as { __offAtBody?: boolean }).__offAtBody)).toBe(true)
+  await expect(page.getByLabel('Dim sky behind blocks')).not.toBeChecked()
+  await toggle.click()
+  await expect(page.locator('html')).not.toHaveAttribute('data-sky-dim-off')
+  expect(await fill()).toBe(dimmed)
+})
