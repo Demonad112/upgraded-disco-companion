@@ -1,5 +1,5 @@
 # OQ1 carry-over · 2026-10-29
-PR: #<n> · Branch: ccr-adc6b4c8-t74ga8 · Preview: https://ccr-adc6b4c8-t74ga8.upgraded-disco-companion.pages.dev
+PR: #30 · Branch: ccr-adc6b4c8-t74ga8 · Preview: https://ccr-adc6b4c8-t74ga8.upgraded-disco-companion.pages.dev
 
 Owner-requested sweep after A5 (#29): answer every question still open in `docs/carry/` and implement the answers. Each one
 takes the recommended answer unless noted. It runs alongside wave 6 (A6, U12) and touches none of their files: `layout.tsx`,
