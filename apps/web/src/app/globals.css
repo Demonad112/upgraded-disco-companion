@@ -1,13 +1,11 @@
 @import 'tailwindcss';
+@import './tokens.css';
 @import '../styles/pwa.css';
 
 /*
  * Dark only. Every colour, font, radius, blur and opacity of the restyle is
- * defined once in the token blocks below; components read the variables.
- *
- * Damage-type colours are NOT decorative — they were validated with the dataviz
- * palette validator against both surfaces (see DESIGN.md). Do not hand-tweak
- * them without re-running the validator.
+ * defined once in tokens.css (the :root tokens) and the @theme block below;
+ * components read the variables.
  */
 
 @theme inline {
@@ -57,109 +55,6 @@
 
   /* "Desktop" is 981px and up; everything at 980px and below is the mobile set. */
   --breakpoint-desk: 981px;
-}
-
-:root {
-  color-scheme: dark;
-
-  /* Palette (design system 2.1) */
-  --page: #08080a;
-  --surface: #0d0d10;
-  --raised: #151519;
-  --sunken: #09090b;
-  --overlay: #1c1b21;
-  --line: #27262c;
-  --line-strong: #36343c;
-  --ink: #f3eee4;
-  --ink-dim: #b1aca3;
-  --ink-mute: #8f897f;
-  --accent: #e3b341;
-  --accent-dim: #8a6d22;
-  --accent-soft: #e3b3411a;
-  --accent-line: #e3b34159;
-  --on-accent: #1b1204;
-  --good: #199e70;
-  --warn: #c98500;
-  --danger: #e66767;
-  /* Aliases kept for components written against the earlier names. */
-  --surface-raised: var(--raised);
-  --surface-sunken: var(--sunken);
-  --surface-overlay: var(--overlay);
-  --border: var(--line);
-
-  /* Validated dark steps — dataviz validator, ALL CHECKS PASS */
-  --dmg-physical: #199e70;
-  --dmg-fire: #d95926;
-  --dmg-cold: #3987e5;
-  --dmg-lightning: #c98500;
-  --dmg-chaos: #9085e9;
-
-  /* Gold surfaces (2.1): fill for buttons and gauges, text gradient for headings. */
-  --gold-top: color-mix(in srgb, #e3b341 86%, white);
-  --gold-mid: #e3b341;
-  --gold-bot: color-mix(in srgb, #e3b341 82%, black);
-  --gold-gradient: linear-gradient(180deg, var(--gold-top) 0%, var(--gold-mid) 50%, var(--gold-bot) 100%);
-  --gold-text: linear-gradient(180deg, #f6dc92 0%, #e3b341 55%, #b98a24 100%);
-
-  /* Glass is shadow only (2.2): no fill, no blur, readable through a halo and
-     the 35% sky dim pass. One token set for every page. */
-  --glass-fill: 0%;
-  --glass-blur: 0px;
-  --halo: 0 1px 12px #000, 0 0 3px #000b;
-  --card-edge: var(--line);
-  --card-highlight: inset 0 1px 0 #ffffff0b;
-  --lift: var(--card-highlight);
-  --lift-raised: var(--card-highlight), 0 16px 40px -14px color-mix(in srgb, black 75%, transparent);
-  --lift-distance: 3px;
-
-  /* Type (2.5). Families are wired in layout.tsx through next/font. */
-  --font-heading: var(--font-garamond), ui-serif, Georgia, serif;
-  --font-body: var(--font-inter), ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
-  --font-label: var(--font-geist-mono), ui-monospace, 'SFMono-Regular', Menlo, monospace;
-  --lh-body: 1.6;
-  --heading-tracking: 0.04em;
-
-  /* Breakpoint-dependent values: MOBILE set (<= 980px). The desktop set is in
-     the single @media (min-width: 981px) block directly below. */
-  --fs-body: 17px; /* Z2 */
-  --card-pad: 20px; /* S2 */
-  --section-pad: 46px;
-  --title-pad-top: 36px;
-  --title-pad-bottom: 14px;
-  --card-gap: 20px;
-  --block-border: 1px solid var(--line);
-  --block-border-top: 1px solid var(--line-strong); /* B3 quiet line */
-
-  /* Layout */
-  --page-max: 1180px;
-  --gutter: max(20px, env(safe-area-inset-left), env(safe-area-inset-right));
-  --tap-min: 44px;
-  --nav-h: 4rem;
-  --focus-ring: 2px solid var(--accent);
-
-  /* Canvases */
-  --constellation-density: 0.64;
-  --line-strength: 0.44;
-  --grain-opacity: 0.07;
-
-  /* The home title is fixed at its pre-restyle look (Garamond, these two
-     colours) and must not follow the palette above. */
-  --hero-title-font: var(--font-garamond), ui-serif, Georgia, serif;
-  --hero-title-ink: #f3eee4;
-  --hero-title-gold: #e3b341;
-}
-
-/* Desktop set (>= 981px): the one place breakpoint-dependent values change. */
-@media (min-width: 981px) {
-  :root {
-    --fs-body: 15.5px; /* Z1. Flip to 17px here for "large" on desktop too. */
-    --card-pad: 28px; /* S1 */
-    --section-pad: 72px;
-    --title-pad-top: 56px;
-    --title-pad-bottom: 28px;
-    --block-border: 1px solid var(--line); /* quiet line, no gold frame */
-    --block-border-top: 1px solid var(--line-strong);
-  }
 }
 
 html {
@@ -798,9 +693,6 @@ main [id] {
    layer instead. data-sky-dim-off is set before paint. The page's banner
    landmark (header.site-header, layout.tsx) is a plain wrapper: the nav inside
    it takes the dim, not the wrapper. */
-:root {
-  --sky-dim-fill: color-mix(in srgb, var(--page) 65%, transparent);
-}
 @layer components {
   :root:not([data-sky-dim-off])
     :is([data-sky-dim], .card, header:not(.site-header), footer, .site-nav):not(:is([data-sky-dim], .card, header:not(.site-header), footer, .site-nav) *) {

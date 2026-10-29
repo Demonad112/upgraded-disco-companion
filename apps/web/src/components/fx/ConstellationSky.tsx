@@ -2,10 +2,29 @@
 
 import { useEffect, useRef } from 'react'
 import { usePathname } from 'next/navigation'
+import { cssColor } from './useCanvas'
 
-const GOLD = '#e3b341'
-const PALE_GOLD = '#f6dc92'
-const CORE = '#fff3cf'
+/** The sky's colours: the --sky-* tokens in app/tokens.css, read once at mount. These are the fallbacks. */
+const PALETTE = {
+  gold: '#e3b341',
+  pale: '#f6dc92',
+  core: '#fff3cf',
+  glowCore: 'rgba(246,220,146,1)',
+  glowMid: 'rgba(227,179,65,0.45)',
+  glowEdge: 'rgba(227,179,65,0)',
+}
+type Palette = typeof PALETTE
+
+function readPalette(): Palette {
+  return {
+    gold: cssColor('--sky-gold', PALETTE.gold),
+    pale: cssColor('--sky-pale', PALETTE.pale),
+    core: cssColor('--sky-core', PALETTE.core),
+    glowCore: cssColor('--sky-glow-core', PALETTE.glowCore),
+    glowMid: cssColor('--sky-glow-mid', PALETTE.glowMid),
+    glowEdge: cssColor('--sky-glow-edge', PALETTE.glowEdge),
+  }
+}
 
 /** One turn per six minutes. */
 const TURN_RATE = (2 * Math.PI) / 360
@@ -46,16 +65,16 @@ type Field = {
 }
 
 /** A pre-rendered soft glow, so constellation stars cost one drawImage each. */
-function makeGlow(): HTMLCanvasElement {
+function makeGlow(palette: Palette): HTMLCanvasElement {
   const size = 64
   const c = document.createElement('canvas')
   c.width = c.height = size
   const g = c.getContext('2d')
   if (g) {
     const grad = g.createRadialGradient(size / 2, size / 2, 0, size / 2, size / 2, size / 2)
-    grad.addColorStop(0, 'rgba(246,220,146,1)')
-    grad.addColorStop(0.35, 'rgba(227,179,65,0.45)')
-    grad.addColorStop(1, 'rgba(227,179,65,0)')
+    grad.addColorStop(0, palette.glowCore)
+    grad.addColorStop(0.35, palette.glowMid)
+    grad.addColorStop(1, palette.glowEdge)
     g.fillStyle = grad
     g.fillRect(0, 0, size, size)
   }
@@ -178,7 +197,8 @@ export function ConstellationSky() {
     const ctx = canvas.getContext('2d')
     if (!ctx) return
     const root = document.documentElement
-    const glow = makeGlow()
+    const palette = readPalette()
+    const glow = makeGlow(palette)
     const motion = window.matchMedia('(prefers-reduced-motion: reduce)')
     let field: Field | null = null
     let ticks: Ticks[] = []
@@ -231,7 +251,7 @@ export function ConstellationSky() {
       // Rings: a hairline circle, ticks turning against their neighbour, and
       // small diamonds riding the ring.
       ctx.lineWidth = 1
-      ctx.strokeStyle = GOLD
+      ctx.strokeStyle = palette.gold
       RING_RADII.forEach((frac, i) => {
         const spin = (i % 2 === 0 ? 1 : -1) * angle
         ctx.globalAlpha = 0.11
@@ -247,7 +267,7 @@ export function ConstellationSky() {
         ctx.stroke(ticks[i].long)
         ctx.restore()
       })
-      ctx.fillStyle = GOLD
+      ctx.fillStyle = palette.gold
       ctx.globalAlpha = 0.6
       ctx.beginPath()
       for (const d of f.diamonds) {
@@ -265,7 +285,7 @@ export function ConstellationSky() {
       ctx.fill()
 
       // Constellation lines, then their glowing stars.
-      ctx.strokeStyle = GOLD
+      ctx.strokeStyle = palette.gold
       ctx.globalAlpha = 0.22
       ctx.beginPath()
       for (const c of f.constellations) {
@@ -296,7 +316,7 @@ export function ConstellationSky() {
         }
       }
       ctx.globalAlpha = 0.95
-      ctx.fillStyle = CORE
+      ctx.fillStyle = palette.core
       ctx.fill(cores)
 
       // Field stars and sparkles: one path per alpha step.
@@ -327,9 +347,9 @@ export function ConstellationSky() {
           ctx.fill(p)
         })
       }
-      fillDots(f.gold, GOLD)
-      fillDots(f.pale, PALE_GOLD)
-      ctx.strokeStyle = PALE_GOLD
+      fillDots(f.gold, palette.gold)
+      fillDots(f.pale, palette.pale)
+      ctx.strokeStyle = palette.pale
       const cross = (p: Path2D, x: number, y: number, s: Star) => {
         const arm = 2.5 + s.size * 2.5
         p.moveTo(x - arm, y)

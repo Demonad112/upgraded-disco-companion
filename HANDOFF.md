@@ -5,18 +5,18 @@ Updated 2026-10-29. Production host: `upgraded-disco-companion.pages.dev`
 
 ## State
 
-- **Merged into main:** PR #13 (audit `docs/audit/` + quieter card frame / centred hero), PR #14 (CLAUDE.md design
-  rules, T21 done), and this handoff PR once merged.
-- **Audit:** `docs/audit/` holds the 2026-10-22 audit. All owner decisions D1–D10 are accepted. The fix work is
-  scheduled one session per sitting in `docs/audit/10-SESSION-SCHEDULE.md`; `08-PROGRESS.md` tracks tasks.
-- **CI:** main is green (secrets, test, Cloudflare Pages all passed on #13 and #14).
+- **Audit:** `docs/audit/` holds the 2026-10-22 audit. All owner decisions D1–D10 are accepted. Fixes run one session per
+  sitting (`docs/audit/10-SESSION-SCHEDULE.md`); `08-PROGRESS.md` tracks tasks. T01–T21 are done once A7 (#45) merges.
+- **UI:** `docs/ui/UI-PLAN.md`; the wave table in `docs/ui/UI-PROGRESS.md` is the run order. Sessions follow
+  `docs/SESSION-PROTOCOL.md`; carry-over lives in `docs/carry/`.
 
 ## Status 2026-10-29
 
-- Wave 1 is done (PRs #16–#21). Origin has only `main`.
-- Waves 1–6 merged (#16–#32); Dependabot removed by owner (PRs #33–#39 closed).
-- Next is wave 2: A2 and U1, run in parallel.
-- Progress is tracked in `docs/ui/UI-PROGRESS.md` and carry-over in `docs/carry/`.
+- Waves 1–6 merged (PRs #16–#32): A1–A6, U0, U1, U8, U9, U12, plus OQ1.
+- SB1 (owner decisions) merged between waves 6 and 7 (PRs #41, #42): Dependabot version updates removed (PRs #33–#39
+  closed, audit CI step kept), in-repo `robots.txt` removed, Windows e2e capped at 2 workers (A3-2 closed).
+- Wave 7: A8 (T20 proxy CORS) merged (#44); A7 (T19 design tokens, `apps/web/src/app/tokens.css`) open as #45.
+- Next: wave 8 (U2 surfaces and connectors), then U3–U7, U10, U11a/b and U13 per the wave table.
 
 ## Correction recorded
 
@@ -26,7 +26,6 @@ Updated 2026-10-29. Production host: `upgraded-disco-companion.pages.dev`
 
 ## Open (carried over)
 
-1. `services/ninja-proxy/api/_upstream.js` and `scripts/` still carry the old repo URL in the User-Agent. Owned by A8.
-2. Docs dropped in the transfer (`DESIGN.md`, `DATA-REFRESH.md`) and the cloud-setup hook are not restored.
-3. `packages/core/test/pob-bridge.test.ts` ("gives up once the per-call budget is spent") is timing-flaky.
-4. Owner steps not yet done: Lighthouse run, Vercel proxy deploy after T20.
+1. Docs dropped in the transfer (`DESIGN.md`, `DATA-REFRESH.md`) are not restored. The cloud-setup hook is back (`.claude/hooks/cloud-setup.sh`, 718bd70).
+2. `packages/core/test/pob-bridge.test.ts` ("gives up once the per-call budget is spent") is timing-flaky.
+3. Owner steps not yet done: Lighthouse run, Vercel proxy deploy (T20 merged in #44).
