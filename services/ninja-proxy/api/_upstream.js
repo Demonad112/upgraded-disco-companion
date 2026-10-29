@@ -6,8 +6,32 @@
 // A public repository URL, never a personal address. A fork sets
 // UPSTREAM_CONTACT to its own.
 export const UPSTREAM_USER_AGENT = `poe2-endgame-companion-proxy (+${
-  process.env.UPSTREAM_CONTACT || 'https://github.com/Demonad112/poe2-v3.0'
+  process.env.UPSTREAM_CONTACT || 'https://github.com/Demonad112/upgraded-disco-companion'
 })`
+
+// Browsers allowed to read the proxy's responses: the app on Cloudflare Pages
+// (production and preview hosts) and a local dev server. Non-browser callers
+// send no Origin, so CORS does not apply to them.
+const ALLOWED_ORIGIN = /^(https:\/\/([a-z0-9-]+\.)?upgraded-disco-companion\.pages\.dev|http:\/\/localhost:\d+)$/
+
+/** The request's `Origin` when it is on the allowlist, otherwise null. */
+export function allowOrigin(req) {
+  const origin = req.headers?.origin
+  return typeof origin === 'string' && ALLOWED_ORIGIN.test(origin) ? origin : null
+}
+
+/**
+ * Sets the CORS headers: `Access-Control-Allow-Origin` echoes an allowed
+ * origin and is omitted otherwise, and `Vary: Origin` is always sent so a CDN
+ * never serves one origin's answer to another.
+ */
+export function applyCors(req, res, allowHeaders) {
+  const origin = allowOrigin(req)
+  if (origin) res.setHeader('Access-Control-Allow-Origin', origin)
+  res.setHeader('Vary', 'Origin')
+  res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS')
+  if (allowHeaders) res.setHeader('Access-Control-Allow-Headers', allowHeaders)
+}
 
 const RETRY_STATUSES = new Set([429, 502, 503, 504])
 const MAX_RETRIES = 2

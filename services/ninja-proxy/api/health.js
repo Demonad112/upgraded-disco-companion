@@ -10,9 +10,10 @@
 // This answers that question on its own: if /api/health returns 200 with the
 // expected endpoint list, the functions directory was found and built.
 
+import { applyCors } from "./_upstream.js";
+
 export default function handler(req, res) {
-  res.setHeader("Access-Control-Allow-Origin", "*");
-  res.setHeader("Access-Control-Allow-Methods", "GET, OPTIONS");
+  applyCors(req, res);
   // Never cached — the point is to reflect the deployment being asked.
   res.setHeader("Cache-Control", "no-store");
   if (req.method === "OPTIONS") {
