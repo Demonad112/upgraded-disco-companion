@@ -121,6 +121,8 @@ Resolved 2026-10-29 by T01: `next`/`eslint-config-next` 16.4.2, `react`/`react-d
 no `SecurityFatalError` and no vulnerability line. `npm audit --omit=dev` shows no `next` advisory. One unrelated high
 advisory remains: `zod` 3.25.76 (GHSA-mrhx-c7xc-m3w5, fixed only in zod 4), a direct dependency of `apps/mcp`. Bumping
 it is a major change outside T01 and waits for the owner.
+Resolved 2026-10-29 (owner-approved follow-up): `apps/mcp` moved to zod ^4.6.7; `npm audit --audit-level=high`
+exits 0, dev dependencies included.
 
 Related transitive advisories (dev/tooling only, see `05-DEPENDENCIES.md`): `braces`/`micromatch`/`fast-glob`
 under `eslint-config-next` (audit's "fix" is a downgrade to 14.x, so ignore it), and `ip-address` (moderate) under
