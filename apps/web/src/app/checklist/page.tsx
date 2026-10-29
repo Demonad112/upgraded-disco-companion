@@ -24,7 +24,9 @@ export default function ChecklistPage() {
   return (
     <div className="flex flex-col gap-5">
       <PageHeader
-        title="Progression Checklist"
+        eyebrow="Endgame roadmap"
+        title="Progression"
+        accent="Checklist"
         description="Campaign end through the full Atlas tree, the Master quest chains and your farming loop. Check off steps as you complete them — progress is saved in this browser."
       />
 

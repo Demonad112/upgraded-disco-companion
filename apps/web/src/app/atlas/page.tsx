@@ -18,7 +18,9 @@ export default function AtlasPage() {
     <AtlasMapProvider>
       <div className="flex flex-col gap-5">
         <PageHeader
-          title="Atlas Tree Planner"
+          eyebrow="Atlas passive tree"
+          title="Atlas Tree"
+          accent="Planner"
           description="The order to take Atlas nodes in, and where each one is. Tick nodes as you allocate them; tap Map on any node to find it on the tree."
         />
 
