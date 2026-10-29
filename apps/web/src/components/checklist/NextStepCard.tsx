@@ -24,9 +24,13 @@ export function NextStepCard({
   const step = steps.find((s) => !done.has(s.id)) ?? null;
   const doneCount = steps.filter((s) => done.has(s.id)).length;
 
+  // Tinted on the checklist, where it is a data block in the linked flow
+  // (U2-5); clear glass on home, like the other home cards.
+  const surface = onChecklistPage ? "data" : undefined;
+
   if (!step) {
     return (
-      <div className="card h-full p-6">
+      <div data-surface={surface} className="card h-full p-6">
         <h2 className="font-semibold text-ink">Checklist complete</h2>
         <p className="mt-1 text-sm text-ink-mute">
           Every step is ticked off. Pick a farm on the Farming Dashboard and keep
@@ -43,6 +47,7 @@ export function NextStepCard({
   return (
     <section
       aria-labelledby="next-step-title"
+      data-surface={surface}
       className="card relative h-full overflow-hidden p-6"
     >
       <div className="flex flex-wrap items-center justify-between gap-2">
