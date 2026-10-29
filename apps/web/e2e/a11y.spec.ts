@@ -10,6 +10,7 @@ const pages: Array<[string, string]> = [
   ['home', ''],
   ['character', `character/?import=${encodeURIComponent(PROFILE_URL)}`],
   ['checklist', 'checklist/'],
+  ['dashboard', 'dashboard/'],
   ['methodology', 'methodology/'],
   ['whats-new', 'whats-new/'],
 ]
