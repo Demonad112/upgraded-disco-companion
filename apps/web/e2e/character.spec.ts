@@ -13,7 +13,8 @@ test('?import= analyses the character and records it for the home page', async (
   const card = page.getByRole('region', { name: /Athrynas/ })
   await expect(card).toBeVisible()
   await expect(card.getByRole('link', { name: /Re-import/ })).toHaveAttribute('href', /import=/)
-  await expect(page.locator('[data-tool-status="character"]')).toContainText('Last import: Athrynas')
+  // The grade at import, not the level, once a grade is known.
+  await expect(page.locator('[data-tool-status="character"]')).toHaveText(/^Last import: Athrynas · (?!Lv)\S/)
 })
 
 test('closed analysis panels mount while idle, so their text is findable', async ({ page }) => {

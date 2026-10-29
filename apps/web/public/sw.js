@@ -38,6 +38,9 @@ const DATA_CACHE = `poe2-data-${VERSION}`
 /** Immutable per deploy. Cache-first. */
 const DATA_FILES = ['/passive-tree.json', '/mod-tiers.json', '/monster-stats.json']
 
+/** Install metadata, cached with the shell (relative to the root, so it follows the base path). */
+const INSTALL_FILES = ['manifest.webmanifest', 'icon.svg', 'icon-192.png']
+
 const isDataRequest = (url) => DATA_FILES.some((file) => url.pathname.endsWith(file))
 
 /** Never cached — a character sheet must not be served stale. */
@@ -102,10 +105,13 @@ async function cacheOpenPages() {
     await cache.put(page, response)
     for (const m of html.matchAll(/["']([^"']*\/_next\/static\/[^"']+\.(?:js|css|woff2))["']/g)) assets.add(new URL(m[1], page).href)
   }
+  // The install metadata is fixed, so a build the browser installs from offline still finds it.
+  for (const file of INSTALL_FILES) assets.add(new URL(file, root).href)
   await Promise.all(
     [...assets].map(async (asset) => {
-      const response = await fetch(asset)
-      if (response.ok) await cache.put(asset, response)
+      // One missing file must not leave the rest of the shell uncached.
+      const response = await fetch(asset).catch(() => null)
+      if (response?.ok) await cache.put(asset, response)
     }),
   )
 }

@@ -58,6 +58,8 @@ async function waitForBuild(page, notB) {
   await page.goto(URL_)
   await page.evaluate(() => navigator.serviceWorker.ready)
   await page.reload() // now controlled; fills the shell cache with the page and its chunks
+  // U12: work from /checklist/ from here on, so the offline reload in step 4 is a reload of a tool page.
+  await page.goto(URL_ + 'checklist/')
   await page.evaluate(() => fetch('/monster-stats.json').then((r) => r.text()))
   const s1 = await state(page)
   const b1 = /b=([^&]+)/.exec(s1.active)[1]
@@ -73,6 +75,9 @@ async function waitForBuild(page, notB) {
   await page.reload()
   const s3 = await waitForBuild(page, b1)
   console.log('3 reload       ', JSON.stringify(s3))
+  // U12: the controller changed on a page that had one, so the toast must be up (and not on the first load).
+  const toast3 = await page.locator('.update-toast').count()
+  console.log('3 update toast ', toast3 === 1 ? 'shown' : `MISSING (${toast3})`)
   const html3 = await page.evaluate(() => [...document.scripts].map((s) => s.src).filter(Boolean).length)
 
   // 4. Offline reload: emulated offline, and the server gone as well.
@@ -88,15 +93,23 @@ async function waitForBuild(page, notB) {
   }
   const s4 = ok ? await state(page) : null
   const h1 = ok ? await page.locator('h1').first().textContent().catch(() => null) : null
+  if (ok) {
+    const meta = await page.evaluate(async () => {
+      const out = {}
+      for (const f of ['manifest.webmanifest', 'icon.svg', 'icon-192.png']) out[f] = !!(await caches.match(new URL(f, location.origin + '/').href))
+      return out
+    })
+    console.log('4 install files cached', JSON.stringify(meta))
+  }
   console.log('4 offline      ', JSON.stringify({ ok, h1, scripts: html3, failed: failed.slice(0, 10), failedCount: failed.length, s4 }))
 
-  // 5. A second offline load of another route that was not visited.
+  // 5. An offline load of a route that was not visited falls back to the root shell.
   failed.length = 0
   try {
-    await page.goto(URL_ + 'checklist/', { waitUntil: 'load' })
-    console.log('5 offline /checklist/', JSON.stringify({ h1: await page.locator('h1').first().textContent(), failedCount: failed.length }))
+    await page.goto(URL_ + 'atlas/', { waitUntil: 'load' })
+    console.log('5 offline /atlas/', JSON.stringify({ h1: await page.locator('h1').first().textContent(), failedCount: failed.length }))
   } catch (e) {
-    console.log('5 offline /checklist/ FAILED:', e.message.split('\n')[0])
+    console.log('5 offline /atlas/ FAILED:', e.message.split('\n')[0])
   }
   await ctx.close()
 })().catch((e) => {

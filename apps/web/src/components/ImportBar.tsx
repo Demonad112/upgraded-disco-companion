@@ -5,6 +5,7 @@ import { NinjaClient, NinjaError, looksLikePobCode, parseProfileUrl } from '@poe
 import { PROXY_BASE } from '@/lib/proxy'
 import { useLocalStore } from '@/lib/localStore'
 import { recentCharacters } from '@/lib/recentCharacters'
+import { isOffline } from '@/lib/online'
 
 const EXAMPLE = 'https://poe.ninja/poe2/profile/Demonad112-2589/forbiddenrites/character/Yykiuy'
 
@@ -32,6 +33,14 @@ export function checkProfileUrl(target: string): string | null {
 export async function importProfile(target: string): Promise<ImportResult> {
   const ref = parseProfileUrl(target)
   if (!ref?.leagueSlug) return { ok: false, error: checkProfileUrl(target) ?? 'Invalid URL.', canPaste: false }
+  if (isOffline()) {
+    return {
+      ok: false,
+      error:
+        'You are offline. Importing from poe.ninja needs a connection. Pasting a character model JSON or a Path of Building code still works.',
+      canPaste: true,
+    }
+  }
   try {
     const client = new NinjaClient({ fetch: (i, init) => fetch(i, init), proxyBaseUrl: PROXY_BASE })
     const data = await client.fetchCharacter(ref.account, ref.leagueSlug, ref.character)

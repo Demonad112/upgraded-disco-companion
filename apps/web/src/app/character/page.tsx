@@ -37,6 +37,7 @@ import { Skeleton } from '@/components/Skeleton'
 import { TreePanel } from '@/components/tree/TreePanel'
 import { useCharacterHistory } from '@/lib/useCharacterHistory'
 import { recordRecent } from '@/lib/recentCharacters'
+import { gradeText } from '@/components/BuildScore'
 import { useLadder } from '@/lib/useLadder'
 import { ScrollSpyNav } from '@/components/shared/ScrollSpyNav'
 import { WhatIfPanel } from '@/components/character/WhatIfPanel'
@@ -148,6 +149,7 @@ export default function Home() {
       name: identity.name,
       className: identity.className ?? null,
       level: identity.level ?? null,
+      grade: gradeText(settled.assessment)?.letter ?? null,
       at: new Date().toISOString(),
     })
   }, [sourceUrl, settled])
