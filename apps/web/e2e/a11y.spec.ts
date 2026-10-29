@@ -10,6 +10,7 @@ const pages: Array<[string, string]> = [
   ['home', ''],
   ['character', `character/?import=${encodeURIComponent(PROFILE_URL)}`],
   ['checklist', 'checklist/'],
+  ['atlas', 'atlas/'],
   ['dashboard', 'dashboard/'],
   ['methodology', 'methodology/'],
   ['whats-new', 'whats-new/'],
@@ -26,6 +27,23 @@ for (const [name, path] of pages) {
     expect(
       blocking.map((v) => `${v.id} (${v.impact}): ${v.nodes.slice(0, 3).map((n) => n.target.join(' ')).join(' | ')}`),
     ).toEqual([])
+  })
+}
+
+// Landmarks and heading order are axe best-practice rules, outside the wcag2a/aa tags above. The page
+// needs one banner (layout.tsx `header.site-header`), one main, every text node inside a landmark, and
+// no skipped heading levels.
+const LANDMARK_RULES = ['heading-order', 'region', 'landmark-one-main', 'landmark-no-duplicate-banner', 'landmark-banner-is-top-level', 'landmark-unique']
+
+for (const [name, path] of pages) {
+  test(`${name} has one banner landmark, no stray content and no skipped headings`, async ({ page }) => {
+    await page.goto(path)
+    if (name === 'character') {
+      await expect(page.getByRole('heading', { name: /Athrynas/ }).first()).toBeVisible({ timeout: 30_000 })
+    }
+    await expect(page.locator('header.site-header')).toHaveCount(1)
+    const results = await new AxeBuilder({ page }).withRules(LANDMARK_RULES).analyze()
+    expect(results.violations.map((v) => `${v.id}: ${v.nodes.slice(0, 3).map((n) => n.target.join(' ')).join(' | ')}`)).toEqual([])
   })
 }
 

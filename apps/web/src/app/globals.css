@@ -794,13 +794,15 @@ main [id] {
    of the page colour over the sky, so 35% of it shows through and the dim
    scrolls with them. In the components layer, so a block's own bg-* utility
    still wins; a block that needs its own fill under this needs it as an image
-   layer instead. data-sky-dim-off is set before paint. */
+   layer instead. data-sky-dim-off is set before paint. The page's banner
+   landmark (header.site-header, layout.tsx) is a plain wrapper: the nav inside
+   it takes the dim, not the wrapper. */
 :root {
   --sky-dim-fill: color-mix(in srgb, var(--page) 65%, transparent);
 }
 @layer components {
   :root:not([data-sky-dim-off])
-    :is([data-sky-dim], .card, header, footer, .site-nav):not(:is([data-sky-dim], .card, header, footer, .site-nav) *) {
+    :is([data-sky-dim], .card, header:not(.site-header), footer, .site-nav):not(:is([data-sky-dim], .card, header:not(.site-header), footer, .site-nav) *) {
     background-color: var(--sky-dim-fill);
   }
 }

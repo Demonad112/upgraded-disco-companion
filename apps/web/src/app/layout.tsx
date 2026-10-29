@@ -87,8 +87,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               .shell width and side padding. */}
           <div id="fx-root" className="relative isolate z-[1] flex min-h-screen flex-col">
             <FxLayer />
-            <PatchVersionBanner />
-            <NavBar />
+            <header className="site-header">
+              <PatchVersionBanner />
+              <NavBar />
+            </header>
             <main id="main" className="shell relative flex-1 py-8 sm:py-12">
               {children}
             </main>
