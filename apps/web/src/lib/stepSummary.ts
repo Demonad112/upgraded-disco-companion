@@ -37,10 +37,12 @@ export function stepSummaries(): StepSummary[] {
   }));
 }
 
-/** Totals the home progress card divides by. */
+/** Totals the home progress card and tool cards divide by. */
 export function progressTotals() {
+  const atlasIds = [...atlasClusters, ...memoryForks].map((n) => n.id);
   return {
     stepIds: orderedSteps.map((s) => s.id),
-    atlasTotal: atlasClusters.length + memoryForks.length,
+    atlasIds,
+    atlasTotal: atlasIds.length,
   };
 }
