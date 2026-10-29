@@ -10,6 +10,7 @@ const pages: Array<[string, string]> = [
   ['home', ''],
   ['character', `character/?import=${encodeURIComponent(PROFILE_URL)}`],
   ['checklist', 'checklist/'],
+  ['dashboard', 'dashboard/'],
   ['methodology', 'methodology/'],
   ['whats-new', 'whats-new/'],
 ]
@@ -27,3 +28,25 @@ for (const [name, path] of pages) {
     ).toEqual([])
   })
 }
+
+// A step toggle draws a 17.6 px circle, but `hit-area` (globals.css `@utility hit-area`)
+// widens its target to 24×24 with an ::after. axe `target-size` measures the element box and
+// not the pseudo-element, so it flags these toggles. Prove the wider target works, then leave
+// only this selector out of the rule.
+const STEP_TOGGLE = 'button[aria-label^="Done:"]'
+
+test('a step toggle flips from a click just outside its visible circle', async ({ page }) => {
+  await page.goto('checklist/')
+  const toggle = page.locator(STEP_TOGGLE).first()
+  await expect(toggle).toHaveAttribute('aria-pressed', 'false')
+  // 3 px left of the box: outside the circle, inside the 24 px ::after.
+  await toggle.click({ position: { x: -3, y: 8 } })
+  await expect(toggle).toHaveAttribute('aria-pressed', 'true')
+})
+
+test('checklist has no target-size violations beyond the hit-area toggles', async ({ page }) => {
+  await page.goto('checklist/')
+  await expect(page.locator(STEP_TOGGLE).first()).toBeVisible()
+  const results = await new AxeBuilder({ page }).withRules(['target-size']).exclude(STEP_TOGGLE).analyze()
+  expect(results.violations.flatMap((v) => v.nodes.map((n) => n.target.join(' ')))).toEqual([])
+})

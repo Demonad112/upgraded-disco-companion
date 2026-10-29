@@ -18,11 +18,14 @@ export function cssColor(name: string, fallback = ''): string {
  * Owns a full-size canvas inside #fx-root: sizes it for the device pixel
  * ratio and calls `draw` on mount, on resize, on route change, when web fonts
  * finish loading (text reflows) and when the compact attribute changes. Draws
- * are coalesced to one per frame.
+ * are coalesced to one per frame. `maxHeight` caps the canvas for art that
+ * only covers the top of the page. The backing store is only reassigned when
+ * the size changes; assigning it, even to the same value, reallocates it.
  */
 export function useCanvas(
   draw: (ctx: CanvasRenderingContext2D, w: number, h: number, root: HTMLElement) => void,
   extraEvent?: string,
+  maxHeight?: number,
 ) {
   const ref = useRef<HTMLCanvasElement>(null)
   const pathname = usePathname()
@@ -39,12 +42,14 @@ export function useCanvas(
     const paint = () => {
       frame = 0
       const w = root.clientWidth
-      const h = root.clientHeight
+      const h = Math.min(root.clientHeight, maxHeight ?? Infinity)
       const dpr = Math.min(window.devicePixelRatio || 1, 2)
-      canvas.width = Math.round(w * dpr)
-      canvas.height = Math.round(h * dpr)
-      canvas.style.width = `${w}px`
-      canvas.style.height = `${h}px`
+      const pw = Math.round(w * dpr)
+      const ph = Math.round(h * dpr)
+      if (canvas.width !== pw) canvas.width = pw
+      if (canvas.height !== ph) canvas.height = ph
+      if (canvas.style.width !== `${w}px`) canvas.style.width = `${w}px`
+      if (canvas.style.height !== `${h}px`) canvas.style.height = `${h}px`
       const ctx = canvas.getContext('2d')
       if (!ctx) return
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
@@ -74,7 +79,7 @@ export function useCanvas(
       window.removeEventListener('resize', schedule)
     }
     // pathname re-subscribes so a route change always redraws.
-  }, [pathname, extraEvent])
+  }, [pathname, extraEvent, maxHeight])
 
   return ref
 }

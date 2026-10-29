@@ -26,13 +26,17 @@ export const MECHANIC_LABELS: Record<string, string> = {
  * type is a coincidence of the token names, not a claim about the game — the
  * chips carry their mechanic's name as text, so the colour never has to
  * carry the meaning alone.
+ *
+ * The text is the hue mixed toward white: on its own /20 fill the plain
+ * --dmg-* step fails AA at chip size. Each percentage is the least lightening
+ * that keeps 4.6:1 on the row and on its hover overlay (audit A11Y-01).
  */
 export const MECHANIC_COLORS: Record<string, string> = {
-  breach: "bg-chaos/20 text-chaos border-chaos/40",
-  abyss: "bg-physical/20 text-physical border-physical/40",
-  delirium: "bg-cold/20 text-cold border-cold/40",
-  ritual: "bg-fire/20 text-fire border-fire/40",
-  expedition: "bg-lightning/20 text-lightning border-lightning/40",
+  breach: "bg-chaos/20 text-[color-mix(in_srgb,var(--dmg-chaos)_90%,white)] border-chaos/40",
+  abyss: "bg-physical/20 text-[color-mix(in_srgb,var(--dmg-physical)_85%,white)] border-physical/40",
+  delirium: "bg-cold/20 text-[color-mix(in_srgb,var(--dmg-cold)_85%,white)] border-cold/40",
+  ritual: "bg-fire/20 text-[color-mix(in_srgb,var(--dmg-fire)_80%,white)] border-fire/40",
+  expedition: "bg-lightning/20 text-[color-mix(in_srgb,var(--dmg-lightning)_90%,white)] border-lightning/40",
 };
 
 export const ROADMAP_PHASE_LABELS: Record<string, string> = {
