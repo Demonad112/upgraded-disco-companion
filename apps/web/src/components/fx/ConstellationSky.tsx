@@ -168,10 +168,19 @@ export function ConstellationSky() {
 
     const hidden = () => root.dataset.theme === 'light' || root.hasAttribute('data-compact')
 
+    // The field is seeded from the size it was built for, so it is kept while
+    // the viewport only gets shorter (a phone's toolbar showing): the canvas
+    // stays at the tallest height seen and runs off the bottom of the screen.
+    let builtW = 0
+    let builtH = 0
     const rebuild = () => {
       const w = window.innerWidth
       const h = window.innerHeight
-      dpr = Math.min(window.devicePixelRatio || 1, 2)
+      const ratio = Math.min(window.devicePixelRatio || 1, 2)
+      if (field && w === builtW && h <= builtH && ratio === dpr) return
+      builtW = w
+      builtH = h
+      dpr = ratio
       canvas.width = Math.round(w * dpr)
       canvas.height = Math.round(h * dpr)
       canvas.style.width = `${w}px`

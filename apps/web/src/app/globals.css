@@ -796,9 +796,12 @@ main [id] {
   z-index: 0;
   pointer-events: none;
 }
+/* Until the first paint sizes it: the sky keeps the tallest viewport it was
+   built for (ConstellationSky), so a phone toolbar never squashes it. */
 .sky-canvas {
   width: 100vw;
   height: 100vh;
+  height: 100lvh;
 }
 .sky-scrim {
   background:
