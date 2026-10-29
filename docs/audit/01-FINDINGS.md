@@ -373,6 +373,8 @@ Facts: on every page, Next's client requests `/<route>/__next.<route>.__PAGE__.t
 Interpretation: local runs see console noise that production doesn't, and local prefetch differs from production.
 Fix: map `__next.<seg>.__PAGE__.txt` → `__next.<seg>/__PAGE__.txt` in `serve.mjs`, and document
 `npx wrangler@4 pages dev apps/web/out` for exact parity (no new dependency). There is no nvm on this machine (Node 24 locally): rely on CI for Node 22 behaviour. (Correction 2026-10-22: an earlier version said to run `nvm use`.)
+Update 2026-10-29: from Next 16.4.2 (T01) the export writes `out/<route>/__next.<route>.__PAGE__.txt` directly, so the
+404s no longer reproduce. T13 keeps the rewrite as a fallback and adds a "no 404s" e2e that guards either layout.
 
 ### ARCH-01 — Dead asset and large screenshots in git
 **Low · Confirmed · Effort S · Risk Low**

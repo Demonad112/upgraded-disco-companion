@@ -17,7 +17,7 @@ Tasks and acceptance criteria: `02-FIX-PLAN.md`. Decisions: `09-OWNER-DECISIONS.
 | [ ] | T10 Mechanic chip contrast | P1 | A11Y-01 | — | todo | | |
 | [ ] | T11 Hit-area test + axe exclusion | P1 | A11Y-02 | — | todo | | |
 | [ ] | T12 Audit CI step (+ Dependabot if D4) | P2 | DX-01 | ⛔ D4 (Dependabot part) | todo | | after T01; D4 accepted 2026-10-22 |
-| [ ] | T13 serve.mjs RSC path parity + README | P2 | DX-02 | — | todo | | |
+| [x] | T13 serve.mjs RSC path parity + README | P2 | DX-02 | — | done | see commit (code in merge of d75787c) | New "no 404s" e2e: 10/10 pass (5 routes × 2 projects), console 404s 0. Next 16.4.2 now exports `__next.<seg>.__PAGE__.txt` flat, so the rewrite is a fallback for the old nested layout; checked by hiding a segment file (test fails on all 5 routes) and by serving only the nested copy (passes) |
 | [ ] | T14 Cache headers for images/icons | P2 | CF-01 | — | todo | | |
 | [ ] | T15 Canonical, og:url, sitemap | P2 | SEO-01 | — | todo | | |
 | [ ] | T16 Unify theme colour | P2 | SEO-02 | — | todo | | |
