@@ -36,6 +36,9 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
+      - name: Audit runtime deps
+        # Runtime dependencies only; dev tooling advisories don't ship.
+        run: npm audit --omit=dev --audit-level=high
       - name: Typecheck
         run: npm run typecheck
       - name: Lint
