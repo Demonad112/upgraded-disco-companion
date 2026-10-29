@@ -11,6 +11,11 @@ export interface RecentCharacter {
   name: string
   className: string | null
   level: number | null
+  /**
+   * The headline grade at import (a range such as "D–B" when damage could not
+   * be graded). Null when ungraded; absent on rows saved before it was kept.
+   */
+  grade?: string | null
   at: string
 }
 
@@ -40,7 +45,8 @@ export const recentCharacters = createLocalStore<RecentCharacter[]>(
 export function recordRecent(entry: RecentCharacter): void {
   recentCharacters.set((prev) => {
     const same = prev[0]
-    if (same && same.url === entry.url && same.key === entry.key && same.level === entry.level) return prev
+    if (same && same.url === entry.url && same.key === entry.key && same.level === entry.level && same.grade === entry.grade)
+      return prev
     return [entry, ...prev.filter((r) => r.url !== entry.url && r.key !== entry.key)].slice(0, MAX_RECENT)
   })
 }
