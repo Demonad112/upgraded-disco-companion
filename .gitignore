@@ -30,3 +30,4 @@ packages/data/generated/.cache/
 # Playwright
 apps/web/test-results/
 apps/web/playwright-report/
+.claude/settings.local.json
