@@ -149,6 +149,10 @@ describe('offline worker', () => {
       `${ORIGIN}/_next/static/chunks/b.js`,
       `${ORIGIN}/_next/static/media/f.woff2`,
       `${ORIGIN}/checklist/`,
+      // install metadata, so the manifest and icons survive an update
+      `${ORIGIN}/icon-192.png`,
+      `${ORIGIN}/icon.svg`,
+      `${ORIGIN}/manifest.webmanifest`,
     ])
   })
 
