@@ -46,7 +46,7 @@ cd services/ninja-proxy && npm test                # node:test, separate from th
 
 ## Design (decided; change only with the owner)
 
-Dark palette; bold uppercase EB Garamond headings; square corners everywhere, no script fonts, no rounded shapes; gold constellation sky rotating slowly; clear-glass blocks; Threads-style tool cards; sky dimmed behind blocks with a footer toggle (`poe2-sky-dim`); lighter sky on phones (width-based); "Up next" block kept. Light theme and cursor effects are deferred.
+Dark palette; uppercase EB Garamond for headings and labels (finding, step and strategy titles are sentence case); square corners everywhere, no script fonts, no rounded shapes; gold constellation sky rotating slowly; clear glass on home and hero, data panels use `--data-fill` tinted glass; thread connectors only on `[data-links]` sequences; phones use a bottom tab bar; Threads-style tool cards; sky dimmed behind blocks with a footer toggle (`poe2-sky-dim`); lighter sky on phones (width-based); "Up next" block kept. Light theme and cursor effects are deferred.
 
 - Never restyle the live site directly. Design variants go on `variant/<yyyymmdd>-<slug>` branches and are reviewed on their Cloudflare Pages preview URL (`docs/audit/06-VARIANT-STRATEGY.md`).
 - Prefer the `:root` tokens in `apps/web/src/app/globals.css` over hex values in components.
