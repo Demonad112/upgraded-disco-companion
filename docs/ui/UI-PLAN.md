@@ -263,21 +263,20 @@ Files: `app/character/page.tsx`, `components/character/*`, `BuildScore.tsx`, `Re
 
 ## Copy-paste prompts
 
-Use this one template and replace `<ID>` (U0…U13). Start the session in `C:\Dev\projects\POE2 Endgame Companion App` (local)
-or on the repo (cloud), on an up-to-date `main`:
+Use this one template and replace `<ID>` (U0…U13), `<n>`, `<ID2>` and `<files>`. Start the session in
+`C:\Dev\projects\POE2 Endgame Companion App` (local) or on the repo (cloud), on an up-to-date `main`:
 
 ```text
-Do batch <ID> of docs/ui/UI-PLAN.md. Read CLAUDE.md, the plan's "Ground rules for every UI batch", and the <ID> section first.
-Branch variant/<yyyymmdd>-<short-slug> off main (docs/<slug> for U0). Change only the files the section names, plus e2e
-selectors that follow renamed markup (no assertion removed). Run the gate as separate commands and summarise results. Take
-390/768/1440 screenshots of every route you touched against the local build and keep them out of git. Tick <ID> in
-docs/ui/UI-PROGRESS.md, commit with git commit -F, push, open one PR with the preview URL, a before/after screenshot list and a
-"Limits" section, then stop. Stop and ask before touching packages/*, services/*, data files, or anything outside the section.
+Session <ID> (wave <n>). The parallel session is <ID2>, which owns <files>; don't touch them.
+1) Follow docs/SESSION-PROTOCOL.md Start.
+2) Do batch <ID>: read CLAUDE.md, the Ground rules and the <ID> section; branch variant/<yyyymmdd>-<slug>.
+3) Follow Finish, then stop.
+Owner notes: none
 ```
 
 Batch prompts read this file. For audit sessions, use the prompts in `docs/audit/10-SESSION-SCHEDULE.md`.
 
-Model guide: Sonnet for well-specified batches (U0, U1, U3, U5, U6, U7, U11a, U11b, U12). Opus where visual or content
+Model guide (the Model column in `docs/ui/UI-PROGRESS.md` is authoritative): Sonnet for well-specified batches (U0, U1, U3, U5, U6, U7, U11a, U11b, U12). Opus where visual or content
 judgement matters (U2, U4, U8, U9, U10, U13). Local preferred where the owner reviews visuals before the PR (U2, U4, U6, U10, U13).
 
 ## Verification (whole programme)
