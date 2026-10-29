@@ -1016,8 +1016,9 @@ export const TOOLS: ToolDef[] = [
           z.object({
             id: z.string().describe('Short id, quoted back in violations.'),
             label: z.string().describe('Human label, e.g. "Swap amulet for X".'),
+            // partialRecord: any subset of stats. A plain enum-keyed record requires every key in zod 4.
             deltas: z
-              .record(
+              .partialRecord(
                 z.enum([
                   'fireResistance',
                   'coldResistance',
