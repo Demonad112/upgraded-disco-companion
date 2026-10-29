@@ -342,6 +342,11 @@ export function ConstellationSky() {
     }
 
     const frame = (now: number) => {
+      // Hidden (compact or light theme): stop; the root observer below restarts it.
+      if (hidden()) {
+        raf = 0
+        return
+      }
       raf = requestAnimationFrame(frame)
       // 30fps everywhere: the drift is slow, and the dense sky is the page's
       // biggest per-frame cost.
@@ -387,6 +392,8 @@ export function ConstellationSky() {
       if (motion.matches) paintStill()
     }
     const onMotion = () => run()
+    const rootMo = new MutationObserver(run)
+    rootMo.observe(root, { attributes: true, attributeFilter: ['data-compact', 'data-theme'] })
     const mo = new MutationObserver(() => {
       dirtyRef.current = true
       if (motion.matches) paintStill()
@@ -409,6 +416,7 @@ export function ConstellationSky() {
       cancelAnimationFrame(stillQueued)
       window.clearTimeout(debounce)
       mo.disconnect()
+      rootMo.disconnect()
       unsubDim()
       window.removeEventListener('resize', onResize)
       window.removeEventListener('scroll', onScroll)

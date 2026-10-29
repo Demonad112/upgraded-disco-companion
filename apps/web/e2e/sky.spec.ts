@@ -36,3 +36,26 @@ test.describe('constellation sky', () => {
     expect(after.data).not.toEqual(before.data)
   })
 })
+
+test('stops animating while hidden by compact mode, and resumes after', async ({ page }) => {
+  await page.addInitScript(() => {
+    const w = window as unknown as { __raf: number }
+    w.__raf = 0
+    const raf = window.requestAnimationFrame.bind(window)
+    window.requestAnimationFrame = (cb) => {
+      w.__raf++
+      return raf(cb)
+    }
+  })
+  // Compact the way the app enters it, so hydration keeps the attribute; the
+  // sky effect has run once its canvas is sized.
+  await page.goto('?compact=1')
+  await expect(page.locator('canvas[data-fx="sky"]')).not.toHaveAttribute('width', '300')
+  await page.waitForTimeout(300)
+  const count = () => page.evaluate(() => (window as unknown as { __raf: number }).__raf)
+  const hidden = await count()
+  await page.waitForTimeout(2000)
+  expect(await count()).toBe(hidden)
+  await page.evaluate(() => document.documentElement.removeAttribute('data-compact'))
+  await expect.poll(count).toBeGreaterThan(hidden)
+})
