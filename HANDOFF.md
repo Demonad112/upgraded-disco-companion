@@ -13,7 +13,8 @@ Updated 2026-10-29. Production host: `upgraded-disco-companion.pages.dev`
 
 ## Status 2026-10-29
 
-- Wave 1 is done (PRs #16–#20). Origin has only `main`.
+- Wave 1 is done (PRs #16–#21). Origin has only `main`.
+- Waves 1–6 merged (#16–#32); Dependabot removed by owner (PRs #33–#39 closed).
 - Next is wave 2: A2 and U1, run in parallel.
 - Progress is tracked in `docs/ui/UI-PROGRESS.md` and carry-over in `docs/carry/`.
 
