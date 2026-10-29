@@ -1,12 +1,11 @@
 'use client'
 
+import Link from 'next/link'
 import { useEffect, useRef, useState } from 'react'
 import { CURRENT_PATCH } from '@/lib/constants'
-import { CHANGELOG } from '@/data/changelog'
+import { CHANGELOG, KIND_LABEL } from '@/data/changelog'
 import { applyCompact, compactMode } from '@/lib/compactMode'
 import { useLocalStore } from '@/lib/localStore'
-
-const KIND_LABEL = { data: 'Data', app: 'App', caveat: 'Unverified' } as const
 
 /**
  * The patch badge, always visible, opening a short what-changed list and the
@@ -86,6 +85,13 @@ export function NavMenu() {
               </li>
             ))}
           </ol>
+          <Link
+            href="/whats-new"
+            onClick={() => setOpen(false)}
+            className="mt-3 flex min-h-[var(--tap-min)] items-center border-t border-line pt-3 text-xs text-accent hover:text-ink"
+          >
+            See all changes →
+          </Link>
         </div>
       ) : null}
     </div>

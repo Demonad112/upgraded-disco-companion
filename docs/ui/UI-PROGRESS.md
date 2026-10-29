@@ -10,7 +10,7 @@ session's row in its last commit. Audit rows are tracked in `docs/audit/08-PROGR
 | 2 | A2 cache headers | Cloud | Sonnet 5.5 · medium | done | claude/gallant-einstein-z0ygk6 | #23 | https://claude-gallant-einstein-z0yg.upgraded-disco-companion.pages.dev | tracked in docs/audit/08-PROGRESS.md |
 | 2 | U1 page headers | Cloud | Sonnet 5.5 · medium | done | claude/ecstatic-newton-km9len | #22 | https://claude-ecstatic-newton-km9le.upgraded-disco-companion.pages.dev | One `PageHeader` on 4 pages; e2e findings selector re-pointed |
 | 3 | A3 bundle and service worker | Local | Opus 5.5 · high | todo | | | | tracked in docs/audit/08-PROGRESS.md |
-| 3 | U9 Methodology and What's new | Cloud | Opus 5.5 · high | todo | | | | |
+| 3 | U9 Methodology and What's new | Cloud | Opus 5.5 · high | done | variant/20261029-pages | #24 | https://variant-20261029-pages.upgraded-disco-companion.pages.dev | `/methodology`, `/whats-new`, Ctrl K entries, patch-menu link; sitemap for A6, footer for U7 |
 | 4 | A4 canvases and a11y | Cloud | Opus 5.5 · medium | todo | | | | tracked in docs/audit/08-PROGRESS.md |
 | 4 | U8 home page | Cloud | Opus 5.5 · high | todo | | | | |
 | 5 | A5 constellation sky | Local | Opus 5.5 · high | todo | | | | tracked in docs/audit/08-PROGRESS.md |

@@ -18,6 +18,7 @@ const CATEGORY_COLORS: Record<SearchCategory, string> = {
   Mistake: "text-[var(--danger)]",
   Glossary: "text-ink-dim",
   Character: "text-[var(--accent)]",
+  Page: "text-ink-dim",
 };
 
 export default function SearchDialog({ onClose }: { onClose: () => void }) {

@@ -10,6 +10,9 @@ export interface ChangelogEntry {
   items: { kind: 'data' | 'app' | 'caveat'; text: string }[]
 }
 
+/** Reader-facing name of each item kind. */
+export const KIND_LABEL = { data: 'Data', app: 'App', caveat: 'Unverified' } as const
+
 export const CHANGELOG: ChangelogEntry[] = [
   {
     patch: '0.5.5',

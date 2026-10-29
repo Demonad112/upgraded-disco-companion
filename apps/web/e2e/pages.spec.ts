@@ -19,6 +19,8 @@ const ROUTES = [
   { path: 'atlas/', heading: /Atlas/ },
   { path: 'dashboard/', heading: /Dashboard/ },
   { path: 'character/', heading: /Character/ },
+  { path: 'methodology/', heading: /How the analysis works/ },
+  { path: 'whats-new/', heading: /What’s new/ },
 ]
 
 for (const scheme of ['dark', 'light'] as const) {
