@@ -37,6 +37,7 @@ export const metadata: Metadata = {
   title,
   description,
   manifest: `${basePath}/manifest.webmanifest`,
+  alternates: { canonical: './' },
   icons: {
     icon: [
       { url: `${basePath}/icon.svg`, type: 'image/svg+xml' },
@@ -45,7 +46,7 @@ export const metadata: Metadata = {
     ],
     apple: [{ url: `${basePath}/apple-touch-icon.png`, sizes: '180x180', type: 'image/png' }],
   },
-  openGraph: { type: 'website', siteName: title, title, description, images: [ogImage] },
+  openGraph: { type: 'website', url: './', siteName: title, title, description, images: [ogImage] },
   twitter: { card: 'summary_large_image', title, description, images: [ogImage.url] },
   applicationName: 'PoE2 Endgame Companion',
   appleWebApp: { capable: true, statusBarStyle: 'black-translucent', title: 'PoE2 Companion' },
