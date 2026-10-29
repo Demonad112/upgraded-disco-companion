@@ -35,7 +35,7 @@
 // columns (`skills`, `keypassives`) carry neither shape — they are per-row
 // lists — and are left undecoded since nothing here reads them.
 
-import { badQueryParam, politeFetch } from "./_upstream.js";
+import { applyCors, badQueryParam, politeFetch } from "./_upstream.js";
 
 // Upstream calls abort after this long, so a stalled poe.ninja cannot hold the function open.
 const TIMEOUT_MS = 20_000;
@@ -249,9 +249,7 @@ export function findSnapshot(snapshotVersions, league, displayName = league) {
 }
 
 export default async function handler(req, res) {
-  res.setHeader("Access-Control-Allow-Origin", "*");
-  res.setHeader("Access-Control-Allow-Methods", "GET, OPTIONS");
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+  applyCors(req, res, "Content-Type");
   if (req.method === "OPTIONS") {
     res.status(204).end();
     return;
