@@ -138,8 +138,7 @@ export function Recommendations({ report }: { report: RecommendationReport }) {
     <section>
       <div className="mb-2 flex flex-wrap items-end justify-between gap-2">
         <div>
-          <h2 className="h3">Findings</h2>
-          <p className="mt-0.5 text-xs text-ink-dim">
+          <p className="text-xs text-ink-dim">
             Ranked by gain per unit of cost. Every claim traces to data in the character payload.
           </p>
         </div>
