@@ -2,6 +2,7 @@
   "name": "PoE2 Endgame Companion",
   "short_name": "Endgame",
   "description": "Path of Exile 2 endgame companion: character analysis grounded in poe.ninja's own computed data, plus a progression checklist, Atlas planner and farming dashboard.",
+  "id": "./",
   "start_url": ".",
   "scope": ".",
   "display": "standalone",
@@ -32,6 +33,59 @@
       "sizes": "any",
       "type": "image/svg+xml",
       "purpose": "any"
+    }
+  ],
+  "display_override": [
+    "standalone"
+  ],
+  "shortcuts": [
+    {
+      "name": "Character",
+      "short_name": "Character",
+      "url": "./character/",
+      "icons": [
+        {
+          "src": "./icon-96.png",
+          "sizes": "96x96",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Checklist",
+      "short_name": "Checklist",
+      "url": "./checklist/",
+      "icons": [
+        {
+          "src": "./icon-96.png",
+          "sizes": "96x96",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Atlas Tree",
+      "short_name": "Atlas Tree",
+      "url": "./atlas/",
+      "icons": [
+        {
+          "src": "./icon-96.png",
+          "sizes": "96x96",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Dashboard",
+      "short_name": "Dashboard",
+      "url": "./dashboard/",
+      "icons": [
+        {
+          "src": "./icon-96.png",
+          "sizes": "96x96",
+          "type": "image/png"
+        }
+      ]
     }
   ]
 }
