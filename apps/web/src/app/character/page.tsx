@@ -40,7 +40,7 @@ import { recordRecent } from '@/lib/recentCharacters'
 import { useLadder } from '@/lib/useLadder'
 import { ScrollSpyNav } from '@/components/shared/ScrollSpyNav'
 import { WhatIfPanel } from '@/components/character/WhatIfPanel'
-import { Triad } from '@/components/layout/Triad'
+import { PageHeader } from '@/components/layout/PageHeader'
 import { useModTiers } from '@/lib/useModTiers'
 import { useSupportCatalog } from '@/lib/useSupportCatalog'
 import { usePassiveTree } from '@/lib/usePassiveTree'
@@ -205,18 +205,13 @@ export default function Home() {
 
   return (
     <>
-      <header className="page-title">
-        <div className="eyebrow">poe.ninja import</div>
-        <h1 className="mt-2 font-display text-[clamp(34px,5.2vw,64px)] leading-[1.04] font-bold text-ink">
-          Character <span className="text-gradient-gold">analysis</span>
-        </h1>
-        <Triad />
-        <p className="mt-4 max-w-prose text-sm leading-relaxed text-ink-dim">
-          Reads poe.ninja&rsquo;s own computed character data and turns it into ranked, quantified findings. Nothing
-          here is re-derived from scratch, and nothing is invented — where a number can&rsquo;t be established, it says
-          so.
-        </p>
-      </header>
+      <PageHeader
+        eyebrow="poe.ninja import"
+        title="Character"
+        accent="Analysis"
+        source="poe.ninja"
+        description="Reads poe.ninja’s own computed character data and turns it into ranked, quantified findings. Nothing here is re-derived from scratch, and nothing is invented — where a number can’t be established, it says so."
+      />
 
       {a || pobAnalysis ? (
         // Once a character is loaded the import box steps aside, so the verdict
