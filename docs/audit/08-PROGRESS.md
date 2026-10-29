@@ -20,7 +20,7 @@ Tasks and acceptance criteria: `02-FIX-PLAN.md`. Decisions: `09-OWNER-DECISIONS.
 | [x] | T13 serve.mjs RSC path parity + README | P2 | DX-02 | — | done | see commit (code in merge of d75787c) | New "no 404s" e2e: 10/10 pass (5 routes × 2 projects), console 404s 0. Next 16.4.2 now exports `__next.<seg>.__PAGE__.txt` flat, so the rewrite is a fallback for the old nested layout; checked by hiding a segment file (test fails on all 5 routes) and by serving only the nested copy (passes) |
 | [ ] | T14 Cache headers for images/icons | P2 | CF-01 | — | todo | | |
 | [ ] | T15 Canonical, og:url, sitemap | P2 | SEO-01 | — | todo | | |
-| [ ] | T16 Unify theme colour | P2 | SEO-02 | — | todo | | |
+| [x] | T16 Unify theme colour | P2 | SEO-02 | — | done | see commit (code in merge of d75787c) | manifest background/theme `#0d0d10` → `#08080a`, matches `<meta name="theme-color">` in `out/index.html`. grep: `#0d0d10` only in `globals.css` `--surface`; manifest parses as JSON |
 | [ ] | T17 Banner landmark, heading order | P2 | A11Y-03 | — | todo | | |
 | [ ] | T18 Delete dead webp and .nojekyll | P2 | ARCH-01, ARCH-02 | — | todo | | |
 | [ ] | T19 tokens.css + sky palette tokens | P2 | ARCH-03 | ⛔ D5 | todo | | D5 accepted 2026-10-22 |
