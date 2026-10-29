@@ -65,6 +65,7 @@ later sessions don't treat them as violations.
   Keep them out of git (`C:\Dev\data\poe2-variants\<slug>\` locally, or attach to the PR).
 - **Tracking:** tick the batch row in `docs/ui/UI-PROGRESS.md` (created by U0) in the batch's last commit. Commit with
   `git commit -F`, one PR per batch, owner merges.
+- **Protocol:** Every session follows docs/SESSION-PROTOCOL.md; carry-over lives in docs/carry/.
 
 ## Order (waves)
 
