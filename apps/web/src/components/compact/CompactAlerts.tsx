@@ -31,7 +31,7 @@ export function CompactAlerts() {
       {alerts.slice(0, 2).map((a) => (
         <li
           key={a.id}
-          className={`card flex items-center justify-between gap-2 px-3 py-2 text-xs ${a.tone === 'danger' ? 'text-danger' : 'text-warn'}`}
+          data-surface="data" className={`card flex items-center justify-between gap-2 px-3 py-2 text-xs ${a.tone === 'danger' ? 'text-danger' : 'text-warn'}`}
           data-no-lift
         >
           <span>{a.text}</span>

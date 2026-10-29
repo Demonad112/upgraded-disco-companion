@@ -33,7 +33,7 @@ export default function WhatsNewPage() {
               </time>
               <span className="chip border-accent-line text-accent">Patch {entry.patch}</span>
             </div>
-            <ul className="card mt-3 space-y-2 text-sm leading-relaxed">
+            <ul data-surface="data" className="card mt-3 space-y-2 text-sm leading-relaxed">
               {entry.items.map((item) => (
                 <li key={item.text} className={item.kind === 'caveat' ? 'text-warn' : 'text-ink-dim'}>
                   <span className="eyebrow mr-2">{KIND_LABEL[item.kind]}</span>

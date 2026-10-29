@@ -18,7 +18,7 @@ export function WaystonePlanner() {
   return (
     <section
       id="waystone-planner"
-      className="scroll-mt-28 rounded-xl card p-5"
+      data-surface="data" className="scroll-mt-28 rounded-xl card p-5"
     >
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h2 className="font-semibold text-ink">Waystone planner</h2>

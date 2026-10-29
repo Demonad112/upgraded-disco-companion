@@ -60,6 +60,13 @@
   --lift: var(--card-highlight);
   --lift-raised: var(--card-highlight), 0 16px 40px -14px color-mix(in srgb, black 75%, transparent);
   --lift-distance: 3px;
+  /* Data panels (UI-PLAN U2): tinted glass under text and numbers, so star lines
+     don't cross them. Home and hero cards stay clear. Painted as an image layer
+     (styles/surfaces.css) so it stacks over the sky dim instead of replacing it.
+     No blur (G3): a backdrop-filter makes every panel its own compositor layer;
+     the token stays 0px. */
+  --data-fill: color-mix(in srgb, var(--surface) 72%, transparent);
+  --data-fill-blur: 0px;
 
   /* Type (2.5). Families are wired in layout.tsx through next/font. */
   --font-heading: var(--font-garamond), ui-serif, Georgia, serif;

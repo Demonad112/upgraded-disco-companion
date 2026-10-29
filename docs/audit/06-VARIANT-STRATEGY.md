@@ -48,7 +48,7 @@ After T19, `tokens.css` is the variant API. A variant may change token **values*
 
 - Palette: `--page --surface --raised --sunken --overlay --line --line-strong --ink --ink-dim --ink-mute --accent* --good --warn --danger`
 - Data viz: `--dmg-*` (validated; change only with the dataviz validator)
-- Glass: `--glass-fill --glass-blur --halo --card-edge --card-highlight --lift*`
+- Glass: `--glass-fill --glass-blur --halo --card-edge --card-highlight --lift* --data-fill --data-fill-blur` (data fill: U2)
 - Sky: `--sky-gold --sky-pale --sky-core --sky-dim-fill`, plus `--constellation-density --line-strength --grain-opacity`
 - Type: `--font-heading --font-body --font-label --lh-body --heading-tracking --fs-body`
 - Layout: `--page-max --gutter --tap-min --nav-h --card-pad --section-pad --card-gap`

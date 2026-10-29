@@ -32,14 +32,16 @@ function link(a: Box, b: Box): [number, number, number, number] | null {
 
 /**
  * "Threads": short solid 1px accent lines with small ringed nodes linking
- * neighbouring cards across the gaps, so the cards read as nodes in one graph.
- * Boxes are measured relative to #fx-root.
+ * neighbouring cards across the gaps, so the cards read as steps in one
+ * sequence. Opt-in: only cards inside a [data-links] container link, so grid
+ * cards that aren't a sequence stay unconnected; a page without one draws
+ * nothing and reads no rects. Boxes are measured relative to #fx-root.
  */
 export function CardLinksCanvas() {
   const ref = useCanvas((ctx, _w, _h, root) => {
     const origin = root.getBoundingClientRect()
-    const boxes: Box[] = Array.from(root.querySelectorAll<HTMLElement>('main .card'))
-      .filter((el) => !el.closest('[data-no-links]') && el.offsetParent !== null)
+    const boxes: Box[] = Array.from(root.querySelectorAll<HTMLElement>('main [data-links] .card'))
+      .filter((el) => el.offsetParent !== null)
       .map((el) => {
         const r = el.getBoundingClientRect()
         return { x: r.left - origin.left, y: r.top - origin.top, w: r.width, h: r.height }
@@ -86,8 +88,10 @@ export function CardLinksCanvas() {
     const ro = new ResizeObserver(kick)
     ro.observe(main)
     const mo = new MutationObserver(kick)
-    // Cards showing or hiding (tabs, disclosure, conditional panels).
-    mo.observe(main, { childList: true, subtree: true, attributes: true, attributeFilter: ['class', 'hidden', 'style', 'open'] })
+    // Cards showing or hiding (tabs, disclosure, conditional panels). 'class'
+    // stays: the checklist's planning tools switch tabs with `hidden lg:block`.
+    // No card hides through an inline style, so 'style' is not watched.
+    mo.observe(main, { childList: true, subtree: true, attributes: true, attributeFilter: ['class', 'hidden', 'open'] })
     return () => {
       ro.disconnect()
       mo.disconnect()

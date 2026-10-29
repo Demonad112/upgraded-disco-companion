@@ -208,7 +208,7 @@ export default function Home() {
   return (
     <>
       <PageHeader
-        eyebrow="poe.ninja import"
+        eyebrow="Character import"
         title="Character"
         accent="Analysis"
         source="poe.ninja"
@@ -218,7 +218,7 @@ export default function Home() {
       {a || pobAnalysis ? (
         // Once a character is loaded the import box steps aside, so the verdict
         // sits near the top. Keyed so it closes again on the next load.
-        <details className="card group">
+        <details data-surface="data" className="card group">
           <summary className="flex cursor-pointer list-none items-center gap-3 text-sm text-ink-dim [&::-webkit-details-marker]:hidden">
             <svg
               viewBox="0 0 20 20"
@@ -271,7 +271,7 @@ export default function Home() {
             <Section id="overview" title="Overview">
               <CharacterVerdict analysis={a}>{sourceUrl ? <CopyLink url={sourceUrl} name={a.identity.name} /> : null}</CharacterVerdict>
               {a.warnings.map((w) => (
-                <p key={w} className="card border-warn/50 text-xs leading-relaxed text-warn">
+                <p key={w} data-surface="data" className="card border-warn/50 text-xs leading-relaxed text-warn">
                   {w}
                 </p>
               ))}

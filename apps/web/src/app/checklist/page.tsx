@@ -30,20 +30,24 @@ export default function ChecklistPage() {
         description="Campaign end through the full Atlas tree, the Master quest chains and your farming loop. Check off steps as you complete them — progress is saved in this browser."
       />
 
-      <ChecklistProgressHeader />
-      <NextStepCard steps={stepSummaries()} onChecklistPage />
+      {/* The checklist flow: overall bar, Up next, planner, reference blocks.
+          The only cards the card-links canvas joins on this page. */}
+      <div data-links className="flex flex-col gap-5">
+        <ChecklistProgressHeader />
+        <NextStepCard steps={stepSummaries()} onChecklistPage />
 
-      <ChecklistTools />
+        <ChecklistTools />
 
-      <GearShoppingList />
+        <GearShoppingList />
 
-      <div className="flex flex-col gap-3">
-        <MechanicsPrimer />
-        <PatchChangesPanel />
-        <TrialOfChaosPanel />
-        <EssenceCraftingPanel />
-        <GlossaryPanel />
-        <CommonMistakesPanel />
+        <div className="flex flex-col gap-3">
+          <MechanicsPrimer />
+          <PatchChangesPanel />
+          <TrialOfChaosPanel />
+          <EssenceCraftingPanel />
+          <GlossaryPanel />
+          <CommonMistakesPanel />
+        </div>
       </div>
 
       <ChecklistPhaseNav />

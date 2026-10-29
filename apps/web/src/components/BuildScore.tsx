@@ -61,7 +61,7 @@ export function BuildScore({ assessment, keystones }: { assessment: BuildAssessm
   const warnings = assessment.weaknesses.filter((w) => w.severity === 'warning')
 
   return (
-    <details id="assessment" className="card group">
+    <details id="assessment" data-surface="data" className="card group">
       <summary className="flex cursor-pointer list-none items-center justify-between gap-3 [&::-webkit-details-marker]:hidden">
         <span className="h3">Why this grade</span>
         <span className="eyebrow">Defence and damage, weighted evenly</span>

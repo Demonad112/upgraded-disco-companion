@@ -12,7 +12,7 @@ import { ProvenanceBadge } from '../shared/ProvenanceBadge'
 export function SpareToTrade({ analysis }: { analysis: Analysis }) {
   const spare = analysis.defense.resistances.filter((r) => r.overCap !== null && r.overCap > 0)
   return (
-    <section className="card" aria-label="Spare to trade">
+    <section data-surface="data" className="card" aria-label="Spare to trade">
       <div className="flex items-baseline justify-between gap-3">
         <h3 className="h3">Spare to trade</h3>
         <ProvenanceBadge label="derived" />
@@ -49,7 +49,7 @@ const shortDate = (iso: string): string => {
 export function SinceLastImport({ diff }: { diff: SnapshotDiff | null }) {
   const top = diff?.changes.slice(0, 3) ?? []
   return (
-    <section className="card" aria-label="Since last import">
+    <section data-surface="data" className="card" aria-label="Since last import">
       <h3 className="h3">Since last import</h3>
       {diff && top.length ? (
         <>
@@ -98,7 +98,7 @@ export function SinceLastImport({ diff }: { diff: SnapshotDiff | null }) {
 /** Four resistance boxes with a collapsed full checklist underneath. */
 export function DefencesGlance({ analysis }: { analysis: Analysis }) {
   return (
-    <section className="card" aria-label="Defences at a glance">
+    <section data-surface="data" className="card" aria-label="Defences at a glance">
       <h3 className="h3">Defences at a glance</h3>
       <div className="mt-3 grid grid-cols-2 gap-3 min-[621px]:grid-cols-4">
         {analysis.defense.resistances.map((r) => (
@@ -134,7 +134,7 @@ export function TreeDataNote({ analysis, tree }: { analysis: Analysis; tree: Pas
   const missing = resolveAllocation(tree, analysis.passives).unresolvedIds
   if (!missing.length) return null
   return (
-    <aside className="card border-warn/50" aria-label="Tree data is behind">
+    <aside data-surface="data" className="card border-warn/50" aria-label="Tree data is behind">
       <h3 className="eyebrow text-warn">Tree data is behind</h3>
       <p className="mt-2 text-sm leading-relaxed text-ink-dim">
         {missing.length} passive node{missing.length === 1 ? '' : 's'} on this character {missing.length === 1 ? "isn't" : "aren't"} in

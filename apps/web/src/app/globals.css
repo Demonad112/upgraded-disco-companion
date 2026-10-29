@@ -1,5 +1,11 @@
 @import 'tailwindcss';
 @import './tokens.css';
+@import '../styles/surfaces.css';
+@import '../styles/type.css';
+@import '../styles/controls.css';
+@import '../styles/gauge.css';
+@import '../styles/nav.css';
+@import '../styles/footer.css';
 @import '../styles/pwa.css';
 
 /*

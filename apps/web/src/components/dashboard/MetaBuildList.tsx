@@ -14,7 +14,7 @@ export function MetaBuildList({ builds }: { builds: MetaBuild[] }) {
         <li
           key={build.id}
           id={build.id}
-          className="scroll-mt-24 rounded-md card p-3 transition-colors hover:border-line-strong"
+          data-surface="data" className="scroll-mt-24 rounded-md card p-3 transition-colors hover:border-line-strong"
         >
           <div className="flex flex-wrap items-center gap-2">
             <span className="font-medium text-ink">{build.name}</span>
