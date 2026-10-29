@@ -9,7 +9,7 @@ session's row in its last commit. Audit rows are tracked in `docs/audit/08-PROGR
 | 1 | A1 P0 and quick wins | Cloud | Opus 5.5 · high | done | ccr-dfb2d784-xtiycv | #17 | https://ccr-dfb2d784-xtiycv.upgraded-disco-companion.pages.dev | follow-ups #18 (cloud e2e browser), #20 (zod 4) |
 | 2 | A2 cache headers | Cloud | Sonnet 5.5 · medium | done | claude/gallant-einstein-z0ygk6 | #23 | https://claude-gallant-einstein-z0yg.upgraded-disco-companion.pages.dev | tracked in docs/audit/08-PROGRESS.md |
 | 2 | U1 page headers | Cloud | Sonnet 5.5 · medium | done | claude/ecstatic-newton-km9len | #22 | https://claude-ecstatic-newton-km9le.upgraded-disco-companion.pages.dev | One `PageHeader` on 4 pages; e2e findings selector re-pointed |
-| 3 | A3 bundle and service worker | Local | Opus 5.5 · high | todo | | | | tracked in docs/audit/08-PROGRESS.md |
+| 3 | A3 bundle and service worker | Local + Cloud | Opus 5.5 · high | done | ccr-08fbadda-bnx58s | #25, #<n> | https://ccr-08fbadda-bnx58s.upgraded-disco-companion.pages.dev | tracked in docs/audit/08-PROGRESS.md; T03+T04 in #25 |
 | 3 | U9 Methodology and What's new | Cloud | Opus 5.5 · high | done | variant/20261029-pages | #24 | https://variant-20261029-pages.upgraded-disco-companion.pages.dev | `/methodology`, `/whats-new`, Ctrl K entries, patch-menu link; sitemap for A6, footer for U7 |
 | 4 | A4 canvases and a11y | Cloud | Opus 5.5 · medium | todo | | | | tracked in docs/audit/08-PROGRESS.md |
 | 4 | U8 home page | Cloud | Opus 5.5 · high | todo | | | | |
