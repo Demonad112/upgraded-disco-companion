@@ -7,7 +7,7 @@ session's row in its last commit. Audit rows are tracked in `docs/audit/08-PROGR
 |---|---|---|---|---|---|---|---|---|
 | 1 | U0 decisions, tracker, protocol | Local | Sonnet 5.5 · medium | done | docs/ui-plan | #16 | | Docs only |
 | 1 | A1 P0 and quick wins | Cloud | Opus 5.5 · high | done | ccr-dfb2d784-xtiycv | #17 | https://ccr-dfb2d784-xtiycv.upgraded-disco-companion.pages.dev | follow-ups #18 (cloud e2e browser), #20 (zod 4) |
-| 2 | A2 cache headers | Cloud | Sonnet 5.5 · medium | todo | | | | tracked in docs/audit/08-PROGRESS.md |
+| 2 | A2 cache headers | Cloud | Sonnet 5.5 · medium | done | claude/gallant-einstein-z0ygk6 | PR_N | | tracked in docs/audit/08-PROGRESS.md |
 | 2 | U1 page headers | Cloud | Sonnet 5.5 · medium | todo | | | | |
 | 3 | A3 bundle and service worker | Local | Opus 5.5 · high | todo | | | | tracked in docs/audit/08-PROGRESS.md |
 | 3 | U9 Methodology and What's new | Cloud | Opus 5.5 · high | todo | | | | |
