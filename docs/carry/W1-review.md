@@ -1,5 +1,5 @@
 # W1-review carry-over · 2026-10-29
-PR: #<n> · Branch: claude/wave-1-closeout-docs-w3qnej · Preview: none (docs only)
+PR: #21 · Branch: claude/wave-1-closeout-docs-w3qnej · Preview: none (docs only)
 
 ## Checked (previous wave)
 - none: wave 1 close-out. PR #20 (zod 4) is merged into `main`.
