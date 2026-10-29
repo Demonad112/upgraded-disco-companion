@@ -14,7 +14,7 @@ session's row in its last commit. Audit rows are tracked in `docs/audit/08-PROGR
 | 4 | A4 canvases and a11y | Cloud | Opus 5.5 · medium | done | ccr-95ecf788-uv8w93 | #28 | https://ccr-95ecf788-uv8w93.upgraded-disco-companion.pages.dev | tracked in docs/audit/08-PROGRESS.md; T09, T10, T11 |
 | 4 | U8 home page | Cloud | Opus 5.5 · high | done | variant/20261029-home | #27 | https://variant-20261029-home.upgraded-disco-companion.pages.dev | Meta strip and tool-card status lines, all counted from data; no grade on the Character card (U8-4) |
 | 5 | A5 constellation sky | Cloud | Opus 5.5 · high | done | ccr-adc6b4c8-t74ga8 | #29 | https://ccr-adc6b4c8-t74ga8.upgraded-disco-companion.pages.dev | tracked in docs/audit/08-PROGRESS.md; T06, T08, T07, T05 |
-| 6 | A6 SEO, landmarks, CI | Cloud | Sonnet 5.5 · medium | done | claude/gallant-gates-fwoykk | #PR | https://claude-gallant-gates-fwoykk.upgraded-disco-companion.pages.dev | tracked in docs/audit/08-PROGRESS.md; T15, T17, T12 |
+| 6 | A6 SEO, landmarks, CI | Cloud | Sonnet 5.5 · medium | done | claude/gallant-gates-fwoykk | #32 | https://claude-gallant-gates-fwoykk.upgraded-disco-companion.pages.dev | tracked in docs/audit/08-PROGRESS.md; T15, T17, T12 |
 | 6 | U12 installable app | Cloud | Sonnet 5.5 · high | todo | | | | U12: after A3 |
 | 7 | A7 design tokens | Local | Opus 5.5 · high | todo | | | | tracked in docs/audit/08-PROGRESS.md |
 | 7 | A8 proxy CORS | Cloud | Sonnet 5.5 · medium | todo | | | | tracked in docs/audit/08-PROGRESS.md |
