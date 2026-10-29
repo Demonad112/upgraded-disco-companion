@@ -8,7 +8,7 @@
  * first hop is a Server-Sent Events stream that they buffer and choke on.
  *
  * So this runs the two-step SSE -> model fetch server-side and returns the raw
- * `{type, charModel}` JSON with permissive CORS headers.
+ * `{type, charModel}` JSON with CORS headers for the app's origins only (see `allowOrigin`).
  *
  * All data handled here is public. There is no auth, no secret, and nothing is
  * stored. Deploy it once and point NEXT_PUBLIC_NINJA_PROXY_BASE at it.
@@ -17,7 +17,7 @@
  * ../README.md.
  */
 
-import { badQueryParam, politeFetch, revalidatingFetch } from './_upstream.js'
+import { applyCors, badQueryParam, politeFetch, revalidatingFetch } from './_upstream.js'
 
 const NINJA = 'https://poe.ninja'
 // Kept under the browser client's own 20 s timeout so the caller gets this
@@ -26,12 +26,6 @@ const TIMEOUT_MS = 18_000
 // poe.ninja keeps the version stream open and sends nothing for a character it
 // has not indexed. Without this the read waits for the overall timeout.
 export const FIRST_FRAME_MS = 12_000
-
-function cors(res) {
-  res.setHeader('Access-Control-Allow-Origin', '*')
-  res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS')
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type')
-}
 
 /**
  * Read the first `data:` frame from an SSE stream and return its `version`.
@@ -82,7 +76,7 @@ export async function readVersion(url, signal, { fetchImpl, firstFrameMs = FIRST
 }
 
 export default async function handler(req, res) {
-  cors(res)
+  applyCors(req, res, 'Content-Type')
   if (req.method === 'OPTIONS') return res.status(204).end()
   if (req.method !== 'GET') return res.status(405).json({ error: 'Method not allowed.' })
 

@@ -1,7 +1,7 @@
 # ninja-proxy
 
 A single serverless function that fetches a poe.ninja PoE2 character server-side
-and returns it with CORS headers.
+and returns it with CORS headers (allowlisted origins only).
 
 ## Why it's needed
 
@@ -55,9 +55,18 @@ Measured 2026-10-20:
 $ curl -sI -H "Origin: https://upgraded-disco-companion.pages.dev" \
     "https://poe2-v3-ninja-proxy.vercel.app/api/character?account=Demonad112-2589&league=runesofaldur&character=Athrynas"
 HTTP/2 200
-access-control-allow-origin: *
+access-control-allow-origin: https://upgraded-disco-companion.pages.dev
+vary: Origin
 content-type: application/json; charset=utf-8   # 442 KB charModel
 ```
+
+## CORS
+
+`Access-Control-Allow-Origin` echoes the request's `Origin` only when it matches
+`https://(<label>.)upgraded-disco-companion.pages.dev` (production and preview
+hosts) or `http://localhost:<port>`; otherwise the header is omitted. Every
+response carries `Vary: Origin`. To allow another site, edit `ALLOWED_ORIGIN` in
+`api/_upstream.js`. Non-browser callers send no `Origin` and are unaffected.
 
 ## Deploying from this repository
 

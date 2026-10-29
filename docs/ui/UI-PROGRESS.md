@@ -17,7 +17,7 @@ session's row in its last commit. Audit rows are tracked in `docs/audit/08-PROGR
 | 6 | A6 SEO, landmarks, CI | Cloud | Sonnet 5.5 · medium | done | claude/gallant-gates-fwoykk | #32 | https://claude-gallant-gates-fwoykk.upgraded-disco-companion.pages.dev | tracked in docs/audit/08-PROGRESS.md; T15, T17, T12 |
 | 6 | U12 installable app | Cloud | Sonnet 5.5 · high | done | variant/20261029-pwa | #31 | https://variant-20261029-pwa.upgraded-disco-companion.pages.dev | Update toast, offline chip and install button built; chip and button unmounted (U6, U7); manifest shortcuts |
 | 7 | A7 design tokens | Local | Opus 5.5 · high | done | claude/a7-design-tokens | #45 | https://claude-a7-design-tokens.upgraded-disco-companion.pages.dev | tracked in docs/audit/08-PROGRESS.md; T19, `tokens.css`, sky palette tokens |
-| 7 | A8 proxy CORS | Cloud | Sonnet 5.5 · medium | todo | | | | tracked in docs/audit/08-PROGRESS.md |
+| 7 | A8 proxy CORS | Cloud | Sonnet 5.5 · medium | done | claude/hopeful-gauss-vi5thy | #44 | | tracked in docs/audit/08-PROGRESS.md; T20; owner deploys the proxy |
 | 8 | U2 surfaces and connectors | Local | Opus 5.5 · high | todo | | | | |
 | 9a | U3 typography and labels | Cloud | Sonnet 5.5 · medium | todo | | | | |
 | 9b | U4 controls kit | Local | Opus 5.5 · high | todo | | | | After U3 |
