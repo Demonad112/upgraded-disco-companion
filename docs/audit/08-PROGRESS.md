@@ -13,7 +13,7 @@ Tasks and acceptance criteria: `02-FIX-PLAN.md`. Decisions: `09-OWNER-DECISIONS.
 | [ ] | T06 No reseed on height-only shrink | P1 | SKY-02 | — | todo | | |
 | [ ] | T07 Batch star draws | P1 | SKY-03 | ⛔ D3 | todo | | D3 accepted 2026-10-22 |
 | [ ] | T08 Stop rAF while sky hidden | P1 | SKY-04 | — | todo | | |
-| [ ] | T09 Bound decorative canvases | P1 | FX-01 | — | todo | | |
+| [x] | T09 Bound decorative canvases | P1 | FX-01 | — | done | see commit | `useCanvas(draw, extraEvent?, maxHeight?)`; width/height/style assigned only when they differ. `AtlasWebCanvas` passes `MAX_RING` (1500). Phone 390×844 DPR 3 (capped 2): `/checklist/` atlas-web 780×8054 → **780×3000**, `/atlas/` 780×7492 → 780×3000; card-links unchanged in size (full page). Setter spy on `HTMLCanvasElement.prototype.width/height`: toggling a checklist step 4× records **0** card-links sets after load (before: +1 width/+2 height per toggle). `CardLinksCanvas` `attributeFilter` kept (not in the task's files). Gate: e2e 129 passed / 3 skipped |
 | [ ] | T10 Mechanic chip contrast | P1 | A11Y-01 | — | todo | | |
 | [ ] | T11 Hit-area test + axe exclusion | P1 | A11Y-02 | — | todo | | |
 | [ ] | T12 Audit CI step (+ Dependabot if D4) | P2 | DX-01 | ⛔ D4 (Dependabot part) | todo | | after T01; D4 accepted 2026-10-22 |

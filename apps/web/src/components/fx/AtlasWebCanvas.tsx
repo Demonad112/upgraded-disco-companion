@@ -14,7 +14,7 @@ function mulberry32(seed: number) {
 }
 
 const RING_GAP = 96
-/** Rings stop here however tall the page is; the CSS mask has faded by then. */
+/** Rings stop here however tall the page is; the CSS mask has faded by then. Also the canvas height cap. */
 const MAX_RING = 1500
 
 type Node = { x: number; y: number; angle: number; keystone: boolean }
@@ -137,7 +137,7 @@ export function AtlasWebCanvas() {
       }
     }
     ctx.globalAlpha = 1
-  })
+  }, undefined, MAX_RING)
   return (
     <canvas
       ref={ref}
