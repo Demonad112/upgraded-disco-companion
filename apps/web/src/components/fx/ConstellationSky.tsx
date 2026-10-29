@@ -2,7 +2,6 @@
 
 import { useEffect, useRef } from 'react'
 import { usePathname } from 'next/navigation'
-import { skyDimStore } from '@/lib/skyDim'
 
 const GOLD = '#e3b341'
 const PALE_GOLD = '#f6dc92'
@@ -15,8 +14,10 @@ const PIVOT_Y = 0.46
 const RING_RADII = [0.34, 0.62, 0.92]
 const RING_TICKS = [96, 144, 200]
 const RING_DIAMONDS = [2, 3, 2]
-/** Everything the dimming pass erases behind. Nested matches are skipped. */
-const DIM_SELECTOR = '[data-sky-dim], .card, header, footer, .site-nav'
+/** Twinkle is drawn in this many alpha steps, so each colour fills once per step (D3). */
+const LEVELS = 8
+/** A square of this side times the radius has a circle's area: sub-pixel stars keep their brightness. */
+const SQRT_PI = Math.sqrt(Math.PI)
 
 function mulberry32(seed: number) {
   return () => {
@@ -59,6 +60,28 @@ function makeGlow(): HTMLCanvasElement {
     g.fillRect(0, 0, size, size)
   }
   return c
+}
+
+type Ticks = { short: Path2D; long: Path2D }
+
+/** Each ring's ticks at rest; a frame rotates them about the pivot. */
+function buildTicks({ px, py, rm }: Field): Ticks[] {
+  return RING_RADII.map((frac, i) => {
+    const r = rm * frac
+    const n = RING_TICKS[i]
+    const short = new Path2D()
+    const long = new Path2D()
+    for (let k = 0; k < n; k++) {
+      const a = (k / n) * Math.PI * 2
+      const c = Math.cos(a)
+      const s = Math.sin(a)
+      const len = k % 8 === 0 ? 9 : 4
+      const path = k % 8 === 0 ? long : short
+      path.moveTo(px + c * r, py + s * r)
+      path.lineTo(px + c * (r - len), py + s * (r - len))
+    }
+    return { short, long }
+  })
 }
 
 /** Seeded, so the sky is identical on every load. */
@@ -136,18 +159,16 @@ function buildField(w: number, h: number): Field {
 
 /**
  * Fixed, slowly rotating gold constellation sky behind the whole site. Dark
- * theme only. After each frame the blocks are punched out of it (dimming) so
- * the sky reads at 35% behind them and at full strength in the gaps.
+ * theme only. The dim behind blocks is CSS (globals.css, lib/skyDim), so the
+ * sky reads at 35% behind them and at full strength in the gaps.
  */
 export function ConstellationSky() {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const pathname = usePathname()
   // Set by the effect below; lets a route change or toggle repaint a still sky.
   const kickRef = useRef<() => void>(() => {})
-  const dirtyRef = useRef(true)
 
   useEffect(() => {
-    dirtyRef.current = true
     kickRef.current()
   }, [pathname])
 
@@ -160,30 +181,33 @@ export function ConstellationSky() {
     const glow = makeGlow()
     const motion = window.matchMedia('(prefers-reduced-motion: reduce)')
     let field: Field | null = null
+    let ticks: Ticks[] = []
     let dpr = 1
     let raf = 0
     let last = 0
-    let blocks: HTMLElement[] = []
     const start = performance.now()
 
     const hidden = () => root.dataset.theme === 'light' || root.hasAttribute('data-compact')
 
+    // The field is seeded from the size it was built for, so it is kept while
+    // the viewport only gets shorter (a phone's toolbar showing): the canvas
+    // stays at the tallest height seen and runs off the bottom of the screen.
+    let builtW = 0
+    let builtH = 0
     const rebuild = () => {
       const w = window.innerWidth
       const h = window.innerHeight
-      dpr = Math.min(window.devicePixelRatio || 1, 2)
+      const ratio = Math.min(window.devicePixelRatio || 1, 2)
+      if (field && w === builtW && h <= builtH && ratio === dpr) return
+      builtW = w
+      builtH = h
+      dpr = ratio
       canvas.width = Math.round(w * dpr)
       canvas.height = Math.round(h * dpr)
       canvas.style.width = `${w}px`
       canvas.style.height = `${h}px`
       field = buildField(w, h)
-    }
-
-    const refreshBlocks = () => {
-      dirtyRef.current = false
-      blocks = Array.from(document.querySelectorAll<HTMLElement>(DIM_SELECTOR)).filter(
-        (el) => !el.parentElement?.closest(DIM_SELECTOR),
-      )
+      ticks = buildTicks(field)
     }
 
     const draw = (t: number) => {
@@ -209,48 +233,36 @@ export function ConstellationSky() {
       ctx.lineWidth = 1
       ctx.strokeStyle = GOLD
       RING_RADII.forEach((frac, i) => {
-        const r = rm * frac
         const spin = (i % 2 === 0 ? 1 : -1) * angle
         ctx.globalAlpha = 0.11
         ctx.beginPath()
-        ctx.arc(px, py, r, 0, Math.PI * 2)
+        ctx.arc(px, py, rm * frac, 0, Math.PI * 2)
         ctx.stroke()
-        const n = RING_TICKS[i]
-        const short = new Path2D()
-        const long = new Path2D()
-        for (let k = 0; k < n; k++) {
-          const a = (k / n) * Math.PI * 2 + spin
-          const c = Math.cos(a)
-          const s = Math.sin(a)
-          const len = k % 8 === 0 ? 9 : 4
-          const x0 = px + c * r
-          const y0 = py + s * r
-          if (!near(x0, y0)) continue
-          const path = k % 8 === 0 ? long : short
-          path.moveTo(x0, y0)
-          path.lineTo(px + c * (r - len), py + s * (r - len))
-        }
-        ctx.globalAlpha = 0.11
-        ctx.stroke(short)
+        ctx.save()
+        ctx.translate(px, py)
+        ctx.rotate(spin)
+        ctx.translate(-px, -py)
+        ctx.stroke(ticks[i].short)
         ctx.globalAlpha = 0.3
-        ctx.stroke(long)
+        ctx.stroke(ticks[i].long)
+        ctx.restore()
       })
       ctx.fillStyle = GOLD
       ctx.globalAlpha = 0.6
+      ctx.beginPath()
       for (const d of f.diamonds) {
         const r = rm * RING_RADII[d.ring]
         const a = d.angle + (d.ring % 2 === 0 ? 1 : -1) * angle
         const x = px + Math.cos(a) * r
         const y = py + Math.sin(a) * r
         if (!near(x, y)) continue
-        ctx.beginPath()
         ctx.moveTo(x, y - 3.5)
         ctx.lineTo(x + 2.6, y)
         ctx.lineTo(x, y + 3.5)
         ctx.lineTo(x - 2.6, y)
         ctx.closePath()
-        ctx.fill()
       }
+      ctx.fill()
 
       // Constellation lines, then their glowing stars.
       ctx.strokeStyle = GOLD
@@ -270,6 +282,7 @@ export function ConstellationSky() {
         }
       }
       ctx.stroke()
+      const cores = new Path2D()
       for (const c of f.constellations) {
         for (const s of c.stars) {
           const x = tx(s.x, s.y)
@@ -278,61 +291,66 @@ export function ConstellationSky() {
           const r = s.size * 5
           ctx.globalAlpha = 0.5 * tw(1, s.phase)
           ctx.drawImage(glow, x - r, y - r, r * 2, r * 2)
-          ctx.globalAlpha = 0.95
-          ctx.fillStyle = CORE
-          ctx.beginPath()
-          ctx.arc(x, y, s.size, 0, Math.PI * 2)
-          ctx.fill()
+          cores.moveTo(x + s.size, y)
+          cores.arc(x, y, s.size, 0, Math.PI * 2)
         }
       }
+      ctx.globalAlpha = 0.95
+      ctx.fillStyle = CORE
+      ctx.fill(cores)
 
-      // Field stars.
-      const dot = (list: Star[], color: string) => {
-        ctx.fillStyle = color
+      // Field stars and sparkles: one path per alpha step.
+      const byLevel = (list: Star[], add: (p: Path2D, x: number, y: number, s: Star) => void, boost = 0) => {
+        const paths: Path2D[] = []
         for (const s of list) {
           const x = tx(s.x, s.y)
           const y = ty(s.x, s.y)
           if (!near(x, y)) continue
-          ctx.globalAlpha = s.alpha * tw(s.speed, s.phase)
-          ctx.beginPath()
-          ctx.arc(x, y, s.size, 0, Math.PI * 2)
-          ctx.fill()
+          const step = Math.round(Math.min(1, s.alpha * tw(s.speed, s.phase) + boost) * LEVELS)
+          if (step > 0) add((paths[step] ??= new Path2D()), x, y, s)
+        }
+        return paths
+      }
+      const dot = (p: Path2D, x: number, y: number, s: Star) => {
+        if (s.size < 0.8) {
+          const side = s.size * SQRT_PI
+          p.rect(x - side / 2, y - side / 2, side, side)
+        } else {
+          p.moveTo(x + s.size, y)
+          p.arc(x, y, s.size, 0, Math.PI * 2)
         }
       }
-      dot(f.gold, GOLD)
-      dot(f.pale, PALE_GOLD)
+      const fillDots = (list: Star[], color: string) => {
+        ctx.fillStyle = color
+        byLevel(list, dot).forEach((p, step) => {
+          ctx.globalAlpha = step / LEVELS
+          ctx.fill(p)
+        })
+      }
+      fillDots(f.gold, GOLD)
+      fillDots(f.pale, PALE_GOLD)
       ctx.strokeStyle = PALE_GOLD
-      for (const s of f.sparkles) {
-        const x = tx(s.x, s.y)
-        const y = ty(s.x, s.y)
-        if (!near(x, y)) continue
+      const cross = (p: Path2D, x: number, y: number, s: Star) => {
         const arm = 2.5 + s.size * 2.5
-        ctx.globalAlpha = Math.min(1, s.alpha * tw(s.speed, s.phase) + 0.1)
-        ctx.beginPath()
-        ctx.moveTo(x - arm, y)
-        ctx.lineTo(x + arm, y)
-        ctx.moveTo(x, y - arm)
-        ctx.lineTo(x, y + arm)
-        ctx.stroke()
+        p.moveTo(x - arm, y)
+        p.lineTo(x + arm, y)
+        p.moveTo(x, y - arm)
+        p.lineTo(x, y + arm)
       }
+      byLevel(f.sparkles, cross, 0.1).forEach((p, step) => {
+        ctx.globalAlpha = step / LEVELS
+        ctx.stroke(p)
+      })
 
-      // Dim the sky behind blocks: erase 65% so 35% shows through.
-      if (skyDimStore.get()) {
-        if (dirtyRef.current) refreshBlocks()
-        ctx.globalAlpha = 1
-        ctx.globalCompositeOperation = 'destination-out'
-        ctx.fillStyle = 'rgba(0,0,0,0.65)'
-        for (const el of blocks) {
-          const r = el.getBoundingClientRect()
-          if (r.width === 0 || r.height === 0 || r.bottom < 0 || r.top > h) continue
-          ctx.fillRect(r.left, r.top, r.width, r.height)
-        }
-        ctx.globalCompositeOperation = 'source-over'
-      }
       ctx.globalAlpha = 1
     }
 
     const frame = (now: number) => {
+      // Hidden (compact or light theme): stop; the root observer below restarts it.
+      if (hidden()) {
+        raf = 0
+        return
+      }
       raf = requestAnimationFrame(frame)
       // 30fps everywhere: the drift is slow, and the dense sky is the page's
       // biggest per-frame cost.
@@ -341,7 +359,7 @@ export function ConstellationSky() {
       draw((now - start) / 1000)
     }
 
-    // Reduced motion: one still frame, repainted when something moves under it.
+    // Reduced motion: one still frame, repainted after a resize or route change.
     let stillQueued = 0
     const paintStill = () => {
       if (stillQueued) return
@@ -362,7 +380,6 @@ export function ConstellationSky() {
     }
 
     rebuild()
-    refreshBlocks()
     run()
 
     let debounce = 0
@@ -370,39 +387,22 @@ export function ConstellationSky() {
       window.clearTimeout(debounce)
       debounce = window.setTimeout(() => {
         rebuild()
-        dirtyRef.current = true
         if (motion.matches) paintStill()
       }, 120)
     }
-    const onScroll = () => {
-      if (motion.matches) paintStill()
-    }
     const onMotion = () => run()
-    const mo = new MutationObserver(() => {
-      dirtyRef.current = true
-      if (motion.matches) paintStill()
-    })
-    mo.observe(document.body, { childList: true, subtree: true })
-    const unsubDim = skyDimStore.subscribe(() => {
-      if (motion.matches) paintStill()
-    })
+    const rootMo = new MutationObserver(run)
+    rootMo.observe(root, { attributes: true, attributeFilter: ['data-compact', 'data-theme'] })
     window.addEventListener('resize', onResize)
-    window.addEventListener('scroll', onScroll, { passive: true })
     motion.addEventListener('change', onMotion)
-    void document.fonts?.ready.then(() => {
-      dirtyRef.current = true
-      if (motion.matches) paintStill()
-    })
 
     return () => {
       kickRef.current = () => {}
       cancelAnimationFrame(raf)
       cancelAnimationFrame(stillQueued)
       window.clearTimeout(debounce)
-      mo.disconnect()
-      unsubDim()
+      rootMo.disconnect()
       window.removeEventListener('resize', onResize)
-      window.removeEventListener('scroll', onScroll)
       motion.removeEventListener('change', onMotion)
     }
   }, [])
