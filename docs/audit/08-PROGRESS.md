@@ -22,7 +22,7 @@ Tasks and acceptance criteria: `02-FIX-PLAN.md`. Decisions: `09-OWNER-DECISIONS.
 | [ ] | T15 Canonical, og:url, sitemap | P2 | SEO-01 | — | todo | | |
 | [x] | T16 Unify theme colour | P2 | SEO-02 | — | done | see commit (code in merge of d75787c) | manifest background/theme `#0d0d10` → `#08080a`, matches `<meta name="theme-color">` in `out/index.html`. grep: `#0d0d10` only in `globals.css` `--surface`; manifest parses as JSON |
 | [ ] | T17 Banner landmark, heading order | P2 | A11Y-03 | — | todo | | |
-| [ ] | T18 Delete dead webp and .nojekyll | P2 | ARCH-01, ARCH-02 | — | todo | | |
+| [x] | T18 Delete dead webp and .nojekyll | P2 | ARCH-01, ARCH-02 | — | done | see commit | Deleted `atlas-constant.webp` (73,420 B) and `.nojekyll`; grep in apps/packages/scripts → 0 hits; neither in `out/`. Build + e2e pass |
 | [ ] | T19 tokens.css + sky palette tokens | P2 | ARCH-03 | ⛔ D5 | todo | | D5 accepted 2026-10-22 |
 | [ ] | T20 Restrict ninja-proxy CORS | P3 | SEC-02 | ⛔ D8 | todo | | D8 accepted 2026-10-22 |
 | [x] | T21 Repo CLAUDE.md additions | P3 | — | ⛔ D7 | done | (this PR) | D7 accepted 2026-10-22; also notes `npm run build -w @poe2/mcp` before `tools`/`verify-mcp` |
