@@ -54,7 +54,7 @@ export function Hero({
   const color = tone === 'danger' ? 'text-danger' : tone === 'good' ? 'text-good' : 'text-ink'
   return (
     <div>
-      <div className="eyebrow">{label}</div>
+      <div className="label-metric">{label}</div>
       <div className={`tabular mt-2 text-5xl leading-none font-semibold tracking-tight sm:text-6xl ${color}`}>{value}</div>
       {caption ? <p className="mt-2 max-w-prose text-xs leading-relaxed text-ink-dim">{caption}</p> : null}
     </div>
@@ -82,7 +82,7 @@ export function Stat({
           : 'text-ink'
   return (
     <div className="border border-line/70 bg-surface-sunken px-3.5 py-3">
-      <div className="eyebrow leading-tight">{label}</div>
+      <div className="label-metric leading-tight">{label}</div>
       <div className={`tabular mt-1.5 text-xl leading-none font-semibold ${color}`}>{value}</div>
       {hint ? <div className="mt-1 text-[11px] leading-tight text-ink-mute">{hint}</div> : null}
     </div>

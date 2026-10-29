@@ -36,11 +36,11 @@ function Legend() {
   )
 }
 
-function Mini({ label, value, sub }: { label: string; value: string; sub?: string | null }) {
+function Mini({ label, value, sub, title }: { label: string; value: string; sub?: string | null; title?: string }) {
   return (
     <div className="border border-line bg-sunken/80 px-3.5 py-3">
-      <div className="eyebrow">{label}</div>
-      <div className="tabular mt-1.5 font-mono text-[20px] leading-none font-medium text-ink">{value}</div>
+      <div className="label-metric">{label}</div>
+      <div title={title} className="tabular mt-1.5 font-mono text-[20px] leading-none font-medium text-ink">{value}</div>
       {sub ? <div className="tabular mt-1.5 font-mono text-[11px] text-ink-mute">{sub}</div> : null}
     </div>
   )
@@ -76,7 +76,7 @@ function SkillRow({ s, isPrimary, top }: { s: SkillDamage; isPrimary: boolean; t
       </summary>
       <div className="pb-4">
         <div className="grid grid-cols-3 gap-3">
-          <Mini label="Over time" value={s.dotDps ? fmtCompact(s.dotDps) : '—'} />
+          <Mini label="Over time" value={s.dotDps ? fmtCompact(s.dotDps) : '—'} title={s.dotDps ? fmt(s.dotDps) : undefined} />
           <Mini
             label="Rate"
             value={s.rate !== null ? `${s.rate.toFixed(2)}/s` : '—'}

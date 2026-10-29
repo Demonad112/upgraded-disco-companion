@@ -54,7 +54,7 @@ export function NextStepCard({
         </span>
       </div>
 
-      <h2 id="next-step-title" className="mt-2 text-lg font-semibold text-ink">
+      <h2 id="next-step-title" className="title-sentence mt-2 text-xl text-ink">
         {step.title}
       </h2>
       <p className="mt-1 text-sm text-ink-dim">{step.description}</p>
