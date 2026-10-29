@@ -57,6 +57,9 @@ Dark palette; uppercase EB Garamond for headings and labels (finding, step and s
 - Local parity check: `npx wrangler@4 pages dev apps/web/out`.
 - Audit and fix tracker: `docs/audit/` (`08-PROGRESS.md`).
 
+## Sessions
+Every session follows docs/SESSION-PROTOCOL.md; carry-over lives in docs/carry/.
+
 ## Cloud sessions
 
 Run `npm ci`, then `npm run build -w @poe2/core`, before `npm run typecheck` or anything that resolves `@poe2/core`. `playwright install` isn't needed; `apps/web/playwright.config.ts` uses the preinstalled Chromium when `CLAUDE_CODE_REMOTE=true`.

@@ -1,21 +1,32 @@
 # UI progress
 
-Plan: [UI-PLAN.md](UI-PLAN.md). Tick a batch in its last commit.
+Plan: [UI-PLAN.md](UI-PLAN.md). Protocol: [SESSION-PROTOCOL.md](../SESSION-PROTOCOL.md). One wave view in run order; tick a
+session's row in its last commit. Audit rows are tracked in `docs/audit/08-PROGRESS.md`.
 
-| Batch | Wave | Status | Branch | PR | Preview URL | Notes |
-|---|---|---|---|---|---|---|
-| U0 | 1 | done | docs/ui-plan | | | Docs only |
-| U1 | 2 | todo | | | | |
-| U2 | 8 | todo | | | | |
-| U3 | 9 | todo | | | | |
-| U4 | 9 | todo | | | | After U3 |
-| U5 | 10 | todo | | | | |
-| U6 | 10 | todo | | | | After A6 |
-| U7 | 11 | todo | | | | Needs U9, U12, U6 |
-| U8 | 4 | todo | | | | |
-| U9 | 3 | todo | | | | |
-| U10 | 12 | todo | | | | |
-| U11a | 12 | todo | | | | |
-| U11b | 13 | todo | | | | |
-| U12 | 6 | todo | | | | After A3 |
-| U13 | 14 | todo | | | | Final QA, local |
+| Wave | Session | Where | Model | Status | Branch | PR | Preview | Notes |
+|---|---|---|---|---|---|---|---|---|
+| 1 | U0 decisions, tracker, protocol | Local | Sonnet 5.5 · medium | done | docs/ui-plan | #16 | | Docs only |
+| 1 | A1 P0 and quick wins | Cloud | Opus 5.5 · high | done | ccr-dfb2d784-xtiycv | #17 | | tracked in docs/audit/08-PROGRESS.md |
+| 2 | A2 cache headers | Cloud | Sonnet 5.5 · medium | todo | | | | tracked in docs/audit/08-PROGRESS.md |
+| 2 | U1 page headers | Cloud | Sonnet 5.5 · medium | todo | | | | |
+| 3 | A3 bundle and service worker | Local | Opus 5.5 · high | todo | | | | tracked in docs/audit/08-PROGRESS.md |
+| 3 | U9 Methodology and What's new | Cloud | Opus 5.5 · high | todo | | | | |
+| 4 | A4 canvases and a11y | Cloud | Opus 5.5 · medium | todo | | | | tracked in docs/audit/08-PROGRESS.md |
+| 4 | U8 home page | Cloud | Opus 5.5 · high | todo | | | | |
+| 5 | A5 constellation sky | Local | Opus 5.5 · high | todo | | | | tracked in docs/audit/08-PROGRESS.md |
+| 6 | A6 SEO, landmarks, CI | Cloud | Sonnet 5.5 · medium | todo | | | | tracked in docs/audit/08-PROGRESS.md |
+| 6 | U12 installable app | Cloud | Sonnet 5.5 · high | todo | | | | U12: after A3 |
+| 7 | A7 design tokens | Local | Opus 5.5 · high | todo | | | | tracked in docs/audit/08-PROGRESS.md |
+| 7 | A8 proxy CORS | Cloud | Sonnet 5.5 · medium | todo | | | | tracked in docs/audit/08-PROGRESS.md |
+| 8 | U2 surfaces and connectors | Local | Opus 5.5 · high | todo | | | | |
+| 9a | U3 typography and labels | Cloud | Sonnet 5.5 · medium | todo | | | | |
+| 9b | U4 controls kit | Local | Opus 5.5 · high | todo | | | | After U3 |
+| 10 | U5 segmented gauge | Cloud | Sonnet 5.5 · medium | todo | | | | |
+| 10 | U6 phone tab bar | Local | Sonnet 5.5 · high | todo | | | | After A6 |
+| 11 | U7 full footer | Cloud | Sonnet 5.5 · medium | todo | | | | U7: needs U6, U9, U12 |
+| 12 | U10 character page | Local | Opus 5.5 · high | todo | | | | |
+| 12 | U11a checklist | Cloud | Sonnet 5.5 · medium | todo | | | | |
+| 13 | U11b dashboard and atlas | Cloud | Sonnet 5.5 · medium | todo | | | | |
+| 14 | U13 final QA | Local | Opus 5.5 · high | todo | | | | Final QA, local |
+
+## Backlog
