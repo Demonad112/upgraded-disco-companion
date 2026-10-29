@@ -1,4 +1,4 @@
-import { existsSync, readdirSync, statSync } from 'node:fs'
+import { existsSync, readdirSync } from 'node:fs'
 import { join } from 'node:path'
 import { defineConfig, devices } from '@playwright/test'
 
@@ -29,17 +29,12 @@ const deployed = process.env.E2E_BASE_URL
 function cloudChromium(): string | undefined {
   const root = process.env.PLAYWRIGHT_BROWSERS_PATH
   if (isCI || process.env.CLAUDE_CODE_REMOTE !== 'true' || !root || !existsSync(root)) return undefined
-  // The image links `<root>/chromium` to the binary; failing that, newer
-  // Playwright revisions use `chrome-linux64/`, older ones `chrome-linux/`.
   const dir = readdirSync(root)
     .filter((d) => /^chromium-\d+$/.test(d))
     .sort()
     .pop()
-  const candidates = [
-    join(root, 'chromium'),
-    ...(dir ? [join(root, dir, 'chrome-linux64', 'chrome'), join(root, dir, 'chrome-linux', 'chrome')] : []),
-  ]
-  return candidates.find((exe) => existsSync(exe) && statSync(exe).isFile())
+  const exe = dir ? join(root, dir, 'chrome-linux', 'chrome') : undefined
+  return exe && existsSync(exe) ? exe : undefined
 }
 const executablePath = cloudChromium()
 
