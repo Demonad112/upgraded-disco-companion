@@ -34,6 +34,22 @@ for (const scheme of ['dark', 'light'] as const) {
   }
 }
 
+// The local server must resolve the same RSC segment files Cloudflare does (DX-02).
+for (const { path } of ROUTES) {
+  test(`/${path} loads with no 404s`, async ({ page }) => {
+    const failed: string[] = []
+    page.on('response', (r) => {
+      if (r.status() === 404) failed.push(r.url())
+    })
+    page.on('console', (m) => {
+      if (m.type() === 'error' && /404/.test(m.text())) failed.push(m.text())
+    })
+    await page.goto(path)
+    await page.waitForLoadState('networkidle')
+    expect(failed).toEqual([])
+  })
+}
+
 test('ticking the next step on the home page survives a reload', async ({ page }) => {
   await page.goto('')
   const title = page.locator('#next-step-title')

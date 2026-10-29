@@ -38,6 +38,7 @@
 1. **First-build security gate (DEP-01).** `next build` on 16.4.0 stops once with `SecurityFatalError` and succeeds on retry.
    Pages builds don't retry. If the build cache doesn't carry whatever state lets the retry pass, **every deploy fails**
    and production stays on the last good build. To verify: Pages → project → Deployments → latest → Build log. Fix: T01.
+   Not observed on Pages (`176fb6b` built fine on 16.4.0, 2026-10-23); resolved by T01 (16.4.2, clean first-try build).
 2. **Build-time env inlining.** `NEXT_PUBLIC_*` values are baked in. Changing one in the dashboard needs a redeploy. Any
    proxy origin change must also be added to `connect-src` (enforced by `apps/web/test/headers.test.ts`).
 3. **Preview exposure.** Previews are `noindex` by Cloudflare default. Previews still talk to the production proxy and

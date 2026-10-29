@@ -113,6 +113,15 @@ the repo. To check: open the latest deployment in the Cloudflare dashboard → B
 Fix: bump `next` and `eslint-config-next` to `16.4.2` (and `react`/`react-dom` to `19.3.1`), regenerate the
 lockfile, then run the full gate including a clean build (`rm -rf apps/web/.next apps/web/out`).
 
+Correction 2026-10-23: Cloudflare Pages built `176fb6b` on Next 16.4.0 without the hard stop, so the
+"every deploy fails" risk was not observed on Pages (it happened once locally). The advisories still applied.
+
+Resolved 2026-10-29 by T01: `next`/`eslint-config-next` 16.4.2, `react`/`react-dom` 19.3.1, then `npm audit fix`
+(no `--force`). A clean build (`rm -rf apps/web/.next apps/web/out && npm run build`) passes on the first try with
+no `SecurityFatalError` and no vulnerability line. `npm audit --omit=dev` shows no `next` advisory. One unrelated high
+advisory remains: `zod` 3.25.76 (GHSA-mrhx-c7xc-m3w5, fixed only in zod 4), a direct dependency of `apps/mcp`. Bumping
+it is a major change outside T01 and waits for the owner.
+
 Related transitive advisories (dev/tooling only, see `05-DEPENDENCIES.md`): `braces`/`micromatch`/`fast-glob`
 under `eslint-config-next` (audit's "fix" is a downgrade to 14.x, so ignore it), and `ip-address` (moderate) under
 `@modelcontextprotocol/sdk` → `express-rate-limit`, which `npm audit fix` resolves.
@@ -364,6 +373,8 @@ Facts: on every page, Next's client requests `/<route>/__next.<route>.__PAGE__.t
 Interpretation: local runs see console noise that production doesn't, and local prefetch differs from production.
 Fix: map `__next.<seg>.__PAGE__.txt` → `__next.<seg>/__PAGE__.txt` in `serve.mjs`, and document
 `npx wrangler@4 pages dev apps/web/out` for exact parity (no new dependency). There is no nvm on this machine (Node 24 locally): rely on CI for Node 22 behaviour. (Correction 2026-10-22: an earlier version said to run `nvm use`.)
+Update 2026-10-29: from Next 16.4.2 (T01) the export writes `out/<route>/__next.<route>.__PAGE__.txt` directly, so the
+404s no longer reproduce. T13 keeps the rewrite as a fallback and adds a "no 404s" e2e that guards either layout.
 
 ### ARCH-01 — Dead asset and large screenshots in git
 **Low · Confirmed · Effort S · Risk Low**
