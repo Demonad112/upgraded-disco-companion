@@ -23,4 +23,22 @@ describe('Cloudflare _headers', () => {
     expect(origins.length).toBeGreaterThanOrEqual(3)
     for (const origin of origins) expect(connect).toContain(origin)
   })
+
+  // CF-01: unhashed images and icons get a day of caching. Data JSON, the manifest and HTML stay on revalidate.
+  describe('cache rules', () => {
+    const rules = new Map<string, string[]>()
+    let current = ''
+    for (const line of readFileSync(resolve(__dirname, '../public/_headers'), 'utf8').split('\n')) {
+      if (/^\S/.test(line)) rules.set((current = line.trim()), [])
+      else if (line.trim()) rules.get(current)?.push(line.trim())
+    }
+
+    it.each(['/images/*', '/icon-*', '/icon.svg', '/apple-touch-icon.png', '/favicon.ico'])('%s is cached for a day', (path) => {
+      expect(rules.get(path)).toContain('Cache-Control: public, max-age=86400, stale-while-revalidate=604800')
+    })
+
+    it('leaves data JSON and the manifest on revalidate', () => {
+      for (const path of ['/manifest.webmanifest', '/*.json']) expect(rules.has(path)).toBe(false)
+    })
+  })
 })

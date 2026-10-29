@@ -18,7 +18,7 @@ Tasks and acceptance criteria: `02-FIX-PLAN.md`. Decisions: `09-OWNER-DECISIONS.
 | [ ] | T11 Hit-area test + axe exclusion | P1 | A11Y-02 | — | todo | | |
 | [ ] | T12 Audit CI step (+ Dependabot if D4) | P2 | DX-01 | ⛔ D4 (Dependabot part) | todo | | after T01; D4 accepted 2026-10-22 |
 | [x] | T13 serve.mjs RSC path parity + README | P2 | DX-02 | — | done | see commit (code in merge of d75787c) | New "no 404s" e2e: 10/10 pass (5 routes × 2 projects), console 404s 0. Next 16.4.2 now exports `__next.<seg>.__PAGE__.txt` flat, so the rewrite is a fallback for the old nested layout; checked by hiding a segment file (test fails on all 5 routes) and by serving only the nested copy (passes) |
-| [ ] | T14 Cache headers for images/icons | P2 | CF-01 | — | todo | | |
+| [x] | T14 Cache headers for images/icons | P2 | CF-01 | — | done | see commit | `_headers` gains `/images/*`, `/icon-*`, `/icon.svg`, `/apple-touch-icon.png`, `/favicon.ico` → `max-age=86400, stale-while-revalidate=604800`. Web tests 99 → 105; new tests fail on old `_headers` (5 failed), pass on new. All five rules present in `out/_headers`. Post-deploy `curl -sI …/images/og-cover.jpg` check pending |
 | [ ] | T15 Canonical, og:url, sitemap | P2 | SEO-01 | — | todo | | |
 | [x] | T16 Unify theme colour | P2 | SEO-02 | — | done | see commit (code in merge of d75787c) | manifest background/theme `#0d0d10` → `#08080a`, matches `<meta name="theme-color">` in `out/index.html`. grep: `#0d0d10` only in `globals.css` `--surface`; manifest parses as JSON |
 | [ ] | T17 Banner landmark, heading order | P2 | A11Y-03 | — | todo | | |
