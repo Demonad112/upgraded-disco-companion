@@ -26,7 +26,7 @@ export function Panel({
     // min-w-0: a grid/flex child defaults to min-width:auto and refuses to
     // shrink below its content, which pushes the page into horizontal scroll on
     // narrow viewports. Wide content scrolls inside its own container instead.
-    <section className={`card min-w-0 overflow-hidden ${className}`}>
+    <section data-surface="data" className={`card min-w-0 overflow-hidden ${className}`}>
       <header className="mb-4 flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 border-b border-line pb-3">
         <div className="min-w-0">
           <h2 className="h3">{title}</h2>

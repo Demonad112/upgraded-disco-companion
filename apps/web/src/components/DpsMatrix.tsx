@@ -137,7 +137,7 @@ export function DpsMatrix({
 
   if (dps.unresolved) {
     return (
-      <section className="card" aria-label="Damage per skill">
+      <section data-surface="data" className="card" aria-label="Damage per skill">
         <h3 className="h3">Damage</h3>
         <Empty>{dps.unresolved}</Empty>
       </section>
@@ -150,7 +150,7 @@ export function DpsMatrix({
   const primary = dps.primary
 
   return (
-    <section className="card" aria-label="Damage per skill">
+    <section data-surface="data" className="card" aria-label="Damage per skill">
       <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
         <h3 className="h3">{primary ? `${primary.name} · ${fmt(primary.totalDps)} dps` : 'Damage'}</h3>
         <span className="eyebrow">Read from poe.ninja, not recalculated</span>

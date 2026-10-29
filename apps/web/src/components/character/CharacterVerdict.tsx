@@ -47,7 +47,7 @@ export function CharacterVerdict({ analysis, children }: { analysis: Analysis; c
   const top = recommendations.recommendations[0] ?? null
 
   return (
-    <section className="card" aria-label="Verdict">
+    <section data-surface="data" className="card" aria-label="Verdict">
       <div className="grid items-end gap-x-8 gap-y-5 min-[621px]:grid-cols-[minmax(0,1fr)_auto]">
         <div className="min-w-0">
           <div className="eyebrow text-accent">Character</div>

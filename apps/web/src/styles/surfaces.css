@@ -1,0 +1,12 @@
+/* U2 surfaces: tinted glass on data panels. Mark a panel with data-surface="data"; home and hero cards stay clear.
+
+   The fill is an image layer, not background-color: the sky-dim rule (globals.css, sky section) sets background-color
+   on outermost blocks, so a colour fill would be replaced while the dim is on. As an image it paints over the dim, and
+   with the dim off it is the panel's only fill. The .card form outranks the card's own `background` shorthand, which
+   comes later in the components layer. Still layered, so a block's bg-* image utility wins. */
+@layer components {
+  .card[data-surface='data'],
+  [data-surface='data'] {
+    background-image: linear-gradient(var(--data-fill), var(--data-fill));
+  }
+}

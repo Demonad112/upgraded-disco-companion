@@ -127,7 +127,7 @@ export function ImportBar({
   }
 
   return (
-    <div className="card rounded-xl p-4 sm:p-5">
+    <div data-surface="data" className="card rounded-xl p-4 sm:p-5">
       <div
         className="mb-3 flex gap-1 text-xs"
         role="tablist"

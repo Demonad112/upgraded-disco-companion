@@ -80,7 +80,7 @@ export function WarningPanel({
   return (
     <details
       ref={outer}
-      className="card group/outer relative overflow-hidden rounded-xl before:absolute before:inset-y-0 before:left-0 before:w-0.5 before:bg-danger"
+      data-surface="data" className="card group/outer relative overflow-hidden rounded-xl before:absolute before:inset-y-0 before:left-0 before:w-0.5 before:bg-danger"
     >
       <summary className="flex cursor-pointer list-none items-center gap-2.5 px-4 py-3 [&::-webkit-details-marker]:hidden">
         <span aria-hidden className="text-danger">

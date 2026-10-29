@@ -31,7 +31,7 @@ export default function AtlasPage() {
             node without scrolling back up to find the tree. */}
         <div className="flex flex-col gap-5 lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)] lg:items-start">
           <section
-            className="card rounded-xl p-3 sm:p-4 lg:sticky lg:top-18 lg:col-start-2 lg:row-start-1"
+            data-surface="data" className="card rounded-xl p-3 sm:p-4 lg:sticky lg:top-18 lg:col-start-2 lg:row-start-1"
             aria-label="Atlas tree map"
           >
             <AtlasTreeMap />

@@ -71,7 +71,7 @@ function Card({ r, rank }: { r: Recommendation; rank: number }) {
   const axis = axisOf(r)
 
   return (
-    <li className="card flex flex-col">
+    <li data-surface="data" className="card flex flex-col">
       <div className="flex flex-wrap items-center gap-1.5">
         <span
           aria-label={isQuestion ? 'Question' : `Finding ${rank}`}
@@ -157,7 +157,7 @@ export function Recommendations({ report }: { report: RecommendationReport }) {
         </div>
       </div>
       {report.buildIsSound ? (
-        <p className="card px-4 py-5 text-sm leading-relaxed text-good">{report.summary}</p>
+        <p data-surface="data" className="card px-4 py-5 text-sm leading-relaxed text-good">{report.summary}</p>
       ) : (
         <ul className="grid gap-2.5 lg:grid-cols-2 lg:items-stretch">
           {actionable.map((r, i) => (
@@ -178,7 +178,7 @@ export function Recommendations({ report }: { report: RecommendationReport }) {
       ) : null}
 
       {report.suppressed.length ? (
-        <div className="card mt-4 p-4">
+        <div data-surface="data" className="card mt-4 p-4">
           <h3 className="text-xs font-medium tracking-wide text-ink-dim uppercase">Ruled out by a keystone</h3>
           <p className="mt-1 text-[11px] text-ink-mute">
             Findings the engine did spot and then withdrew. Shown rather than dropped — a finding that vanishes
@@ -201,7 +201,7 @@ export function Recommendations({ report }: { report: RecommendationReport }) {
       ) : null}
 
       {report.unresolved.length ? (
-        <div className="card mt-4 p-4">
+        <div data-surface="data" className="card mt-4 p-4">
           <h3 className="text-xs font-medium tracking-wide text-ink-dim uppercase">Could not be determined</h3>
           <p className="mt-1 text-[11px] text-ink-mute">
             Stated rather than guessed — a wrong number is worse than a missing one.

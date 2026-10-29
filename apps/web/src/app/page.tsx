@@ -128,9 +128,9 @@ export default function Home() {
       </div>
 
       {/* Threads: a rail across the tops with a stem and diamond per card
-          (wide screens). Opted out of the card-links canvas, which would
-          otherwise add its own links across the gaps. */}
-      <div className="thread-row sm:col-span-10" data-compact-hide data-no-links>
+          (wide screens). Pure CSS; the card-links canvas only links cards
+          inside [data-links], so it leaves these alone. */}
+      <div className="thread-row sm:col-span-10" data-compact-hide>
         {toolCards().map((card) => (
           <Link
             key={card.href}

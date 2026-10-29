@@ -76,7 +76,7 @@ function Meter({ r }: { r: DefenseSummary['resistances'][number] }) {
 
 function ResistanceMeters({ d }: { d: DefenseSummary }) {
   return (
-    <section className="card" aria-label="Resistances">
+    <section data-surface="data" className="card" aria-label="Resistances">
       <h3 className="h3">Resistances</h3>
       <ul className="mt-4 space-y-4">
         {d.resistances.map((r) => (
@@ -103,7 +103,7 @@ function LargestHit({ d }: { d: DefenseSummary }) {
   const res = new Map(d.resistances.map((r) => [r.type as string, r]))
   const ehpAt = d.effectiveHealthPool !== null ? `${(d.effectiveHealthPool / scale) * 100}%` : null
   return (
-    <section className="card" aria-label="Largest hit you survive">
+    <section data-surface="data" className="card" aria-label="Largest hit you survive">
       <h3 className="h3">Largest hit you survive</h3>
       <ul className="mt-4 space-y-4">
         {hits.map((h) => {
@@ -169,7 +169,7 @@ function PoolTile({ label, value, hint }: { label: string; value: string; hint?:
 
 function Pools({ d }: { d: DefenseSummary }) {
   return (
-    <section className="card" aria-label="Pools">
+    <section data-surface="data" className="card" aria-label="Pools">
       <h3 className="h3">Pools</h3>
       <div className="pools mt-4">
         <PoolTile label="Life" value={fmt(d.life)} />
@@ -197,7 +197,7 @@ export function DefensePanel({ d }: { d: DefenseSummary }) {
   return (
     <div className="grid-cards">
       {implied ? (
-        <p className="card border-warn/50 text-xs leading-relaxed text-warn">
+        <p data-surface="data" className="card border-warn/50 text-xs leading-relaxed text-warn">
           <ProvenanceBadge provenance="derived" /> poe.ninja’s elemental maximum hits imply lower resistances than shown:{' '}
           {d.impliedResistances
             .filter((r) => r.status === 'implied' && r.implied)

@@ -29,7 +29,7 @@ function Section({ id, children }: { id: string; children: ReactNode }) {
         </h2>
         <AnchorLink id={id} label={title} />
       </div>
-      <div className="card space-y-3 text-sm leading-relaxed text-ink-dim">{children}</div>
+      <div data-surface="data" className="card space-y-3 text-sm leading-relaxed text-ink-dim">{children}</div>
     </section>
   )
 }

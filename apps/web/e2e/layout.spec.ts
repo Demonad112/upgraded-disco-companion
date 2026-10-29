@@ -24,6 +24,7 @@ test.describe('desktop layout', () => {
     await expect(page.getByRole('heading', { name: /Athrynas/ }).first()).toBeVisible({ timeout: 30_000 })
     const cards = page.locator('section:has(> div [role="group"][aria-label="Focus"]) > ul > li')
     expect(await cards.count()).toBeGreaterThan(1)
+    await expect(cards.nth(1)).toBeVisible()
     const [a, b] = [await cards.nth(0).boundingBox(), await cards.nth(1).boundingBox()]
     expect(Math.abs(a!.y - b!.y)).toBeLessThan(2)
     expect(b!.x).toBeGreaterThan(a!.x + a!.width)

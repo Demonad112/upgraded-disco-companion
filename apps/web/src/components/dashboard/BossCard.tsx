@@ -12,7 +12,7 @@ export function BossCard({ boss }: { boss: PinnacleBoss }) {
   return (
     <details
       id={boss.id}
-      className="group card scroll-mt-40 rounded-xl transition-colors hover:border-line-strong open:border-accent-line"
+      data-surface="data" className="group card scroll-mt-40 rounded-xl transition-colors hover:border-line-strong open:border-accent-line"
     >
       <summary className="flex cursor-pointer list-none flex-col gap-2 p-4 [&::-webkit-details-marker]:hidden">
         <div className="flex items-start justify-between gap-2">

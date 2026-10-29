@@ -47,9 +47,10 @@ export function ChecklistStep({
       <details
         id={step.id}
         open={isNext && !complete}
+        data-surface={complete ? "data" : undefined}
         className={`group scroll-mt-40 rounded-lg border transition-colors ${
           complete
-            ? "border-good/25 bg-good/[0.04]"
+            ? "border-good/25"
             : isNext
               ? "border-accent bg-surface-raised shadow-[var(--lift)]"
               : "border-line bg-surface-raised shadow-[var(--lift)] hover:border-line-strong"

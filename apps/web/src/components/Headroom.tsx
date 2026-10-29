@@ -66,7 +66,7 @@ export function Headroom({ defense }: { defense: DefenseSummary }) {
 
   if (error) {
     return (
-      <section className="card" aria-label="Survivability by waystone tier">
+      <section data-surface="data" className="card" aria-label="Survivability by waystone tier">
         {head}
         <Empty>Could not load the monster data ({error}).</Empty>
       </section>
@@ -74,7 +74,7 @@ export function Headroom({ defense }: { defense: DefenseSummary }) {
   }
   if (!data) {
     return (
-      <section className="card" aria-label="Survivability by waystone tier">
+      <section data-surface="data" className="card" aria-label="Survivability by waystone tier">
         {head}
         <div className="mt-4 h-40 animate-pulse bg-sunken" />
       </section>
@@ -117,7 +117,7 @@ export function Headroom({ defense }: { defense: DefenseSummary }) {
     .join(', ')}.`
 
   return (
-    <section className="card" aria-label="Survivability by waystone tier" id="headroom">
+    <section data-surface="data" className="card" aria-label="Survivability by waystone tier" id="headroom">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div className="min-w-0">
           {head}
