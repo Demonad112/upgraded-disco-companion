@@ -17,7 +17,8 @@ Side batch between wave 6 and wave 7. No tracker wave row.
   `npm audit` has nothing to check. CI runs only `npm test` there (no install). No advisories exist to record.
 - Update toast "Later" button: `aria-label="Dismiss"` removed (WCAG 2.5.3). No test, e2e or script selects it by "Dismiss"
   (the only e2e match is "Dismiss patch notice", a different button).
-- `apps/web/src/app/robots.ts` + `test/robots.test.ts`; `apps/web/out/robots.txt` confirmed after build.
+- robots.txt: removed, conflicts with D6 (Cloudflare's managed robots.txt stays; no in-repo file). Fix-up PR deletes `app/robots.ts` and `test/robots.test.ts`.
+- A3-2 resolved: Windows worker cap. `playwright.config.ts` sets `workers: 2` on win32 (9 mobile timeouts at 4 workers, 46/46 pass at 2); CI and cloud (Linux) unchanged.
 - `HANDOFF.md`: "#16–#21" and a waves 1–6 status line. Its "Next is wave 2" line is stale; left as is (not asked).
 
 ## Open
