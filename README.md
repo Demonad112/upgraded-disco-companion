@@ -128,6 +128,12 @@ node scripts/verify-mcp.mjs        # drives the real MCP binary over stdio
 npm run tools -w @poe2/mcp         # regenerates TOOLS.md; CI fails if stale
 ```
 
+For an exact Cloudflare Pages parity check of the built export:
+
+```bash
+npx wrangler@4 pages dev apps/web/out
+```
+
 The render checks drive a real browser against the built export, and each
 defaults to `http://127.0.0.1:3210/character/`. Serve `apps/web/out` there
 first, then:

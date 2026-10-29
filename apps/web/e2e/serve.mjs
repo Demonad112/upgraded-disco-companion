@@ -2,7 +2,7 @@
 // base path when the build used one (GitHub Actions), with trailing-slash directories
 // resolving to their index.html. No dependencies, so the e2e job needs nothing
 // beyond the build it already has.
-import { createReadStream, statSync } from 'node:fs'
+import { createReadStream, existsSync, statSync } from 'node:fs'
 import { createServer } from 'node:http'
 import { extname, join, normalize } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -28,6 +28,8 @@ createServer((req, res) => {
   if (base && path.startsWith(base)) path = path.slice(base.length) || '/'
   let file = normalize(join(root, path))
   if (!file.startsWith(root)) return void res.writeHead(403).end()
+  // Cloudflare Pages resolves `__next.<seg>.__PAGE__.txt` to `__next.<seg>/__PAGE__.txt`; match it.
+  if (!existsSync(file)) file = file.replace(/(__next\.[^/\\]+?)\.(__PAGE__\.txt)$/, '$1/$2')
   try {
     if (statSync(file).isDirectory()) file = join(file, 'index.html')
     statSync(file)
