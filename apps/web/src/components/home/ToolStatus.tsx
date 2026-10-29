@@ -40,8 +40,9 @@ function useStatus(props: ToolStatusProps): { text: string; active: boolean } {
     case "character": {
       const last = recents[0];
       if (!last) return { text: "No character imported yet", active: false };
-      const level = last.level === null ? "" : ` · Lv\u00a0${last.level}`;
-      return { text: `Last import: ${last.name}${level}`, active: true };
+      // The grade at import when it was kept; rows saved before that show the level.
+      const detail = last.grade ? ` · ${last.grade}` : last.level === null ? "" : ` · Lv\u00a0${last.level}`;
+      return { text: `Last import: ${last.name}${detail}`, active: true };
     }
   }
 }
