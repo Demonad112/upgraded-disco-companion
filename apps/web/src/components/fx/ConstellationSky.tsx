@@ -4,9 +4,8 @@ import { useEffect, useRef } from 'react'
 import { usePathname } from 'next/navigation'
 import { buildField, type Field } from './sky/field'
 import { buildTicks, createPainter, type Ticks } from './sky/draw'
-import { pickLook } from './sky/looks'
 import { readPalette } from './sky/palette'
-import { makeSprites, paintHaze } from './sky/sprites'
+import { makeSprites } from './sky/sprites'
 
 /**
  * Fixed, slowly rotating gold constellation sky behind the whole site. Dark
@@ -15,7 +14,6 @@ import { makeSprites, paintHaze } from './sky/sprites'
  */
 export function ConstellationSky() {
   const canvasRef = useRef<HTMLCanvasElement>(null)
-  const hazeRef = useRef<HTMLCanvasElement>(null)
   const pathname = usePathname()
   // Set by the effect below; lets a route change or toggle repaint a still sky.
   const kickRef = useRef<() => void>(() => {})
@@ -31,10 +29,7 @@ export function ConstellationSky() {
     if (!ctx) return
     const root = document.documentElement
     const palette = readPalette()
-    const look = pickLook()
-    const paint = createPainter(ctx, palette, makeSprites(palette), look)
-    const haze = look.haze ? hazeRef.current : null
-    haze?.parentElement?.removeAttribute('hidden')
+    const painter = createPainter(ctx, palette, makeSprites(palette))
     const motion = window.matchMedia('(prefers-reduced-motion: reduce)')
     let field: Field | null = null
     let ticks: Ticks[] = []
@@ -62,20 +57,13 @@ export function ConstellationSky() {
       canvas.height = Math.round(h * dpr)
       canvas.style.width = `${w}px`
       canvas.style.height = `${h}px`
-      field = buildField(w, h, look)
+      field = buildField(w, h)
       ticks = buildTicks(field)
-      if (haze) {
-        // The haze covers the sky disk and turns about the pivot with the far stars.
-        const { px, py, rm, small } = field
-        paintHaze(haze, palette.rgb, small)
-        haze.style.left = `${px - rm}px`
-        haze.style.top = `${py - rm}px`
-        haze.style.width = haze.style.height = `${rm * 2}px`
-      }
+      painter.prepare(field, dpr)
     }
 
     const draw = (t: number) => {
-      if (field && !hidden()) paint(field, ticks, dpr, t, motion.matches)
+      if (field && !hidden()) painter.paint(field, ticks, dpr, t, motion.matches)
     }
 
     const frame = (now: number) => {
@@ -142,9 +130,6 @@ export function ConstellationSky() {
 
   return (
     <>
-      <div aria-hidden className="sky-haze" hidden>
-        <canvas ref={hazeRef} data-fx="sky-haze" />
-      </div>
       <canvas ref={canvasRef} aria-hidden className="sky-canvas" data-fx="sky" />
       <div aria-hidden className="sky-scrim" data-fx="sky-scrim" />
     </>
