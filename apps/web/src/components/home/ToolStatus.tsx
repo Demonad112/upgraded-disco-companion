@@ -3,6 +3,7 @@
 import { usePersistedState } from "@/hooks/usePersistedState";
 import { recentCharacters } from "@/lib/recentCharacters";
 import { useLocalStore } from "@/lib/localStore";
+import { countIn } from "@/lib/progressCount";
 
 /**
  * One line of live state under a home tool card, read from what this browser
@@ -14,9 +15,6 @@ export type ToolStatusProps =
   | { tool: "atlas"; atlasIds: string[] }
   | { tool: "dashboard"; strategyNames: Record<string, string> }
   | { tool: "character" };
-
-// Count only ids that still exist, as the checklist and Progress card do.
-const countIn = (ids: string[], saved: string[]) => ids.filter((id) => saved.includes(id)).length;
 
 function useStatus(props: ToolStatusProps): { text: string; active: boolean } {
   const { state } = usePersistedState();

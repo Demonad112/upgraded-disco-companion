@@ -3,6 +3,7 @@
 import { useCallback, useMemo } from "react";
 import { usePersistedState } from "./usePersistedState";
 import { atlasClusters, memoryForks } from "@/data/atlasTree";
+import { countIn } from "@/lib/progressCount";
 
 export function useAtlasProgress() {
   const { state, setState } = usePersistedState();
@@ -49,10 +50,14 @@ export function useAtlasProgress() {
   );
 
   // Count only ids that still exist, as the checklist and home tool card do.
-  const allocatedCount = useMemo(() => {
-    const saved = new Set([...allocatedClusterIds, ...allocatedForkIds]);
-    return [...atlasClusters, ...memoryForks].filter((n) => saved.has(n.id)).length;
-  }, [allocatedClusterIds, allocatedForkIds]);
+  const allocatedCount = useMemo(
+    () =>
+      countIn(
+        [...atlasClusters, ...memoryForks].map((n) => n.id),
+        [...allocatedClusterIds, ...allocatedForkIds]
+      ),
+    [allocatedClusterIds, allocatedForkIds]
+  );
   const allocationTotal = atlasClusters.length + memoryForks.length;
   const allocationPercent =
     allocationTotal === 0 ? 0 : Math.round((allocatedCount / allocationTotal) * 100);
