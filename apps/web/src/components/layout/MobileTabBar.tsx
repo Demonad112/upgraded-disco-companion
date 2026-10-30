@@ -40,8 +40,14 @@ function useKeyboardOpen(): boolean {
     const vv = window.visualViewport;
     if (!vv) return;
     const update = () => setOpen(keyboardOpen(window.innerHeight, vv.height, vv.scale));
+    // Rotating changes innerHeight without always resizing the visual
+    // viewport, so the window resize keeps the bar from staying hidden.
     vv.addEventListener("resize", update);
-    return () => vv.removeEventListener("resize", update);
+    window.addEventListener("resize", update);
+    return () => {
+      vv.removeEventListener("resize", update);
+      window.removeEventListener("resize", update);
+    };
   }, []);
   return open;
 }
