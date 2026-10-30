@@ -1,6 +1,6 @@
 # Handoff
 
-Updated 2026-10-29. Production host: `upgraded-disco-companion.pages.dev`
+Updated 2026-10-30. Production host: `upgraded-disco-companion.pages.dev`
 (default `siteUrl` in `apps/web/src/app/layout.tsx`).
 
 ## State
@@ -10,13 +10,14 @@ Updated 2026-10-29. Production host: `upgraded-disco-companion.pages.dev`
 - **UI:** `docs/ui/UI-PLAN.md`; the wave table in `docs/ui/UI-PROGRESS.md` is the run order. Sessions follow
   `docs/SESSION-PROTOCOL.md`; carry-over lives in `docs/carry/`.
 
-## Status 2026-10-29
+## Status 2026-10-30
 
-- Waves 1–6 merged (PRs #16–#32): A1–A6, U0, U1, U8, U9, U12, plus OQ1.
-- SB1 (owner decisions) merged between waves 6 and 7 (PRs #41, #42): Dependabot version updates removed (PRs #33–#39
-  closed, audit CI step kept), in-repo `robots.txt` removed, Windows e2e capped at 2 workers (A3-2 closed).
-- Wave 7: A8 (T20 proxy CORS) merged (#44); A7 (T19 design tokens, `apps/web/src/app/tokens.css`) open as #45.
-- Next: wave 8 (U2 surfaces and connectors), then U3–U7, U10, U11a/b and U13 per the wave table.
+- Waves 1–7 merged (PRs #16–#45): A1–A8, U0, U1, U8, U9, U12, plus OQ1 and SB1 (#41, #42: Dependabot version updates
+  removed with the audit CI step kept, in-repo `robots.txt` removed, Windows e2e capped at 2 workers).
+- UI waves 8–10 merged: U2 (#46), U3 (#49), U4 (#50), U5 (#52), U6 (#53), plus the W15 sky upgrade (#51, #54). Fonts are
+  vendored (`next/font/local`, `apps/web/src/app/fonts/`), so `next build` works in cloud sessions.
+- Open: #55 (P1 polish, `variant/20261030-polish`) and SB2 (side batch, docs and small fixes).
+- Next: U7 (footer), then U10, U11a/b and U13 per the wave table in `docs/ui/UI-PROGRESS.md`.
 
 ## Correction recorded
 
@@ -28,4 +29,4 @@ Updated 2026-10-29. Production host: `upgraded-disco-companion.pages.dev`
 
 1. Docs dropped in the transfer (`DESIGN.md`, `DATA-REFRESH.md`) are not restored. The cloud-setup hook is back (`.claude/hooks/cloud-setup.sh`, 718bd70).
 2. `packages/core/test/pob-bridge.test.ts` ("gives up once the per-call budget is spent") is timing-flaky.
-3. Owner steps not yet done: Lighthouse run, Vercel proxy deploy (T20 merged in #44).
+3. Owner steps not yet confirmed: Lighthouse run, Vercel proxy deploy (T20 merged in #44; check with the `curl` in `docs/carry/A8.md`).
