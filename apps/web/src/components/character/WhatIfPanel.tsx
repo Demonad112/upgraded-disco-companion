@@ -188,7 +188,7 @@ export function WhatIfPanel({ analysis, options }: { analysis: Analysis; options
         <div aria-live="polite" className="space-y-3">
           <div className="grid grid-cols-3 gap-2">
             <div className="border border-line bg-surface-sunken p-3">
-              <div className="eyebrow">Largest hit</div>
+              <div className="label-metric">Largest hit</div>
               <div className="mt-1 text-lg font-semibold">
                 <Delta before={d0.lowestMaximumHit} after={d1.lowestMaximumHit} />
               </div>
@@ -197,7 +197,7 @@ export function WhatIfPanel({ analysis, options }: { analysis: Analysis; options
               </div>
             </div>
             <div className="border border-line bg-surface-sunken p-3">
-              <div className="eyebrow">Grade</div>
+              <div className="label-metric">Grade</div>
               <div className="mt-1 text-lg font-semibold">
                 <span className={grade(analysis.assessment) === grade(after.assessment) ? '' : 'text-ink-mute'}>
                   {grade(analysis.assessment)}
@@ -211,7 +211,7 @@ export function WhatIfPanel({ analysis, options }: { analysis: Analysis; options
               </div>
             </div>
             <div className="border border-line bg-surface-sunken p-3">
-              <div className="eyebrow">Findings</div>
+              <div className="label-metric">Findings</div>
               <div className="mt-1 text-lg font-semibold">
                 <Delta before={f0.length} after={f1.length} />
               </div>

@@ -59,7 +59,7 @@ export function ChecklistStep({
         <summary className="flex cursor-pointer list-none items-center gap-2.5 py-2.5 pr-3 pl-10 [&::-webkit-details-marker]:hidden">
           <span className="tabular w-6 shrink-0 text-[11px] text-ink-mute">#{step.order}</span>
           <span
-            className={`min-w-0 flex-1 text-sm font-medium ${complete ? "text-ink-mute line-through" : "text-ink"}`}
+            className={`title-sentence min-w-0 flex-1 text-[15px] ${complete ? "text-ink-mute line-through" : "text-ink"}`}
           >
             {step.title}
           </span>
