@@ -1,1 +1,78 @@
-/* U7 full footer: component CSS for batch U7 goes here (UI-PLAN CSS placement). */
+/* U7 full footer (components/layout/Footer.tsx): four columns from 981px, two from 621px, stacked on phones.
+   On phones #fx-root already pads the bottom by the tab bar (nav.css), so nothing here offsets for it. */
+
+.footer-cols {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.75rem;
+}
+@media (min-width: 621px) {
+  .footer-cols {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (min-width: 981px) {
+  .footer-cols {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+.footer-title {
+  margin-bottom: 0.5rem;
+  font-family: var(--font-label);
+  font-size: 0.75rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-dim);
+}
+
+.site-footer ul {
+  display: flex;
+  flex-direction: column;
+}
+
+/* 24px tap area on every link and button in the footer. */
+.footer-link,
+.site-footer .install-button {
+  display: inline-flex;
+  align-items: center;
+  min-height: 1.5rem;
+  color: var(--ink-dim);
+}
+.footer-link:hover,
+.site-footer .install-button:hover {
+  color: var(--accent);
+}
+.footer-link.inline {
+  display: inline;
+  min-height: 0;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.footer-facts > div {
+  display: flex;
+  gap: 0.5rem;
+  min-height: 1.5rem;
+  align-items: baseline;
+}
+.footer-facts dt {
+  min-width: 5.5rem;
+}
+.footer-facts dd {
+  color: var(--ink-dim);
+}
+
+.footer-legal {
+  margin-top: 1.75rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--line);
+}
+
+/* Settings rows are 32px apart, so the small checkboxes keep the 24px target spacing (axe target-size); the whole
+   label is the tap area. */
+.site-footer li {
+  display: flex;
+  align-items: center;
+  min-height: 2rem;
+}

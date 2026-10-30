@@ -23,6 +23,23 @@ test.describe('small controls have a 24px tap area', () => {
   test('footer links', async ({ page }) => {
     await page.goto('')
     expect(await tapsWithin24px(page.getByRole('button', { name: 'Reset all progress' }))).toBe(true)
+    const footer = page.locator('footer')
+    for (const name of ['Character', 'Checklist', 'Atlas Tree', 'Dashboard', 'Methodology', "What's new", 'GitHub repo', 'Report an issue']) {
+      expect(await tapsWithin24px(footer.getByRole('link', { name, exact: true })), name).toBe(true)
+    }
+    expect(await tapsWithin24px(footer.locator('label', { hasText: 'Dim sky behind blocks' }))).toBe(true)
+    expect(await tapsWithin24px(footer.locator('label', { hasText: 'Compact mode' }))).toBe(true)
+  })
+
+  test('footer links go where they say', async ({ page }) => {
+    await page.goto('')
+    const footer = page.locator('footer')
+    await footer.getByRole('link', { name: 'Methodology' }).click()
+    await expect(page).toHaveURL(/\/methodology\/?$/)
+    await page.locator('footer').getByRole('link', { name: "What's new" }).click()
+    await expect(page).toHaveURL(/\/whats-new\/?$/)
+    await expect(footer.getByRole('link', { name: 'Report an issue' })).toHaveAttribute('href', /\/issues$/)
+    await expect(footer.getByRole('link', { name: 'poe.ninja' })).toHaveAttribute('href', /^https:\/\/poe\.ninja/)
   })
 
   test('dashboard sort chips', async ({ page }) => {
