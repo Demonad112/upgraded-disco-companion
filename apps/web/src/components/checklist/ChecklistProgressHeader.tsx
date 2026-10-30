@@ -1,14 +1,14 @@
 "use client";
 
-import { ProgressBar } from "@/components/shared/ProgressBar";
+import { Gauge } from "@/components/shared/Gauge";
 import { useChecklistState } from "@/hooks/useChecklistState";
 
 export function ChecklistProgressHeader() {
-  const { completionPercent } = useChecklistState();
+  const { completedCount, totalSteps } = useChecklistState();
 
   return (
     <div data-surface="data" className="rounded-lg card p-4">
-      <ProgressBar percent={completionPercent} label="Overall progression" />
+      <Gauge done={completedCount} total={totalSteps} label="Overall progression" />
     </div>
   );
 }
