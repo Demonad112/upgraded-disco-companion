@@ -79,7 +79,7 @@ export default function Home() {
     // 1.5 : 1 split; then the four tools as a 2x2 grid of equal cards (5 + 5).
     <div className="home-bento grid grid-cols-1 gap-5 sm:grid-cols-10">
       <section className="sm:col-span-10" data-compact-hide>
-        <div className="hero-rule flex flex-col items-center gap-3 py-2 sm:py-6">
+        <div data-draw-in className="hero-rule flex flex-col items-center gap-3 py-2 sm:py-6">
           <span className="eyebrow text-[var(--accent)]">
             Patch {CURRENT_PATCH} · {LEAGUE_LABEL}
           </span>
@@ -136,6 +136,7 @@ export default function Home() {
             key={card.href}
             href={card.href}
             data-linkable
+            data-pulse
             className="group card thread-card flex flex-col p-6"
           >
             <span className="thread-stem" aria-hidden />
