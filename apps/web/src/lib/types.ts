@@ -209,6 +209,11 @@ export interface GlossaryTerm {
   definition: string;
   /** Where in the app it matters, e.g. a checklist step id. */
   seeStepId?: string;
+  /**
+   * The words that name it in running text, matched whole-word, case-insensitive, with an optional plural `s`.
+   * Defaults to `term`. Empty: never marked inline (too common a word to underline).
+   */
+  matches?: string[];
 }
 
 export interface CurrencyMilestone {

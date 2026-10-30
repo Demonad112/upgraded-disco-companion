@@ -5,6 +5,7 @@ import { FOCUS_CHOICES, focusOf, type FocusChoice } from '@/lib/characterNotes'
 import { axisOf, focusView, type Cost, type Evidence, type Recommendation, type RecommendationReport } from '@poe2/core'
 import { Tag, fmt } from './ui'
 import { Segmented } from './shared/controls'
+import { Glossed } from '@/components/shared/Gloss'
 
 const CATEGORY_TONE = {
   survivability: 'danger',
@@ -91,7 +92,7 @@ function Card({ r, rank }: { r: Recommendation; rank: number }) {
         </Tag>
       </div>
       <h3 className="title-sentence mt-2.5 text-[17px] text-ink">{r.action}</h3>
-      <p className="mt-1.5 text-[13px] leading-relaxed text-ink-dim">{r.rationale}</p>
+      <p className="mt-1.5 text-[13px] leading-relaxed text-ink-dim"><Glossed>{r.rationale}</Glossed></p>
 
       <div className="mt-3 grid gap-2 sm:grid-cols-2">
         <ImpactBar r={r} />

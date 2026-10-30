@@ -230,3 +230,35 @@
     box-shadow: 0 0 0 3px var(--page), 0 0 0 4px var(--accent-line);
   }
 }
+
+/* Forced colours (Windows High Contrast): the active segment is a fill plus an inset shadow, and both are stripped.
+   Mark it with a system-colour edge and highlight colours instead; the range fill gets the same treatment. */
+@media (forced-colors: active) {
+  .seg-item[aria-selected='true'],
+  .seg-item[aria-pressed='true'] {
+    outline: 2px solid Highlight;
+    outline-offset: -2px;
+    background: Highlight;
+    color: HighlightText;
+    forced-color-adjust: none;
+  }
+  .seg-item[aria-selected='true'] .seg-count,
+  .seg-item[aria-pressed='true'] .seg-count {
+    color: HighlightText;
+  }
+  .btn-primary {
+    border-color: ButtonText;
+  }
+  .range::-webkit-slider-runnable-track {
+    background: linear-gradient(90deg, Highlight var(--range-pct, 0%), GrayText var(--range-pct, 0%));
+    forced-color-adjust: none;
+  }
+  .range::-webkit-slider-thumb {
+    background: Highlight;
+    border-color: CanvasText;
+    forced-color-adjust: none;
+  }
+  .select {
+    background-image: none;
+  }
+}

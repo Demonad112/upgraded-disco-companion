@@ -16,6 +16,7 @@ import { BenchmarkGate } from "@/components/shared/BenchmarkGate";
 import { SourceFlag } from "@/components/shared/SourceFlag";
 import { actionItemKey, useChecklistState } from "@/hooks/useChecklistState";
 import { commonMistakes } from "@/data/commonMistakes";
+import { Glossed } from "@/components/shared/Gloss";
 
 export function ChecklistStep({
   step,
@@ -96,7 +97,7 @@ export function ChecklistStep({
         </summary>
 
         <div className="space-y-3 border-t border-line px-3 pt-3 pb-3.5 sm:pl-[4.25rem]">
-          <p className="text-sm leading-relaxed text-ink-dim">{step.description}</p>
+          <p className="text-sm leading-relaxed text-ink-dim"><Glossed>{step.description}</Glossed></p>
           <div className="flex flex-wrap items-center gap-1.5 empty:hidden">
             <SourceFlag source={step.source} />
           </div>
@@ -104,7 +105,7 @@ export function ChecklistStep({
           {step.tips && step.tips.length > 0 ? (
             <ul className="list-disc space-y-1 pl-4 text-xs leading-relaxed text-ink-mute marker:text-accent">
               {step.tips.map((tip) => (
-                <li key={tip}>{tip}</li>
+                <li key={tip}><Glossed>{tip}</Glossed></li>
               ))}
             </ul>
           ) : null}
@@ -139,7 +140,7 @@ export function ChecklistStep({
                       </span>
                       <span className="text-[10px] text-ink-mute group-open/avoid:hidden">why?</span>
                     </summary>
-                    <p className="px-2.5 pb-2 pl-7 text-xs leading-relaxed text-ink-mute">{m.description}</p>
+                    <p className="px-2.5 pb-2 pl-7 text-xs leading-relaxed text-ink-mute"><Glossed>{m.description}</Glossed></p>
                   </details>
                 </li>
               ))}
