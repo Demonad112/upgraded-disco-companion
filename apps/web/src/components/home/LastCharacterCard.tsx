@@ -92,8 +92,8 @@ export function LastCharacterCard() {
           .filter((f) => f.show)
           .map((f) => (
             <div key={f.label} className="min-w-0 rounded-lg border border-line/80 bg-surface-sunken/80 px-3 py-2.5">
-              <dt className="eyebrow truncate">{f.label}</dt>
-              <dd className="tabular mt-1 truncate text-xl leading-none font-semibold text-ink">
+              <dt className="label-metric truncate">{f.label}</dt>
+              <dd title={f.value.toLocaleString()} className="tabular mt-1 truncate text-xl leading-none font-semibold text-ink">
                 {compact(f.value)}
                 <Delta now={f.value} before={f.before} />
               </dd>

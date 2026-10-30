@@ -160,7 +160,7 @@ function LargestHit({ d }: { d: DefenseSummary }) {
 function PoolTile({ label, value, hint }: { label: string; value: string; hint?: string }) {
   return (
     <div className="min-w-0 border border-line bg-sunken/80 px-3.5 py-3">
-      <div className="eyebrow truncate">{label}</div>
+      <div className="label-metric truncate">{label}</div>
       <div className="tabular mt-1.5 truncate font-mono text-[20px] leading-none font-medium text-ink">{value}</div>
       {hint ? <div className="mt-1.5 truncate text-[11px] text-ink-mute">{hint}</div> : null}
     </div>

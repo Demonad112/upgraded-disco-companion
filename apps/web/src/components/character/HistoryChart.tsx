@@ -76,7 +76,7 @@ function Row({ metric, snapshots }: { metric: Metric; snapshots: CharacterSnapsh
           {hover !== null ? <span className="ml-1.5 text-[11px] font-normal text-ink-mute">{day(snapshots[hover]!.at)}</span> : null}
         </div>
         {delta !== null && hover === null ? (
-          <div className={`tabular text-[11px] ${delta > 0 ? 'text-good' : delta < 0 ? 'text-danger' : 'text-ink-mute'}`}>
+          <div title={delta === 0 ? undefined : fmt(delta)} className={`tabular text-[11px] ${delta > 0 ? 'text-good' : delta < 0 ? 'text-danger' : 'text-ink-mute'}`}>
             {delta > 0 ? '▲ +' : delta < 0 ? '▼ ' : ''}
             {delta === 0 ? 'no change' : fmtCompact(delta)} since {day(snapshots[firstIndex]!.at)}
           </div>

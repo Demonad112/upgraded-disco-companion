@@ -20,11 +20,11 @@ const subscribeNever = () => () => {}
 const clientNow = (): number => (mountedAt ??= Date.now())
 const serverNow = (): number | null => null
 
-function Tile({ label, value, caption }: { label: string; value: string; caption?: string | null }) {
+function Tile({ label, value, caption, title }: { label: string; value: string; caption?: string | null; title?: string }) {
   return (
     <div className="min-w-0 border border-line bg-sunken/80 px-3.5 py-3">
-      <div className="eyebrow truncate">{label}</div>
-      <div className="tabular mt-1.5 truncate font-mono text-[22px] leading-none font-medium text-ink desk:text-[26px]">{value}</div>
+      <div className="label-metric truncate">{label}</div>
+      <div title={title} className="tabular mt-1.5 truncate font-mono text-[22px] leading-none font-medium text-ink desk:text-[26px]">{value}</div>
       {caption ? <div className="mt-1.5 truncate text-[11px] text-ink-mute">{caption}</div> : null}
     </div>
   )
@@ -77,7 +77,7 @@ export function CharacterVerdict({ analysis, children }: { analysis: Analysis; c
               <div className="tabular font-mono text-sm text-ink-dim">{grade.score}</div>
             </>
           ) : (
-            <div className="eyebrow">Grade unknown</div>
+            <div className="label-metric">Grade unknown</div>
           )}
         </div>
       </div>
@@ -85,7 +85,7 @@ export function CharacterVerdict({ analysis, children }: { analysis: Analysis; c
 
       {weakest ? (
         <div className="mt-5 border border-line bg-sunken/65 p-4">
-          <div className="eyebrow">Kills you first</div>
+          <div className="label-metric">Kills you first</div>
           <div className="mt-1 flex flex-wrap items-baseline gap-x-3">
             <span className="tabular font-mono text-4xl leading-none font-medium text-danger">{fmt(weakest.value)}</span>
             <span className="serif-label">{cap(weakest.type)} hit</span>
@@ -129,7 +129,7 @@ export function CharacterVerdict({ analysis, children }: { analysis: Analysis; c
       <div className="mt-5 grid grid-cols-2 gap-3 min-[621px]:grid-cols-4">
         <Tile label="Life" value={fmt(defense.life)} />
         <Tile label="Energy shield" value={fmt(defense.energyShield)} />
-        <Tile label="Main skill DPS" value={primary ? fmtCompact(primary.totalDps) : '—'} caption={primary?.name ?? 'unknown'} />
+        <Tile label="Main skill DPS" value={primary ? fmtCompact(primary.totalDps) : '—'} title={primary ? fmt(primary.totalDps) : undefined} caption={primary?.name ?? 'unknown'} />
         <Tile
           label="Spirit"
           value={spiritTotal !== null ? fmt(spiritTotal) : '—'}

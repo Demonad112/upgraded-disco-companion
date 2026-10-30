@@ -23,13 +23,13 @@ export function PageHeader({
 }) {
   return (
     <header className="page-title">
-      <div className="eyebrow">{eyebrow}</div>
+      <div className="label-metric">{eyebrow}</div>
       <h1 className="mt-2 font-display text-[clamp(34px,5.2vw,64px)] leading-[1.04] font-bold text-ink">
         {title} <span className="text-gradient-gold">{accent}</span>
       </h1>
       <Triad />
       <p className="mt-4 max-w-3xl text-sm leading-relaxed text-ink-dim">{description}</p>
-      <p className="eyebrow mt-3">
+      <p className="label-metric mt-3">
         Patch {CURRENT_PATCH} · {LEAGUE_LABEL}
         {source ? ` · ${source}` : ""}
       </p>

@@ -26,7 +26,7 @@ export function StrategyCard({ strategy }: { strategy: FarmingStrategy }) {
       }`}
     >
       <div className="flex items-start justify-between gap-2">
-        <h3 className="flex items-center gap-2 font-semibold text-ink">
+        <h3 className="title-sentence flex items-center gap-2 text-[17px] text-ink">
           <StrategyTierBadge tier={strategy.tier} />
           {strategy.name}
         </h3>

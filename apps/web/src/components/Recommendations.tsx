@@ -42,7 +42,7 @@ function ImpactBar({ r }: { r: Recommendation }) {
 
   return (
     <div className="rounded-lg bg-surface-sunken px-3 py-2">
-      <div className="text-[11px] text-ink-mute">{label}</div>
+      <div className="label-field">{label}</div>
       <div className="tabular mt-0.5 flex items-baseline gap-2 text-sm">
         <span className="text-ink-dim">
           {fmt(from)}
@@ -89,20 +89,20 @@ function Card({ r, rank }: { r: Recommendation; rank: number }) {
           {r.cost.currencyTier && r.cost.currencyTier !== 'unknown' ? ` · ${r.cost.currencyTier}` : ''}
         </Tag>
       </div>
-      <h3 className="mt-2.5 text-[15px] leading-snug font-semibold text-balance text-ink">{r.action}</h3>
+      <h3 className="title-sentence mt-2.5 text-[17px] text-ink">{r.action}</h3>
       <p className="mt-1.5 text-[13px] leading-relaxed text-ink-dim">{r.rationale}</p>
 
       <div className="mt-3 grid gap-2 sm:grid-cols-2">
         <ImpactBar r={r} />
         <div className="rounded-lg bg-surface-sunken px-3 py-2">
-          <div className="text-[11px] text-ink-mute">Cost</div>
+          <div className="label-field">Cost</div>
           <div className="mt-0.5 text-xs leading-relaxed text-ink-dim">{r.cost.detail}</div>
         </div>
       </div>
 
       {r.tradeoff ? (
         <p className="mt-2 text-[11px] leading-relaxed text-ink-mute">
-          <span className="text-ink-dim">Trade-off:</span> {r.tradeoff}
+          <span className="label-field">Trade-off:</span> {r.tradeoff}
         </p>
       ) : null}
 

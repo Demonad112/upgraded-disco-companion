@@ -98,7 +98,7 @@ export default function Home() {
               separators: a wrapped line would start with one. */}
           <ul
             aria-label="What the guide covers"
-            className="eyebrow flex max-w-2xl flex-wrap justify-center gap-x-4 gap-y-1"
+            className="label-metric flex max-w-2xl flex-wrap justify-center gap-x-4 gap-y-1"
           >
             {guideCounts().map((c) => (
               <li key={c.label}>
@@ -107,7 +107,7 @@ export default function Home() {
             ))}
           </ul>
           {updated ? (
-            <p className="eyebrow -mt-2">
+            <p className="label-metric -mt-2">
               Data updated <time dateTime={updated} className="tabular text-ink-dim">{updated}</time>
             </p>
           ) : null}
