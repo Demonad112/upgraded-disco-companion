@@ -107,7 +107,7 @@ export function BuildScore({ assessment, keystones }: { assessment: BuildAssessm
           <ul className="space-y-1.5">
             {assessment.strengths.map((s) => (
               <li key={s} className="flex gap-2 text-xs leading-relaxed text-ink-dim">
-                <span aria-hidden className="mt-[0.4rem] size-1 shrink-0 rounded-full bg-good" />
+                <span aria-hidden className="mt-[0.4rem] size-1 shrink-0 bg-good" />
                 <span>{s}</span>
               </li>
             ))}
@@ -121,7 +121,7 @@ export function BuildScore({ assessment, keystones }: { assessment: BuildAssessm
               <li key={w.text} className="flex gap-2 text-xs leading-relaxed text-ink-dim">
                 <span
                   aria-hidden
-                  className={`mt-[0.4rem] size-1 shrink-0 rounded-full ${w.severity === 'critical' ? 'bg-danger' : 'bg-warn'}`}
+                  className={`mt-[0.4rem] size-1 shrink-0 ${w.severity === 'critical' ? 'bg-danger' : 'bg-warn'}`}
                 />
                 <span>
                   {w.text}

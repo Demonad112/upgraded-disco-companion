@@ -17,7 +17,7 @@ export function GearShoppingList() {
   return (
     <section
       id="gear-shopping-list"
-      data-surface="data" className="scroll-mt-28 rounded-xl card p-5"
+      data-surface="data" className="scroll-mt-28 card p-5"
     >
       <div className="flex flex-wrap items-baseline justify-between gap-3">
         <h2 className="font-semibold text-ink">Gear shopping list</h2>
@@ -32,7 +32,7 @@ export function GearShoppingList() {
         {entries.map((e) => (
           <li
             key={e.id}
-            className={`rounded-lg border border-line bg-[var(--surface-sunken)] p-3 text-sm ${e.done ? "opacity-60" : ""}`}
+            className={`border border-line bg-[var(--surface-sunken)] p-3 text-sm ${e.done ? "opacity-60" : ""}`}
           >
             <div className="flex flex-wrap items-start justify-between gap-2">
               <label className="flex min-w-0 items-start gap-2">

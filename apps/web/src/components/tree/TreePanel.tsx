@@ -39,7 +39,7 @@ export function TreePanel({
       ) : tree ? (
         <PassiveTreeView tree={tree} allocation={allocation} />
       ) : (
-        <div className="skeleton h-[26rem] w-full rounded-lg sm:h-[34rem]" aria-busy="true">
+        <div className="skeleton h-[26rem] w-full sm:h-[34rem]" aria-busy="true">
           <span className="sr-only">Loading passive tree…</span>
         </div>
       )}

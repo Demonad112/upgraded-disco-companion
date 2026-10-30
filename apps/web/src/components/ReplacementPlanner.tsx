@@ -81,7 +81,7 @@ export function ReplacementPlanner({
     setOmit((prev) => (prev.includes(type) ? prev.filter((t) => t !== type) : [...prev, type]))
 
   return (
-    <div className="mt-2 space-y-3 rounded-lg border border-accent/30 bg-accent/5 p-3">
+    <div className="mt-2 space-y-3 border border-accent/30 bg-accent/5 p-3">
       <div className="flex flex-wrap items-baseline justify-between gap-2">
         <h4 className="text-xs font-semibold text-ink">
           Replacing {plan.itemName}
@@ -117,7 +117,7 @@ export function ReplacementPlanner({
             {plan.resistances.map((r) => (
               <li
                 key={r.type}
-                className={`rounded-md border px-2 py-1 text-[11px] ${
+                className={`border px-2 py-1 text-[11px] ${
                   r.deficitIfRemoved > 0 ? 'border-warn/40 bg-warn/10 text-warn' : 'border-line text-ink-mute'
                 }`}
               >
@@ -140,7 +140,7 @@ export function ReplacementPlanner({
               type="button"
               aria-pressed={omit.includes(r.type)}
               onClick={() => toggle(r.type)}
-              className={`rounded border px-1.5 py-0.5 capitalize transition-colors ${
+              className={`border px-1.5 py-0.5 capitalize transition-colors ${
                 omit.includes(r.type)
                   ? 'border-danger/50 bg-danger/10 text-danger'
                   : 'border-line text-ink-dim hover:border-accent/40'
@@ -161,7 +161,7 @@ export function ReplacementPlanner({
         {plan.spec.length ? (
           <ul className="space-y-1">
             {plan.spec.map((line) => (
-              <li key={`${line.kind}-${line.statId}-${line.affix}`} className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5 rounded-md bg-surface px-2 py-1">
+              <li key={`${line.kind}-${line.statId}-${line.affix}`} className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5 bg-surface px-2 py-1">
                 <span className="tabular w-10 shrink-0 text-[11px] font-semibold text-good">
                   T{line.tier}/{line.tiers}
                 </span>
@@ -196,7 +196,7 @@ export function ReplacementPlanner({
           </p>
           <ol className="space-y-1">
             {plan.followUps.map((f) => (
-              <li key={`${f.step}-${f.itemName}`} className="rounded-md border border-line bg-surface px-2 py-1.5 text-xs">
+              <li key={`${f.step}-${f.itemName}`} className="border border-line bg-surface px-2 py-1.5 text-xs">
                 <span className="mr-1.5 font-semibold text-accent">Step {f.step + 1}</span>
                 {f.action === 'upgrade-tier' ? (
                   <>
@@ -238,7 +238,7 @@ export function ReplacementPlanner({
         <button
           type="button"
           onClick={() => shopping.save(plan, characterName)}
-          className="rounded-md border border-good/40 bg-good/10 px-2.5 py-1 text-[11px] font-medium text-good transition-colors hover:bg-good/20"
+          className="border border-good/40 bg-good/10 px-2.5 py-1 text-[11px] font-medium text-good transition-colors hover:bg-good/20"
         >
           {saved ? 'Update on shopping list' : 'Save to shopping list'}
         </button>

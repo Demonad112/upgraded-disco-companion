@@ -9,36 +9,36 @@ export function Skeleton() {
       <span className="sr-only">Analysing character…</span>
 
       <div className="flex gap-3">
-        <div className="skeleton h-6 w-40 rounded-md" />
-        <div className="skeleton h-6 w-28 rounded-md" />
+        <div className="skeleton h-6 w-40" />
+        <div className="skeleton h-6 w-28" />
       </div>
 
-      <div data-surface="data" className="card rounded-xl p-4">
-        <div className="skeleton mb-3 h-4 w-24 rounded" />
+      <div data-surface="data" className="card p-4">
+        <div className="skeleton mb-3 h-4 w-24" />
         <div className="space-y-3">
           {[0, 1, 2].map((i) => (
-            <div key={i} className="skeleton h-24 rounded-lg" />
+            <div key={i} className="skeleton h-24" />
           ))}
         </div>
       </div>
 
       <div className="grid gap-4 lg:grid-cols-2">
         {[0, 1].map((i) => (
-          <div key={i} data-surface="data" className="card rounded-xl p-4">
-            <div className="skeleton mb-3 h-4 w-20 rounded" />
-            <div className="skeleton mb-4 h-12 w-40 rounded" />
+          <div key={i} data-surface="data" className="card p-4">
+            <div className="skeleton mb-3 h-4 w-20" />
+            <div className="skeleton mb-4 h-12 w-40" />
             <div className="grid grid-cols-3 gap-2">
               {[0, 1, 2, 3, 4, 5].map((j) => (
-                <div key={j} className="skeleton h-14 rounded-lg" />
+                <div key={j} className="skeleton h-14" />
               ))}
             </div>
           </div>
         ))}
       </div>
 
-      <div data-surface="data" className="card rounded-xl p-4">
-        <div className="skeleton mb-3 h-4 w-20 rounded" />
-        <div className="skeleton h-48 rounded-lg" />
+      <div data-surface="data" className="card p-4">
+        <div className="skeleton mb-3 h-4 w-20" />
+        <div className="skeleton h-48" />
       </div>
     </div>
   )

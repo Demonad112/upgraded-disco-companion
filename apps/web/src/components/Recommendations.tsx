@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { FOCUS_CHOICES, focusOf, type FocusChoice } from '@/lib/characterNotes'
 import { axisOf, focusView, type Cost, type Evidence, type Recommendation, type RecommendationReport } from '@poe2/core'
 import { Tag, fmt } from './ui'
+import { Segmented } from './shared/controls'
 
 const CATEGORY_TONE = {
   survivability: 'danger',
@@ -28,7 +29,7 @@ function costTone(kind: Cost['kind']) {
 function EvidenceLine({ e }: { e: Evidence }) {
   return (
     <li className="flex gap-2 text-[11px] leading-relaxed text-ink-dim">
-      <span aria-hidden className="mt-[0.35rem] size-1 shrink-0 rounded-full bg-ink-mute" />
+      <span aria-hidden className="mt-[0.35rem] size-1 shrink-0 bg-ink-mute" />
       <span>{e.note}</span>
     </li>
   )
@@ -41,7 +42,7 @@ function ImpactBar({ r }: { r: Recommendation }) {
   const improving = delta > 0
 
   return (
-    <div className="rounded-lg bg-surface-sunken px-3 py-2">
+    <div className="bg-surface-sunken px-3 py-2">
       <div className="label-field">{label}</div>
       <div className="tabular mt-0.5 flex items-baseline gap-2 text-sm">
         <span className="text-ink-dim">
@@ -75,7 +76,7 @@ function Card({ r, rank }: { r: Recommendation; rank: number }) {
       <div className="flex flex-wrap items-center gap-1.5">
         <span
           aria-label={isQuestion ? 'Question' : `Finding ${rank}`}
-          className="tabular inline-flex size-5 items-center justify-center rounded-full border border-accent-line bg-accent-soft text-[11px] font-semibold text-accent"
+          className="tabular inline-flex size-5 items-center justify-center border border-accent-line bg-accent-soft text-[11px] font-semibold text-accent"
         >
           {isQuestion ? '?' : rank}
         </span>
@@ -94,7 +95,7 @@ function Card({ r, rank }: { r: Recommendation; rank: number }) {
 
       <div className="mt-3 grid gap-2 sm:grid-cols-2">
         <ImpactBar r={r} />
-        <div className="rounded-lg bg-surface-sunken px-3 py-2">
+        <div className="bg-surface-sunken px-3 py-2">
           <div className="label-field">Cost</div>
           <div className="mt-0.5 text-xs leading-relaxed text-ink-dim">{r.cost.detail}</div>
         </div>
@@ -142,19 +143,7 @@ export function Recommendations({ report }: { report: RecommendationReport }) {
             Ranked by gain per unit of cost. Every claim traces to data in the character payload.
           </p>
         </div>
-        <div role="group" aria-label="Focus" className="flex gap-1 text-xs">
-          {FOCUS_CHOICES.map((c) => (
-            <button
-              key={c.value}
-              type="button"
-              aria-pressed={focus === c.value}
-              onClick={() => setFocus(c.value)}
-              className={`rounded-md border px-2 py-1 ${focus === c.value ? 'border-accent text-accent' : 'border-line text-ink-dim'}`}
-            >
-              {c.label}
-            </button>
-          ))}
-        </div>
+        <Segmented kind="toggle" label="Focus" options={FOCUS_CHOICES} value={focus} onChange={setFocus} />
       </div>
       {report.buildIsSound ? (
         <p data-surface="data" className="card px-4 py-5 text-sm leading-relaxed text-good">{report.summary}</p>

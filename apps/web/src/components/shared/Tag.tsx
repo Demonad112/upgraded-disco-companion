@@ -9,7 +9,7 @@ export function Tag({ mechanic }: { mechanic: Mechanic | string }) {
 
   return (
     <span
-      className={`inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-medium ${colorClass}`}
+      className={`inline-flex items-center border px-2 py-0.5 text-xs font-medium ${colorClass}`}
     >
       {label}
     </span>

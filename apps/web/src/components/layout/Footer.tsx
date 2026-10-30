@@ -4,6 +4,7 @@ import { useRef } from "react";
 import { usePersistedState } from "@/hooks/usePersistedState";
 import { useResetProgress } from "@/hooks/useResetProgress";
 import { SkyDimToggle } from "@/components/fx/SkySettings";
+import { Button } from "@/components/shared/controls";
 
 export function Footer() {
   const resetProgress = useResetProgress();
@@ -43,23 +44,18 @@ export function Footer() {
           , your ticked sub-steps, Atlas allocation and dashboard selections in this browser. It can&apos;t be undone.
         </p>
         <div className="mt-5 flex flex-wrap justify-end gap-2">
-          <button
-            type="button"
-            onClick={() => dialog.current?.close()}
-            className="gold-surface rounded-md border border-[var(--accent)] px-4 py-1.5 text-sm font-bold hover:brightness-110"
-          >
+          <Button variant="primary" onClick={() => dialog.current?.close()}>
             Keep progress
-          </button>
-          <button
-            type="button"
+          </Button>
+          <Button
+            variant="danger"
             onClick={() => {
               resetProgress();
               dialog.current?.close();
             }}
-            className="rounded-md border border-danger px-4 py-1.5 text-sm font-medium text-danger hover:bg-danger/10"
           >
             Reset progress
-          </button>
+          </Button>
         </div>
       </dialog>
     </footer>

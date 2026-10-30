@@ -52,6 +52,7 @@ import { useShoppingList } from '@/hooks/useShoppingList'
 import type { DraftAffix, SlotDraft } from '@/lib/shoppingList'
 import { ReplacementPlanner } from './ReplacementPlanner'
 import { Empty, Panel, Tag } from './ui'
+import { Select } from '@/components/shared/controls'
 
 const DMG_VAR: Record<string, string> = {
   fire: 'var(--dmg-fire)',
@@ -104,7 +105,7 @@ function ResistanceStrip({
   onReset: () => void
 }) {
   return (
-    <div className="sticky top-16 z-10 rounded-lg border border-line bg-surface-raised/95 p-2 shadow-[var(--lift)] backdrop-blur">
+    <div className="sticky top-16 z-10 border border-line bg-surface-raised/95 p-2 shadow-[var(--lift)] backdrop-blur">
       <div className="mb-1.5 flex items-center justify-between gap-2">
         <span className="text-[10px] font-medium tracking-wider text-ink-dim uppercase">
           Resistances {changes ? 'after changes' : 'now'}
@@ -113,7 +114,7 @@ function ResistanceStrip({
           <button
             type="button"
             onClick={onReset}
-            className="rounded border border-line px-1.5 py-px text-[10px] text-ink-dim transition-colors hover:border-accent-line hover:text-ink"
+            className="border border-line px-1.5 py-px text-[10px] text-ink-dim transition-colors hover:border-accent-line hover:text-ink"
           >
             {changes} change{changes === 1 ? '' : 's'} · reset
           </button>
@@ -128,10 +129,10 @@ function ResistanceStrip({
             <li
               key={r.type}
               title={`${cap(r.type)}: ${r.before} before, ${r.after} after, cap ${r.maxAfter}`}
-              className={`min-w-0 rounded-md border px-1.5 py-1 ${short ? 'border-danger/45 bg-danger/10' : 'border-line/70 bg-surface-sunken/70'}`}
+              className={`min-w-0 border px-1.5 py-1 ${short ? 'border-danger/45 bg-danger/10' : 'border-line/70 bg-surface-sunken/70'}`}
             >
               <div className="flex items-center gap-1 text-[10px] text-ink-dim">
-                <span aria-hidden className="inline-block size-1.5 shrink-0 rounded-[1px]" style={{ background: DMG_VAR[r.type] }} />
+                <span aria-hidden className="inline-block size-1.5 shrink-0" style={{ background: DMG_VAR[r.type] }} />
                 <span className="truncate">{cap(r.type)}</span>
               </div>
               <div className="tabular flex items-baseline gap-0.5 text-sm leading-tight font-semibold">
@@ -179,7 +180,7 @@ function AffixPicker({
   const shown = all ? list : list.slice(0, 10)
 
   return (
-    <div className="mt-1.5 rounded-lg border border-accent-line bg-surface p-2">
+    <div className="mt-1.5 border border-accent-line bg-surface p-2">
       <div className="mb-1 flex items-center justify-between gap-2">
         <span className="text-[11px] font-medium text-ink">
           {replacing !== null ? 'Swap for' : 'Add'} a {kind}
@@ -199,7 +200,7 @@ function AffixPicker({
               <button
                 type="button"
                 onClick={() => onPick(c.entry.id)}
-                className="grid w-full grid-cols-[1.25rem_2.75rem_1fr] items-baseline gap-x-1.5 rounded px-1.5 py-1 text-left transition-colors hover:bg-surface-raised"
+                className="grid w-full grid-cols-[1.25rem_2.75rem_1fr] items-baseline gap-x-1.5 px-1.5 py-1 text-left transition-colors hover:bg-surface-raised"
               >
                 <span className="tabular text-[10px] text-ink-mute">{i + 1}</span>
                 <span className="tabular text-[11px] font-semibold text-good">
@@ -262,7 +263,7 @@ function ModLine({
 
   return (
     <li
-      className={`rounded-md px-2 py-1.5 ${
+      className={`px-2 py-1.5 ${
         edit ? 'bg-accent-soft ring-1 ring-accent-line' : mod.waste ? 'bg-warn/10 ring-1 ring-warn/30' : 'odd:bg-surface-sunken/50'
       }`}
     >
@@ -301,7 +302,7 @@ function ModLine({
             <button
               type="button"
               onClick={() => onEdit(null)}
-              className="rounded border border-line px-1.5 py-0.5 text-[11px] text-ink-dim hover:text-ink"
+              className="border border-line px-1.5 py-0.5 text-[11px] text-ink-dim hover:text-ink"
             >
               Undo
             </button>
@@ -309,10 +310,10 @@ function ModLine({
           {!removed && options.length > 1 && (set === null || sameLadder) ? (
             <label className="inline-flex items-center gap-1 text-[11px] text-ink-mute">
               <span className="sr-only">Tier</span>
-              <select
+              <Select
                 value={currentId ?? ''}
                 onChange={(e) => onEdit(e.target.value === mod.id ? null : { kind: 'set', modId: e.target.value })}
-                className="rounded border border-line bg-surface px-1 py-0.5 text-[11px] text-ink"
+                className="text-xs"
               >
                 {options.map((o) => {
                   const first = o.entry.stats[0]
@@ -325,7 +326,7 @@ function ModLine({
                     </option>
                   )
                 })}
-              </select>
+              </Select>
             </label>
           ) : null}
           {!removed ? (
@@ -333,14 +334,14 @@ function ModLine({
               <button
                 type="button"
                 onClick={onSwap}
-                className="rounded border border-line px-1.5 py-0.5 text-[11px] text-ink-dim hover:border-accent-line hover:text-accent"
+                className="border border-line px-1.5 py-0.5 text-[11px] text-ink-dim hover:border-accent-line hover:text-accent"
               >
                 Swap…
               </button>
               <button
                 type="button"
                 onClick={() => onEdit({ kind: 'remove' })}
-                className="rounded border border-line px-1.5 py-0.5 text-[11px] text-ink-dim hover:border-danger/50 hover:text-danger"
+                className="border border-line px-1.5 py-0.5 text-[11px] text-ink-dim hover:border-danger/50 hover:text-danger"
                 aria-label={`Remove ${mod.text}`}
               >
                 Remove
@@ -400,7 +401,7 @@ function ItemRow({ item, row, saved, shared }: { item: ItemAnalysis; row: Replac
   }
 
   return (
-    <li className={`rounded-lg border bg-surface ${edits + added.length ? 'border-accent-line' : 'border-line'}`}>
+    <li className={`border bg-surface ${edits + added.length ? 'border-accent-line' : 'border-line'}`}>
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
@@ -459,13 +460,13 @@ function ItemRow({ item, row, saved, shared }: { item: ItemAnalysis; row: Replac
               )
             })}
             {added.map((a) => (
-              <li key={a.key} className="flex items-start gap-2 rounded-md bg-accent-soft px-2 py-1.5 ring-1 ring-accent-line">
+              <li key={a.key} className="flex items-start gap-2 bg-accent-soft px-2 py-1.5 ring-1 ring-accent-line">
                 <span className="tabular w-11 shrink-0 text-[11px] font-semibold text-good">{tierLabel(tiers, item, a.modId)}</span>
                 <span className="min-w-0 flex-1 text-xs text-accent">{modText(tiers, a.modId)}</span>
                 <button
                   type="button"
                   onClick={() => setDraft({ ...draft, added: draft.added.filter((x) => x.key !== a.key) })}
-                  className="rounded border border-line px-1.5 py-0.5 text-[11px] text-ink-dim hover:text-ink"
+                  className="border border-line px-1.5 py-0.5 text-[11px] text-ink-dim hover:text-ink"
                 >
                   Undo
                 </button>
@@ -494,7 +495,7 @@ function ItemRow({ item, row, saved, shared }: { item: ItemAnalysis; row: Replac
                     key={kind}
                     type="button"
                     onClick={() => setPicker({ kind, replacing: null })}
-                    className="rounded-md border border-dashed border-good/50 px-2 py-0.5 text-[11px] text-good hover:bg-good/10"
+                    className="border border-dashed border-good/50 px-2 py-0.5 text-[11px] text-good hover:bg-good/10"
                   >
                     + Add {kind} ({slots[kind]} open)
                   </button>
@@ -517,7 +518,7 @@ function ItemRow({ item, row, saved, shared }: { item: ItemAnalysis; row: Replac
                   shopping.saveDraft(slotDraft(tiers, item, draft), shared.characterName)
                   setListed(true)
                 }}
-                className="rounded-md border border-good/50 bg-good/10 px-2.5 py-1 text-[11px] font-medium text-good transition-colors hover:bg-good/20"
+                className="border border-good/50 bg-good/10 px-2.5 py-1 text-[11px] font-medium text-good transition-colors hover:bg-good/20"
               >
                 {listed ? 'Draft saved — update it' : 'Add draft to shopping list'}
               </button>
@@ -526,7 +527,7 @@ function ItemRow({ item, row, saved, shared }: { item: ItemAnalysis; row: Replac
               type="button"
               onClick={() => setPlanning((v) => !v)}
               aria-expanded={planning}
-              className="rounded-md border border-accent/40 bg-accent/10 px-2.5 py-1 text-[11px] font-medium text-accent transition-colors hover:bg-accent/20"
+              className="border border-accent/40 bg-accent/10 px-2.5 py-1 text-[11px] font-medium text-accent transition-colors hover:bg-accent/20"
             >
               {planning ? 'Hide replacement plan' : 'Plan a full replacement →'}
             </button>
@@ -596,7 +597,7 @@ export function GearWorkbench({
   if (state.status === 'idle' || state.status === 'loading') {
     return (
       <Panel title="Gear workbench" subtitle="Loading the affix data…" bare={bare}>
-        <div className="h-24 animate-pulse rounded-lg bg-surface-sunken" />
+        <div className="h-24 animate-pulse bg-surface-sunken" />
       </Panel>
     )
   }
@@ -642,7 +643,7 @@ export function GearWorkbench({
       <div className="space-y-3">
         <ResistanceStrip rows={resistances} changes={draftSize(draft)} onReset={() => setDraft(EMPTY_DRAFT)} />
         {dropped > 0 ? (
-          <p role="status" className="rounded-md border border-warn/40 px-2.5 py-1.5 text-[11px] leading-relaxed text-warn">
+          <p role="status" className="border border-warn/40 px-2.5 py-1.5 text-[11px] leading-relaxed text-warn">
             {dropped} saved change{dropped === 1 ? '' : 's'} no longer matched your gear and {dropped === 1 ? 'was' : 'were'}{' '}
             dropped — the line or item changed since you drafted it.
           </p>
@@ -673,7 +674,7 @@ function NoUpgradeSlots({ verdicts }: { verdicts: ReturnType<typeof slotsWithNoF
   const clean = verdicts.filter((v) => v.status === 'nothing-flagged')
   const ungraded = verdicts.filter((v) => v.status === 'not-evaluated')
   return (
-    <div className="rounded-lg border border-line/70 bg-surface-sunken/60 px-3 py-2.5 text-[12px] leading-relaxed text-ink-dim">
+    <div className="border border-line/70 bg-surface-sunken/60 px-3 py-2.5 text-[12px] leading-relaxed text-ink-dim">
       {clean.length ? (
         <p>
           <span className="font-semibold text-ink">Nothing flagged:</span>{' '}

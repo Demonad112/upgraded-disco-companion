@@ -9,7 +9,7 @@ export function EssenceCraftingPanel() {
       title="Essence crafting — Perfect and Corrupted Essences"
       summary="The 3-prefix / 3-suffix isolation rule, the Crystallisation Omens, and the high-impact endgame essences."
       badge={
-        <span className="rounded border border-line px-1.5 py-0.5 text-[10px] text-ink-mute">
+        <span className="border border-line px-1.5 py-0.5 text-[10px] text-ink-mute">
           {essences.length} essences
         </span>
       }
@@ -20,7 +20,7 @@ export function EssenceCraftingPanel() {
             <li key={r}>{r}</li>
           ))}
         </ul>
-        <div className="overflow-x-auto rounded-md border border-line">
+        <div className="overflow-x-auto border border-line">
           <table className="w-full min-w-[620px] text-sm">
             <thead className="border-b border-[var(--line)] bg-[var(--surface-sunken)] text-left text-ink-mute">
               <tr>

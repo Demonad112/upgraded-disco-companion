@@ -19,7 +19,7 @@ export function StrategyCard({ strategy }: { strategy: FarmingStrategy }) {
   return (
     <div
       id={strategy.id}
-      className={`scroll-mt-24 flex flex-col gap-2 rounded-lg border p-4 transition-all ${
+      className={`scroll-mt-24 flex flex-col gap-2 border p-4 transition-all ${
         pinned
           ? "border-[var(--accent)]/40 bg-accent-soft shadow-[0_0_16px_-4px_color-mix(in_srgb,var(--accent)_30%,transparent)]"
           : "border-[var(--line)] bg-[var(--surface-raised)] shadow-[var(--lift)] hover:border-line-strong"
@@ -32,7 +32,7 @@ export function StrategyCard({ strategy }: { strategy: FarmingStrategy }) {
         </h3>
         <button
           onClick={() => pinStrategy(pinned ? undefined : strategy.id)}
-          className={`shrink-0 rounded-md border px-2 py-1 text-xs transition-colors ${
+          className={`shrink-0 border px-2 py-1 text-xs transition-colors ${
             pinned
               ? "border-[var(--accent)]/40 text-[var(--accent)]"
               : "border-line text-ink-mute hover:border-line hover:text-ink-dim"

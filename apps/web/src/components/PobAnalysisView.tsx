@@ -43,7 +43,7 @@ export function PobAnalysisView({ analysis }: { analysis: PobAnalysis }) {
         ) : null}
 
         {overstates ? (
-          <p className="mt-2 rounded-lg bg-warn/10 px-3 py-2 text-[11px] leading-relaxed text-warn">
+          <p className="mt-2 bg-warn/10 px-3 py-2 text-[11px] leading-relaxed text-warn">
             The effective health pool of {fmt(d.effectiveHealthPool)} overstates survivability by{' '}
             {d.ehpOverstatementRatio!.toFixed(1)}×. Judge this build by the figure above.
           </p>
@@ -53,9 +53,9 @@ export function PobAnalysisView({ analysis }: { analysis: PobAnalysis }) {
           {d.maxHits.map((hit) => (
             <li key={hit.type} className="grid grid-cols-[5rem_1fr_4.5rem] items-center gap-2">
               <span className="text-[11px] text-ink-dim capitalize">{hit.type}</span>
-              <span className="relative h-3 overflow-hidden rounded bg-surface-sunken">
+              <span className="relative h-3 overflow-hidden bg-surface-sunken">
                 <span
-                  className={`absolute inset-y-0 left-0 rounded ${hit.value === d.lowestMaximumHit ? 'bg-danger/70' : 'bg-accent/60'}`}
+                  className={`absolute inset-y-0 left-0 ${hit.value === d.lowestMaximumHit ? 'bg-danger/70' : 'bg-accent/60'}`}
                   style={{ width: `${(hit.value / d.maxHits.at(-1)!.value) * 100}%` }}
                 />
               </span>
@@ -73,7 +73,7 @@ export function PobAnalysisView({ analysis }: { analysis: PobAnalysis }) {
 
         <ul className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4">
           {d.resistances.map((res) => (
-            <li key={res.type} className="rounded-lg bg-surface-sunken px-3 py-2">
+            <li key={res.type} className="bg-surface-sunken px-3 py-2">
               <div className="text-[11px] text-ink-mute capitalize">{res.type}</div>
               <div
                 className={`tabular mt-0.5 text-lg font-semibold ${res.underCap > 0 ? 'text-danger' : 'text-ink'}`}
@@ -106,7 +106,7 @@ export function PobAnalysisView({ analysis }: { analysis: PobAnalysis }) {
       >
         <ul className="space-y-2">
           {analysis.gaps.map((gap) => (
-            <li key={gap.what} className="rounded-lg bg-surface-sunken px-3 py-2">
+            <li key={gap.what} className="bg-surface-sunken px-3 py-2">
               <div className="text-xs font-medium text-ink">{gap.what}</div>
               <p className="mt-0.5 text-[11px] leading-relaxed text-ink-mute">{gap.why}</p>
             </li>
@@ -117,7 +117,7 @@ export function PobAnalysisView({ analysis }: { analysis: PobAnalysis }) {
         </p>
       </Panel>
 
-      <details data-surface="data" className="card rounded-xl">
+      <details data-surface="data" className="card">
         <summary className="cursor-pointer px-4 py-3 text-sm font-semibold text-ink">
           All {Object.keys(analysis.playerStats).length} exported values
         </summary>
