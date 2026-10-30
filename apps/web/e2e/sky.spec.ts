@@ -27,6 +27,12 @@ test.describe('constellation sky', () => {
     expect(await sky(page)).toEqual(before)
   })
 
+  test('paints one still frame under reduced motion', async ({ page }) => {
+    const before = await sky(page)
+    await page.waitForTimeout(1200)
+    expect(await sky(page)).toEqual(before)
+  })
+
   test('rebuilds when the width changes', async ({ page }) => {
     const before = await sky(page)
     await page.setViewportSize({ width: 500, height: 844 })

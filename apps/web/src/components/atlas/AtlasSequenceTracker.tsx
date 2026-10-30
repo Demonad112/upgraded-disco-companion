@@ -1,14 +1,14 @@
 "use client";
 
-import { ProgressBar } from "@/components/shared/ProgressBar";
+import { Gauge } from "@/components/shared/Gauge";
 import { useAtlasProgress } from "@/hooks/useAtlasProgress";
 
 export function AtlasSequenceTracker() {
-  const { allocationPercent } = useAtlasProgress();
+  const { allocatedCount, allocationTotal } = useAtlasProgress();
 
   return (
     <div data-surface="data" className="card p-4">
-      <ProgressBar percent={allocationPercent} label="Tracked clusters allocated" />
+      <Gauge done={allocatedCount} total={allocationTotal} label="Tracked clusters allocated" />
     </div>
   );
 }
