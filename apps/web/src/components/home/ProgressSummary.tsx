@@ -1,29 +1,22 @@
 "use client";
 
 import { usePersistedState } from "@/hooks/usePersistedState";
-import { ProgressBar } from "@/components/shared/ProgressBar";
+import { Gauge } from "@/components/shared/Gauge";
 
-const percent = (done: number, total: number) =>
-  total === 0 ? 0 : Math.round((done / total) * 100);
+// Count only ids that still exist, as the checklist and the tool cards do.
+const countIn = (ids: string[], saved: string[]) => ids.filter((id) => saved.includes(id)).length;
 
 /**
  * Totals come in as props (see `progressTotals`) rather than from the progress
  * hooks, which import the full guide data to count it.
  */
-export function ProgressSummary({ stepIds, atlasTotal }: { stepIds: string[]; atlasTotal: number }) {
+export function ProgressSummary({ stepIds, atlasIds }: { stepIds: string[]; atlasIds: string[] }) {
   const { state } = usePersistedState();
   const { completedStepIds } = state.checklist;
   const { allocatedClusterIds, allocatedForkIds } = state.atlas;
-  // Count only ids that still exist, as the checklist does.
-  const completionPercent = percent(
-    stepIds.filter((id) => completedStepIds.includes(id)).length,
-    stepIds.length
-  );
-  const allocationPercent = percent(
-    allocatedClusterIds.length + allocatedForkIds.length,
-    atlasTotal
-  );
-  const started = completionPercent > 0 || allocationPercent > 0;
+  const stepsDone = countIn(stepIds, completedStepIds);
+  const atlasDone = countIn(atlasIds, [...allocatedClusterIds, ...allocatedForkIds]);
+  const started = stepsDone > 0 || atlasDone > 0;
 
   return (
     <div className="card h-full p-6">
@@ -32,8 +25,8 @@ export function ProgressSummary({ stepIds, atlasTotal }: { stepIds: string[]; at
         <span className="text-xs text-ink-mute">Saved in this browser</span>
       </div>
       <div className="grid gap-6">
-        <ProgressBar percent={completionPercent} label="Checklist" />
-        <ProgressBar percent={allocationPercent} label="Atlas allocation" />
+        <Gauge done={stepsDone} total={stepIds.length} label="Checklist" />
+        <Gauge done={atlasDone} total={atlasIds.length} label="Atlas allocation" />
       </div>
       {started ? null : (
         <p className="mt-5 text-sm text-ink-dim">Nothing ticked yet. Press “Mark done” on step 1 to start.</p>

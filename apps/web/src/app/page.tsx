@@ -121,7 +121,7 @@ export default function Home() {
         </div>
       </div>
       <div className="min-w-0 sm:col-span-10 lg:col-span-4" data-compact-keep>
-        <ProgressSummary stepIds={totals.stepIds} atlasTotal={totals.atlasTotal} />
+        <ProgressSummary stepIds={totals.stepIds} atlasIds={totals.atlasIds} />
       </div>
       <div className="sm:col-span-10">
         <CompactAlerts />

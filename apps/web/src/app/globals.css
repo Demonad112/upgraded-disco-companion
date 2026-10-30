@@ -479,31 +479,6 @@ code,
     text-align: center;
   }
 
-  /* Progress: a thin glowing gold line ending in a round bead. */
-  .glow-track {
-    position: relative;
-    height: 0.28em;
-    margin-inline: 0.5em;
-    background: color-mix(in srgb, var(--ink) 16%, transparent);
-  }
-  .glow-fill {
-    position: relative;
-    height: 100%;
-    background: var(--gold-gradient);
-    box-shadow: 0 0 0.6em color-mix(in srgb, var(--accent) 70%, transparent);
-    transition: width 0.5s ease-out;
-  }
-  .glow-bead {
-    position: absolute;
-    top: 50%;
-    right: 0;
-    width: 0.9em;
-    height: 0.9em;
-    transform: translate(50%, -50%) rotate(45deg);
-    background: var(--gold-gradient);
-    box-shadow: 0 0 0.8em color-mix(in srgb, var(--accent) 85%, transparent);
-  }
-
   /* Search / hash-jump highlight (class was set by HashHighlight but unstyled). */
   .search-highlight {
     outline: 2px solid var(--accent);

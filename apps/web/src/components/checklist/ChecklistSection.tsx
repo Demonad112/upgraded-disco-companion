@@ -2,7 +2,7 @@
 
 /**
  * One phase of the roadmap as a collapsible block: name, how many steps are
- * done, a thin progress bar. Only the phase holding the next step opens by
+ * done, a segmented gauge. Only the phase holding the next step opens by
  * default. The <details> carries the phase anchor, so the phase nav's links
  * open it (HashHighlight opens any <details> it targets).
  */
@@ -11,6 +11,7 @@ import type { BenchmarkGate, RoadmapPhase, RoadmapStep } from "@/lib/types";
 import { ROADMAP_PHASE_LABELS } from "@/lib/constants";
 import { nextIncompleteStep, phaseAnchor } from "@/lib/roadmapOrder";
 import { useChecklistState } from "@/hooks/useChecklistState";
+import { Gauge } from "@/components/shared/Gauge";
 import { ChecklistStep } from "./ChecklistStep";
 
 export function ChecklistSection({
@@ -29,7 +30,7 @@ export function ChecklistSection({
   const next = nextIncompleteStep(completedStepIds);
   const current = next?.phase === phase;
   const complete = done === steps.length;
-  const percent = steps.length ? Math.round((done / steps.length) * 100) : 0;
+  const label = ROADMAP_PHASE_LABELS[phase] ?? phase;
 
   return (
     <details id={phaseAnchor(phase)} open={current} className="group/phase scroll-mt-32">
@@ -46,17 +47,9 @@ export function ChecklistSection({
           {complete ? "✓" : index + 1}
         </span>
         <span className="min-w-0 flex-1">
-          <span className="block font-semibold text-balance text-ink">{ROADMAP_PHASE_LABELS[phase] ?? phase}</span>
-          <span className="mt-1.5 flex items-center gap-2">
-            <span className="h-1 flex-1 overflow-hidden bg-surface-sunken">
-              <span
-                className={`block h-full ${complete ? "bg-good" : "bg-accent"}`}
-                style={{ width: `${percent}%` }}
-              />
-            </span>
-            <span className="tabular shrink-0 text-[11px] text-ink-mute">
-              {done}/{steps.length}
-            </span>
+          <span className="block font-semibold text-balance text-ink">{label}</span>
+          <span className="mt-1.5 block">
+            <Gauge done={done} total={steps.length} label={`${label} progress`} hideLabel size="sm" />
           </span>
         </span>
         <svg

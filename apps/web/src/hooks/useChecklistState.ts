@@ -43,11 +43,12 @@ export function useChecklistState() {
 
   // Count only ids that still exist: a renamed or removed step must not keep
   // inflating the percentage from an old save.
-  const completionPercent = useMemo(() => {
-    if (roadmapSteps.length === 0) return 0;
-    const done = roadmapSteps.filter((s) => completedStepIds.includes(s.id)).length;
-    return Math.round((done / roadmapSteps.length) * 100);
-  }, [completedStepIds]);
+  const completedCount = useMemo(
+    () => roadmapSteps.filter((s) => completedStepIds.includes(s.id)).length,
+    [completedStepIds]
+  );
+  const totalSteps = roadmapSteps.length;
+  const completionPercent = totalSteps === 0 ? 0 : Math.round((completedCount / totalSteps) * 100);
 
   return {
     toggleStep,
@@ -55,6 +56,8 @@ export function useChecklistState() {
     isStepComplete,
     isActionItemComplete,
     completionPercent,
+    completedCount,
+    totalSteps,
     completedStepIds,
     hideCompleted,
     setHideCompleted,
