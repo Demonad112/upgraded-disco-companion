@@ -2,9 +2,11 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useSyncExternalStore, type ReactNode } from "react";
+import { useSyncExternalStore } from "react";
+import { OfflineChip } from "@/components/OfflineChip";
 import { OPEN_SEARCH_EVENT } from "./CommandPalette";
 import { NavMenu } from "./NavMenu";
+import { TOOL_LINKS } from "./navLinks";
 
 const noSubscribe = () => () => {};
 /** "⌘K" on Apple devices, "Ctrl K" elsewhere. The static HTML says "Ctrl K". */
@@ -15,70 +17,6 @@ function useShortcutLabel() {
     () => "Ctrl K"
   );
 }
-
-function ChecklistIcon() {
-  return (
-    <svg viewBox="0 0 20 20" fill="none" className="size-6" aria-hidden>
-      <path
-        d="M4 5.5h12M4 10h12M4 14.5h7"
-        stroke="currentColor"
-        strokeWidth="1.6"
-        strokeLinecap="round"
-      />
-      <circle cx="2" cy="5.5" r="1" fill="currentColor" />
-      <circle cx="2" cy="10" r="1" fill="currentColor" />
-      <circle cx="2" cy="14.5" r="1" fill="currentColor" />
-    </svg>
-  );
-}
-
-function AtlasIcon() {
-  return (
-    <svg viewBox="0 0 20 20" fill="none" className="size-6" aria-hidden>
-      <circle cx="10" cy="3.5" r="1.6" stroke="currentColor" strokeWidth="1.4" />
-      <circle cx="4" cy="16" r="1.6" stroke="currentColor" strokeWidth="1.4" />
-      <circle cx="16" cy="16" r="1.6" stroke="currentColor" strokeWidth="1.4" />
-      <path
-        d="M10 5.1V9M10 9L4 14.4M10 9l6 5.4"
-        stroke="currentColor"
-        strokeWidth="1.4"
-        strokeLinecap="round"
-      />
-    </svg>
-  );
-}
-
-function DashboardIcon() {
-  return (
-    <svg viewBox="0 0 20 20" fill="none" className="size-6" aria-hidden>
-      <rect x="3" y="3" width="6" height="6" stroke="currentColor" strokeWidth="1.4" />
-      <rect x="11" y="3" width="6" height="6" stroke="currentColor" strokeWidth="1.4" />
-      <rect x="11" y="11" width="6" height="6" stroke="currentColor" strokeWidth="1.4" />
-      <rect x="3" y="11" width="6" height="6" stroke="currentColor" strokeWidth="1.4" />
-    </svg>
-  );
-}
-
-function CharacterIcon() {
-  return (
-    <svg viewBox="0 0 20 20" fill="none" className="size-6" aria-hidden>
-      <circle cx="10" cy="6" r="3" stroke="currentColor" strokeWidth="1.4" />
-      <path
-        d="M4 17c0-3.3 2.7-6 6-6s6 2.7 6 6"
-        stroke="currentColor"
-        strokeWidth="1.4"
-        strokeLinecap="round"
-      />
-    </svg>
-  );
-}
-
-const LINKS: { href: string; label: string; icon: ReactNode }[] = [
-  { href: "/checklist", label: "Checklist", icon: <ChecklistIcon /> },
-  { href: "/atlas", label: "Atlas Tree", icon: <AtlasIcon /> },
-  { href: "/dashboard", label: "Dashboard", icon: <DashboardIcon /> },
-  { href: "/character", label: "Character", icon: <CharacterIcon /> },
-];
 
 export function NavBar() {
   const pathname = usePathname();
@@ -96,9 +34,11 @@ export function NavBar() {
             PoE2 Endgame Companion
           </span>
         </Link>
-        {/* Icons only at 720px and below (labels hide in CSS); icon and label above. */}
-        <div className="flex gap-x-1">
-          {LINKS.map((link) => {
+        {/* Icon and label above 720px. At 720px and below the tools move to the
+            tab bar (MobileTabBar) and this row hides in CSS, except in compact
+            mode, which hides the tab bar and keeps these as icons. */}
+        <div className="nav-tools flex gap-x-1">
+          {TOOL_LINKS.map((link) => {
             const active = pathname?.startsWith(link.href);
             return (
               <Link
@@ -118,25 +58,28 @@ export function NavBar() {
             );
           })}
         </div>
-        <button
-          onClick={() => window.dispatchEvent(new Event(OPEN_SEARCH_EVENT))}
-          // Warm the lazily loaded dialog before the click lands.
-          onPointerEnter={() => void import("./SearchDialog")}
-          onFocus={() => void import("./SearchDialog")}
-          aria-label="Search"
-          className="nav-search ml-auto flex min-w-[var(--tap-min)] shrink-0 items-center justify-center gap-2 border border-line-strong bg-surface-sunken/60 px-2.5 text-xs text-ink-mute transition-colors hover:border-accent hover:text-ink"
-        >
-          <svg viewBox="0 0 20 20" fill="none" className="size-4" aria-hidden>
-            <circle cx="8.5" cy="8.5" r="5.5" stroke="currentColor" strokeWidth="1.5" />
-            <path d="M16 16l-3.5-3.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-          </svg>
-          <span className="hidden lg:inline">Search</span>
-          {/* Keyboard hint is noise on touch devices. */}
-          <kbd className="hidden border border-line px-1 py-0.5 font-mono text-[10px] text-ink-mute lg:inline">
-            {shortcut}
-          </kbd>
-        </button>
-        <NavMenu />
+        <div className="ml-auto flex shrink-0 items-center gap-x-1">
+          <OfflineChip />
+          <button
+            onClick={() => window.dispatchEvent(new Event(OPEN_SEARCH_EVENT))}
+            // Warm the lazily loaded dialog before the click lands.
+            onPointerEnter={() => void import("./SearchDialog")}
+            onFocus={() => void import("./SearchDialog")}
+            aria-label="Search"
+            className="nav-search flex min-w-[var(--tap-min)] shrink-0 items-center justify-center gap-2 border border-line-strong bg-surface-sunken/60 px-2.5 text-xs text-ink-mute transition-colors hover:border-accent hover:text-ink"
+          >
+            <svg viewBox="0 0 20 20" fill="none" className="size-4" aria-hidden>
+              <circle cx="8.5" cy="8.5" r="5.5" stroke="currentColor" strokeWidth="1.5" />
+              <path d="M16 16l-3.5-3.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+            </svg>
+            <span className="hidden lg:inline">Search</span>
+            {/* Keyboard hint is noise on touch devices. */}
+            <kbd className="hidden border border-line px-1 py-0.5 font-mono text-[10px] text-ink-mute lg:inline">
+              {shortcut}
+            </kbd>
+          </button>
+          <NavMenu />
+        </div>
       </div>
     </nav>
   );

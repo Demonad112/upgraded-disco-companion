@@ -18,6 +18,12 @@
   font-size: 0.75rem;
   color: var(--ink);
 }
+/* On phones the toast sits above the tab bar (styles/nav.css), which compact mode hides. */
+@media (max-width: 720px) {
+  :root:not([data-compact]) .update-toast {
+    bottom: calc(env(safe-area-inset-bottom, 0px) + var(--tabbar-h) + 1rem);
+  }
+}
 .update-toast button {
   min-height: var(--tap-min);
   min-width: var(--tap-min);

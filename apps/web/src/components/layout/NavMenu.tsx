@@ -2,10 +2,13 @@
 
 import Link from 'next/link'
 import { useEffect, useRef, useState } from 'react'
-import { CURRENT_PATCH } from '@/lib/constants'
+import { CURRENT_PATCH, LEAGUE_LABEL } from '@/lib/constants'
 import { CHANGELOG, KIND_LABEL } from '@/data/changelog'
 import { applyCompact, compactMode } from '@/lib/compactMode'
 import { useLocalStore } from '@/lib/localStore'
+
+/** Opens the Patch menu from elsewhere (the phone patch notice's ⓘ). */
+export const OPEN_PATCH_MENU_EVENT = 'poe2:open-patch-menu'
 
 /**
  * The patch badge, always visible, opening a short what-changed list and the
@@ -19,6 +22,12 @@ export function NavMenu() {
 
   // Keep <html data-compact> in step with the stored choice.
   useEffect(() => applyCompact(on), [on])
+
+  useEffect(() => {
+    const show = () => setOpen(true)
+    window.addEventListener(OPEN_PATCH_MENU_EVENT, show)
+    return () => window.removeEventListener(OPEN_PATCH_MENU_EVENT, show)
+  }, [])
 
   useEffect(() => {
     if (!open) return
@@ -56,6 +65,12 @@ export function NavMenu() {
           data-no-lift
           style={{ background: 'var(--surface)' }}
         >
+          {/* The full patch note; on phones the banner shows only a short line. */}
+          <p className="mb-3 border-b border-line pb-3 text-xs leading-relaxed text-ink-dim">
+            Data current as of patch <strong className="font-semibold text-ink">{CURRENT_PATCH}</strong> ({LEAGUE_LABEL})
+            — community-derived, may drift from future patches. Key:{' '}
+            <span className="font-medium text-warn">⚠ unverified/conflicting</span> means double-check it in-game.
+          </p>
           <label className="flex min-h-11 cursor-pointer items-center gap-3">
             <input
               type="checkbox"
