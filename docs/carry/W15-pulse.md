@@ -1,5 +1,5 @@
 # W15-pulse carry-over · 2026-10-30
-PR: #TBD · Branch: claude/sb3-w15-pulse-drawin · Preview: confirm from the PR's Cloudflare check (expected `https://claude-sb3-w15-pulse-drawin.upgraded-disco-companion.pages.dev`)
+PR: #59 · Branch: claude/sb3-w15-pulse-drawin · Preview: confirm from the PR's Cloudflare check (expected `https://claude-sb3-w15-pulse-drawin.upgraded-disco-companion.pages.dev`)
 
 W15-2 follow-up (card-hover pulse + hero draw-in). Plain feature branch, not a variant: both effects are motion only, with no change to colours, layout or type. If you want a look-review first, move it to `variant/20261030-w15-pulse-drawin`.
 
