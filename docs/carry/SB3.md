@@ -1,5 +1,5 @@
 # SB3 carry-over · 2026-10-30
-PR: #TBD · Branch: claude/sb3-pr-body-guard · Preview: n/a (no web code)
+PR: #58 · Branch: claude/sb3-pr-body-guard · Preview: n/a (no web code)
 
 ## Checked (previous wave)
 - main: green (CI run 126 on 57d52c5). Open PR #57 touches only `docs/carry/P1.md`; no overlap.
