@@ -1,1 +1,111 @@
-/* U6 phone tab bar: component CSS for batch U6 goes here (UI-PLAN CSS placement). */
+/* U6 phone navigation: the bottom tab bar (components/layout/MobileTabBar.tsx) and the header changes that go with it.
+   At 720px and below the four tools live in the tab bar and the header keeps brand, offline chip, Search and Patch.
+   Compact mode hides the tab bar like other chrome, so there the header keeps its icon links. */
+
+.tab-bar {
+  display: none;
+}
+
+@media (max-width: 720px) {
+  :root:not([data-compact]) .site-nav .nav-tools {
+    display: none;
+  }
+
+  .tab-bar {
+    display: block;
+    position: fixed;
+    z-index: 40;
+    inset: auto 0 0 0;
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    /* Near-opaque: the bar is not a sky-dim target and sits over scrolling text. */
+    background: color-mix(in srgb, var(--surface) 94%, transparent);
+  }
+  /* Its top edge: the same 1px gold rule as under the header (.site-nav::after). Drawn inside the bar, so the bar is
+     exactly --tabbar-h tall and the page padding below clears it. */
+  .tab-bar::before {
+    content: '';
+    position: absolute;
+    inset: 0 0 auto 0;
+    height: 1px;
+    pointer-events: none;
+    opacity: 0.8;
+    background: linear-gradient(90deg, transparent, var(--accent) 50%, transparent);
+  }
+  .tab-bar ul {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    height: var(--tabbar-h);
+    margin: 0;
+    padding: 0 env(safe-area-inset-right, 0px) 0 env(safe-area-inset-left, 0px);
+    list-style: none;
+  }
+  .tab-bar a {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    height: 100%;
+    min-width: 0;
+    color: var(--ink-mute);
+    font-family: var(--font-heading);
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    line-height: 1;
+    text-transform: uppercase;
+    text-decoration: none;
+    transition: color 150ms;
+  }
+  .tab-bar a > span {
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .tab-bar a:hover {
+    color: var(--ink);
+  }
+  .tab-bar a[aria-current='page'] {
+    color: var(--accent);
+    background: var(--accent-soft);
+  }
+  /* Active marker: a 2px gold bar along the top edge. */
+  .tab-bar a[aria-current='page']::before {
+    content: '';
+    position: absolute;
+    inset: 0 18% auto 18%;
+    height: 2px;
+    background: var(--accent);
+  }
+  .tab-bar a:focus-visible {
+    outline: var(--focus-ring);
+    outline-offset: -2px;
+  }
+
+  /* The page clears the bar, so the footer's last line is never under it. */
+  :root:not([data-compact]) #fx-root {
+    padding-bottom: calc(var(--tabbar-h) + env(safe-area-inset-bottom, 0px));
+  }
+}
+
+/* While the on-screen keyboard is up (MobileTabBar), and in compact mode. */
+.tab-bar[data-keyboard-open],
+:root[data-compact] .tab-bar {
+  display: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tab-bar a {
+    transition: none;
+  }
+}
+
+/* Very narrow phones (280px): labels step down so "Character" fits a quarter of the width. */
+@media (max-width: 340px) {
+  .tab-bar a {
+    font-size: 10.5px;
+    letter-spacing: 0.03em;
+  }
+}
