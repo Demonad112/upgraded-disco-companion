@@ -1,5 +1,5 @@
 # SB2 carry-over · 2026-10-30
-PR: #TBD · Branch: claude/sb2-pre-wave-cleanup · Preview: https://claude-sb2-pre-wave-cleanup.upgraded-disco-companion.pages.dev
+PR: #56 · Branch: claude/sb2-pre-wave-cleanup · Preview: https://claude-sb2-pre-wave-cleanup.upgraded-disco-companion.pages.dev
 
 Side batch before the next wave. No tracker wave row.
 
