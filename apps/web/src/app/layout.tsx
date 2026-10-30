@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from 'next'
-import { EB_Garamond, Geist_Mono, Inter } from 'next/font/google'
+import localFont from 'next/font/local'
 import './globals.css'
 import { ServiceWorker } from '@/components/ServiceWorker'
 import { NavBar } from '@/components/layout/NavBar'
@@ -17,11 +17,39 @@ import { SKY_DIM_BOOTSTRAP } from '@/lib/skyDim'
 import { CURRENT_PATCH } from '@/lib/constants'
 
 // EB Garamond for display (headings, grade, skill and resistance labels), Inter
-// for reading, Geist Mono for figures and micro labels. next/font self-hosts
-// them at build time (CSP: font-src 'self') with font-display: swap.
-const garamond = EB_Garamond({ variable: '--font-garamond', subsets: ['latin'], weight: ['500', '600', '700'], display: 'swap' })
-const inter = Inter({ variable: '--font-inter', subsets: ['latin'], weight: ['400', '500', '600'], display: 'swap' })
-const geistMono = Geist_Mono({ variable: '--font-geist-mono', subsets: ['latin'], weight: ['400', '500'], display: 'swap' })
+// for reading, Geist Mono for figures and micro labels. Vendored in ./fonts (the
+// Google Fonts latin subset, one variable file per family; see fonts/README.md),
+// so the build never fetches from Google: a failed fetch there broke builds.
+// next/font still self-hosts them (CSP: font-src 'self') with font-display: swap.
+// One face per weight on the same variable file, as next/font/google declared
+// them, so weight matching is unchanged. next/font needs literal options.
+const garamond = localFont({
+  src: [
+    { path: './fonts/eb-garamond-latin.woff2', weight: '500', style: 'normal' },
+    { path: './fonts/eb-garamond-latin.woff2', weight: '600', style: 'normal' },
+    { path: './fonts/eb-garamond-latin.woff2', weight: '700', style: 'normal' },
+  ],
+  variable: '--font-garamond',
+  display: 'swap',
+  adjustFontFallback: 'Times New Roman',
+})
+const inter = localFont({
+  src: [
+    { path: './fonts/inter-latin.woff2', weight: '400', style: 'normal' },
+    { path: './fonts/inter-latin.woff2', weight: '500', style: 'normal' },
+    { path: './fonts/inter-latin.woff2', weight: '600', style: 'normal' },
+  ],
+  variable: '--font-inter',
+  display: 'swap',
+})
+const geistMono = localFont({
+  src: [
+    { path: './fonts/geist-mono-latin.woff2', weight: '400', style: 'normal' },
+    { path: './fonts/geist-mono-latin.woff2', weight: '500', style: 'normal' },
+  ],
+  variable: '--font-geist-mono',
+  display: 'swap',
+})
 
 const basePath = process.env.NEXT_PUBLIC_BASE_PATH ?? ''
 
