@@ -30,3 +30,10 @@ session's row in its last commit. Audit rows are tracked in `docs/audit/08-PROGR
 | 14 | U13 final QA | Local | Opus 5.5 · high | todo | | | | Final QA, local |
 
 ## Backlog
+| Item | Batch | Status | PR | Notes |
+|---|---|---|---|---|
+| Share card (PNG of the verdict, drawn in the browser) | P1 | done | #55 | `ShareCard.tsx`, `lib/shareCard.ts`; preview dialog, Download PNG, Share… where files can be shared |
+| What-if as an instrument | P1 | done | #55 | `CountUp`, ghost tick where a hit bar started, grade pulse on a letter change |
+| Inline glossary terms | P1 | done | #55 | `Gloss.tsx`; checklist step text and finding rationale; `GlossaryTerm.matches` |
+| 404 and error pages | P1 | done | #55 | `app/not-found.tsx` (404.html), `app/error.tsx` with Copy details |
+| Forced-colours support | P1 | done | #55 | Segments, range, select chevron, glossary in `controls.css` / `polish.css` |

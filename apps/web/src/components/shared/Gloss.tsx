@@ -66,10 +66,12 @@ export function Term({ term, children }: { term: GlossaryTerm; children: ReactNo
   // 'hover' follows the pointer and focus; 'pinned' is a tap or click and stays until dismissed.
   const [open, setOpen] = useState<null | 'hover' | 'pinned'>(null)
 
-  const place = useCallback(() => {
+  /** Put the tip under (or above) its word, inside the viewport. False when the word has scrolled out of view. */
+  const place = useCallback((): boolean => {
     const b = button.current?.getBoundingClientRect()
     const t = tip.current
-    if (!b || !t) return
+    if (!b || !t) return false
+    if (b.bottom < 0 || b.top > window.innerHeight) return false
     const w = t.offsetWidth
     const h = t.offsetHeight
     const left = Math.max(EDGE, Math.min(b.left, window.innerWidth - EDGE - w))
@@ -77,6 +79,7 @@ export function Term({ term, children }: { term: GlossaryTerm; children: ReactNo
     const top = below + h > window.innerHeight - EDGE && b.top - GAP - h > EDGE ? b.top - GAP - h : below
     t.style.left = `${left}px`
     t.style.top = `${top}px`
+    return true
   }, [])
 
   useEffect(() => {
@@ -95,14 +98,22 @@ export function Term({ term, children }: { term: GlossaryTerm; children: ReactNo
     const key = (e: KeyboardEvent) => {
       if (e.key === 'Escape') close()
     }
-    // A fixed tip would drift from its word on scroll; close it instead (the next hover re-opens it in place).
-    window.addEventListener('scroll', close, { passive: true, capture: true, once: true })
-    window.addEventListener('resize', close, { once: true })
+    // The tip is fixed to the viewport, so it follows its word on scroll and resize, and closes once the word is gone.
+    let raf = 0
+    const follow = () => {
+      cancelAnimationFrame(raf)
+      raf = requestAnimationFrame(() => {
+        if (!place()) close()
+      })
+    }
+    window.addEventListener('scroll', follow, { passive: true, capture: true })
+    window.addEventListener('resize', follow)
     document.addEventListener('pointerdown', outside)
     document.addEventListener('keydown', key)
     return () => {
-      window.removeEventListener('scroll', close, { capture: true })
-      window.removeEventListener('resize', close)
+      cancelAnimationFrame(raf)
+      window.removeEventListener('scroll', follow, { capture: true })
+      window.removeEventListener('resize', follow)
       document.removeEventListener('pointerdown', outside)
       document.removeEventListener('keydown', key)
     }

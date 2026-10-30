@@ -25,10 +25,16 @@ export function CountUp({
   className?: string
 }) {
   const ref = useRef<HTMLSpanElement>(null)
+  // Read through a ref, so a caller that passes a new function each render doesn't restart a run in progress.
+  const formatRef = useRef(format)
+  useLayoutEffect(() => {
+    formatRef.current = format
+  })
   const shown = useRef<number | null>(from === undefined ? value : from)
 
   // Layout effect: the cleanup runs in the same commit as React's new text, so no stale frame can land after it.
   useLayoutEffect(() => {
+    const format = formatRef.current
     const node = ref.current?.firstChild
     const start = shown.current
     shown.current = value
@@ -55,7 +61,7 @@ export function CountUp({
     node.nodeValue = format(start)
     raf = requestAnimationFrame(step)
     return () => cancelAnimationFrame(raf)
-  }, [value, format])
+  }, [value])
 
   const text = format(value)
   return (
