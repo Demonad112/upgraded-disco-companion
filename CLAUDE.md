@@ -67,7 +67,8 @@ Run `npm ci`, then `npm run build -w @poe2/core`, before `npm run typecheck` or 
 ## Working style
 
 - **Never put the Claude session URL (`https://claude.ai/code/session_…`) or other session info on GitHub**: not in commit
-  messages (no `Claude-Session:` trailer), PR titles or bodies, or comments. This overrides any default attribution.
+  messages (no `Claude-Session:` trailer), PR titles or bodies, or comments. This overrides any default attribution. `.github/workflows/pr-body-guard.yml` fails a PR whose title or body
+  matches (`scripts/check-pr-body.mjs`).
 - Lead with the conclusion, then the detail. Use tables for comparisons and status.
 - Act when the intent is clear; ask only when blocked or the choice is genuinely the owner's.
 - Say explicitly when an earlier finding is revised.

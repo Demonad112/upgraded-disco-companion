@@ -17,6 +17,7 @@
     "//typecheck": "The core must be BUILT first: apps/web resolves @poe2/core to its dist/, so typechecking the web app before that exists fails with 40 cascading errors.",
     "typecheck": "npm run build --workspace @poe2/core && npm run typecheck --workspaces --if-present",
     "lint": "npm run lint --workspaces --if-present",
+    "test:scripts": "node --test scripts/check-pr-body.test.mjs",
     "dev": "npm run dev --workspace @poe2/web"
   },
   "devDependencies": {
