@@ -21,7 +21,7 @@ session's row in its last commit. Audit rows are tracked in `docs/audit/08-PROGR
 | 8 | U2 surfaces and connectors | Local | Opus 5.5 · high | done | variant/20261029-surfaces | #46 | https://variant-20261029-surfaces.upgraded-disco-companion.pages.dev | `--data-fill` on 42 panels via `data-surface`; connectors opt-in (`[data-links]`, checklist flow only); style stubs for U3–U7 |
 | 9a | U3 typography and labels | Cloud | Sonnet 5.5 · medium | done | variant/20261029-type | #49 | https://variant-20261029-type.upgraded-disco-companion.pages.dev | `.title-sentence`, `.label-metric`, `.label-field` in `type.css`; full value in `title` on compact figures; U1-1 and U8-2 done |
 | 9b | U4 controls kit | Local | Opus 5.5 · high | todo | | | | After U3 |
-| 10 | U5 segmented gauge | Cloud | Sonnet 5.5 · medium | done | variant/20261030-gauge | | https://variant-20261030-gauge.upgraded-disco-companion.pages.dev | `Gauge` + `lib/gauge.ts` replace `ProgressBar`; one segment per unit ≤ 40, else 20; `.glow-*` removed; U8-1 done; conflicts with #50 (U4) on 3 files |
+| 10 | U5 segmented gauge | Cloud | Sonnet 5.5 · medium | done | variant/20261030-gauge | #52 | https://variant-20261030-gauge.upgraded-disco-companion.pages.dev | `Gauge` + `lib/gauge.ts` replace `ProgressBar`; one segment per unit ≤ 40, else 20; `.glow-*` removed; U8-1 done; conflicts with #50 (U4) on 3 files |
 | 10 | U6 phone tab bar | Local | Sonnet 5.5 · high | todo | | | | After A6 |
 | 11 | U7 full footer | Cloud | Sonnet 5.5 · medium | todo | | | | U7: needs U6, U9, U12 |
 | 12 | U10 character page | Local | Opus 5.5 · high | todo | | | | |
