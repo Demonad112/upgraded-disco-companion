@@ -45,7 +45,7 @@ export function Reconciliation({ report, bare = false }: { report: Reconciliatio
           {unverifiable.length ? (
             <ul className="mt-3 space-y-2">
               {unverifiable.map((c) => (
-                <li key={c.stat} className="rounded-lg bg-surface-sunken px-3 py-2">
+                <li key={c.stat} className="bg-surface-sunken px-3 py-2">
                   <span className="font-mono text-xs text-ink">{c.stat}</span>
                   <p className="mt-1 text-[11px] leading-relaxed text-ink-mute">{c.note}</p>
                 </li>
@@ -56,7 +56,7 @@ export function Reconciliation({ report, bare = false }: { report: Reconciliatio
       ) : (
         <ul className="space-y-2">
           {shown.map((c) => (
-            <li key={c.stat} className="rounded-lg bg-surface-sunken px-3 py-2">
+            <li key={c.stat} className="bg-surface-sunken px-3 py-2">
               <div className="flex flex-wrap items-baseline justify-between gap-2">
                 <span className="font-mono text-xs text-ink">{c.stat}</span>
                 <span className="tabular text-xs text-ink-dim">
@@ -76,7 +76,7 @@ export function Reconciliation({ report, bare = false }: { report: Reconciliatio
           </p>
           <ul className="mt-2 space-y-2">
             {unmapped.map((c) => (
-              <li key={c.stat} className="rounded-lg bg-surface-sunken px-3 py-2">
+              <li key={c.stat} className="bg-surface-sunken px-3 py-2">
                 <div className="flex flex-wrap items-baseline justify-between gap-2">
                   <span className="font-mono text-xs text-ink">{c.stat}</span>
                   <span className="tabular text-xs text-ink-dim">

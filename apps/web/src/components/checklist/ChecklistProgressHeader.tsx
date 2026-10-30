@@ -7,7 +7,7 @@ export function ChecklistProgressHeader() {
   const { completedCount, totalSteps } = useChecklistState();
 
   return (
-    <div data-surface="data" className="rounded-lg card p-4">
+    <div data-surface="data" className="card p-4">
       <Gauge done={completedCount} total={totalSteps} label="Overall progression" />
     </div>
   );

@@ -19,7 +19,7 @@ export function PanelControls({ targetId }: { targetId: string }) {
   }
 
   const cls =
-    'rounded border border-line bg-surface-sunken px-2 py-0.5 text-[11px] font-medium text-ink-mute transition-colors hover:border-accent/40 hover:text-ink'
+    'border border-line bg-surface-sunken px-2 py-0.5 text-[11px] font-medium text-ink-mute transition-colors hover:border-accent/40 hover:text-ink'
 
   return (
     <span className="ml-auto flex gap-1.5">

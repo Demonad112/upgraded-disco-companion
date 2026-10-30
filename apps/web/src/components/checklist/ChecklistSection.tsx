@@ -34,9 +34,9 @@ export function ChecklistSection({
 
   return (
     <details id={phaseAnchor(phase)} open={current} className="group/phase scroll-mt-32">
-      <summary data-surface="data" className="flex cursor-pointer list-none items-center gap-3 rounded-xl border border-line bg-surface-raised/60 px-3.5 py-3 transition-colors hover:border-line-strong group-open/phase:border-accent-line/70 [&::-webkit-details-marker]:hidden">
+      <summary data-surface="data" className="flex cursor-pointer list-none items-center gap-3 border border-line bg-surface-raised/60 px-3.5 py-3 transition-colors hover:border-line-strong group-open/phase:border-accent-line/70 [&::-webkit-details-marker]:hidden">
         <span
-          className={`tabular flex size-7 shrink-0 items-center justify-center rounded-full border text-xs font-semibold ${
+          className={`tabular flex size-7 shrink-0 items-center justify-center border text-xs font-semibold ${
             complete
               ? "border-good/40 bg-good/10 text-good"
               : current

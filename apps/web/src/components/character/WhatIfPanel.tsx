@@ -18,6 +18,7 @@ import {
   type WhatIfOverrides,
 } from '@poe2/core'
 import { Panel, Tag, fmt } from '../ui'
+import { Button, Range } from '../shared/controls'
 
 type ResType = 'fire' | 'cold' | 'lightning' | 'chaos'
 const TYPES: ResType[] = ['fire', 'cold', 'lightning', 'chaos']
@@ -134,14 +135,10 @@ export function WhatIfPanel({ analysis, options }: { analysis: Analysis; options
       title="What-if resistances"
       subtitle="Move a slider or tick a suggested re-craft. The estimate re-runs the same grade and findings; nothing is saved."
       action={
-        <button
-          type="button"
-          onClick={reset}
-          disabled={!changed && !ticked.size}
-          className="rounded-md border border-line px-3 text-xs text-ink-dim hover:border-accent disabled:opacity-40"
-        >
+        // aria-disabled, not disabled: a disabled button drops keyboard focus to <body> the moment Reset runs.
+        <Button size="sm" onClick={reset} aria-disabled={!changed && !ticked.size}>
           Reset
-        </button>
+        </Button>
       }
       className="scroll-mt-24"
     >
@@ -169,8 +166,7 @@ export function WhatIfPanel({ analysis, options }: { analysis: Analysis; options
                     )}
                   </span>
                 </span>
-                <input
-                  type="range"
+                <Range
                   min={SLIDER_MIN}
                   max={SLIDER_MAX}
                   step={1}
@@ -178,7 +174,6 @@ export function WhatIfPanel({ analysis, options }: { analysis: Analysis; options
                   value={vals[t] ?? 0}
                   aria-label={`${t} resistance`}
                   onChange={(e) => setVals((v) => ({ ...v, [t]: Number(e.target.value) }))}
-                  className="h-9 w-full accent-[var(--accent)] disabled:opacity-40"
                 />
               </label>
             )

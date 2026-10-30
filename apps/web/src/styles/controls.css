@@ -1,1 +1,232 @@
-/* U4 controls kit: component CSS for batch U4 goes here (UI-PLAN CSS placement). */
+/* U4 controls kit (UI-PLAN U4): Select, Segmented, Range, Button, and the one focus ring.
+   Components: components/shared/controls.tsx. Values come from tokens.css.
+
+   Class rules sit in the components layer, like the rest of the shared finishes, so a Tailwind utility on the same
+   element (a width, a margin, a text size) still wins. The global tap-target rule (globals.css: button, select,
+   [role='tab'] get min-height var(--tap-min)) gives every control here the same 44 px height. */
+
+/* One focus ring for every control: keyboard only, 2 px gold, 2 px clear of the edge. Unlayered, so no utility or
+   component rule can drop it by accident. A control inside a clipping box (a scroller, an overflow-hidden card) draws
+   it inside instead by setting --focus-offset: -2px (utility: [--focus-offset:-2px]). */
+:focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-offset, 2px);
+}
+
+@layer components {
+  /* --- Select ------------------------------------------------------------------
+     The chevron is two gradient triangles in --accent, so it follows the token (a data: SVG could not). */
+  .select {
+    appearance: none;
+    -webkit-appearance: none;
+    max-width: 100%;
+    min-height: var(--tap-min);
+    padding: 0 32px 0 12px;
+    border: 1px solid var(--line-strong);
+    background-color: color-mix(in srgb, var(--sunken) 70%, transparent);
+    background-image:
+      linear-gradient(45deg, transparent 50%, var(--accent) 50%),
+      linear-gradient(135deg, var(--accent) 50%, transparent 50%);
+    background-position:
+      calc(100% - 18px) 50%,
+      calc(100% - 13px) 50%;
+    background-size: 5px 5px;
+    background-repeat: no-repeat;
+    color: var(--ink);
+    color-scheme: dark;
+    font-size: 14px;
+    line-height: 1.3;
+    text-overflow: ellipsis;
+    text-shadow: none;
+    cursor: pointer;
+    transition: border-color 0.15s ease;
+  }
+  .select:hover {
+    border-color: var(--accent-line);
+  }
+  .select:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  /* The open list is drawn by the platform; give its rows the panel colour. */
+  .select option {
+    background: var(--raised);
+    color: var(--ink);
+  }
+
+  /* --- Button ------------------------------------------------------------------ */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    min-height: var(--tap-min);
+    padding: 0 16px;
+    border: 1px solid var(--line-strong);
+    background: transparent;
+    color: var(--ink);
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 1.2;
+    text-shadow: none;
+    white-space: nowrap;
+    cursor: pointer;
+    transition:
+      border-color 0.15s ease,
+      color 0.15s ease,
+      background-color 0.15s ease,
+      filter 0.15s ease;
+  }
+  .btn:hover:not(:disabled, [aria-disabled='true']) {
+    border-color: var(--accent-line);
+  }
+  .btn:disabled,
+  .btn[aria-disabled='true'] {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  .btn-sm {
+    padding: 0 12px;
+    font-size: 13px;
+  }
+  .btn-primary {
+    border-color: var(--accent);
+    background: var(--gold-gradient);
+    color: var(--on-accent);
+    font-weight: 700;
+  }
+  .btn-primary:hover:not(:disabled) {
+    border-color: var(--accent);
+    filter: brightness(1.08);
+  }
+  .btn-ghost {
+    border-color: transparent;
+    color: var(--ink-dim);
+  }
+  .btn-ghost:hover {
+    color: var(--ink);
+  }
+  .btn-danger {
+    border-color: color-mix(in srgb, var(--danger) 70%, transparent);
+    color: var(--danger);
+    font-weight: 500;
+  }
+  .btn-danger:hover:not(:disabled) {
+    border-color: var(--danger);
+    background-color: color-mix(in srgb, var(--danger) 10%, transparent);
+  }
+
+  /* --- Segmented ---------------------------------------------------------------
+     One row of square cells on a 1 px line. Active: gold text, --accent-soft fill, 2 px gold underline (an inset
+     shadow, so the row never shifts). Works for aria-selected tabs and aria-pressed toggles alike. */
+  .seg {
+    display: inline-flex;
+    max-width: 100%;
+    border: 1px solid var(--line);
+    background: color-mix(in srgb, var(--sunken) 55%, transparent);
+    text-shadow: none;
+  }
+  .seg-scroll {
+    display: flex;
+    width: fit-content;
+  }
+  .seg-item {
+    display: inline-flex;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    min-height: var(--tap-min);
+    padding: 0 14px;
+    /* Cells touch, and a scrolling row clips anything outside it: the ring goes inside the cell. */
+    --focus-offset: -2px;
+    color: var(--ink-mute);
+    font-size: 13px;
+    font-weight: 500;
+    line-height: 1.2;
+    white-space: nowrap;
+    cursor: pointer;
+    transition:
+      color 0.15s ease,
+      background-color 0.15s ease,
+      box-shadow 0.15s ease;
+  }
+  .seg-item + .seg-item {
+    border-left: 1px solid var(--line);
+  }
+  .seg-item:hover {
+    color: var(--ink);
+    box-shadow: inset 0 -2px 0 var(--accent-line);
+  }
+  .seg-item[aria-selected='true'],
+  .seg-item[aria-pressed='true'] {
+    color: var(--accent);
+    background: var(--accent-soft);
+    box-shadow: inset 0 -2px 0 var(--accent);
+  }
+  .seg-count {
+    font-size: 10.5px;
+    color: var(--ink-mute);
+  }
+  .seg-item[aria-selected='true'] .seg-count,
+  .seg-item[aria-pressed='true'] .seg-count {
+    color: var(--accent);
+  }
+  /* --- Range -------------------------------------------------------------------
+     4 px track, gold up to the value (--range-pct, set by <Range>), a rotated-square bead for the thumb. The input
+     box keeps the 44 px tap height; the track is centred in it. */
+  .range {
+    appearance: none;
+    -webkit-appearance: none;
+    display: block;
+    width: 100%;
+    height: var(--tap-min);
+    background: transparent;
+    cursor: pointer;
+  }
+  .range:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+  .range::-webkit-slider-runnable-track {
+    height: 4px;
+    background: linear-gradient(
+      90deg,
+      var(--accent) var(--range-pct, 0%),
+      color-mix(in srgb, var(--ink) 16%, transparent) var(--range-pct, 0%)
+    );
+  }
+  .range::-moz-range-track {
+    height: 4px;
+    background: color-mix(in srgb, var(--ink) 16%, transparent);
+  }
+  .range::-moz-range-progress {
+    height: 4px;
+    background: var(--accent);
+  }
+  .range::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 14px;
+    height: 14px;
+    margin-top: -5px;
+    border: 1px solid var(--accent);
+    background: var(--gold-gradient);
+    box-shadow: 0 0 0 3px var(--page);
+    transform: rotate(45deg);
+  }
+  .range::-moz-range-thumb {
+    width: 14px;
+    height: 14px;
+    border: 1px solid var(--accent);
+    background: var(--gold-gradient);
+    box-shadow: 0 0 0 3px var(--page);
+    transform: rotate(45deg);
+  }
+  .range:hover:not(:disabled)::-webkit-slider-thumb {
+    box-shadow: 0 0 0 3px var(--page), 0 0 0 4px var(--accent-line);
+  }
+  .range:hover:not(:disabled)::-moz-range-thumb {
+    box-shadow: 0 0 0 3px var(--page), 0 0 0 4px var(--accent-line);
+  }
+}

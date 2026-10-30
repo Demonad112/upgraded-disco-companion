@@ -12,7 +12,7 @@ export function BossCard({ boss }: { boss: PinnacleBoss }) {
   return (
     <details
       id={boss.id}
-      data-surface="data" className="group card scroll-mt-40 rounded-xl transition-colors hover:border-line-strong open:border-accent-line"
+      data-surface="data" className="group card scroll-mt-40 transition-colors hover:border-line-strong open:border-accent-line"
     >
       <summary className="flex cursor-pointer list-none flex-col gap-2 p-4 [&::-webkit-details-marker]:hidden">
         <div className="flex items-start justify-between gap-2">
@@ -36,7 +36,7 @@ export function BossCard({ boss }: { boss: PinnacleBoss }) {
           <ul className="space-y-1">
             {boss.fragmentCost.map((f) => (
               <li key={f.itemName} className="flex items-baseline gap-2 text-sm text-ink-dim">
-                <span className="tabular shrink-0 rounded bg-accent-soft px-1.5 text-xs font-semibold text-accent">
+                <span className="tabular shrink-0 bg-accent-soft px-1.5 text-xs font-semibold text-accent">
                   {f.quantity}×
                 </span>
                 {f.itemName}

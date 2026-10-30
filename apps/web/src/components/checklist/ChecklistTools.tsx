@@ -9,34 +9,26 @@
 import { useState } from "react";
 import { ReadinessPanel } from "./ReadinessPanel";
 import { WaystonePlanner } from "./WaystonePlanner";
+import { Segmented } from "@/components/shared/controls";
 
 type Tool = "waystones" | "ready";
+const TOOLS = [
+  { value: "waystones", label: "Waystone planner" },
+  { value: "ready", label: "Am I ready?" },
+] as const satisfies readonly { value: Tool; label: string }[];
 
 export function ChecklistTools() {
   const [tool, setTool] = useState<Tool>("waystones");
   return (
     <div>
-      <div role="tablist" aria-label="Planning tools" className="mb-2 flex gap-1 lg:hidden">
-        {(
-          [
-            ["waystones", "Waystone planner"],
-            ["ready", "Am I ready?"],
-          ] as const
-        ).map(([id, label]) => (
-          <button
-            key={id}
-            role="tab"
-            type="button"
-            aria-selected={tool === id}
-            onClick={() => setTool(id)}
-            className={`rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${
-              tool === id ? "bg-accent-soft text-ink ring-1 ring-accent-line" : "text-ink-mute hover:text-ink"
-            }`}
-          >
-            {label}
-          </button>
-        ))}
-      </div>
+      <Segmented
+        kind="tabs"
+        label="Planning tools"
+        options={TOOLS}
+        value={tool}
+        onChange={setTool}
+        className="mb-2 lg:hidden"
+      />
       <div className="grid gap-4 lg:grid-cols-2">
         <div className={tool === "waystones" ? "" : "hidden lg:block"}>
           <WaystonePlanner />

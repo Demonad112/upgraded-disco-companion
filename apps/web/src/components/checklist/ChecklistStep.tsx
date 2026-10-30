@@ -48,7 +48,7 @@ export function ChecklistStep({
         id={step.id}
         open={isNext && !complete}
         data-surface={complete ? "data" : undefined}
-        className={`group scroll-mt-40 rounded-lg border transition-colors ${
+        className={`group scroll-mt-40 border transition-colors ${
           complete
             ? "border-good/25"
             : isNext
@@ -66,7 +66,7 @@ export function ChecklistStep({
           <span className="flex shrink-0 items-center gap-1.5">
             {items.length ? (
               <span
-                className={`tabular rounded px-1.5 py-px text-[10px] ${
+                className={`tabular px-1.5 py-px text-[10px] ${
                   itemsDone === items.length ? "bg-good/10 text-good" : "bg-surface-sunken text-ink-mute"
                 }`}
                 title="Action items done"
@@ -75,12 +75,12 @@ export function ChecklistStep({
               </span>
             ) : null}
             {avoid.length ? (
-              <span className="rounded bg-danger/10 px-1.5 py-px text-[10px] text-danger" title="Mistakes to avoid">
+              <span className="bg-danger/10 px-1.5 py-px text-[10px] text-danger" title="Mistakes to avoid">
                 ⚠ {avoid.length}
               </span>
             ) : null}
             {gates.length ? (
-              <span className="rounded bg-accent-soft px-1.5 py-px text-[10px] text-accent" title="Readiness gate">
+              <span className="bg-accent-soft px-1.5 py-px text-[10px] text-accent" title="Readiness gate">
                 gate
               </span>
             ) : null}
@@ -126,7 +126,7 @@ export function ChecklistStep({
           ) : null}
 
           {avoid.length ? (
-            <ul className="overflow-hidden rounded-md border border-line">
+            <ul className="overflow-hidden border border-line">
               {avoid.map((m) => (
                 <li key={m.id} className="border-b border-line last:border-b-0">
                   <details className="group/avoid">

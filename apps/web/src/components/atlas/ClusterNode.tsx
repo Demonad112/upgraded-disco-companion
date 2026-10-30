@@ -18,7 +18,7 @@ export function ClusterNode({ cluster }: { cluster: AtlasCluster }) {
   return (
     <li
       id={cluster.id}
-      className={`scroll-mt-40 rounded-lg border px-3 py-2.5 transition-colors ${
+      className={`scroll-mt-40 border px-3 py-2.5 transition-colors ${
         allocated
           ? "border-good/30 bg-good/5"
           : "border-line bg-surface-raised shadow-[var(--lift)] hover:border-line-strong"
@@ -32,7 +32,7 @@ export function ClusterNode({ cluster }: { cluster: AtlasCluster }) {
           aria-label={`Allocated ${cluster.name}`}
           className="mt-0.5 size-4 shrink-0"
         />
-        <span className="tabular mt-px flex size-5 shrink-0 items-center justify-center rounded-full bg-surface-sunken text-[10px] text-ink-mute">
+        <span className="tabular mt-px flex size-5 shrink-0 items-center justify-center bg-surface-sunken text-[10px] text-ink-mute">
           {cluster.order}
         </span>
         <div className="min-w-0 flex-1">
@@ -41,7 +41,7 @@ export function ClusterNode({ cluster }: { cluster: AtlasCluster }) {
               {cluster.name}
             </span>
             {cluster.killGated ? (
-              <span className="rounded border border-line px-1.5 py-px text-[10px] text-ink-mute">kill-gated</span>
+              <span className="border border-line px-1.5 py-px text-[10px] text-ink-mute">kill-gated</span>
             ) : null}
             <SourceFlag source={cluster.source} />
           </div>

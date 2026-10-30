@@ -12,7 +12,7 @@ export function MemoryForkBranch({ fork }: { fork: MemoryFork }) {
   return (
     <div
       id={fork.id}
-      className={`scroll-mt-40 flex-1 rounded-lg border p-3.5 transition-colors ${
+      className={`scroll-mt-40 flex-1 border p-3.5 transition-colors ${
         allocated ? "border-good/30 bg-good/5" : "card hover:border-line-strong"
       }`}
     >

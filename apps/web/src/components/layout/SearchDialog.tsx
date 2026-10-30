@@ -81,7 +81,7 @@ export default function SearchDialog({ onClose }: { onClose: () => void }) {
         role="dialog"
         aria-modal="true"
         aria-label="Search"
-        className="w-full max-w-xl overflow-hidden card rounded-xl shadow-2xl"
+        className="w-full max-w-xl overflow-hidden card shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
         <input
@@ -105,7 +105,7 @@ export default function SearchDialog({ onClose }: { onClose: () => void }) {
             }
           }}
           placeholder="Search steps, strategies, bosses, builds..."
-          className="w-full border-b border-[var(--line)] bg-transparent px-4 py-3.5 text-sm text-ink outline-none placeholder:text-ink-mute"
+          className="w-full border-b border-[var(--line)] bg-transparent px-4 py-3.5 text-sm text-ink [--focus-offset:-2px] placeholder:text-ink-mute"
         />
         <ul className="max-h-80 overflow-y-auto py-2">
           {results.length === 0 && (

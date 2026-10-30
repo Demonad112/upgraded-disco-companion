@@ -31,6 +31,7 @@ import type { SupportCatalogState } from '@/lib/useSupportCatalog'
 import { useSupportTierCap } from '@/hooks/useSupportTierCap'
 import { Empty, Panel, Tag } from './ui'
 import { ProvenanceBadge } from './shared/ProvenanceBadge'
+import { Select } from '@/components/shared/controls'
 
 function pct(ratio: number): string {
   const p = (ratio - 1) * 100
@@ -39,7 +40,7 @@ function pct(ratio: number): string {
 
 function CandidateRow({ c, ratio }: { c: GemCandidate; ratio?: number }) {
   return (
-    <li className="rounded-md bg-surface px-2 py-1.5">
+    <li className="bg-surface px-2 py-1.5">
       <div className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
         <span className="text-xs font-medium text-ink">{c.name}</span>
         {c.lineage ? <Tag tone="accent">lineage</Tag> : null}
@@ -116,7 +117,7 @@ export function DamageReview({
   if (catalogState.status === 'idle' || catalogState.status === 'loading') {
     return (
       <Panel title="Damage review" subtitle="Loading Path of Building's support-gem data…" bare={bare}>
-        <div className="h-24 animate-pulse rounded-lg bg-surface-sunken" />
+        <div className="h-24 animate-pulse bg-surface-sunken" />
       </Panel>
     )
   }
@@ -147,17 +148,17 @@ export function DamageReview({
         <div className="flex flex-wrap items-center gap-2 text-xs text-ink-dim">
           <label className="flex items-center gap-2">
             Skill
-            <select
+            <Select
               value={skillName ?? review.skill}
               onChange={(e) => setSkillName(e.target.value)}
-              className="rounded-md border border-line bg-surface-sunken px-2 py-1 text-ink"
+              className="text-xs"
             >
               {damaging.map((s) => (
                 <option key={s.name} value={s.name}>
                   {s.name} — {Math.round(s.totalDps).toLocaleString()} dps
                 </option>
               ))}
-            </select>
+            </Select>
           </label>
           {review.dealt.length ? (
             <span className="text-ink-mute">
@@ -169,10 +170,10 @@ export function DamageReview({
         <div className="flex flex-wrap items-center gap-2 text-xs text-ink-dim">
           <label className="flex items-center gap-2">
             Highest support tier I can cut
-            <select
+            <Select
               value={cap === null || cap === undefined ? 'none' : String(cap)}
               onChange={(e) => setCap(e.target.value === 'none' ? null : Number(e.target.value))}
-              className="rounded-md border border-line bg-surface-sunken px-2 py-1 text-ink"
+              className="text-xs"
             >
               {[1, 2, 3, 4, 5].map((t) => (
                 <option key={t} value={t}>
@@ -180,7 +181,7 @@ export function DamageReview({
                 </option>
               ))}
               <option value="none">No limit</option>
-            </select>
+            </Select>
           </label>
           <span className="text-[11px] text-ink-mute">
             {savedCap === undefined
@@ -210,7 +211,7 @@ export function DamageReview({
             {review.supports.map((s) => (
               <li
                 key={s.name}
-                className={`rounded-md border px-2 py-1 text-[11px] ${
+                className={`border px-2 py-1 text-[11px] ${
                   s.issue ? 'border-danger/40 bg-danger/10 text-danger' : 'border-line text-ink-dim'
                 }`}
                 title={s.issue ?? s.value?.notes.join(' · ') ?? ''}
@@ -232,7 +233,7 @@ export function DamageReview({
           </ul>
 
           {bestSwap ? (
-            <div className="rounded-lg border border-accent/30 bg-accent/5 p-2.5">
+            <div className="border border-accent/30 bg-accent/5 p-2.5">
               <p className="text-xs text-ink">
                 Swap <span className="font-semibold">{bestSwap.replace.name}</span> for one of these.{' '}
                 <span className="text-ink-mute">{bestSwap.reason}</span>
@@ -288,7 +289,7 @@ export function DamageReview({
           ) : review.gear.length ? (
             <ul className="space-y-1">
               {review.gear.map((g, i) => (
-                <li key={`${g.itemName}-${i}`} className="rounded-md bg-surface-sunken/50 px-2 py-1.5">
+                <li key={`${g.itemName}-${i}`} className="bg-surface-sunken/50 px-2 py-1.5">
                   <div className="flex flex-wrap items-baseline gap-x-2">
                     <span className="tabular text-[11px] font-semibold text-ink-dim">
                       T{g.tier}→T{g.toTier}

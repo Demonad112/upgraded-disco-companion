@@ -26,7 +26,7 @@ export function ReadinessPanel() {
 
   if (!snapshot) {
     return (
-      <section className="rounded-xl border border-dashed border-line bg-[var(--surface-raised)] p-5">
+      <section className="border border-dashed border-line bg-[var(--surface-raised)] p-5">
         <h2 className="font-semibold text-ink">Am I ready?</h2>
         <p className="mt-1 text-sm text-ink-mute">
           <Link href="/character" className="text-[var(--accent)] underline">
@@ -43,7 +43,7 @@ export function ReadinessPanel() {
   const name = snapshot.key.split("/").pop();
 
   return (
-    <section data-surface="data" className="rounded-xl card p-5">
+    <section data-surface="data" className="card p-5">
       <div className="flex flex-wrap items-baseline justify-between gap-2">
         <h2 className="font-semibold text-ink">Am I ready?</h2>
         <span className="text-xs text-ink-mute">
@@ -53,11 +53,11 @@ export function ReadinessPanel() {
       </div>
       <div className="mt-3 grid gap-3 sm:grid-cols-3">
         {(Object.keys(MILESTONE_LABELS) as (keyof typeof MILESTONE_LABELS)[]).map((m) => (
-          <div key={m} className="rounded-md border border-line bg-[var(--surface-sunken)] p-3">
+          <div key={m} className="border border-line bg-[var(--surface-sunken)] p-3">
             <div className="flex items-center justify-between gap-2">
               <span className="text-sm font-medium text-ink">{MILESTONE_LABELS[m]}</span>
               <span
-                className={`rounded px-1.5 py-0.5 text-[10px] font-semibold uppercase ${
+                className={`px-1.5 py-0.5 text-[10px] font-semibold uppercase ${
                   ready[m] === null
                     ? "bg-line/40 text-ink-mute"
                     : ready[m]

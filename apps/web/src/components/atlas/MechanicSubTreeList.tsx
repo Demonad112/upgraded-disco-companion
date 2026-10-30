@@ -39,12 +39,12 @@ export function MechanicSubTreeList({ clusters, initial }: { clusters: AtlasClus
 
   return (
     <div>
-      <ScrollFade className="mb-3 flex gap-1.5 rounded-lg border border-line bg-surface-sunken p-1.5">
+      <ScrollFade className="mb-3 flex gap-1.5 border border-line bg-surface-sunken p-1.5">
         {MECHANICS.map((mechanic) => (
           <button
             key={mechanic}
             onClick={() => setActive(mechanic)}
-            className={`hit-area shrink-0 rounded-md px-1 py-1 transition-all ${
+            className={`hit-area shrink-0 px-1 py-1 transition-all ${
               active === mechanic
                 ? "bg-surface-sunken ring-1 ring-line"
                 : "opacity-50 hover:opacity-80"

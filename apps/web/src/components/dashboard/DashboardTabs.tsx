@@ -1,6 +1,5 @@
 "use client";
 
-import { ScrollFade } from "@/components/shared/ScrollFade";
 
 /**
  * The dashboard's reference sections, one at a time: Strategies · Bosses ·
@@ -20,6 +19,7 @@ import { StrategyTable } from "./StrategyTable";
 import { BossCard } from "./BossCard";
 import { MetaBuildList } from "./MetaBuildList";
 import { CurrencyMilestones } from "./CurrencyMilestones";
+import { Segmented } from "@/components/shared/controls";
 
 type TabId = "strategies" | "bosses" | "builds" | "milestones";
 
@@ -64,27 +64,15 @@ export function DashboardTabs() {
 
   return (
     <div>
-      <div className="sticky top-14 z-10 -mx-4 mb-4 border-b border-line bg-surface/95 px-4 py-2 backdrop-blur-md sm:mx-0 sm:rounded-xl sm:border sm:px-1.5 sm:py-1.5">
-      <ScrollFade role="tablist" aria-label="Dashboard sections" className="flex gap-1">
-        {TABS.map((t) => {
-          const active = tab === t.id;
-          return (
-            <button
-              key={t.id}
-              role="tab"
-              type="button"
-              aria-selected={active}
-              onClick={() => setTab(t.id)}
-              className={`flex shrink-0 items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${
-                active ? "bg-accent-soft text-ink ring-1 ring-accent-line" : "text-ink-mute hover:bg-surface-raised hover:text-ink"
-              }`}
-            >
-              {t.label}
-              <span className={`tabular text-[10px] ${active ? "text-accent" : "text-ink-mute"}`}>{t.count}</span>
-            </button>
-          );
-        })}
-      </ScrollFade>
+      <div className="sticky top-14 z-10 -mx-4 mb-4 border-b border-line bg-surface/95 px-4 py-2 backdrop-blur-md sm:mx-0 sm:border-b-0 sm:bg-transparent sm:p-0 sm:backdrop-blur-none">
+        <Segmented
+          kind="tabs"
+          label="Dashboard sections"
+          options={TABS.map((t) => ({ value: t.id, label: t.label, count: t.count }))}
+          value={tab}
+          onChange={setTab}
+          scroll
+        />
       </div>
 
       <div role="tabpanel">

@@ -66,7 +66,7 @@ export function AuditPanel({
             </h3>
             <ul className="space-y-1">
               {report.emptySockets.map((s) => (
-                <li key={s.slotId} className="rounded-md bg-warn/10 px-3 py-2 text-[11px] text-ink">
+                <li key={s.slotId} className="bg-warn/10 px-3 py-2 text-[11px] text-ink">
                   <span className="font-medium">{s.itemName}</span>
                   <span className="ml-2 text-ink-mute">
                     {s.slotLabel} · {s.empty} of {s.sockets} socket{s.sockets === 1 ? '' : 's'} empty
@@ -84,7 +84,7 @@ export function AuditPanel({
             </h3>
             <ul className="space-y-1">
               {report.soulCoreLimits.map((c) => (
-                <li key={c.name} className="rounded-md bg-warn/10 px-3 py-2 text-[11px] text-ink">
+                <li key={c.name} className="bg-warn/10 px-3 py-2 text-[11px] text-ink">
                   <span className="font-medium">{c.name}</span>
                   <span className="ml-2 text-ink-mute">
                     {c.socketed} socketed ({c.slotLabels.join(', ')}) · limit {c.limit} · {c.excess} wasted
@@ -103,7 +103,7 @@ export function AuditPanel({
             </h3>
             <ul className="space-y-1">
               {report.soulCoreChanges.map((c) => (
-                <li key={c.name} className="rounded-md bg-surface-sunken px-3 py-2 text-[11px] text-ink">
+                <li key={c.name} className="bg-surface-sunken px-3 py-2 text-[11px] text-ink">
                   <span className="font-medium">{c.name}</span>
                   <span className="ml-2 text-ink-mute">{c.slotLabels.join(', ')}</span>
                   <ul className="mt-1 space-y-0.5 text-ink-dim">
@@ -128,7 +128,7 @@ export function AuditPanel({
               {report.gemQuality.map((g, i) => (
                 <li
                   key={`${g.skill}-${g.gem}-${i}`}
-                  className="flex flex-wrap items-baseline gap-x-2 rounded-md bg-surface-sunken px-3 py-1.5 text-[11px]"
+                  className="flex flex-wrap items-baseline gap-x-2 bg-surface-sunken px-3 py-1.5 text-[11px]"
                 >
                   <span className="font-medium text-ink">{g.gem}</span>
                   <span className="text-ink-mute">in {g.skill}</span>
@@ -168,7 +168,7 @@ export function AuditPanel({
               {report.attributes.map((a) => (
                 <li
                   key={a.attribute}
-                  className={`flex flex-wrap items-baseline gap-x-2 rounded-md px-3 py-1.5 text-[11px] ${
+                  className={`flex flex-wrap items-baseline gap-x-2 px-3 py-1.5 text-[11px] ${
                     a.tight ? 'bg-warn/10 ring-1 ring-warn/30' : 'bg-surface-sunken'
                   }`}
                 >
@@ -194,7 +194,7 @@ export function AuditPanel({
         {report.spirit ? (
           <section>
             <h3 className="mb-1.5 text-[11px] font-medium tracking-wide text-ink-dim uppercase">Spirit</h3>
-            <div className="rounded-md bg-surface-sunken px-3 py-2">
+            <div className="bg-surface-sunken px-3 py-2">
               <div className="flex items-baseline justify-between text-[11px]">
                 <span className="text-ink">
                   <span className="tabular font-semibold">{fmt(report.spirit.reserved)}</span> reserved of{' '}
@@ -202,9 +202,9 @@ export function AuditPanel({
                 </span>
                 <span className="tabular text-ink-dim">{report.spirit.unreservedPercent}% idle</span>
               </div>
-              <div className="mt-1.5 h-2 overflow-hidden rounded bg-surface">
+              <div className="mt-1.5 h-2 overflow-hidden bg-surface">
                 <div
-                  className="h-full rounded bg-accent/70"
+                  className="h-full bg-accent/70"
                   style={{ width: `${100 - report.spirit.unreservedPercent}%` }}
                 />
               </div>
@@ -217,7 +217,7 @@ export function AuditPanel({
         ) : null}
 
         {report.unavailable.length ? (
-          <section className="rounded-lg bg-surface-sunken p-3">
+          <section className="bg-surface-sunken p-3">
             <h3 className="text-[11px] font-medium text-ink-dim">Could not be checked</h3>
             <ul className="mt-1 space-y-1">
               {report.unavailable.map((u) => (
@@ -235,7 +235,7 @@ export function AuditPanel({
 
 function JewelCard({ jewel }: { jewel: ItemAnalysis }) {
   return (
-    <li className="rounded-lg border border-line bg-surface px-3 py-2">
+    <li className="border border-line bg-surface px-3 py-2">
       <div className="flex flex-wrap items-baseline justify-between gap-x-3">
         <span className="text-xs font-medium text-ink">{jewel.name}</span>
         <span className="text-[11px] text-ink-mute">

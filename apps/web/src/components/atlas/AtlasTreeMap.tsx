@@ -52,11 +52,11 @@ const subtreeLabel = (t: string | undefined) =>
 export function AtlasTreeMap() {
   const state = useAtlasTree()
   if (state.status === 'loading') {
-    return <div className="skeleton h-[22rem] rounded-xl sm:h-[29rem] lg:h-[calc(100dvh-12rem)] lg:min-h-[24rem]" aria-label="Loading the Atlas tree" />
+    return <div className="skeleton h-[22rem] sm:h-[29rem] lg:h-[calc(100dvh-12rem)] lg:min-h-[24rem]" aria-label="Loading the Atlas tree" />
   }
   if (state.status === 'error') {
     return (
-      <p className="rounded-xl border border-line px-4 py-6 text-center text-sm text-ink-mute">
+      <p className="border border-line px-4 py-6 text-center text-sm text-ink-mute">
         The Atlas tree didn&apos;t load ({state.message}). The guide below still works.
       </p>
     )
@@ -278,10 +278,10 @@ function AtlasMapCanvas({ atlas }: { atlas: AtlasTree }) {
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Find a node — name or effect"
             aria-label="Find an Atlas node"
-            className="w-full rounded-lg border border-line bg-surface-sunken px-3 py-2 text-sm text-ink placeholder:text-ink-mute focus:border-accent-line focus:outline-none"
+            className="w-full border border-line bg-surface-sunken px-3 py-2 text-sm text-ink placeholder:text-ink-mute focus:border-accent-line"
           />
           {results.length ? (
-            <ul className="absolute inset-x-0 top-full z-20 mt-1 overflow-hidden rounded-lg border border-line bg-surface-raised shadow-[var(--lift-raised)]">
+            <ul className="absolute inset-x-0 top-full z-20 mt-1 overflow-hidden border border-line bg-surface-raised shadow-[var(--lift-raised)]">
               {results.map((n) => (
                 <li key={n.name}>
                   <button
@@ -302,13 +302,13 @@ function AtlasMapCanvas({ atlas }: { atlas: AtlasTree }) {
         </div>
         <ul className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-ink-dim" aria-label="Legend">
           <li className="flex items-center gap-1.5">
-            <span className="size-2.5 rounded-full border-2 border-accent" /> Guide
+            <span className="size-2.5 border-2 border-accent" /> Guide
           </li>
           <li className="flex items-center gap-1.5">
-            <span className="size-2.5 rounded-full border-2 border-danger" /> Trap
+            <span className="size-2.5 border-2 border-danger" /> Trap
           </li>
           <li className="flex items-center gap-1.5">
-            <span className="size-2.5 rounded-full bg-good" /> Ticked here
+            <span className="size-2.5 bg-good" /> Ticked here
           </li>
         </ul>
       </div>
@@ -316,7 +316,7 @@ function AtlasMapCanvas({ atlas }: { atlas: AtlasTree }) {
       <div
         id="atlas-map"
         ref={wrapRef}
-        className="relative h-[22rem] w-full scroll-mt-32 touch-none overflow-hidden rounded-xl border border-line bg-surface-sunken select-none sm:h-[29rem] lg:h-[calc(100dvh-12rem)] lg:min-h-[24rem]"
+        className="relative h-[22rem] w-full scroll-mt-32 touch-none overflow-hidden border border-line bg-surface-sunken select-none sm:h-[29rem] lg:h-[calc(100dvh-12rem)] lg:min-h-[24rem]"
       >
         <canvas
           ref={canvasRef}
@@ -351,7 +351,7 @@ function AtlasMapCanvas({ atlas }: { atlas: AtlasTree }) {
               onClick={b.on}
               aria-label={b.label}
               title={b.label}
-              className="size-8 rounded-md border border-line bg-surface-raised/90 text-sm text-ink-dim backdrop-blur transition-colors hover:text-ink"
+              className="size-8 border border-line bg-surface-raised/90 text-sm text-ink-dim backdrop-blur transition-colors hover:text-ink"
             >
               {b.text}
             </button>
@@ -359,7 +359,7 @@ function AtlasMapCanvas({ atlas }: { atlas: AtlasTree }) {
         </div>
 
         {request ? (
-          <div className="absolute top-2 left-2 flex max-w-[70%] items-center gap-2 rounded-md border border-accent-line bg-surface-raised/90 px-2.5 py-1 text-xs text-ink backdrop-blur">
+          <div className="absolute top-2 left-2 flex max-w-[70%] items-center gap-2 border border-accent-line bg-surface-raised/90 px-2.5 py-1 text-xs text-ink backdrop-blur">
             <span className="truncate">Showing {request.label}</span>
             <button type="button" onClick={clear} aria-label="Clear" className="hit-area text-ink-mute hover:text-ink">
               ✕
@@ -369,7 +369,7 @@ function AtlasMapCanvas({ atlas }: { atlas: AtlasTree }) {
 
         {hovered ? (
           <div
-            className="pointer-events-none absolute z-10 w-60 max-w-[80%] rounded-lg border border-line bg-surface-raised/95 p-2.5 shadow-[var(--lift-raised)] backdrop-blur"
+            className="pointer-events-none absolute z-10 w-60 max-w-[80%] border border-line bg-surface-raised/95 p-2.5 shadow-[var(--lift-raised)] backdrop-blur"
             style={{
               left: Math.min(Math.max(8, pointer.x + 14), Math.max(8, size.width - 248)),
               top: Math.min(Math.max(8, pointer.y + 14), Math.max(8, size.height - 140)),
@@ -389,7 +389,7 @@ function AtlasMapCanvas({ atlas }: { atlas: AtlasTree }) {
             {tags.length ? (
               <div className="mt-1.5 flex flex-wrap gap-1">
                 {tags.map((t) => (
-                  <span key={t.label} className={`rounded border px-1.5 py-px text-[10px] ${t.tone}`}>
+                  <span key={t.label} className={`border px-1.5 py-px text-[10px] ${t.tone}`}>
                     {t.label}
                   </span>
                 ))}

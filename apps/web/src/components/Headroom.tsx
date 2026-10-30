@@ -12,6 +12,7 @@
 import { useEffect, useId, useState } from 'react'
 import { COMFORT_THRESHOLDS, analyzeContent, type DefenseSummary, type MonsterStatData } from '@poe2/core'
 import { Empty, fmt } from './ui'
+import { Select } from '@/components/shared/controls'
 
 const DATA_URL = `${process.env.NEXT_PUBLIC_BASE_PATH ?? ''}/monster-stats.json`
 
@@ -133,13 +134,13 @@ export function Headroom({ defense }: { defense: DefenseSummary }) {
           <label htmlFor={selectId} className="eyebrow">
             Show from
           </label>
-          <select id={selectId} className="field" value={start?.tier ?? from} onChange={(e) => setFrom(Number(e.target.value))}>
+          <Select id={selectId} value={start?.tier ?? from} onChange={(e) => setFrom(Number(e.target.value))}>
             {starts.map((t) => (
               <option key={t.tier} value={t.tier}>
                 Waystone {t.tier} · area {t.areaLevel}
               </option>
             ))}
-          </select>
+          </Select>
         </div>
       </div>
 
