@@ -14,13 +14,13 @@ export function MetaBuildList({ builds }: { builds: MetaBuild[] }) {
         <li
           key={build.id}
           id={build.id}
-          data-surface="data" className="scroll-mt-24 rounded-md card p-3 transition-colors hover:border-line-strong"
+          data-surface="data" className="scroll-mt-24 card p-3 transition-colors hover:border-line-strong"
         >
           <div className="flex flex-wrap items-center gap-2">
             <span className="font-medium text-ink">{build.name}</span>
             <span className="text-xs text-ink-mute">{build.ascendancy}</span>
             {build.playratePercent !== undefined && (
-              <span className="rounded border border-good/40 px-1.5 py-0.5 text-xs text-[var(--good)]">
+              <span className="border border-good/40 px-1.5 py-0.5 text-xs text-[var(--good)]">
                 ~{build.playratePercent}% playrate
               </span>
             )}

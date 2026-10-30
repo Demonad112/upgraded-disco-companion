@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { CircleToggle } from "@/components/shared/CircleToggle";
+import { Button } from "@/components/shared/controls";
 import type { StepSummary } from "@/lib/stepSummary";
 import { actionItemKey, useChecklistActions } from "@/hooks/useChecklistActions";
 
@@ -99,16 +100,13 @@ export function NextStepCard({
       )}
 
       <div className="mt-4 flex flex-wrap items-center gap-2">
-        <button
-          onClick={() => toggleStep(step.id)}
-          className="gold-surface rounded-md border border-[var(--accent)] px-4 py-1.5 text-sm font-bold transition-[filter] hover:brightness-110"
-        >
+        <Button variant="primary" onClick={() => toggleStep(step.id)}>
           ✓ Mark done
-        </button>
+        </Button>
         {onChecklistPage ? (
           <Link
             href={href}
-            className="rounded-md border border-line px-3 py-1.5 text-sm text-ink-dim transition-colors hover:border-[var(--accent)] hover:text-ink"
+            className="btn btn-secondary"
           >
             Jump to step →
           </Link>

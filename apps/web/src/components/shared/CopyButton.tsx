@@ -22,7 +22,7 @@ export function CopyButton({ text, label }: { text: string; label: string }) {
         type="button"
         aria-label={`Copy ${label}`}
         onClick={() => void copy()}
-        className="hit-area rounded-md border border-line px-2.5 py-1 text-xs text-ink-dim transition-colors hover:border-accent-line hover:text-ink"
+        className="hit-area border border-line px-2.5 py-1 text-xs text-ink-dim transition-colors hover:border-accent-line hover:text-ink"
       >
         Copy
       </button>

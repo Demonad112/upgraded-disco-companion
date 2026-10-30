@@ -105,7 +105,7 @@ function Row({ metric, snapshots }: { metric: Metric; snapshots: CharacterSnapsh
       </svg>
       {last ? (
         <span
-          className="pointer-events-none absolute size-2.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-accent ring-2 ring-surface-raised"
+          className="pointer-events-none absolute size-2.5 -translate-x-1/2 -translate-y-1/2 bg-accent ring-2 ring-surface-raised"
           style={{ left: `${(last.x / W) * 100}%`, top: `${(last.y / H) * 100}%` }}
         />
       ) : null}

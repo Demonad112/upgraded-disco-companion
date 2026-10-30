@@ -33,7 +33,7 @@ export function CommandPalette() {
     <Suspense
       fallback={
         <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/60 px-4 pt-[12vh] backdrop-blur-sm">
-          <div className="card h-14 w-full max-w-xl animate-pulse rounded-xl" />
+          <div className="card h-14 w-full max-w-xl animate-pulse" />
         </div>
       }
     >

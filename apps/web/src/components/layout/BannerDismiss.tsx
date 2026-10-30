@@ -16,7 +16,7 @@ export function BannerDismiss({ patch }: { patch: string }) {
         }
         document.documentElement.setAttribute("data-banner-dismissed", "");
       }}
-      className="hit-area shrink-0 rounded px-1.5 text-sm leading-none text-ink-mute hover:text-ink"
+      className="hit-area shrink-0 px-1.5 text-sm leading-none text-ink-mute hover:text-ink"
     >
       ×
     </button>

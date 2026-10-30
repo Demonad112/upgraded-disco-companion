@@ -13,6 +13,7 @@ import { usePersistedState } from '@/hooks/usePersistedState'
 import { recentCharacters } from '@/lib/recentCharacters'
 import { useLocalStore } from '@/lib/localStore'
 import { Panel, fmt } from '../ui'
+import { Select } from '@/components/shared/controls'
 
 const when = (iso: string) => new Date(iso).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })
 const latest = (all: CharacterSnapshot[], key: string) => historyFor(all, key).at(-1) ?? null
@@ -46,18 +47,14 @@ export function CompareCharacters({ currentKey, currentName, bare = false }: { c
           {others.length > 1 ? (
             <label className="mb-3 flex items-center gap-2 text-xs text-ink-dim">
               Compare with
-              <select
-                value={other.key}
-                onChange={(e) => setPicked(e.target.value)}
-                className="rounded-md border border-line bg-surface px-2 py-1 text-xs text-ink"
-              >
+              <Select value={other.key} onChange={(e) => setPicked(e.target.value)} className="text-xs">
                 {others.map((r) => (
                   <option key={r.key} value={r.key}>
                     {r.name}
                     {r.level !== null ? ` (${r.level})` : ''}
                   </option>
                 ))}
-              </select>
+              </Select>
             </label>
           ) : null}
           <table className="tabular w-full text-xs">

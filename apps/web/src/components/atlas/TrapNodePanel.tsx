@@ -26,7 +26,7 @@ export function TrapNodePanel() {
   const hardAvoid = atlasTrapNodes.filter((n) => n.severity === "avoid").length;
   return (
     <div id="atlas-trap-nodes" className="scroll-mt-40">
-      <p className="mb-2.5 rounded-lg border border-danger/40 bg-danger/10 px-3 py-2 text-sm text-ink-dim">
+      <p className="mb-2.5 border border-danger/40 bg-danger/10 px-3 py-2 text-sm text-ink-dim">
         <span className="font-semibold text-danger">Do not allocate.</span> The Atlas tree can&apos;t be respecced
         (only Multi-Choice nodes toggle), so a wrong point is permanent. {hardAvoid} to always avoid,{" "}
         {atlasTrapNodes.length} in total — tap one for why. To find them in-game, paste a search string from{" "}
@@ -43,10 +43,10 @@ export function TrapNodePanel() {
                 {GROUP_LABELS[trap.group]}
               </h4>
             ) : null}
-            <details className="group rounded-lg border border-line bg-surface-raised shadow-[var(--lift)] open:border-line-strong">
+            <details className="group border border-line bg-surface-raised shadow-[var(--lift)] open:border-line-strong">
               <summary className="flex cursor-pointer list-none flex-wrap items-center gap-x-2 gap-y-1 px-3 py-2.5 [&::-webkit-details-marker]:hidden">
                 <span
-                  className={`rounded border px-1.5 py-px text-[10px] font-semibold uppercase ${SEVERITY_STYLES[trap.severity]}`}
+                  className={`border px-1.5 py-px text-[10px] font-semibold uppercase ${SEVERITY_STYLES[trap.severity]}`}
                 >
                   {trap.severity}
                 </span>

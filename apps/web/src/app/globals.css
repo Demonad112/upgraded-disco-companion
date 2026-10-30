@@ -137,10 +137,7 @@ code,
   background: color-mix(in oklab, var(--accent) 32%, transparent);
 }
 
-:focus-visible {
-  outline: var(--focus-ring);
-  outline-offset: 3px;
-}
+/* Focus ring: styles/controls.css (U4). */
 
 /* Recessive scrollbars so data, not chrome, carries the weight. */
 * {

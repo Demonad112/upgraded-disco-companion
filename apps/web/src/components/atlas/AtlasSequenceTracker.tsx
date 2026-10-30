@@ -7,7 +7,7 @@ export function AtlasSequenceTracker() {
   const { allocationPercent } = useAtlasProgress();
 
   return (
-    <div data-surface="data" className="rounded-lg card p-4">
+    <div data-surface="data" className="card p-4">
       <ProgressBar percent={allocationPercent} label="Tracked clusters allocated" />
     </div>
   );

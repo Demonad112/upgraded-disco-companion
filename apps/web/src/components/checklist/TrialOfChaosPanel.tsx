@@ -14,7 +14,7 @@ export function TrialOfChaosPanel() {
       title="Trial of Chaos (0.5.5 rework)"
       summary="Pause and resume, a chest every room, 30 rooms on one Ultimatum, which modifiers to take and which wagers."
       badge={
-        <span className="rounded border border-accent-line px-1.5 py-0.5 text-[10px] text-accent">
+        <span className="border border-accent-line px-1.5 py-0.5 text-[10px] text-accent">
           Spec-sourced, unverified
         </span>
       }

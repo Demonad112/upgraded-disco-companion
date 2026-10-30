@@ -31,7 +31,7 @@ export function CopyLink({ url, name }: { url: string; name: string }) {
       <button
         type="button"
         onClick={() => void share()}
-        className="rounded-md border border-line px-2.5 py-1 text-xs text-ink-dim transition-colors hover:border-accent-line hover:text-ink"
+        className="border border-line px-2.5 py-1 text-xs text-ink-dim transition-colors hover:border-accent-line hover:text-ink"
       >
         Copy link
       </button>
