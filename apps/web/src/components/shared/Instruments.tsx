@@ -30,7 +30,7 @@ const TONE_BG: Record<Tone, string> = {
 export function StatusChip({ tone = 'muted', children }: { tone?: Tone; children: React.ReactNode }) {
   return (
     <span
-      className={`shrink-0 rounded border border-current px-1.5 py-px text-[10px] font-bold tracking-wider uppercase ${TONE_TEXT[tone]}`}
+      className={`shrink-0 border border-current px-1.5 py-px text-[10px] font-bold tracking-wider uppercase ${TONE_TEXT[tone]}`}
     >
       {children}
     </span>
@@ -48,7 +48,7 @@ export function ResistancePips({ resistances }: { resistances: DefenseSummary['r
     <span className="flex gap-[3px]" aria-hidden="true">
       {resistances.map((r) => {
         const tone: Tone = r.capped ? 'good' : 'danger'
-        return <span key={r.type} className={`h-[5px] w-4 rounded-[2px] ${TONE_BG[tone]}`} />
+        return <span key={r.type} className={`h-[5px] w-4 ${TONE_BG[tone]}`} />
       })}
     </span>
   )
@@ -64,11 +64,11 @@ export function DangerBar({ weakest, best, atRiskRatio = 1.5 }: { weakest: numbe
   const atRisk = best > 0 && weakest < best / atRiskRatio
   return (
     <span
-      className="relative block h-[7px] w-[88px] overflow-hidden rounded-[3px] border border-line bg-surface-sunken"
+      className="relative block h-[7px] w-[88px] overflow-hidden border border-line bg-surface-sunken"
       aria-hidden="true"
     >
       <span
-        className={`absolute inset-y-0 left-0 rounded-[2px] ${atRisk ? 'bg-danger' : 'bg-ink-mute'}`}
+        className={`absolute inset-y-0 left-0 ${atRisk ? 'bg-danger' : 'bg-ink-mute'}`}
         style={{ width: `${pct}%` }}
       />
     </span>

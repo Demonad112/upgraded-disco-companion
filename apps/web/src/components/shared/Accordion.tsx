@@ -49,7 +49,7 @@ export function Accordion({
       open={defaultOpen}
       data-surface="data" className="card group overflow-clip transition-[border-color,box-shadow,transform]"
     >
-      <summary className="relative flex cursor-pointer list-none items-center gap-3 transition-colors hover:bg-white/[0.03] focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-[var(--accent)]/60 [&::-webkit-details-marker]:hidden">
+      <summary className="relative flex cursor-pointer list-none items-center gap-3 transition-colors hover:bg-white/[0.03] [--focus-offset:-2px] [&::-webkit-details-marker]:hidden">
         <svg
           viewBox="0 0 20 20"
           fill="none"

@@ -91,7 +91,7 @@ export function LastCharacterCard() {
         {figures
           .filter((f) => f.show)
           .map((f) => (
-            <div key={f.label} className="min-w-0 rounded-lg border border-line/80 bg-surface-sunken/80 px-3 py-2.5">
+            <div key={f.label} className="min-w-0 border border-line/80 bg-surface-sunken/80 px-3 py-2.5">
               <dt className="label-metric truncate">{f.label}</dt>
               <dd title={f.value.toLocaleString()} className="tabular mt-1 truncate text-xl leading-none font-semibold text-ink">
                 {compact(f.value)}
@@ -108,7 +108,7 @@ export function LastCharacterCard() {
           const short = type !== "chaos" && value !== null && value < 75;
           return (
             <li key={type} className="flex items-center gap-1.5">
-              <span aria-hidden className={`inline-block size-1.5 rounded-[1px] ${dot}`} />
+              <span aria-hidden className={`inline-block size-1.5 ${dot}`} />
               {label}
               <span className={`tabular font-semibold ${short ? "text-danger" : "text-ink"}`}>{value === null ? "unknown" : `${value}%`}</span>
             </li>
@@ -119,7 +119,7 @@ export function LastCharacterCard() {
       <div className="mt-4 flex flex-wrap items-center gap-2">
         <Link
           href={href}
-          className="rounded-md border border-accent-line bg-accent-soft px-3 py-1.5 text-sm font-medium text-[var(--accent)] transition-colors hover:bg-[var(--accent)]/20"
+          className="border border-accent-line bg-accent-soft px-3 py-1.5 text-sm font-medium text-[var(--accent)] transition-colors hover:bg-[var(--accent)]/20"
         >
           {recent ? "Re-import and analyse" : "Open character page"} →
         </Link>

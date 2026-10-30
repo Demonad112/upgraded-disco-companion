@@ -241,7 +241,7 @@ export function PassiveTreeView({ tree, allocation, className = '' }: PassiveTre
 
       <div
         ref={wrapRef}
-        className="relative h-[26rem] w-full touch-none overflow-hidden rounded-lg border border-line bg-surface-sunken select-none sm:h-[34rem]"
+        className="relative h-[26rem] w-full touch-none overflow-hidden border border-line bg-surface-sunken select-none sm:h-[34rem]"
       >
         <canvas
           ref={canvasRef}
@@ -261,7 +261,7 @@ export function PassiveTreeView({ tree, allocation, className = '' }: PassiveTre
             type="button"
             onClick={() => zoomBy(1.35)}
             aria-label="Zoom in"
-            className="size-8 rounded-md border border-line bg-surface-raised/90 text-sm text-ink-dim backdrop-blur transition-colors hover:text-ink"
+            className="size-8 border border-line bg-surface-raised/90 text-sm text-ink-dim backdrop-blur transition-colors hover:text-ink"
           >
             +
           </button>
@@ -269,7 +269,7 @@ export function PassiveTreeView({ tree, allocation, className = '' }: PassiveTre
             type="button"
             onClick={() => zoomBy(1 / 1.35)}
             aria-label="Zoom out"
-            className="size-8 rounded-md border border-line bg-surface-raised/90 text-sm text-ink-dim backdrop-blur transition-colors hover:text-ink"
+            className="size-8 border border-line bg-surface-raised/90 text-sm text-ink-dim backdrop-blur transition-colors hover:text-ink"
           >
             −
           </button>
@@ -278,7 +278,7 @@ export function PassiveTreeView({ tree, allocation, className = '' }: PassiveTre
             onClick={fitToAllocation}
             aria-label="Fit to allocated nodes"
             title="Fit to allocated nodes"
-            className="size-8 rounded-md border border-line bg-surface-raised/90 text-[10px] text-ink-dim backdrop-blur transition-colors hover:text-ink"
+            className="size-8 border border-line bg-surface-raised/90 text-[10px] text-ink-dim backdrop-blur transition-colors hover:text-ink"
           >
             fit
           </button>
@@ -287,7 +287,7 @@ export function PassiveTreeView({ tree, allocation, className = '' }: PassiveTre
         {/* Tooltip */}
         {hovered ? (
           <div
-            className="pointer-events-none absolute z-10 max-w-[15rem] rounded-lg border border-line bg-surface-raised/95 p-2.5 shadow-lg backdrop-blur"
+            className="pointer-events-none absolute z-10 max-w-[15rem] border border-line bg-surface-raised/95 p-2.5 shadow-lg backdrop-blur"
             style={{
               left: Math.min(Math.max(8, pointer.x + 14), Math.max(8, size.width - 250)),
               top: Math.min(Math.max(8, pointer.y + 14), Math.max(8, size.height - 130)),
@@ -371,7 +371,7 @@ function Legend() {
     <ul className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1">
       {items.map((i) => (
         <li key={i.label} className="flex items-center gap-1.5 text-[11px] text-ink-mute">
-          <span aria-hidden className={`inline-block rounded-full ${i.size} ${i.className}`} />
+          <span aria-hidden className={`inline-block ${i.size} ${i.className}`} />
           {i.label}
         </li>
       ))}

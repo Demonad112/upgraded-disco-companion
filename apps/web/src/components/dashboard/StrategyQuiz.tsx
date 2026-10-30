@@ -6,6 +6,7 @@ import { scoreStrategies, type QuizAnswers } from "@/lib/quiz";
 import { useStrategySelection } from "@/hooks/useStrategySelection";
 import { StrategyCard } from "./StrategyCard";
 import type { InvestmentTier, RiskTier } from "@/lib/types";
+import { Select } from "@/components/shared/controls";
 
 const BUDGET_OPTIONS: { value: InvestmentTier; label: string }[] = [
   { value: "low", label: "Low — a few Divines" },
@@ -39,7 +40,7 @@ export function StrategyQuiz() {
   }, [budget, tankiness, stage]);
 
   return (
-    <div className="flex flex-col gap-5 rounded-xl border border-line bg-surface-sunken p-5">
+    <div className="flex flex-col gap-5 border border-line bg-surface-sunken p-5">
       <div className="grid gap-4 sm:grid-cols-3">
         <QuizSelect
           label="Budget"
@@ -93,11 +94,7 @@ function QuizSelect({
   return (
     <label className="flex flex-col gap-1.5 text-sm">
       <span className="font-medium text-ink-mute">{label}</span>
-      <select
-        value={value ?? ""}
-        onChange={(e) => onChange(e.target.value)}
-        className="rounded-md border border-[var(--line)] bg-[var(--surface-sunken)] px-2.5 py-2 text-ink outline-none transition-colors focus:border-[var(--accent)]/50"
-      >
+      <Select value={value ?? ""} onChange={(e) => onChange(e.target.value)}>
         <option value="" disabled>
           Choose...
         </option>
@@ -106,7 +103,7 @@ function QuizSelect({
             {opt.label}
           </option>
         ))}
-      </select>
+      </Select>
     </label>
   );
 }

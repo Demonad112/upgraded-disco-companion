@@ -40,6 +40,7 @@ import {
 } from '@poe2/core'
 import { readChatSettings, writeChatSettings } from '../lib/chatSettings'
 import { Panel, Tag } from './ui'
+import { Button } from './shared/controls'
 
 const PROXY = (process.env.NEXT_PUBLIC_CHAT_PROXY_BASE || '').replace(/\/+$/, '')
 
@@ -126,7 +127,7 @@ export function Chat({ analysis, pob }: { analysis?: Analysis; pob?: PobAnalysis
         <button
           type="button"
           onClick={() => setShowSettings((v) => !v)}
-          className="rounded-md px-2 py-1 text-[11px] text-ink-mute hover:text-ink-dim"
+          className="px-2 py-1 text-[11px] text-ink-mute hover:text-ink-dim"
           aria-expanded={showSettings}
         >
           {configured ? `${spec.label} ▾` : 'Set up ▾'}
@@ -134,7 +135,7 @@ export function Chat({ analysis, pob }: { analysis?: Analysis; pob?: PobAnalysis
       }
     >
       {showSettings ? (
-        <div className="mb-3 rounded-lg border border-line bg-surface-sunken p-3">
+        <div className="mb-3 border border-line bg-surface-sunken p-3">
           <p className="text-[11px] leading-relaxed text-ink-dim">
             Your key is stored <strong className="text-ink">in this browser only</strong> and sent straight to the
             provider. This site is a static page with no server, so it holds no key of its own — and one committed to
@@ -147,7 +148,7 @@ export function Chat({ analysis, pob }: { analysis?: Analysis; pob?: PobAnalysis
                 key={p.id}
                 type="button"
                 onClick={() => persist(apiKey, p.id)}
-                className={`rounded-md px-2 py-1 text-[11px] ${
+                className={`px-2 py-1 text-[11px] ${
                   provider === p.id ? 'bg-surface-raised text-ink' : 'text-ink-mute hover:text-ink-dim'
                 }`}
               >
@@ -165,7 +166,7 @@ export function Chat({ analysis, pob }: { analysis?: Analysis; pob?: PobAnalysis
               onChange={(e) => persist(e.target.value, provider)}
               placeholder={PROXY ? 'Not needed — a proxy is configured' : 'Paste your key'}
               disabled={Boolean(PROXY)}
-              className="mt-1 w-full rounded-md border border-line bg-surface px-2 py-1.5 text-xs text-ink disabled:opacity-50"
+              className="mt-1 w-full border border-line bg-surface px-2 py-1.5 text-xs text-ink disabled:opacity-50"
               autoComplete="off"
               spellCheck={false}
             />
@@ -192,7 +193,7 @@ export function Chat({ analysis, pob }: { analysis?: Analysis; pob?: PobAnalysis
           {messages.map((m, i) => (
             <li
               key={i}
-              className={`rounded-lg px-3 py-2 text-xs leading-relaxed ${
+              className={`px-3 py-2 text-xs leading-relaxed ${
                 m.role === 'user' ? 'bg-surface-sunken text-ink' : 'border border-line bg-surface text-ink-dim'
               }`}
             >
@@ -214,7 +215,7 @@ export function Chat({ analysis, pob }: { analysis?: Analysis; pob?: PobAnalysis
                 type="button"
                 onClick={() => send(s)}
                 disabled={busy}
-                className="rounded-full border border-line px-2.5 py-1 text-[11px] text-ink-dim hover:text-ink disabled:opacity-50"
+                className="border border-line px-2.5 py-1 text-[11px] text-ink-dim hover:text-ink disabled:opacity-50"
               >
                 {s}
               </button>
@@ -225,7 +226,7 @@ export function Chat({ analysis, pob }: { analysis?: Analysis; pob?: PobAnalysis
 
       {busy ? <p className="mb-2 text-[11px] text-ink-mute">Thinking…</p> : null}
       {error ? (
-        <p className="mb-2 rounded-lg border border-warn/40 px-3 py-2 text-[11px] leading-relaxed text-warn">{error}</p>
+        <p className="mb-2 border border-warn/40 px-3 py-2 text-[11px] leading-relaxed text-warn">{error}</p>
       ) : null}
 
       <form
@@ -240,15 +241,11 @@ export function Chat({ analysis, pob }: { analysis?: Analysis; pob?: PobAnalysis
           onChange={(e) => setInput(e.target.value)}
           placeholder="Ask about this character…"
           aria-label="Ask about this character"
-          className="min-w-0 flex-1 rounded-md border border-line bg-surface px-3 py-2 text-xs text-ink"
+          className="min-w-0 flex-1 border border-line bg-surface px-3 py-2 text-xs text-ink"
         />
-        <button
-          type="submit"
-          disabled={busy || !input.trim()}
-          className="shrink-0 gold-surface rounded-md px-3 py-2 text-xs font-bold disabled:opacity-40"
-        >
+        <Button type="submit" variant="primary" size="sm" disabled={busy || !input.trim()} className="shrink-0">
           Ask
-        </button>
+        </Button>
       </form>
     </Panel>
   )

@@ -34,7 +34,7 @@ function ContributionRow({ c }: { c: ItemStatContribution }) {
     .join(', ')
 
   return (
-    <li className="rounded-md px-2 py-1.5 odd:bg-surface-sunken/40">
+    <li className="px-2 py-1.5 odd:bg-surface-sunken/40">
       <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
         <span className="min-w-0 flex-1 text-xs text-ink">{c.label}</span>
         <span className="tabular text-[11px] text-ink-dim">{granted}</span>
@@ -70,7 +70,7 @@ function ItemRow({ item }: { item: ItemAttribution }) {
   const free = item.contributions.filter((c) => c.loss === 0).length
 
   return (
-    <li className="rounded-lg border border-line bg-surface">
+    <li className="border border-line bg-surface">
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
@@ -123,7 +123,7 @@ export function Attribution({ report, bare = false }: { report: AttributionRepor
       )}
 
       {report.excluded.length ? (
-        <div className="mt-4 rounded-lg border border-line bg-surface-sunken p-4">
+        <div className="mt-4 border border-line bg-surface-sunken p-4">
           <h3 className="text-[11px] font-medium tracking-wide text-ink-dim uppercase">Not attributed</h3>
           <p className="mt-1 text-[11px] text-ink-mute">
             An attribution that disagrees with the number on screen is worse than none, so these were left out.

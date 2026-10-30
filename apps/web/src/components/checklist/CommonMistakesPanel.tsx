@@ -15,7 +15,7 @@ export function CommonMistakesPanel() {
       title="All common progression mistakes"
       summary="Each step shows its own warnings — open this for the full list."
       badge={
-        <span className="rounded border border-danger/40 bg-danger/15 px-1.5 py-0.5 text-[10px] font-medium text-[var(--danger)]">
+        <span className="border border-danger/40 bg-danger/15 px-1.5 py-0.5 text-[10px] font-medium text-[var(--danger)]">
           {count}
         </span>
       }

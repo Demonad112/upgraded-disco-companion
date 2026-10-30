@@ -10,14 +10,14 @@ export function PatchChangesPanel() {
       title="0.5.0 → 0.5.5 — what changed in the endgame"
       summary="If an older guide disagrees with this app, check here first: 2 Divinity kills, boss resistances, Rakiata's Flow, Expedition, Delirium."
       badge={
-        <span className="rounded border border-line px-1.5 py-0.5 text-[10px] text-ink-mute">
+        <span className="border border-line px-1.5 py-0.5 text-[10px] text-ink-mute">
           {patchDeltas.length} changes
         </span>
       }
     >
       <ul className="grid gap-2.5">
         {patchDeltas.map((d) => (
-          <li key={d.id} id={d.id} className="scroll-mt-28 rounded-lg border border-line bg-surface-raised px-3 py-2.5">
+          <li key={d.id} id={d.id} className="scroll-mt-28 border border-line bg-surface-raised px-3 py-2.5">
             <div className="flex flex-wrap items-center gap-1.5">
               <h4 className="text-sm font-semibold text-ink">{d.system}</h4>
               <SourceFlag source={d.source} />

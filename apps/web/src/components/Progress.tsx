@@ -29,7 +29,7 @@ function DeltaRow({ change }: { change: MetricDelta }) {
   const sign = change.delta > 0 ? '+' : ''
 
   return (
-    <li className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5 rounded-md px-2 py-1.5 odd:bg-surface-sunken/40">
+    <li className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5 px-2 py-1.5 odd:bg-surface-sunken/40">
       <span className="min-w-0 flex-1 text-xs text-ink">{change.label}</span>
       <span className="tabular text-[11px] text-ink-mute">
         {fmt(change.before)}

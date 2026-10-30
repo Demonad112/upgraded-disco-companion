@@ -22,7 +22,7 @@ export function MechanicsPrimer() {
           ))}
         </dl>
 
-        <div className="overflow-x-auto rounded-md border border-line">
+        <div className="overflow-x-auto border border-line">
           <table className="w-full min-w-[600px] text-sm">
             <thead className="border-b border-[var(--line)] bg-[var(--surface-sunken)] text-left text-ink-mute">
               <tr>

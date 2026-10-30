@@ -27,7 +27,7 @@ export function BiomePanel() {
           .
         </p>
 
-        <div className="overflow-x-auto rounded-md border border-line">
+        <div className="overflow-x-auto border border-line">
           <table className="w-full min-w-[560px] text-sm">
             <thead className="border-b border-[var(--line)] bg-[var(--surface-sunken)] text-left text-ink-mute">
               <tr>

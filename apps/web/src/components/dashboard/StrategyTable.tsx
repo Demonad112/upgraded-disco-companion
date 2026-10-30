@@ -5,8 +5,14 @@ import type { FarmingStrategy } from "@/lib/types";
 import { Tag } from "@/components/shared/Tag";
 import { SourceFlag } from "@/components/shared/SourceFlag";
 import { TIER_LIST_PATCH } from "@/data/strategies";
+import { Segmented } from "@/components/shared/controls";
 
 type SortKey = "rank" | "investment" | "risk";
+const SORTS = [
+  { value: "rank", label: "Tier list" },
+  { value: "investment", label: "Cheapest" },
+  { value: "risk", label: "Safest" },
+] as const satisfies readonly { value: SortKey; label: string }[];
 const TIER_ORDINAL: Record<string, number> = { low: 0, medium: 1, high: 2 };
 
 export const STRATEGY_TIER_STYLES: Record<string, string> = {
@@ -20,7 +26,7 @@ export function StrategyTierBadge({ tier }: { tier?: string }) {
   return (
     <span
       title={tier ? `${tier} tier on the ${TIER_LIST_PATCH} creator tier list` : `Not ranked by a ${TIER_LIST_PATCH} source`}
-      className={`inline-flex size-6 shrink-0 items-center justify-center rounded border font-mono text-xs font-bold ${
+      className={`inline-flex size-6 shrink-0 items-center justify-center border font-mono text-xs font-bold ${
         tier ? STRATEGY_TIER_STYLES[tier] : "border-line text-ink-mute"
       }`}
     >
@@ -64,29 +70,9 @@ export function StrategyTable({ strategies }: { strategies: FarmingStrategy[] })
     <div>
       <div className="mb-2 flex flex-wrap items-center gap-1.5 text-xs">
         <span className="text-ink-mute">Sort by</span>
-        {(
-          [
-            ["rank", "Tier list"],
-            ["investment", "Cheapest"],
-            ["risk", "Safest"],
-          ] as const
-        ).map(([key, label]) => (
-          <button
-            key={key}
-            type="button"
-            aria-pressed={sortKey === key}
-            onClick={() => setSortKey(key)}
-            className={`hit-area rounded-full border px-2.5 py-0.5 transition-colors ${
-              sortKey === key
-                ? "border-accent-line bg-accent-soft text-accent"
-                : "border-line text-ink-dim hover:text-ink"
-            }`}
-          >
-            {label}
-          </button>
-        ))}
+        <Segmented kind="toggle" label="Sort by" options={SORTS} value={sortKey} onChange={setSortKey} />
       </div>
-      <ol className="overflow-hidden rounded-xl border border-line bg-surface-raised shadow-[var(--lift)]">
+      <ol className="overflow-hidden border border-line bg-surface-raised shadow-[var(--lift)]">
         {sorted.map((strategy) => (
           <li key={strategy.id} className="border-b border-line last:border-b-0">
             <details id={strategy.id} className="group scroll-mt-40">

@@ -2,6 +2,7 @@
 
 import { MAX_TIER, planWaystones, type TierBand } from "@/lib/waystonePlan";
 import { useChecklistState } from "@/hooks/useChecklistState";
+import { Select } from "@/components/shared/controls";
 
 const BAND_STYLES: Record<TierBand, string> = {
   none: "border-line text-ink-mute",
@@ -18,16 +19,16 @@ export function WaystonePlanner() {
   return (
     <section
       id="waystone-planner"
-      data-surface="data" className="scroll-mt-28 rounded-xl card p-5"
+      data-surface="data" className="scroll-mt-28 card p-5"
     >
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h2 className="font-semibold text-ink">Waystone planner</h2>
         <label className="flex items-center gap-2 text-sm text-ink-dim">
           Highest tier completed
-          <select
+          <Select
             value={plan.highest}
             onChange={(e) => setHighestTier(Number(e.target.value))}
-            className="rounded-md border border-line bg-[var(--surface-sunken)] px-2 py-1 font-mono text-ink"
+            className="tabular"
           >
             <option value={0}>none yet</option>
             {Array.from({ length: MAX_TIER }, (_, i) => i + 1).map((t) => (
@@ -35,7 +36,7 @@ export function WaystonePlanner() {
                 T{t}
               </option>
             ))}
-          </select>
+          </Select>
         </label>
       </div>
 
@@ -44,7 +45,7 @@ export function WaystonePlanner() {
           <dt className="text-xs text-ink-mute">Run next</dt>
           <dd className="mt-1 flex items-center gap-2">
             <span
-              className={`rounded border px-2 py-0.5 font-mono font-semibold ${BAND_STYLES[plan.band]}`}
+              className={`border px-2 py-0.5 font-mono font-semibold ${BAND_STYLES[plan.band]}`}
             >
               T{plan.nextTier}
             </span>
@@ -84,7 +85,7 @@ export function WaystonePlanner() {
               <a
                 href={`#${gate.stepId}`}
                 title={gate.label}
-                className={`inline-flex items-center gap-1 rounded-md border px-2 py-1 text-xs transition-colors ${
+                className={`inline-flex items-center gap-1 border px-2 py-1 text-xs transition-colors ${
                   passed
                     ? "border-good/30 bg-good/10 text-[var(--good)]"
                     : "border-[var(--accent)]/50 bg-accent-soft text-[var(--accent)]"

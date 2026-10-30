@@ -6,8 +6,13 @@ import { PROXY_BASE } from '@/lib/proxy'
 import { useLocalStore } from '@/lib/localStore'
 import { recentCharacters } from '@/lib/recentCharacters'
 import { isOffline } from '@/lib/online'
+import { Button, Segmented } from './shared/controls'
 
 const EXAMPLE = 'https://poe.ninja/poe2/profile/Demonad112-2589/forbiddenrites/character/Yykiuy'
+const IMPORT_METHODS = [
+  { value: 'url', label: 'poe.ninja URL' },
+  { value: 'paste', label: 'Paste data' },
+] as const
 
 export type ImportResult =
   /** `url` is set when it came from a poe.ninja profile URL, so it can be re-imported. */
@@ -127,30 +132,18 @@ export function ImportBar({
   }
 
   return (
-    <div data-surface="data" className="card rounded-xl p-4 sm:p-5">
-      <div
-        className="mb-3 flex gap-1 text-xs"
-        role="tablist"
-        aria-label="Import method"
-      >
-        {(['url', 'paste'] as const).map((m) => (
-          <button
-            key={m}
-            role="tab"
-            aria-selected={mode === m}
-            type="button"
-            onClick={() => {
-              setMode(m)
-              setError(null)
-            }}
-            className={`rounded-md px-2.5 py-1 transition-colors ${
-              mode === m ? 'bg-surface-sunken text-ink' : 'text-ink-mute hover:text-ink-dim'
-            }`}
-          >
-            {m === 'url' ? 'poe.ninja URL' : 'Paste data'}
-          </button>
-        ))}
-      </div>
+    <div data-surface="data" className="card p-4 sm:p-5">
+      <Segmented
+        kind="tabs"
+        label="Import method"
+        options={IMPORT_METHODS}
+        value={mode}
+        onChange={(m) => {
+          setMode(m)
+          setError(null)
+        }}
+        className="mb-3"
+      />
 
       {mode === 'url' ? (
         <form onSubmit={importUrl} className="flex flex-col gap-2 sm:flex-row">
@@ -161,15 +154,11 @@ export function ImportBar({
             onChange={(e) => setUrl(e.target.value)}
             placeholder="https://poe.ninja/poe2/profile/Account-1234/league/character/Name"
             aria-label="poe.ninja character URL"
-            className="min-w-0 flex-1 rounded-lg border border-line bg-surface px-3 py-2.5 text-sm text-ink placeholder:text-ink-mute"
+            className="min-w-0 flex-1 border border-line bg-surface px-3 py-2.5 text-sm text-ink placeholder:text-ink-mute"
           />
-          <button
-            type="submit"
-            disabled={busy}
-            className="gold-surface rounded-lg px-4 py-2.5 text-sm font-bold transition-[filter] hover:brightness-110 disabled:opacity-50"
-          >
+          <Button type="submit" variant="primary" disabled={busy}>
             {busy ? 'Analysing…' : 'Analyse'}
-          </button>
+          </Button>
         </form>
       ) : (
         <form onSubmit={importPaste} className="flex flex-col gap-2">
@@ -179,15 +168,11 @@ export function ImportBar({
             rows={4}
             placeholder='Paste a character model JSON, or a Path of Building export code'
             aria-label="Character model JSON or Path of Building code"
-            className="w-full resize-y rounded-lg border border-line bg-surface px-3 py-2.5 font-mono text-xs text-ink placeholder:text-ink-mute"
+            className="w-full resize-y border border-line bg-surface px-3 py-2.5 font-mono text-xs text-ink placeholder:text-ink-mute"
           />
-          <button
-            type="submit"
-            disabled={busy}
-            className="self-start gold-surface rounded-lg px-4 py-2.5 text-sm font-bold transition-[filter] hover:brightness-110 disabled:opacity-50"
-          >
+          <Button type="submit" variant="primary" disabled={busy} className="self-start">
             Analyse pasted data
-          </button>
+          </Button>
         </form>
       )}
 
@@ -201,7 +186,7 @@ export function ImportBar({
               disabled={busy}
               onClick={() => void runImport(r.url)}
               title={r.url}
-              className="rounded-full border border-line px-2 py-0.5 text-ink-dim transition-colors hover:border-accent-line hover:text-ink disabled:opacity-50"
+              className="border border-line px-2 py-0.5 text-ink-dim transition-colors hover:border-accent-line hover:text-ink disabled:opacity-50"
             >
               {r.name}
               {r.level ? <span className="text-ink-mute"> · {r.level}</span> : null}
