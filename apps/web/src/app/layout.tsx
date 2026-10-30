@@ -3,6 +3,7 @@ import { EB_Garamond, Geist_Mono, Inter } from 'next/font/google'
 import './globals.css'
 import { ServiceWorker } from '@/components/ServiceWorker'
 import { NavBar } from '@/components/layout/NavBar'
+import { MobileTabBar } from '@/components/layout/MobileTabBar'
 import { Footer } from '@/components/layout/Footer'
 import { PatchVersionBanner } from '@/components/layout/PatchVersionBanner'
 import { CommandPalette } from '@/components/layout/CommandPalette'
@@ -94,6 +95,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <main id="main" className="shell relative flex-1 py-8 sm:py-12">
               {children}
             </main>
+            {/* Fixed to the bottom on phones; after main so focus goes header, main, tab bar. */}
+            <MobileTabBar />
             <Footer />
           </div>
           <CommandPalette />
