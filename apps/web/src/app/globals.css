@@ -721,38 +721,7 @@ main [id] {
     radial-gradient(ellipse 55% 50% at 22% 26%, color-mix(in srgb, var(--page) 62%, transparent), transparent 72%),
     radial-gradient(ellipse 120% 120% at 50% 50%, transparent 55%, color-mix(in srgb, var(--page) 70%, transparent) 100%);
 }
-/* Gold haze (W15): painted once, scaled to the sky disk by ConstellationSky and
-   turned here by the compositor at the far stars' rate (360 s / 0.88). */
-.sky-haze {
-  position: fixed;
-  inset: 0;
-  z-index: 0;
-  overflow: hidden;
-  pointer-events: none;
-}
-.sky-haze canvas {
-  position: absolute;
-  will-change: transform;
-  animation: sky-turn 409s linear infinite;
-}
-@keyframes sky-turn {
-  to {
-    transform: rotate(1turn);
-  }
-}
-@media (prefers-reduced-motion: reduce) {
-  .sky-haze canvas {
-    animation: none;
-  }
-}
-/* Lighter sky on phones. */
-@media (max-width: 699px) {
-  .sky-haze {
-    opacity: 0.7;
-  }
-}
 :root[data-theme='light'] .sky-canvas,
-:root[data-theme='light'] .sky-haze,
 :root[data-theme='light'] .sky-scrim {
   display: none;
 }
