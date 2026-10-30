@@ -2,9 +2,7 @@
 
 import { usePersistedState } from "@/hooks/usePersistedState";
 import { Gauge } from "@/components/shared/Gauge";
-
-// Count only ids that still exist, as the checklist and the tool cards do.
-const countIn = (ids: string[], saved: string[]) => ids.filter((id) => saved.includes(id)).length;
+import { countIn } from "@/lib/progressCount";
 
 /**
  * Totals come in as props (see `progressTotals`) rather than from the progress
