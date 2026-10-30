@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { importUrl } from '@/lib/recentCharacters'
+import { Button } from '@/components/shared/controls'
 
 /**
  * Shares the page's `?import=` link: the share sheet on phones, the clipboard
@@ -28,13 +29,9 @@ export function CopyLink({ url, name }: { url: string; name: string }) {
 
   return (
     <div className="flex items-center gap-2">
-      <button
-        type="button"
-        onClick={() => void share()}
-        className="border border-line px-2.5 py-1 text-xs text-ink-dim transition-colors hover:border-accent-line hover:text-ink"
-      >
+      <Button size="sm" onClick={() => void share()}>
         Copy link
-      </button>
+      </Button>
       <span role="status" aria-live="polite" className="text-[11px] text-ink-mute">
         {status}
       </span>

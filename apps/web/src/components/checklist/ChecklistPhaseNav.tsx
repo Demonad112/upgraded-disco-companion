@@ -16,7 +16,7 @@ export function ChecklistPhaseNav() {
   return (
     <nav
       aria-label="Checklist phases"
-      className="sticky top-[var(--nav-h)] z-10 -mx-4 flex items-center gap-1.5 border-b border-line bg-surface/95 px-4 py-2 backdrop-blur-md sm:mx-0 sm:border"
+      className="sticky top-[var(--nav-h)] z-10 -mx-4 flex items-center gap-1.5 border-b border-line bg-surface/95 px-4 py-2 sm:mx-0 sm:border sm:backdrop-blur-md"
     >
       <ScrollFade className="flex min-w-0 flex-1 items-center gap-1.5 sm:flex-wrap">
       {stepsByPhase.map(({ phase, steps }, i) => {

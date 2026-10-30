@@ -23,6 +23,7 @@ import { CharacterNotes } from '@/components/character/CharacterNotes'
 import { ChangedSincePanel } from '@/components/character/ChangedSincePanel'
 import { CompareCharacters } from '@/components/character/CompareCharacters'
 import { CopyLink } from '@/components/character/CopyLink'
+import { ShareCard } from '@/components/character/ShareCard'
 import { useShoppingList } from '@/hooks/useShoppingList'
 import { attributesFrom } from '@/lib/attributes'
 import { Headroom } from '@/components/Headroom'
@@ -269,7 +270,10 @@ export default function Home() {
             <ScrollSpyNav label="On this page" items={SECTIONS} />
 
             <Section id="overview" title="Overview">
-              <CharacterVerdict analysis={a}>{sourceUrl ? <CopyLink url={sourceUrl} name={a.identity.name} /> : null}</CharacterVerdict>
+              <CharacterVerdict analysis={a}>
+                {sourceUrl ? <CopyLink url={sourceUrl} name={a.identity.name} /> : null}
+                <ShareCard analysis={a} sourceUrl={sourceUrl} />
+              </CharacterVerdict>
               {a.warnings.map((w) => (
                 <p key={w} data-surface="data" className="card border-warn/50 text-xs leading-relaxed text-warn">
                   {w}

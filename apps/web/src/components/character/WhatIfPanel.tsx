@@ -19,6 +19,7 @@ import {
 } from '@poe2/core'
 import { Panel, Tag, fmt } from '../ui'
 import { Button, Range } from '../shared/controls'
+import { CountUp } from '../shared/CountUp'
 
 type ResType = 'fire' | 'cold' | 'lightning' | 'chaos'
 const TYPES: ResType[] = ['fire', 'cold', 'lightning', 'chaos']
@@ -32,6 +33,8 @@ const SLIDER_MIN = -60
 const SLIDER_MAX = 90
 
 const RES_STAT = /^(fire|cold|lightning|chaos)Resistance$/
+
+const fmtDefence = (n: number | null) => (n === null ? '—' : n.toFixed(2))
 
 /** The headline grade; a range when damage could not be graded. */
 function grade(a: BuildAssessment): string {
@@ -60,7 +63,7 @@ function Delta({ before, after, format = fmt }: { before: number | null; after: 
       {changed ? (
         <>
           <span className="text-ink-mute"> → </span>
-          <span className="font-semibold text-accent">{format(after)}</span>
+          <CountUp value={after} from={before} format={format} className="font-semibold text-accent" />
         </>
       ) : null}
     </span>
@@ -118,7 +121,8 @@ export function WhatIfPanel({ analysis, options }: { analysis: Analysis; options
     }
   }, [analysis, options, overrides, key, changed])
 
-  const after = changed && result?.key === key ? result.analysis : analysis
+  // While a new estimate runs, keep showing the last one rather than dropping back to the character's own numbers.
+  const after = changed && result ? result.analysis : analysis
   const pending = changed && result?.key !== key
   const d0 = analysis.defense
   const d1 = after.defense
@@ -128,6 +132,7 @@ export function WhatIfPanel({ analysis, options }: { analysis: Analysis; options
   const reset = () => {
     setVals(base)
     setTicked(new Set())
+    setResult(null)
   }
 
   return (
@@ -198,11 +203,17 @@ export function WhatIfPanel({ analysis, options }: { analysis: Analysis; options
                   {grade(analysis.assessment)}
                 </span>
                 {grade(analysis.assessment) !== grade(after.assessment) ? (
-                  <span className="text-accent"> → {grade(after.assessment)}</span>
+                  <>
+                    <span className="text-accent"> → </span>
+                    {/* Keyed on the letter: the pulse plays each time the grade crosses a boundary, not on every move. */}
+                    <span key={grade(after.assessment)} className="whatif-pulse text-accent">
+                      {grade(after.assessment)}
+                    </span>
+                  </>
                 ) : null}
               </div>
               <div className="text-[11px] text-ink-mute tabular">
-                {after.assessment.defence.toFixed(2)} / 0.50 defence
+                <CountUp value={after.assessment.defence} format={fmtDefence} /> / 0.50 defence
               </div>
             </div>
             <div className="border border-line bg-surface-sunken p-3">
@@ -221,8 +232,19 @@ export function WhatIfPanel({ analysis, options }: { analysis: Analysis; options
               return (
                 <li key={h.type} className="flex items-center gap-2">
                   <span className="w-20 capitalize text-ink-dim">{h.type}</span>
-                  <span className="h-1.5 flex-1 bg-surface-sunken">
-                    <span className={`block h-full ${COLOR[h.type as ResType] ?? 'bg-physical'}`} style={{ width: `${(h.value / widest) * 100}%` }} />
+                  <span className="relative h-1.5 flex-1 bg-surface-sunken">
+                    <span
+                      className={`block h-full transition-[width] duration-200 ease-out ${COLOR[h.type as ResType] ?? 'bg-physical'}`}
+                      style={{ width: `${(h.value / widest) * 100}%` }}
+                    />
+                    {/* Where the bar started, so the move stays readable after the numbers settle. */}
+                    {was !== null && was !== h.value ? (
+                      <span
+                        aria-hidden
+                        className="whatif-ghost"
+                        style={{ left: `${Math.min(100, (was / widest) * 100)}%` }}
+                      />
+                    ) : null}
                   </span>
                   <span className="w-28 text-right font-mono">
                     <Delta before={was} after={h.value} />

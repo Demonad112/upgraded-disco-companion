@@ -10,7 +10,7 @@
 
 import { chromium } from 'playwright'
 import { watchConsole } from './console-errors.mjs'
-import { readFileSync, mkdirSync, existsSync } from 'node:fs'
+import { readFileSync, readdirSync, mkdirSync, existsSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { dirname, join } from 'node:path'
 
@@ -29,7 +29,19 @@ const VIEWPORTS = [
 // Prefer the environment's preinstalled Chromium when present: its build number
 // may not match whatever playwright version npm resolved, and downloading a
 // second copy is wasteful. CHROMIUM_PATH overrides for other machines.
-const explicitPath = process.env.CHROMIUM_PATH ?? '/opt/pw-browsers/chromium-1194/chrome-linux/chrome'
+// The build number in the folder name changes with the image, so look for whichever is installed.
+function preinstalledChromium() {
+  const root = '/opt/pw-browsers'
+  if (!existsSync(root)) return null
+  for (const dir of readdirSync(root).filter((d) => /^chromium-\d+$/.test(d)).sort((a, b) => Number(b.slice(9)) - Number(a.slice(9)))) {
+    for (const sub of ['chrome-linux64', 'chrome-linux']) {
+      const bin = join(root, dir, sub, 'chrome')
+      if (existsSync(bin)) return bin
+    }
+  }
+  return null
+}
+const explicitPath = process.env.CHROMIUM_PATH ?? preinstalledChromium() ?? ''
 const browser = await chromium.launch(
   existsSync(explicitPath) ? { executablePath: explicitPath } : {},
 )

@@ -15,6 +15,7 @@ export const glossary: GlossaryTerm[] = [
   },
   {
     id: "g-powerful-boss",
+    matches: ["Powerful Map Boss", "Powerful boss"],
     term: "Powerful Map Boss",
     definition:
       "A map node with a red demon icon. Its boss drops a Waystone one tier higher — the only way up besides the 3→1 reforge bench.",
@@ -22,6 +23,7 @@ export const glossary: GlossaryTerm[] = [
   },
   {
     id: "g-reforge",
+    matches: ["reforging bench", "reforge bench"],
     term: "Reforging bench (3→1)",
     definition:
       "Unlocked by an Act 3 quest. Three Waystones of one tier become one of the next tier.",
@@ -29,6 +31,7 @@ export const glossary: GlossaryTerm[] = [
   },
   {
     id: "g-tablet",
+    matches: ["Precursor Tablet", "Tablet"],
     term: "Tablet (Precursor Tablet)",
     definition:
       "Socketed into a Waystone to add a mechanic or bonus to that map. Slots: magic Waystone 1, rare with 3+ mods 2, six mods 3. Tablet mods are pure upside, unlike Waystone mods.",
@@ -42,6 +45,7 @@ export const glossary: GlossaryTerm[] = [
   },
   {
     id: "g-atlas-points",
+    matches: ["Atlas passive point", "Atlas point"],
     term: "Atlas passive points",
     definition:
       "Spent on the Atlas tree to buff maps. They can't be refunded. Fortress maps, wall towers and mechanic quest lines give them; in 0.5.5 the second Arbiter of Divinity kill unlocks the rest at once.",
@@ -49,6 +53,7 @@ export const glossary: GlossaryTerm[] = [
   },
   {
     id: "g-fortress",
+    matches: ["Precursor Fortress"],
     term: "Precursor Fortress",
     definition:
       "The walled region at the centre of the Atlas holding the main quest: Ancient Gateway, Burning Monolith, East/West Gateways, Enigma Chambers and the Origin Tower.",
@@ -56,6 +61,7 @@ export const glossary: GlossaryTerm[] = [
   },
   {
     id: "g-crisis-fragment",
+    matches: ["Crisis Fragment"],
     term: "Crisis Fragments",
     definition:
       "Ancient, Faded and Weathered — the three keys for the Arbiter of Ash. The quest gives you two from the Enigma Chambers; the non-quest fight needs all three from Citadels or the exchange.",
@@ -69,6 +75,7 @@ export const glossary: GlossaryTerm[] = [
   },
   {
     id: "g-origin-core",
+    matches: ["Origin Core"],
     term: "Origin Core (Cradle + Spark)",
     definition:
       "The key for the Arbiter of Divinity: an Origin Cradle from a Matriarch Hall plus an Origin Spark from a Patriarch Hall. A non-quest Core (Halls outside the Fortress) is what unlocks the full Atlas.",
@@ -76,6 +83,7 @@ export const glossary: GlossaryTerm[] = [
   },
   {
     id: "g-masters",
+    matches: [],
     term: "Masters (Doryani, Hilda, Jado)",
     definition:
       "Three NPCs with their own point trees. You pick one Master per map setup: Hilda for boss rushes and Omen Abyss, Jado for unique and Lineage hunts, Doryani for safety and biome control.",
@@ -90,6 +98,7 @@ export const glossary: GlossaryTerm[] = [
   },
   {
     id: "g-anomaly",
+    matches: ["Anomaly map"],
     term: "Anomaly map",
     definition:
       "Jado's special maps (e.g. Jade Isles). Take the Lineage Support drop nodes before running them.",
@@ -97,6 +106,7 @@ export const glossary: GlossaryTerm[] = [
   },
   {
     id: "g-barya",
+    matches: ["Djinn Barya", "Barya"],
     term: "Djinn Barya",
     definition:
       "The key for the Trial of the Sekhemas (Ascendancy points). Its level and trial count come from where it dropped; the lowest 4-trial Barya is level 75.",
@@ -104,6 +114,7 @@ export const glossary: GlossaryTerm[] = [
   },
   {
     id: "g-honour",
+    matches: ["Honour", "Honor"],
     term: "Honour",
     definition:
       "The Trial of the Sekhemas' second health bar — run out and the trial fails. Relics with Honour Resistance (aim for 75%) protect it.",
@@ -124,6 +135,7 @@ export const glossary: GlossaryTerm[] = [
   },
   {
     id: "g-deliriousness",
+    matches: ["Deliriousness", "Grand Mirror"],
     term: "Deliriousness / Grand Mirror",
     definition:
       "Delirium fog raises a map's Deliriousness; at 100% maps count toward the Simulacrum. A Grand Mirror (kill the boss and its mirrored copy) spreads fog to 10 nearby maps in 0.5.5.",
@@ -131,6 +143,7 @@ export const glossary: GlossaryTerm[] = [
   },
   {
     id: "g-juice",
+    matches: ["juicing", "juiced", "juice"],
     term: "Juice / juicing",
     definition:
       "Stacking Waystone mods, tablets and Atlas passives to make a map more rewarding. Pointless before your Atlas is unlocked — boss-rush until then.",
@@ -138,6 +151,7 @@ export const glossary: GlossaryTerm[] = [
   },
   {
     id: "g-revive",
+    matches: ["revive"],
     term: "Revives / portals",
     definition:
       "Each map starts with 6 portals; every Waystone modifier removes one. Dying to the map boss resets it to full life and empties the rest of the map.",
