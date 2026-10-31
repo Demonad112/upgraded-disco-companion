@@ -1,4 +1,12 @@
-import type { ButtonHTMLAttributes, CSSProperties, InputHTMLAttributes, KeyboardEvent, ReactNode, SelectHTMLAttributes } from 'react'
+import type {
+  ButtonHTMLAttributes,
+  CSSProperties,
+  InputHTMLAttributes,
+  KeyboardEvent,
+  ReactNode,
+  SelectHTMLAttributes,
+  TextareaHTMLAttributes,
+} from 'react'
 import { ScrollFade } from './ScrollFade'
 
 /*
@@ -9,6 +17,16 @@ import { ScrollFade } from './ScrollFade'
 /** Native select: no platform chevron, a square gold one drawn in CSS, button height. */
 export function Select({ className = '', ...rest }: SelectHTMLAttributes<HTMLSelectElement>) {
   return <select className={`select ${className}`} {...rest} />
+}
+
+/** Text field on the select's box model: same height, line, fill and focus ring. */
+export function Input({ className = '', ...rest }: InputHTMLAttributes<HTMLInputElement>) {
+  return <input className={`input ${className}`} {...rest} />
+}
+
+/** Multi-line `Input`: the same box, padded top and bottom, resizable in height only. */
+export function Textarea({ className = '', ...rest }: TextareaHTMLAttributes<HTMLTextAreaElement>) {
+  return <textarea className={`input input-area ${className}`} {...rest} />
 }
 
 type Variant = 'primary' | 'secondary' | 'ghost' | 'danger'

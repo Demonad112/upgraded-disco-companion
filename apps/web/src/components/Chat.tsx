@@ -40,7 +40,7 @@ import {
 } from '@poe2/core'
 import { readChatSettings, writeChatSettings } from '../lib/chatSettings'
 import { Panel, Tag } from './ui'
-import { Button } from './shared/controls'
+import { Button, Input, Segmented } from './shared/controls'
 
 const PROXY = (process.env.NEXT_PUBLIC_CHAT_PROXY_BASE || '').replace(/\/+$/, '')
 
@@ -142,31 +142,33 @@ export function Chat({ analysis, pob }: { analysis?: Analysis; pob?: PobAnalysis
             the repository would end up readable in the published bundle.
           </p>
 
-          <div className="mt-3 flex flex-wrap gap-1">
-            {Object.values(PROVIDERS).map((p) => (
-              <button
-                key={p.id}
-                type="button"
-                onClick={() => persist(apiKey, p.id)}
-                className={`px-2 py-1 text-[11px] ${
-                  provider === p.id ? 'bg-surface-raised text-ink' : 'text-ink-mute hover:text-ink-dim'
-                }`}
-              >
-                {p.label}
-                {p.hasFreeTier ? <span className="ml-1 text-good">free tier</span> : null}
-              </button>
-            ))}
-          </div>
+          <Segmented
+            kind="toggle"
+            label="Provider"
+            scroll
+            className="mt-3"
+            options={Object.values(PROVIDERS).map((p) => ({
+              value: p.id,
+              label: (
+                <>
+                  {p.label}
+                  {p.hasFreeTier ? <span className="text-good">free tier</span> : null}
+                </>
+              ),
+            }))}
+            value={provider}
+            onChange={(id) => persist(apiKey, id)}
+          />
 
           <label className="mt-3 block">
             <span className="text-[11px] text-ink-mute">{spec.label} API key</span>
-            <input
+            <Input
               type="password"
               value={apiKey}
               onChange={(e) => persist(e.target.value, provider)}
               placeholder={PROXY ? 'Not needed — a proxy is configured' : 'Paste your key'}
               disabled={Boolean(PROXY)}
-              className="mt-1 w-full border border-line bg-surface px-2 py-1.5 text-xs text-ink disabled:opacity-50"
+              className="mt-1"
               autoComplete="off"
               spellCheck={false}
             />
@@ -211,14 +213,9 @@ export function Chat({ analysis, pob }: { analysis?: Analysis; pob?: PobAnalysis
         <ul className="mb-3 flex flex-wrap gap-1.5">
           {SUGGESTIONS.map((s) => (
             <li key={s}>
-              <button
-                type="button"
-                onClick={() => send(s)}
-                disabled={busy}
-                className="border border-line px-2.5 py-1 text-[11px] text-ink-dim hover:text-ink disabled:opacity-50"
-              >
+              <Button size="sm" onClick={() => send(s)} disabled={busy} className="font-medium whitespace-normal text-ink-dim">
                 {s}
-              </button>
+              </Button>
             </li>
           ))}
         </ul>
@@ -236,14 +233,14 @@ export function Chat({ analysis, pob }: { analysis?: Analysis; pob?: PobAnalysis
         }}
         className="flex gap-2"
       >
-        <input
+        <Input
           value={input}
           onChange={(e) => setInput(e.target.value)}
           placeholder="Ask about this character…"
           aria-label="Ask about this character"
-          className="min-w-0 flex-1 border border-line bg-surface px-3 py-2 text-xs text-ink"
+          className="flex-1"
         />
-        <Button type="submit" variant="primary" size="sm" disabled={busy || !input.trim()} className="shrink-0">
+        <Button type="submit" variant="primary" disabled={busy || !input.trim()} className="shrink-0">
           Ask
         </Button>
       </form>

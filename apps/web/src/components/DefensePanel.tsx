@@ -74,21 +74,38 @@ function Meter({ r }: { r: DefenseSummary['resistances'][number] }) {
   )
 }
 
+/* The Resistances / Largest hit pair stretches to one height (grid default); each card's footer is pushed to the
+   bottom with a rule, so the two footers line up (UI-PLAN U10). */
+const PAIR_CARD = 'card flex flex-col'
+const PAIR_FOOTER = 'mt-auto border-t border-line pt-3'
+
 function ResistanceMeters({ d }: { d: DefenseSummary }) {
+  // The same over-cap figure the Overview's Spare to trade lists.
+  const spare = d.resistances.filter((r) => r.value !== null && r.overCap !== null && r.overCap > 0)
   return (
-    <section data-surface="data" className="card" aria-label="Resistances">
+    <section data-surface="data" className={PAIR_CARD} aria-label="Resistances">
       <h3 className="h3">Resistances</h3>
-      <ul className="mt-4 space-y-4">
+      <ul className="mt-4 mb-4 space-y-4">
         {d.resistances.map((r) => (
           <Meter key={r.type} r={r} />
         ))}
       </ul>
-      <ul className="mt-4 flex flex-wrap gap-x-4 gap-y-1 text-[11px] text-ink-mute">
-        <li>White tick: cap</li>
-        <li>Hatched: over cap</li>
-        <li>Dashed: shortfall to cap</li>
-        <li>Scale: 0–{RES_SCALE}%</li>
-      </ul>
+      <div className={PAIR_FOOTER}>
+        <p className="text-xs leading-relaxed text-ink-dim">
+          <span className="label-field">Spare to trade</span>{' '}
+          {spare.length ? (
+            <span className="tabular font-mono">{spare.map((r) => `${cap(r.type)} +${r.overCap}`).join(' · ')}</span>
+          ) : (
+            'none, nothing is over its cap'
+          )}
+        </p>
+        <ul className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-[11px] text-ink-mute">
+          <li>White tick: cap</li>
+          <li>Hatched: over cap</li>
+          <li>Dashed: shortfall to cap</li>
+          <li>Scale: 0–{RES_SCALE}%</li>
+        </ul>
+      </div>
     </section>
   )
 }
@@ -103,9 +120,9 @@ function LargestHit({ d }: { d: DefenseSummary }) {
   const res = new Map(d.resistances.map((r) => [r.type as string, r]))
   const ehpAt = d.effectiveHealthPool !== null ? `${(d.effectiveHealthPool / scale) * 100}%` : null
   return (
-    <section data-surface="data" className="card" aria-label="Largest hit you survive">
+    <section data-surface="data" className={PAIR_CARD} aria-label="Largest hit you survive">
       <h3 className="h3">Largest hit you survive</h3>
-      <ul className="mt-4 space-y-4">
+      <ul className="mt-4 mb-4 space-y-4">
         {hits.map((h) => {
           const r = res.get(h.type)
           const note =
@@ -149,7 +166,7 @@ function LargestHit({ d }: { d: DefenseSummary }) {
           )
         })}
       </ul>
-      <p className="mt-4 text-xs leading-relaxed text-ink-mute">
+      <p className={`${PAIR_FOOTER} text-xs leading-relaxed text-ink-mute`}>
         Dashed gold line: effective health pool{d.effectiveHealthPool !== null ? ` (${fmt(d.effectiveHealthPool)})` : ' (unknown)'}. Max hit
         = pool / (1 − effective resistance), as poe.ninja computes it. Scale 0–{fmt(scale)}.
       </p>

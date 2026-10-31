@@ -10,7 +10,7 @@
  */
 
 import { useSyncExternalStore, type ReactNode } from 'react'
-import { auditSpirit, dataAge, type Analysis } from '@poe2/core'
+import { auditSpirit, dataAge, type Analysis, type BuildAssessment, type BuildTier } from '@poe2/core'
 import { Tag, fmt, fmtCompact } from '@/components/ui'
 import { gradeText } from '@/components/BuildScore'
 import { cap } from './dmg'
@@ -29,6 +29,37 @@ function Tile({ label, value, caption, title }: { label: string; value: string; 
     </div>
   )
 }
+
+const LADDER: readonly BuildTier[] = ['D', 'C', 'B', 'A']
+
+/** The grade letters worst to best, with the letter (or every letter of a `D–B` range) lit. The letter above says it in words. */
+function GradeLadder({ assessment }: { assessment: BuildAssessment }) {
+  const lo = assessment.tier ?? assessment.tierRange?.worst
+  const hi = assessment.tier ?? assessment.tierRange?.best
+  if (!lo || !hi) return null
+  const [from, to] = [LADDER.indexOf(lo), LADDER.indexOf(hi)]
+  return (
+    <ol aria-hidden className="mt-3 inline-flex gap-1" data-grade-ladder>
+      {LADDER.map((l, i) => {
+        const lit = i >= from && i <= to
+        return (
+          <li
+            key={l}
+            data-lit={lit || undefined}
+            className={`grid size-7 place-items-center border font-display text-sm font-bold ${
+              lit ? 'border-accent bg-accent-soft text-accent' : 'border-line text-ink-mute'
+            }`}
+          >
+            {l}
+          </li>
+        )
+      })}
+    </ol>
+  )
+}
+
+/** Opens the "Why this grade" disclosure before the fragment link scrolls to it. */
+const openAssessment = () => document.getElementById('assessment')?.setAttribute('open', '')
 
 export function CharacterVerdict({ analysis, children }: { analysis: Analysis; children?: ReactNode }) {
   const { identity, defense, dps, pobStats, assessment, recommendations } = analysis
@@ -74,14 +105,20 @@ export function CharacterVerdict({ analysis, children }: { analysis: Analysis; c
           {grade ? (
             <>
               <div className="font-display text-[72px] leading-none font-bold text-gradient-gold min-[621px]:text-[88px]">{grade.letter}</div>
-              <div className="tabular font-mono text-sm text-ink-dim">{grade.score}</div>
+              <GradeLadder assessment={assessment} />
+              <div className="tabular mt-1.5 font-mono text-sm text-ink-dim">{grade.score}</div>
             </>
           ) : (
             <div className="label-metric">Grade unknown</div>
           )}
         </div>
       </div>
-      <p className="mt-3 max-w-prose text-sm leading-relaxed text-ink-dim">{assessment.note}</p>
+      <p className="mt-3 max-w-prose text-sm leading-relaxed text-ink-dim">
+        {assessment.note}{' '}
+        <a href="#assessment" onClick={openAssessment} className="whitespace-nowrap text-accent">
+          Why this grade
+        </a>
+      </p>
 
       {weakest ? (
         <div className="mt-5 border border-line bg-sunken/65 p-4">

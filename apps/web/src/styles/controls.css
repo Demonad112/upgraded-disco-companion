@@ -1,4 +1,4 @@
-/* U4 controls kit (UI-PLAN U4): Select, Segmented, Range, Button, and the one focus ring.
+/* U4 controls kit (UI-PLAN U4): Select, Input, Segmented, Range, Button, and the one focus ring.
    Components: components/shared/controls.tsx. Values come from tokens.css.
 
    Class rules sit in the components layer, like the rest of the shared finishes, so a Tailwind utility on the same
@@ -52,6 +52,46 @@
   .select option {
     background: var(--raised);
     color: var(--ink);
+  }
+
+  /* --- Input -------------------------------------------------------------------
+     The select's box without the chevron: 44 px, 1 px strong line, sunken fill. The global tap rule does not cover
+     inputs, so the height is set here. */
+  .input {
+    width: 100%;
+    min-width: 0;
+    min-height: var(--tap-min);
+    padding: 0 12px;
+    border: 1px solid var(--line-strong);
+    background-color: color-mix(in srgb, var(--sunken) 70%, transparent);
+    color: var(--ink);
+    color-scheme: dark;
+    font-size: 14px;
+    line-height: 1.3;
+    text-shadow: none;
+    transition: border-color 0.15s ease;
+  }
+  .input::placeholder {
+    color: var(--ink-mute);
+    opacity: 1;
+  }
+  .input:hover:not(:disabled) {
+    border-color: var(--accent-line);
+  }
+  .input:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  .input-area {
+    display: block;
+    padding-block: 10px;
+    resize: vertical;
+  }
+  /* Phones zoom the page into any field set under 16 px when it takes focus. */
+  @media (max-width: 720px) {
+    .input {
+      font-size: 16px;
+    }
   }
 
   /* --- Button ------------------------------------------------------------------ */
@@ -231,6 +271,37 @@
   }
 }
 
+/* Section tab bar (.bar.idx in globals.css; ScrollSpyNav): one gold underline that slides between links, and a count
+   chip. Unlayered, like the bar's own rules. Once the bar is measured (data-ink) the links stop drawing their own line. */
+.bar.idx .idx-ink {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 2px;
+  background: var(--accent);
+  pointer-events: none;
+  transition:
+    transform 0.25s ease,
+    width 0.25s ease;
+}
+.bar.idx[data-ink] a[aria-current='true'] {
+  border-bottom-color: transparent;
+}
+.bar.idx .idx-count {
+  margin-left: 0.45rem;
+  font-size: 10.5px;
+  letter-spacing: 0;
+  color: var(--ink-mute);
+}
+.bar.idx a[aria-current='true'] .idx-count {
+  color: var(--accent);
+}
+@media (prefers-reduced-motion: reduce) {
+  .bar.idx .idx-ink {
+    transition: none;
+  }
+}
+
 /* Forced colours (Windows High Contrast): the active segment is a fill plus an inset shadow, and both are stripped.
    Mark it with a system-colour edge and highlight colours instead; the range fill gets the same treatment. */
 @media (forced-colors: active) {
@@ -248,6 +319,10 @@
   }
   .btn-primary {
     border-color: ButtonText;
+  }
+  .bar.idx .idx-ink {
+    background: Highlight;
+    forced-color-adjust: none;
   }
   .range::-webkit-slider-runnable-track {
     background: linear-gradient(90deg, Highlight var(--range-pct, 0%), GrayText var(--range-pct, 0%));
