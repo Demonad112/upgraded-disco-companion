@@ -29,11 +29,11 @@ export function ChecklistTools() {
         onChange={setTool}
         className="mb-2 lg:hidden"
       />
-      <div className="grid gap-4 lg:grid-cols-2">
-        <div className={tool === "waystones" ? "" : "hidden lg:block"}>
+      <div className="grid items-stretch gap-4 lg:grid-cols-2">
+        <div className={`*:h-full ${tool === "waystones" ? "" : "hidden lg:block"}`}>
           <WaystonePlanner />
         </div>
-        <div className={tool === "ready" ? "" : "hidden lg:block"}>
+        <div className={`*:h-full ${tool === "ready" ? "" : "hidden lg:block"}`}>
           <ReadinessPanel />
         </div>
       </div>
