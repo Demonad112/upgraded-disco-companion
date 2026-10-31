@@ -97,7 +97,7 @@ export function AtlasGuideTabs() {
               Main-path allocation order, before and after the Arbiter of Ash and Divinity kills. The numbers are the
               order to take them in — tap <span className="text-accent">Map</span> to see where each one is.
             </Intro>
-            <ul className="grid gap-2">
+            <ul className="grid grid-cols-[minmax(0,1fr)] gap-2">
               {early.map((c) => (
                 <ClusterNode key={c.id} cluster={c} />
               ))}
@@ -131,7 +131,7 @@ export function AtlasGuideTabs() {
         {tab === "late" ? (
           <>
             <Intro>Once the main path is done: where the rest of your points go.</Intro>
-            <ul className="grid gap-2">
+            <ul className="grid grid-cols-[minmax(0,1fr)] gap-2">
               {general.map((c) => (
                 <ClusterNode key={c.id} cluster={c} />
               ))}

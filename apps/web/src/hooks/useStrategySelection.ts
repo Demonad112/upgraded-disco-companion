@@ -22,6 +22,13 @@ export function useStrategySelection() {
     [setState]
   );
 
+  const resetQuiz = useCallback(() => {
+    setState((prev) => ({
+      ...prev,
+      dashboard: { ...prev.dashboard, lastQuizAnswers: {} },
+    }));
+  }, [setState]);
+
   const pinStrategy = useCallback(
     (strategyId: string | undefined) => {
       setState((prev) => ({
@@ -36,6 +43,7 @@ export function useStrategySelection() {
     quizAnswers: state.dashboard.lastQuizAnswers,
     pinnedStrategyId: state.dashboard.pinnedStrategyId,
     setQuizAnswer,
+    resetQuiz,
     pinStrategy,
   };
 }

@@ -6,7 +6,7 @@ import { scoreStrategies, type QuizAnswers } from "@/lib/quiz";
 import { useStrategySelection } from "@/hooks/useStrategySelection";
 import { StrategyCard } from "./StrategyCard";
 import type { InvestmentTier, RiskTier } from "@/lib/types";
-import { Select } from "@/components/shared/controls";
+import { Button, Select } from "@/components/shared/controls";
 
 const BUDGET_OPTIONS: { value: InvestmentTier; label: string }[] = [
   { value: "low", label: "Low — a few Divines" },
@@ -26,10 +26,12 @@ const STAGE_OPTIONS = [
 ] as const;
 
 export function StrategyQuiz() {
-  const { quizAnswers, setQuizAnswer } = useStrategySelection();
+  const { quizAnswers, setQuizAnswer, resetQuiz } = useStrategySelection();
   const budget = quizAnswers.budget as InvestmentTier | undefined;
   const tankiness = quizAnswers.tankiness as RiskTier | undefined;
   const stage = quizAnswers.stage as QuizAnswers["stage"];
+
+  const answered = Boolean(budget || tankiness || stage);
 
   const recommended = useMemo(() => {
     if (!budget && !tankiness && !stage) return [];
@@ -41,7 +43,7 @@ export function StrategyQuiz() {
 
   return (
     <div className="flex flex-col gap-5 border border-line bg-surface-sunken p-5">
-      <div className="grid gap-4 sm:grid-cols-3">
+      <div className="grid grid-cols-[minmax(0,1fr)] gap-4 sm:grid-cols-3">
         <QuizSelect
           label="Budget"
           value={quizAnswers.budget}
@@ -61,6 +63,14 @@ export function StrategyQuiz() {
           onChange={(v) => setQuizAnswer("stage", v)}
         />
       </div>
+
+      {answered ? (
+        <div className="-mt-2 flex justify-end">
+          <Button variant="ghost" size="sm" onClick={resetQuiz}>
+            Reset
+          </Button>
+        </div>
+      ) : null}
 
       {recommended.length > 0 && (
         <div>
@@ -92,7 +102,7 @@ function QuizSelect({
   onChange: (value: string) => void;
 }) {
   return (
-    <label className="flex flex-col gap-1.5 text-sm">
+    <label className="flex min-w-0 flex-col gap-1.5 text-sm">
       <span className="font-medium text-ink-mute">{label}</span>
       <Select value={value ?? ""} onChange={(e) => onChange(e.target.value)}>
         <option value="" disabled>

@@ -59,7 +59,7 @@ export function MechanicSubTreeList({ clusters, initial }: { clusters: AtlasClus
         run this mechanic&apos;s own tablets while questing it — it slows down
         finishing the quest.
       </p>
-      <ul className="space-y-2">
+      <ul className="grid grid-cols-[minmax(0,1fr)] gap-2">
         {activeNodes.map((cluster) => (
           <ClusterNode key={cluster.id} cluster={cluster} />
         ))}

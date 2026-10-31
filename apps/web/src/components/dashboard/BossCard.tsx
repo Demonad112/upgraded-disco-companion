@@ -8,6 +8,8 @@ import { SourceFlag } from "@/components/shared/SourceFlag";
  * written out in full they made the dashboard a wall of text on a phone.
  */
 export function BossCard({ boss }: { boss: PinnacleBoss }) {
+  const fragmentTotal = boss.fragmentCost.reduce((n, f) => n + f.quantity, 0);
+  const steps = boss.gatingRequirements.length;
   const detail = boss.gatingRequirements.length > 0 || Boolean(boss.notes);
   return (
     <details
@@ -31,6 +33,22 @@ export function BossCard({ boss }: { boss: PinnacleBoss }) {
             </svg>
           ) : null}
         </div>
+        {fragmentTotal > 0 || steps > 0 ? (
+          <div className="stat-tiles">
+            {fragmentTotal > 0 ? (
+              <div className="stat-tile">
+                <span className="label-metric">Fragments</span>
+                <span className="stat-tile-v tabular">{fragmentTotal}</span>
+              </div>
+            ) : null}
+            {steps > 0 ? (
+              <div className="stat-tile">
+                <span className="label-metric">Unlock steps</span>
+                <span className="stat-tile-v tabular">{steps}</span>
+              </div>
+            ) : null}
+          </div>
+        ) : null}
         {boss.hpFloor ? <p className="text-xs text-ink-mute">HP floor: {boss.hpFloor}</p> : null}
         {boss.fragmentCost.length > 0 ? (
           <ul className="space-y-1">

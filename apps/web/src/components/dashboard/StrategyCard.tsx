@@ -5,12 +5,7 @@ import { Tag } from "@/components/shared/Tag";
 import { SourceFlag } from "@/components/shared/SourceFlag";
 import { useStrategySelection } from "@/hooks/useStrategySelection";
 import { StrategyTierBadge } from "./StrategyTable";
-
-const TIER_STYLES: Record<string, string> = {
-  low: "text-[var(--good)]",
-  medium: "text-accent",
-  high: "text-danger",
-};
+import { LevelPill } from "@/components/shared/Pill";
 
 export function StrategyCard({ strategy }: { strategy: FarmingStrategy }) {
   const { pinnedStrategyId, pinStrategy } = useStrategySelection();
@@ -53,17 +48,9 @@ export function StrategyCard({ strategy }: { strategy: FarmingStrategy }) {
       <p className="text-sm text-ink-mute">{strategy.atlasSetup}</p>
       <p className="text-sm text-ink-dim">{strategy.expectedReturn}</p>
 
-      <div className="mt-1 flex flex-wrap items-center gap-3 text-xs">
-        <span>
-          Investment:{" "}
-          <span className={TIER_STYLES[strategy.investment]}>
-            {strategy.investment}
-          </span>
-        </span>
-        <span>
-          Risk:{" "}
-          <span className={TIER_STYLES[strategy.risk]}>{strategy.risk}</span>
-        </span>
+      <div className="mt-1 flex flex-wrap items-center gap-2 text-xs">
+        <LevelPill label="Invest" value={strategy.investment} />
+        <LevelPill label="Risk" value={strategy.risk} />
         {strategy.leagueStartViable && (
           <span className="text-ink-mute">League-start viable</span>
         )}
