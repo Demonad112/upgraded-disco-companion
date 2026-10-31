@@ -1,0 +1,63 @@
+/* U11a checklist: phase rail, reference group, completed steps. Values come from tokens.css. */
+
+@layer components {
+  /* Phase rail: one row that scrolls inside itself, snapping chip to chip. It never widens the page. */
+  .phase-rail {
+    min-width: 0;
+    max-width: 100vw;
+  }
+  .phase-rail-scroll {
+    scroll-snap-type: x proximity;
+    scrollbar-width: none;
+    overscroll-behavior-x: contain;
+  }
+  .phase-rail-scroll::-webkit-scrollbar {
+    display: none;
+  }
+  .phase-chip {
+    scroll-snap-align: start;
+    scroll-margin-inline: 2rem;
+    min-height: var(--tap-min);
+  }
+  /* The chip prints its own n/total; the gauge contributes only the segments. */
+  .phase-chip-gauge {
+    display: block;
+    width: 2.25rem;
+  }
+  .phase-chip-gauge .gauge-count,
+  .phase-chip-gauge .gauge-pct {
+    display: none;
+  }
+  .phase-rail-hide {
+    white-space: nowrap;
+  }
+  @media (max-width: 360px) {
+    .phase-chip-gauge {
+      width: 1.5rem;
+    }
+    /* Two short lines instead of one long one, so the rail keeps room at 280 px. */
+    .phase-rail-hide {
+      white-space: normal;
+      max-width: 5.5rem;
+      line-height: 1.15;
+    }
+  }
+
+  /* Reference group: quieter titles than the gold panel headings (ink, 18 px); badges untouched. */
+  [data-reference] .h3 {
+    font-size: 18px;
+    background: none;
+    -webkit-background-clip: border-box;
+    background-clip: border-box;
+    -webkit-text-fill-color: currentColor;
+    color: var(--ink);
+  }
+
+  /* Completed steps: ink-mute throughout, gold check from the toggle. No tint beyond --data-fill (U2-2). */
+  [data-step-done] .tabular,
+  [data-step-done] p,
+  [data-step-done] li,
+  [data-step-done] summary {
+    color: var(--ink-mute);
+  }
+}

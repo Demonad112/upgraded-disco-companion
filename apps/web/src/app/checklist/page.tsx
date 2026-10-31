@@ -40,14 +40,17 @@ export default function ChecklistPage() {
 
         <GearShoppingList />
 
-        <div className="flex flex-col gap-3">
+        <section aria-labelledby="checklist-reference" data-reference="" className="flex flex-col gap-3">
+          <h2 id="checklist-reference" className="label-metric">
+            Reference
+          </h2>
           <MechanicsPrimer />
           <PatchChangesPanel />
           <TrialOfChaosPanel />
           <EssenceCraftingPanel />
           <GlossaryPanel />
           <CommonMistakesPanel />
-        </div>
+        </section>
       </div>
 
       <ChecklistPhaseNav />
