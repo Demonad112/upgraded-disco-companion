@@ -1,0 +1,160 @@
+/* U11b dashboard: strategy rows, level pills, tier legend, boss stat tiles.
+   Components: dashboard/StrategyTable.tsx, shared/Pill.tsx, dashboard/BossCard.tsx. */
+
+/* --- Pill ------------------------------------------------------------------- */
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  padding: 1px 7px;
+  border: 1px solid var(--line-strong);
+  color: var(--ink-dim);
+  font-size: 11px;
+  line-height: 1.5;
+  white-space: nowrap;
+}
+.pill-k {
+  color: var(--ink-mute);
+}
+.pill-v {
+  font-weight: 600;
+  text-transform: capitalize;
+}
+.pill[data-tone='good'] {
+  border-color: color-mix(in srgb, var(--good) 45%, transparent);
+  color: var(--good);
+}
+.pill[data-tone='warn'] {
+  border-color: var(--accent-line);
+  color: var(--accent);
+}
+.pill[data-tone='danger'] {
+  border-color: color-mix(in srgb, var(--danger) 50%, transparent);
+  color: var(--danger);
+}
+/* Three notches fill to the level: a shape, not a colour. */
+.pill-notches {
+  display: inline-flex;
+  gap: 2px;
+}
+.pill-notches i {
+  width: 4px;
+  height: 8px;
+  border: 1px solid currentColor;
+  opacity: 0.55;
+}
+.pill-notches[data-level='1'] i:nth-child(-n + 1),
+.pill-notches[data-level='2'] i:nth-child(-n + 2),
+.pill-notches[data-level='3'] i {
+  background: currentColor;
+  opacity: 1;
+}
+
+/* --- Strategy rows -----------------------------------------------------------
+   Phones: tier | name + facts | chevron. From 900 px one aligned grid:
+   tier | name | invest | risk | stage | mechanics | chevron. .strat-facts is `display: contents` there, so its
+   three children take their own columns. */
+.strat-row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  column-gap: 12px;
+  row-gap: 6px;
+}
+.strat-facts {
+  grid-column: 2 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 8px;
+}
+.strat-stage {
+  color: var(--ink-mute);
+  font-size: 11px;
+}
+.strat-tags {
+  display: none;
+}
+.strat-chevron {
+  grid-column: 3;
+  grid-row: 1;
+}
+@media (min-width: 900px) {
+  .strat-row {
+    grid-template-columns: auto minmax(0, 1.5fr) 8.5rem 7.5rem 9.5rem minmax(0, 1fr) auto;
+    column-gap: 14px;
+  }
+  .strat-facts {
+    display: contents;
+  }
+  .strat-chevron {
+    grid-column: auto;
+    grid-row: auto;
+  }
+  .strat-tags {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 4px;
+  }
+  .strat-tags-detail {
+    display: none;
+  }
+}
+
+/* One-line legend above the list. */
+.tier-legend {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 10px;
+  margin-bottom: 8px;
+  color: var(--ink-mute);
+  font-size: 12px;
+}
+.tier-legend > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* --- Boss stat tiles ---------------------------------------------------------- */
+.stat-tiles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.stat-tile {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 5.5rem;
+  padding: 6px 10px;
+  border: 1px solid var(--line);
+  background: color-mix(in srgb, var(--sunken) 60%, transparent);
+}
+.stat-tile-v {
+  color: var(--ink);
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 1.1;
+}
+
+@media (forced-colors: active) {
+  .pill,
+  .stat-tile {
+    border-color: CanvasText;
+  }
+  /* Backgrounds are dropped in forced colours; keep the filled notches. */
+  .pill-notches[data-level='1'] i:nth-child(-n + 1),
+  .pill-notches[data-level='2'] i:nth-child(-n + 2),
+  .pill-notches[data-level='3'] i {
+    forced-color-adjust: none;
+    background: CanvasText;
+    border-color: CanvasText;
+  }
+  .pill-notches i {
+    border-color: CanvasText;
+  }
+}

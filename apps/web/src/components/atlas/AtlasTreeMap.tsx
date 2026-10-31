@@ -20,6 +20,7 @@ import { useAtlasTree, type AtlasTree } from '@/lib/useAtlasTree'
 import { extentOf, fitExtent, zoomAt, type Viewport } from '../tree/geometry'
 import { hitTestAtlas, renderAtlas, type AtlasPalette } from './atlasRender'
 import { useAtlasMap } from './AtlasMapContext'
+import { Input } from '@/components/shared/controls'
 
 function readPalette(el: HTMLElement): AtlasPalette {
   const css = getComputedStyle(el)
@@ -242,23 +243,40 @@ function AtlasMapCanvas({ atlas }: { atlas: AtlasTree }) {
     return () => canvas.removeEventListener('wheel', onWheel)
   }, [])
 
+  const showAll = () => {
+    clear()
+    setHovered(null)
+    fitAll()
+  }
+
   const zoomBy = (factor: number) =>
     setViewport((vp) => (vp ? zoomAt(vp, factor, size.width / 2, size.height / 2, size.width, size.height) : vp))
 
   // --- search ---------------------------------------------------------------
-  const results = useMemo(() => {
+  const { results, total } = useMemo(() => {
     const q = query.trim().toLowerCase()
-    if (q.length < 2) return []
+    if (q.length < 2) return { results: [] as TreeNode[], total: 0 }
     const seen = new globalThis.Map<string, TreeNode>()
     for (const node of tree.allNodes()) {
       if (!node.name || seen.has(node.name)) continue
       const hit = node.name.toLowerCase().includes(q) || node.stats.some((s) => s.toLowerCase().includes(q))
       if (hit) seen.set(node.name, node)
     }
-    return [...seen.values()]
-      .sort((a, b) => Number(b.name.toLowerCase().includes(q)) - Number(a.name.toLowerCase().includes(q)) || b.kind - a.kind)
-      .slice(0, 8)
+    const sorted = [...seen.values()].sort(
+      (a, b) => Number(b.name.toLowerCase().includes(q)) - Number(a.name.toLowerCase().includes(q)) || b.kind - a.kind,
+    )
+    return { results: sorted.slice(0, 8), total: sorted.length }
   }, [tree, query])
+  const searching = query.trim().length >= 2
+
+  const onMapKey = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    if (e.ctrlKey || e.metaKey || e.altKey) return
+    if (e.key === '+' || e.key === '=') zoomBy(1.4)
+    else if (e.key === '-' || e.key === '_') zoomBy(1 / 1.4)
+    else if (e.key === '0') showAll()
+    else return
+    e.preventDefault()
+  }
 
   const tags = hovered
     ? [
@@ -270,18 +288,46 @@ function AtlasMapCanvas({ atlas }: { atlas: AtlasTree }) {
 
   return (
     <div className="space-y-2.5">
-      <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
-        <div className="relative min-w-0 flex-1 sm:max-w-xs">
-          <input
+      <div className="atlas-head">
+        <ul className="atlas-legend" aria-label="Map legend">
+          <li>
+            <span className="atlas-swatch" data-kind="guide" aria-hidden="true" />
+            Guide <span className="tabular">{guide.size}</span>
+          </li>
+          <li>
+            <span className="atlas-swatch" data-kind="trap" aria-hidden="true" />
+            Trap <span className="tabular">{trap.size}</span>
+          </li>
+          <li>
+            <span className="atlas-swatch" data-kind="ticked" aria-hidden="true" />
+            Ticked <span className="tabular">{allocated.size}</span>
+          </li>
+        </ul>
+        <div className="atlas-search">
+          <Input
             type="search"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Escape' && query) {
+                e.preventDefault()
+                setQuery('')
+              }
+            }}
             placeholder="Find a node — name or effect"
             aria-label="Find an Atlas node"
-            className="w-full border border-line bg-surface-sunken px-3 py-2 text-sm text-ink placeholder:text-ink-mute focus:border-accent-line"
+            aria-describedby="atlas-search-count"
           />
+          {query ? (
+            <button type="button" className="atlas-search-clear" onClick={() => setQuery('')} aria-label="Clear search">
+              ✕
+            </button>
+          ) : null}
+          <p id="atlas-search-count" className="atlas-search-count" role="status">
+            {searching ? (total ? `${total} ${total === 1 ? 'match' : 'matches'}${total > results.length ? `, showing ${results.length}` : ''}` : 'No matches') : ''}
+          </p>
           {results.length ? (
-            <ul className="absolute inset-x-0 top-full z-20 mt-1 overflow-hidden border border-line bg-surface-raised shadow-[var(--lift-raised)]">
+            <ul className="absolute inset-x-0 top-[calc(var(--tap-min)+4px)] z-20 overflow-hidden border border-line bg-surface-raised shadow-[var(--lift-raised)]">
               {results.map((n) => (
                 <li key={n.name}>
                   <button
@@ -300,23 +346,16 @@ function AtlasMapCanvas({ atlas }: { atlas: AtlasTree }) {
             </ul>
           ) : null}
         </div>
-        <ul className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-ink-dim" aria-label="Legend">
-          <li className="flex items-center gap-1.5">
-            <span className="size-2.5 border-2 border-accent" /> Guide
-          </li>
-          <li className="flex items-center gap-1.5">
-            <span className="size-2.5 border-2 border-danger" /> Trap
-          </li>
-          <li className="flex items-center gap-1.5">
-            <span className="size-2.5 bg-good" /> Ticked here
-          </li>
-        </ul>
       </div>
 
       <div
         id="atlas-map"
         ref={wrapRef}
-        className="relative h-[22rem] w-full scroll-mt-32 touch-none overflow-hidden border border-line bg-surface-sunken select-none sm:h-[29rem] lg:h-[calc(100dvh-12rem)] lg:min-h-[24rem]"
+        role="group"
+        tabIndex={0}
+        aria-label="Atlas map. Keys: plus to zoom in, minus to zoom out, 0 to show the whole tree."
+        onKeyDown={onMapKey}
+        className="atlas-map relative h-[22rem] w-full scroll-mt-32 touch-none overflow-hidden border border-line bg-surface-sunken select-none sm:h-[29rem] lg:h-[calc(100dvh-12rem)] lg:min-h-[24rem]"
       >
         <canvas
           ref={canvasRef}
@@ -331,35 +370,25 @@ function AtlasMapCanvas({ atlas }: { atlas: AtlasTree }) {
           aria-label={`Atlas passive tree: ${guide.size} guide nodes, ${trap.size} trap nodes, ${allocated.size} ticked. Drag to pan, scroll or pinch to zoom.`}
         />
 
-        <div className="absolute top-2 right-2 flex flex-col gap-1">
+        <div className="map-ctl" role="group" aria-label="Map zoom">
           {[
-            { label: 'Zoom in', text: '+', on: () => zoomBy(1.4) },
-            { label: 'Zoom out', text: '−', on: () => zoomBy(1 / 1.4) },
-            {
-              label: 'Show the whole tree',
-              text: 'fit',
-              on: () => {
-                clear()
-                setHovered(null)
-                fitAll()
-              },
-            },
+            { label: 'Zoom in', key: '+', text: '+', on: () => zoomBy(1.4) },
+            { label: 'Zoom out', key: '-', text: '−', on: () => zoomBy(1 / 1.4) },
+            { label: 'Show the whole tree', key: '0', text: 'fit', on: showAll },
           ].map((b) => (
-            <button
-              key={b.label}
-              type="button"
-              onClick={b.on}
-              aria-label={b.label}
-              title={b.label}
-              className="size-8 border border-line bg-surface-raised/90 text-sm text-ink-dim backdrop-blur transition-colors hover:text-ink"
-            >
-              {b.text}
+            <button key={b.label} type="button" onClick={b.on} aria-label={b.label} aria-keyshortcuts={b.key}>
+              <span className={b.text === 'fit' ? 'map-fit-text' : undefined} aria-hidden="true">
+                {b.text}
+              </span>
+              <span className="map-tip" aria-hidden="true">
+                {b.label} <kbd>{b.key}</kbd>
+              </span>
             </button>
           ))}
         </div>
 
         {request ? (
-          <div className="absolute top-2 left-2 flex max-w-[70%] items-center gap-2 border border-accent-line bg-surface-raised/90 px-2.5 py-1 text-xs text-ink backdrop-blur">
+          <div className="absolute top-2 left-2 flex max-w-[70%] items-center gap-2 border border-accent-line bg-surface-raised/90 px-2.5 py-1 text-xs text-ink">
             <span className="truncate">Showing {request.label}</span>
             <button type="button" onClick={clear} aria-label="Clear" className="hit-area text-ink-mute hover:text-ink">
               ✕
@@ -369,7 +398,7 @@ function AtlasMapCanvas({ atlas }: { atlas: AtlasTree }) {
 
         {hovered ? (
           <div
-            className="pointer-events-none absolute z-10 w-60 max-w-[80%] border border-line bg-surface-raised/95 p-2.5 shadow-[var(--lift-raised)] backdrop-blur"
+            className="pointer-events-none absolute z-10 w-60 max-w-[80%] border border-line bg-surface-raised/95 p-2.5 shadow-[var(--lift-raised)]"
             style={{
               left: Math.min(Math.max(8, pointer.x + 14), Math.max(8, size.width - 248)),
               top: Math.min(Math.max(8, pointer.y + 14), Math.max(8, size.height - 140)),

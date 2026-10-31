@@ -6,6 +6,7 @@ import { Tag } from "@/components/shared/Tag";
 import { SourceFlag } from "@/components/shared/SourceFlag";
 import { TIER_LIST_PATCH } from "@/data/strategies";
 import { Segmented } from "@/components/shared/controls";
+import { LevelPill } from "@/components/shared/Pill";
 
 type SortKey = "rank" | "investment" | "risk";
 const SORTS = [
@@ -35,21 +36,6 @@ export function StrategyTierBadge({ tier }: { tier?: string }) {
   );
 }
 
-const LEVEL_TONE: Record<string, string> = {
-  low: "text-[var(--good)]",
-  medium: "text-accent",
-  high: "text-danger",
-};
-
-function Level({ label, value }: { label: string; value: string }) {
-  return (
-    <span className="whitespace-nowrap">
-      <span className="text-ink-mute">{label} </span>
-      <span className={LEVEL_TONE[value] ?? "text-ink-dim"}>{value}</span>
-    </span>
-  );
-}
-
 /**
  * Ranked strategies as one-line rows: tier, name, mechanics, investment and
  * risk. Tap a row for the expected return, Atlas setup and sources. The old
@@ -72,26 +58,34 @@ export function StrategyTable({ strategies }: { strategies: FarmingStrategy[] })
         <span className="text-ink-mute">Sort by</span>
         <Segmented kind="toggle" label="Sort by" options={SORTS} value={sortKey} onChange={setSortKey} />
       </div>
-      <ol className="overflow-hidden border border-line bg-surface-raised shadow-[var(--lift)]">
-        {sorted.map((strategy) => (
-          <li key={strategy.id} className="border-b border-line last:border-b-0">
-            <details id={strategy.id} className="group scroll-mt-40">
-              <summary className="grid cursor-pointer list-none grid-cols-[auto_1fr_auto] items-center gap-x-3 gap-y-1 px-3 py-2.5 transition-colors hover:bg-surface-overlay/60 [&::-webkit-details-marker]:hidden">
-                <StrategyTierBadge tier={strategy.tier} />
-                <span className="min-w-0">
-                  <span className="title-sentence block text-[15px] text-ink">{strategy.name}</span>
-                  <span className="mt-0.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px]">
-                    <Level label="Invest" value={strategy.investment} />
-                    <Level label="Risk" value={strategy.risk} />
-                    <span className="text-ink-mute">
-                      {[strategy.leagueStartViable && "League start", strategy.lateGameViable && "Late game"]
-                        .filter(Boolean)
-                        .join(" · ") || "Niche"}
-                    </span>
+      <p className="tier-legend" aria-label="Tier legend">
+        <span className="text-ink-mute">Tier on the {TIER_LIST_PATCH} creator list, best first:</span>
+        {(["S", "A", "B", "C"] as const).map((t) => (
+          <span key={t}>
+            <StrategyTierBadge tier={t} />
+          </span>
+        ))}
+        <span>
+          <StrategyTierBadge /> not ranked
+        </span>
+      </p>
+      <ol data-surface="data" className="overflow-hidden border border-line shadow-[var(--lift)]">
+        {sorted.map((strategy) => {
+          const stage = [strategy.leagueStartViable && "League start", strategy.lateGameViable && "Late game"]
+            .filter(Boolean)
+            .join(" · ");
+          return (
+            <li key={strategy.id} className="border-b border-line last:border-b-0">
+              <details id={strategy.id} className="group scroll-mt-40">
+                <summary className="strat-row cursor-pointer list-none px-3 py-2.5 transition-colors hover:bg-surface-overlay/60 [&::-webkit-details-marker]:hidden">
+                  <StrategyTierBadge tier={strategy.tier} />
+                  <span className="title-sentence block min-w-0 text-[15px] text-ink">{strategy.name}</span>
+                  <span className="strat-facts">
+                    <LevelPill label="Invest" value={strategy.investment} />
+                    <LevelPill label="Risk" value={strategy.risk} />
+                    <span className="strat-stage">{stage || "Niche"}</span>
                   </span>
-                </span>
-                <span className="flex items-center gap-1.5">
-                  <span className="hidden flex-wrap justify-end gap-1 sm:flex">
+                  <span className="strat-tags">
                     {strategy.mechanics.map((m) => (
                       <Tag key={m} mechanic={m} />
                     ))}
@@ -100,35 +94,35 @@ export function StrategyTable({ strategies }: { strategies: FarmingStrategy[] })
                     viewBox="0 0 20 20"
                     fill="none"
                     aria-hidden="true"
-                    className="size-3.5 text-ink-mute transition-transform group-open:rotate-90"
+                    className="strat-chevron size-3.5 text-ink-mute transition-transform group-open:rotate-90"
                   >
                     <path d="M7.5 5l5 5-5 5" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>
-                </span>
-              </summary>
-              <div className="space-y-2 border-t border-line bg-surface-sunken/40 px-3 py-3 sm:pl-12">
-                {strategy.mechanics.length ? (
-                  <div className="flex flex-wrap gap-1 sm:hidden">
-                    {strategy.mechanics.map((m) => (
-                      <Tag key={m} mechanic={m} />
-                    ))}
+                </summary>
+                <div className="space-y-2 border-t border-line bg-surface-sunken/40 px-3 py-3 sm:pl-12">
+                  {strategy.mechanics.length ? (
+                    <div className="strat-tags-detail flex flex-wrap gap-1">
+                      {strategy.mechanics.map((m) => (
+                        <Tag key={m} mechanic={m} />
+                      ))}
+                    </div>
+                  ) : null}
+                  <p className="text-sm leading-relaxed text-ink">
+                    <span className="text-ink-mute">Return: </span>
+                    {strategy.expectedReturn}
+                  </p>
+                  <p className="text-sm leading-relaxed text-ink-dim">
+                    <span className="text-ink-mute">Atlas setup: </span>
+                    {strategy.atlasSetup}
+                  </p>
+                  <div className="flex flex-wrap items-center gap-1.5 empty:hidden">
+                    <SourceFlag source={strategy.source} />
                   </div>
-                ) : null}
-                <p className="text-sm leading-relaxed text-ink">
-                  <span className="text-ink-mute">Return: </span>
-                  {strategy.expectedReturn}
-                </p>
-                <p className="text-sm leading-relaxed text-ink-dim">
-                  <span className="text-ink-mute">Atlas setup: </span>
-                  {strategy.atlasSetup}
-                </p>
-                <div className="flex flex-wrap items-center gap-1.5 empty:hidden">
-                  <SourceFlag source={strategy.source} />
                 </div>
-              </div>
-            </details>
-          </li>
-        ))}
+              </details>
+            </li>
+          );
+        })}
       </ol>
     </div>
   );

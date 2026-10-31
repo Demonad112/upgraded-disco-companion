@@ -63,6 +63,6 @@ function CharacterIcon() {
 export const TOOL_LINKS: { href: string; label: string; short: string; icon: ReactNode }[] = [
   { href: "/checklist", label: "Checklist", short: "Checklist", icon: <ChecklistIcon /> },
   { href: "/atlas", label: "Atlas Tree", short: "Atlas", icon: <AtlasIcon /> },
-  { href: "/dashboard", label: "Dashboard", short: "Farming", icon: <DashboardIcon /> },
+  { href: "/dashboard", label: "Dashboard", short: "Dashboard", icon: <DashboardIcon /> },
   { href: "/character", label: "Character", short: "Character", icon: <CharacterIcon /> },
 ];

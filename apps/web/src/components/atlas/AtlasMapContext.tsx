@@ -6,6 +6,7 @@
  */
 
 import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from 'react'
+import { Button } from '@/components/shared/controls'
 
 export interface FocusRequest {
   names: string[]
@@ -53,8 +54,8 @@ export function ShowOnTreeButton({ names, label }: { names?: string[]; label: st
   const { focus } = useAtlasMap()
   if (!names?.length) return null
   return (
-    <button
-      type="button"
+    <Button
+      size="sm"
       onClick={(e) => {
         e.preventDefault()
         e.stopPropagation()
@@ -62,9 +63,9 @@ export function ShowOnTreeButton({ names, label }: { names?: string[]; label: st
       }}
       title="Show on the Atlas tree"
       aria-label={`Show ${label} on the Atlas tree`}
-      className="hit-area inline-flex shrink-0 items-center gap-1 border border-accent-line/60 bg-accent-soft px-1.5 py-0.5 text-[10px] font-medium text-accent transition-colors hover:bg-accent/20"
+      className="shrink-0"
     >
-      <svg viewBox="0 0 20 20" fill="none" aria-hidden="true" className="size-3">
+      <svg viewBox="0 0 20 20" fill="none" aria-hidden="true" className="size-3.5">
         <path
           d="M10 17.5s5.5-5 5.5-9.5a5.5 5.5 0 1 0-11 0c0 4.5 5.5 9.5 5.5 9.5Z"
           stroke="currentColor"
@@ -74,6 +75,6 @@ export function ShowOnTreeButton({ names, label }: { names?: string[]; label: st
         <circle cx="10" cy="8" r="2" fill="currentColor" />
       </svg>
       Map
-    </button>
+    </Button>
   )
 }

@@ -7,7 +7,7 @@ test('the tool tab bar shows on phones and the header keeps brand, Search and Pa
   await page.goto('checklist/')
   const bar = tabBar(page)
   await expect(bar).toBeVisible()
-  await expect(bar.getByRole('link')).toHaveText(['Checklist', 'Atlas', 'Farming', 'Character'])
+  await expect(bar.getByRole('link')).toHaveText(['Checklist', 'Atlas', 'Dashboard', 'Character'])
   await expect(bar.getByRole('link', { name: 'Checklist' })).toHaveAttribute('aria-current', 'page')
   const header = page.getByRole('navigation', { name: 'Primary' })
   await expect(header.getByRole('link', { name: 'Atlas Tree' })).toBeHidden()

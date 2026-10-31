@@ -26,7 +26,7 @@ session's row in its last commit. Audit rows are tracked in `docs/audit/08-PROGR
 | 11 | U7 full footer | Cloud | Sonnet 5.5 · medium | done | variant/20261030-footer | #60 | https://variant-20261030-footer.upgraded-disco-companion.pages.dev | Four-column footer (Tools, Resources, Data, Settings); `InstallButton` mounted; Methodology and What's new linked; A6-3, U12-2 done |
 | 12 | U10 character page | Local | Opus 5.5 · high | done | variant/20261031-character | #63 | https://variant-20261031-character.upgraded-disco-companion.pages.dev | `Input`/`Textarea` in controls kit; grade ladder; Spare + Since one row; defence pair footers; sliding tab underline + Findings count; overview skeleton; U4-3, U4-4, U3-2 done |
 | 12 | U11a checklist | Cloud | Sonnet 5.5 · medium | todo | | | | |
-| 13 | U11b dashboard and atlas | Cloud | Sonnet 5.5 · medium | todo | | | | |
+| 13 | U11b dashboard and atlas | Cloud | Sonnet 5.5 · medium | done | variant/20261031-dash-atlas | #<n> | https://variant-20261031-dash-atlas.upgraded-disco-companion.pages.dev | Strategy rows as an aligned grid with text+notch pills, tier legend, quiz Reset, boss stat tiles; Atlas legend with counts in the map panel, vertical `+ − fit` group (keys `+ - 0`), `Input` search with clear and count, Map = `Button` sm; tab says "Dashboard"; no backdrop-filter on map controls; U6-2, U4-2, U4-4, U2-3 done |
 | 14 | U13 final QA | Local | Opus 5.5 · high | todo | | | | Final QA, local |
 
 ## Backlog

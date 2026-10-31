@@ -7,6 +7,8 @@
 @import '../styles/nav.css';
 @import '../styles/footer.css';
 @import '../styles/pwa.css';
+@import '../styles/strategy.css';
+@import '../styles/atlas.css';
 @import '../styles/polish.css';
 
 /*
@@ -314,17 +316,6 @@ code,
     details.card > summary {
       padding: 14px 28px;
     }
-  }
-
-  /* Form controls (2.6). */
-  .field {
-    min-height: 48px;
-    padding: 0 12px;
-    border: 1px solid var(--line-strong);
-    background: color-mix(in srgb, var(--sunken) 70%, transparent);
-    color: var(--ink);
-    color-scheme: dark;
-    text-shadow: none;
   }
 
   /* Display type: brand, page titles, the character name. Never data. */
