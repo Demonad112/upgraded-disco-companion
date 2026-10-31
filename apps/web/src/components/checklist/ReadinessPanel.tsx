@@ -26,15 +26,17 @@ export function ReadinessPanel() {
 
   if (!snapshot) {
     return (
-      <section className="border border-dashed border-line bg-[var(--surface-raised)] p-5">
+      <section data-surface="data" className="card flex h-full flex-col border-dashed p-5">
         <h2 className="font-semibold text-ink">Am I ready?</h2>
         <p className="mt-1 text-sm text-ink-mute">
-          <Link href="/character" className="text-[var(--accent)] underline">
-            Import your character
-          </Link>{" "}
-          and this panel checks your resistances, life/ES pool and level against the
+          Import your character and this panel checks your resistances, life/ES pool and level against the
           checklist&apos;s gates.
         </p>
+        <div className="mt-auto pt-4">
+          <Link href="/character" className="btn btn-primary">
+            Import your character →
+          </Link>
+        </div>
       </section>
     );
   }
@@ -43,7 +45,7 @@ export function ReadinessPanel() {
   const name = snapshot.key.split("/").pop();
 
   return (
-    <section data-surface="data" className="card p-5">
+    <section data-surface="data" className="card flex h-full flex-col p-5">
       <div className="flex flex-wrap items-baseline justify-between gap-2">
         <h2 className="font-semibold text-ink">Am I ready?</h2>
         <span className="text-xs text-ink-mute">
@@ -94,13 +96,14 @@ export function ReadinessPanel() {
           </div>
         ))}
       </div>
-      <p className="mt-2 text-xs text-ink-mute">
-        Pinnacles also need everything under Mapping basics. Re-import on the{" "}
-        <Link href="/character" className="text-[var(--accent)] underline">
-          character page
-        </Link>{" "}
-        after gear changes.
-      </p>
+      <div className="mt-auto flex flex-wrap items-center justify-between gap-x-4 gap-y-2 pt-3">
+        <p className="min-w-0 text-xs text-ink-mute">
+          Pinnacles also need everything under Mapping basics. Re-import after gear changes.
+        </p>
+        <Link href="/character" className="btn btn-secondary">
+          Re-import on Character →
+        </Link>
+      </div>
     </section>
   );
 }

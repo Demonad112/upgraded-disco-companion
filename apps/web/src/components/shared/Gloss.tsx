@@ -27,10 +27,16 @@ const PATTERN = new RegExp(
   'gi',
 )
 
-/** Split text into plain runs and glossary hits; each term is marked once per text, at its first mention. */
-export function glossSegments(text: string): (string | { text: string; term: GlossaryTerm })[] {
-  const out: (string | { text: string; term: GlossaryTerm })[] = []
-  const seen = new Set<string>()
+export type GlossSegment = string | { text: string; term: GlossaryTerm }
+
+/**
+ * Split text into plain runs and glossary hits. Each term is marked once per text, at its first mention; pass a shared
+ * `seen` set (term ids) to mark it once across several texts instead, e.g. every paragraph of one checklist step.
+ * The set is filled as a side effect, so call this during one render of the owner, not from components that may
+ * render twice (StrictMode) against the same set.
+ */
+export function glossSegments(text: string, seen: Set<string> = new Set()): GlossSegment[] {
+  const out: GlossSegment[] = []
   let last = 0
   for (const m of text.matchAll(PATTERN)) {
     const term = BY_PHRASE.get(m[1]!.toLowerCase())
@@ -44,16 +50,21 @@ export function glossSegments(text: string): (string | { text: string; term: Glo
   return out
 }
 
-/** Running text with its game terms marked. Anything that isn't a plain string passes through untouched. */
-export function Glossed({ children }: { children: ReactNode }) {
-  if (typeof children !== 'string') return <>{children}</>
+/** Segments from `glossSegments`, rendered: plain runs as text, hits as `Term` buttons. */
+export function GlossSegments({ segments }: { segments: GlossSegment[] }) {
   return (
     <>
-      {glossSegments(children).map((s, i) =>
+      {segments.map((s, i) =>
         typeof s === 'string' ? <Fragment key={i}>{s}</Fragment> : <Term key={i} term={s.term}>{s.text}</Term>,
       )}
     </>
   )
+}
+
+/** Running text with its game terms marked. Anything that isn't a plain string passes through untouched. */
+export function Glossed({ children }: { children: ReactNode }) {
+  if (typeof children !== 'string') return <>{children}</>
+  return <GlossSegments segments={glossSegments(children)} />
 }
 
 const GAP = 6

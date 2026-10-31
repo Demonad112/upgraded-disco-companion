@@ -16,7 +16,7 @@ import { BenchmarkGate } from "@/components/shared/BenchmarkGate";
 import { SourceFlag } from "@/components/shared/SourceFlag";
 import { actionItemKey, useChecklistState } from "@/hooks/useChecklistState";
 import { commonMistakes } from "@/data/commonMistakes";
-import { Glossed } from "@/components/shared/Gloss";
+import { GlossSegments, glossSegments } from "@/components/shared/Gloss";
 
 export function ChecklistStep({
   step,
@@ -36,6 +36,14 @@ export function ChecklistStep({
 
   if (complete && hideCompleted) return null;
 
+  // One `seen` set per step, filled in reading order, so a term is underlined at its first mention in the step only
+  // (P1-1). Segments are built here, in this render, not inside <Glossed>, so a double render can't empty the set.
+  const seen = new Set<string>();
+  const gloss = (text: string) => <GlossSegments segments={glossSegments(text, seen)} />;
+  const descriptionText = gloss(step.description);
+  const tipTexts = (step.tips ?? []).map(gloss);
+  const avoidTexts = avoid.map((m) => gloss(m.description));
+
   return (
     <li className="relative">
       {/* A sibling of <details>, not a child of <summary>: interactive content inside a summary is invalid (axe nested-interactive). */}
@@ -49,9 +57,10 @@ export function ChecklistStep({
         id={step.id}
         open={isNext && !complete}
         data-surface={complete ? "data" : undefined}
+        data-step-done={complete ? "" : undefined}
         className={`group scroll-mt-40 border transition-colors ${
           complete
-            ? "border-good/25"
+            ? "border-line"
             : isNext
               ? "border-accent bg-surface-raised shadow-[var(--lift)]"
               : "border-line bg-surface-raised shadow-[var(--lift)] hover:border-line-strong"
@@ -97,15 +106,15 @@ export function ChecklistStep({
         </summary>
 
         <div className="space-y-3 border-t border-line px-3 pt-3 pb-3.5 sm:pl-[4.25rem]">
-          <p className="text-sm leading-relaxed text-ink-dim"><Glossed>{step.description}</Glossed></p>
+          <p className="text-sm leading-relaxed text-ink-dim">{descriptionText}</p>
           <div className="flex flex-wrap items-center gap-1.5 empty:hidden">
             <SourceFlag source={step.source} />
           </div>
 
           {step.tips && step.tips.length > 0 ? (
             <ul className="list-disc space-y-1 pl-4 text-xs leading-relaxed text-ink-mute marker:text-accent">
-              {step.tips.map((tip) => (
-                <li key={tip}><Glossed>{tip}</Glossed></li>
+              {step.tips.map((tip, i) => (
+                <li key={tip}>{tipTexts[i]}</li>
               ))}
             </ul>
           ) : null}
@@ -128,7 +137,7 @@ export function ChecklistStep({
 
           {avoid.length ? (
             <ul className="overflow-hidden border border-line">
-              {avoid.map((m) => (
+              {avoid.map((m, i) => (
                 <li key={m.id} className="border-b border-line last:border-b-0">
                   <details className="group/avoid">
                     <summary className="flex cursor-pointer list-none items-center gap-2 px-2.5 py-1.5 text-xs text-ink-dim [&::-webkit-details-marker]:hidden">
@@ -140,7 +149,7 @@ export function ChecklistStep({
                       </span>
                       <span className="text-[10px] text-ink-mute group-open/avoid:hidden">why?</span>
                     </summary>
-                    <p className="px-2.5 pb-2 pl-7 text-xs leading-relaxed text-ink-mute"><Glossed>{m.description}</Glossed></p>
+                    <p className="px-2.5 pb-2 pl-7 text-xs leading-relaxed text-ink-mute">{avoidTexts[i]}</p>
                   </details>
                 </li>
               ))}
