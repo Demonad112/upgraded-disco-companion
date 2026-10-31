@@ -19,6 +19,9 @@ Side batch: validate wave 11 and the 2026-10-30 side batches, then write the pro
   T20 deploy is live.
 - U7-1: UI-PLAN U7 text fixed (plain credit line; `Attribution.tsx` is the per-item panel).
 - SB1-2: `HANDOFF.md` status block refreshed to wave 11 done, next wave 12.
+- **New, fixed here (SB3 follow-up):** the PR body guard passed the body through the step's `env:`, and the runner prints env
+  values in the job log, so a failing run published the session URL it blocks (seen on this PR's first guard run). The script now
+  reads `$GITHUB_EVENT_PATH`; `PR_TITLE` / `PR_BODY` still override for tests. 3 tests added (11/11), no assertion changed.
 - U4-2: done in #55 (P1 dropped the phone blur on the Dashboard and Atlas tab bars). U11b only re-checks it.
 
 ## Open (routed to the next waves; the prompts below carry them)
@@ -33,6 +36,8 @@ Side batch: validate wave 11 and the 2026-10-30 side batches, then write the pro
 - SB3-1: make `PR body guard / guard` a required check in branch protection. Recommended: yes; an unrequired check only warns.
 - SB3-2: add to SESSION-PROTOCOL Finish step 4: "after creating the PR, remove any session link the tooling appended to the body".
   Recommended: yes; the PR tooling appends it by default and the guard then goes red. The prompts below say it explicitly meanwhile.
+- SB4-1: delete the logs of guard runs that failed on a session link: run 41174630514 (this PR) and the two failed runs on #58.
+  Recommended: yes; the logs still hold the URL. Actions > run > ⋯ > Delete all logs.
 - W15-pulse-1: eyeball the hover pulse and hero draw-in on production. Recommended: accept unless the draw-in feels slow.
 - Branch cleanup: merged `variant/*` and `claude/*` branches are still on origin. Recommended: delete merged ones after U13, not
   before (their Pages previews are the review record).

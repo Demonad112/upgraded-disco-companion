@@ -2,6 +2,9 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
+import { mkdtempSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 
 const script = fileURLToPath(new URL('./check-pr-body.mjs', import.meta.url));
 
@@ -9,6 +12,7 @@ function run(env) {
   const clean = { ...process.env };
   delete clean.PR_TITLE;
   delete clean.PR_BODY;
+  delete clean.GITHUB_EVENT_PATH;
   return spawnSync(process.execPath, [script], { env: { ...clean, ...env }, encoding: 'utf8' });
 }
 
@@ -52,4 +56,26 @@ test('empty body passes', () => {
 test('missing/null body passes (GitHub sends null for an empty body)', () => {
   assert.equal(run({ PR_TITLE: 'x' }).status, 0);
   assert.equal(run({}).status, 0);
+});
+
+function eventFile(pull_request) {
+  const path = join(mkdtempSync(join(tmpdir(), 'pr-body-')), 'event.json');
+  writeFileSync(path, JSON.stringify({ pull_request }));
+  return path;
+}
+
+test('reads title and body from GITHUB_EVENT_PATH when no env override', () => {
+  assert.equal(run({ GITHUB_EVENT_PATH: eventFile({ title: 'x', body: 'ok' }) }).status, 0);
+  const r = run({ GITHUB_EVENT_PATH: eventFile({ title: 'x', body: 'https://claude.ai/code/session_abc' }) });
+  assert.equal(r.status, 1);
+  assert.match(r.stderr, /body:/);
+});
+
+test('null body in the event payload passes', () => {
+  assert.equal(run({ GITHUB_EVENT_PATH: eventFile({ title: 'x', body: null }) }).status, 0);
+});
+
+test('a hit never echoes the matched text', () => {
+  const r = run({ PR_TITLE: 'x', PR_BODY: 'https://claude.ai/code/session_secret123' });
+  assert.doesNotMatch(r.stdout + r.stderr, /session_secret123/);
 });
