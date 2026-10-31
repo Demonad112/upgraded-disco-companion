@@ -25,7 +25,7 @@ export function DefenceChecklist({ analysis }: { analysis: Analysis }) {
               <Tag tone={TONE[c.status]}>{STATUS_LABEL[c.status]}</Tag>
             </span>
             <span className="min-w-0">
-              <span className="font-semibold text-ink">{c.label}</span>
+              <span className="label-field">{c.label}</span>
               <span className="text-ink-dim"> · {c.detail}</span>
             </span>
           </li>

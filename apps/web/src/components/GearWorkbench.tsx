@@ -52,7 +52,7 @@ import { useShoppingList } from '@/hooks/useShoppingList'
 import type { DraftAffix, SlotDraft } from '@/lib/shoppingList'
 import { ReplacementPlanner } from './ReplacementPlanner'
 import { Empty, Panel, Tag } from './ui'
-import { Select } from '@/components/shared/controls'
+import { Button, Select } from '@/components/shared/controls'
 
 const DMG_VAR: Record<string, string> = {
   fire: 'var(--dmg-fire)',
@@ -111,13 +111,9 @@ function ResistanceStrip({
           Resistances {changes ? 'after changes' : 'now'}
         </span>
         {changes ? (
-          <button
-            type="button"
-            onClick={onReset}
-            className="border border-line px-1.5 py-px text-[10px] text-ink-dim transition-colors hover:border-accent-line hover:text-ink"
-          >
+          <Button size="sm" onClick={onReset} className="font-medium text-ink-dim">
             {changes} change{changes === 1 ? '' : 's'} · reset
-          </button>
+          </Button>
         ) : (
           <span className="text-[10px] text-ink-mute">uncapped / cap</span>
         )}
@@ -185,9 +181,9 @@ function AffixPicker({
         <span className="text-[11px] font-medium text-ink">
           {replacing !== null ? 'Swap for' : 'Add'} a {kind}
         </span>
-        <button type="button" onClick={onClose} className="text-[11px] text-ink-mute hover:text-ink">
+        <Button variant="ghost" size="sm" onClick={onClose}>
           Close
-        </button>
+        </Button>
       </div>
       <p className="mb-1.5 text-[10px] leading-relaxed text-ink-mute">
         Ranked: fixes a resistance you&apos;d be short on → item rarity → defences → damage → attributes → the rest.
@@ -227,9 +223,9 @@ function AffixPicker({
         <p className="text-[11px] text-ink-mute">Nothing else of this kind can roll on this base at this item level.</p>
       )}
       {list.length > 10 ? (
-        <button type="button" onClick={() => setAll((v) => !v)} className="mt-1 text-[11px] text-accent hover:underline">
+        <Button variant="ghost" size="sm" onClick={() => setAll((v) => !v)} className="mt-1 text-accent">
           {all ? 'Show top 10' : `Show all ${list.length}`}
-        </button>
+        </Button>
       ) : null}
     </div>
   )
@@ -299,13 +295,9 @@ function ModLine({
       {editable ? (
         <div className="mt-1 flex flex-wrap items-center gap-1.5 pl-[3.25rem]">
           {edit ? (
-            <button
-              type="button"
-              onClick={() => onEdit(null)}
-              className="border border-line px-1.5 py-0.5 text-[11px] text-ink-dim hover:text-ink"
-            >
+            <Button size="sm" onClick={() => onEdit(null)}>
               Undo
-            </button>
+            </Button>
           ) : null}
           {!removed && options.length > 1 && (set === null || sameLadder) ? (
             <label className="inline-flex items-center gap-1 text-[11px] text-ink-mute">
@@ -331,21 +323,12 @@ function ModLine({
           ) : null}
           {!removed ? (
             <>
-              <button
-                type="button"
-                onClick={onSwap}
-                className="border border-line px-1.5 py-0.5 text-[11px] text-ink-dim hover:border-accent-line hover:text-accent"
-              >
+              <Button size="sm" onClick={onSwap}>
                 Swap…
-              </button>
-              <button
-                type="button"
-                onClick={() => onEdit({ kind: 'remove' })}
-                className="border border-line px-1.5 py-0.5 text-[11px] text-ink-dim hover:border-danger/50 hover:text-danger"
-                aria-label={`Remove ${mod.text}`}
-              >
+              </Button>
+              <Button variant="danger" size="sm" onClick={() => onEdit({ kind: 'remove' })} aria-label={`Remove ${mod.text}`}>
                 Remove
-              </button>
+              </Button>
             </>
           ) : null}
         </div>

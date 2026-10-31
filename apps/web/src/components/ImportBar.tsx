@@ -6,7 +6,7 @@ import { PROXY_BASE } from '@/lib/proxy'
 import { useLocalStore } from '@/lib/localStore'
 import { recentCharacters } from '@/lib/recentCharacters'
 import { isOffline } from '@/lib/online'
-import { Button, Segmented } from './shared/controls'
+import { Button, Input, Segmented, Textarea } from './shared/controls'
 
 const EXAMPLE = 'https://poe.ninja/poe2/profile/Demonad112-2589/forbiddenrites/character/Yykiuy'
 const IMPORT_METHODS = [
@@ -147,14 +147,14 @@ export function ImportBar({
 
       {mode === 'url' ? (
         <form onSubmit={importUrl} className="flex flex-col gap-2 sm:flex-row">
-          <input
+          <Input
             type="url"
             inputMode="url"
             value={url}
             onChange={(e) => setUrl(e.target.value)}
             placeholder="https://poe.ninja/poe2/profile/Account-1234/league/character/Name"
             aria-label="poe.ninja character URL"
-            className="min-w-0 flex-1 border border-line bg-surface px-3 py-2.5 text-sm text-ink placeholder:text-ink-mute"
+            className="flex-1"
           />
           <Button type="submit" variant="primary" disabled={busy}>
             {busy ? 'Analysing…' : 'Analyse'}
@@ -162,13 +162,13 @@ export function ImportBar({
         </form>
       ) : (
         <form onSubmit={importPaste} className="flex flex-col gap-2">
-          <textarea
+          <Textarea
             value={paste}
             onChange={(e) => setPaste(e.target.value)}
             rows={4}
             placeholder='Paste a character model JSON, or a Path of Building export code'
             aria-label="Character model JSON or Path of Building code"
-            className="w-full resize-y border border-line bg-surface px-3 py-2.5 font-mono text-xs text-ink placeholder:text-ink-mute"
+            className="font-mono"
           />
           <Button type="submit" variant="primary" disabled={busy} className="self-start">
             Analyse pasted data
@@ -177,20 +177,20 @@ export function ImportBar({
       )}
 
       {mode === 'url' && recents.length > 0 ? (
-        <div className="mt-2 flex flex-wrap items-center gap-1.5 text-[11px]">
+        <div className="mt-2 flex flex-wrap items-center gap-1.5 text-xs">
           <span className="text-ink-mute">Recent:</span>
           {recents.map((r) => (
-            <button
+            <Button
               key={r.url}
-              type="button"
+              size="sm"
               disabled={busy}
               onClick={() => void runImport(r.url)}
               title={r.url}
-              className="border border-line px-2 py-0.5 text-ink-dim transition-colors hover:border-accent-line hover:text-ink disabled:opacity-50"
+              className="font-medium text-ink-dim"
             >
               {r.name}
               {r.level ? <span className="text-ink-mute"> · {r.level}</span> : null}
-            </button>
+            </Button>
           ))}
         </div>
       ) : null}

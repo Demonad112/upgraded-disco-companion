@@ -117,10 +117,7 @@ export function LastCharacterCard() {
       </ul>
 
       <div className="mt-4 flex flex-wrap items-center gap-2">
-        <Link
-          href={href}
-          className="border border-accent-line bg-accent-soft px-3 py-1.5 text-sm font-medium text-[var(--accent)] transition-colors hover:bg-[var(--accent)]/20"
-        >
+        <Link href={href} className="btn btn-secondary btn-sm text-accent">
           {recent ? "Re-import and analyse" : "Open character page"} →
         </Link>
         {previous ? (
