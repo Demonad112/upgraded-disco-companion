@@ -10,14 +10,15 @@ Updated 2026-10-30. Production host: `upgraded-disco-companion.pages.dev`
 - **UI:** `docs/ui/UI-PLAN.md`; the wave table in `docs/ui/UI-PROGRESS.md` is the run order. Sessions follow
   `docs/SESSION-PROTOCOL.md`; carry-over lives in `docs/carry/`.
 
-## Status 2026-10-30
+## Status 2026-10-31
 
 - Waves 1–7 merged (PRs #16–#45): A1–A8, U0, U1, U8, U9, U12, plus OQ1 and SB1 (#41, #42: Dependabot version updates
   removed with the audit CI step kept, in-repo `robots.txt` removed, Windows e2e capped at 2 workers).
 - UI waves 8–10 merged: U2 (#46), U3 (#49), U4 (#50), U5 (#52), U6 (#53), plus the W15 sky upgrade (#51, #54). Fonts are
   vendored (`next/font/local`, `apps/web/src/app/fonts/`), so `next build` works in cloud sessions.
-- Open: #55 (P1 polish, `variant/20261030-polish`) and SB2 (side batch, docs and small fixes).
-- Next: U7 (footer), then U10, U11a/b and U13 per the wave table in `docs/ui/UI-PROGRESS.md`.
+- P1 polish (#55), SB2 (#56), SB3 PR body guard (#58), W15-2 pulse and draw-in (#59) and U7 footer (#60, wave 11) merged.
+  `main` CI green (run 136 on `bb6e0ba`).
+- Next: wave 12 (U10 character ∥ U11a checklist), then U11b (wave 13) and U13 (wave 14); prompts in `docs/carry/SB4.md`.
 
 ## Correction recorded
 

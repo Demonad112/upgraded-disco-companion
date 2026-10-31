@@ -180,8 +180,8 @@ Size: S < 1 h, M 1–2 h, L 2–3 h of agent time. "Agent" means the session typ
 - `layout/Footer.tsx` + `styles/footer.css`, four columns ≥ 981 px, two at 621–980 px, stacked on phones (above the tab bar):
   - **Tools:** the four routes.
   - **Resources:** Methodology, What's new, GitHub repo, report an issue (GitHub issues URL).
-  - **Data:** `Patch {CURRENT_PATCH}`, leagues, "Data version" (`NEXT_PUBLIC_DATA_VERSION` short hash), poe.ninja credit (reuse
-    `components/Attribution.tsx`), GGG disclaimer.
+  - **Data:** `Patch {CURRENT_PATCH}`, leagues, "Data version" (`NEXT_PUBLIC_DATA_VERSION` short hash), poe.ninja credit (a plain line;
+    `components/Attribution.tsx` is the character page's per-item panel, not a credit), GGG disclaimer.
   - **Settings:** sky dim (`SkyDimToggle`), compact mode (`lib/compactMode.ts`), Install app (from U12), Reset all progress (keep
     the existing `<dialog>`).
 - Accept: `polish.spec.ts` "footer links" passes (extend it for the new links); reset dialog unchanged; footer contrast passes axe.
