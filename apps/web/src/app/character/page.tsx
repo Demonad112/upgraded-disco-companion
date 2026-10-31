@@ -18,7 +18,7 @@ import { DpsMatrix } from '@/components/DpsMatrix'
 import { DamageReview } from '@/components/DamageReview'
 import { GearWorkbench } from '@/components/GearWorkbench'
 import { CharacterVerdict } from '@/components/character/CharacterVerdict'
-import { DefencesGlance, SinceLastImport, SpareToTrade, TreeDataNote } from '@/components/character/OverviewCards'
+import { DefencesGlance, SpareAndChanges, TreeDataNote } from '@/components/character/OverviewCards'
 import { CharacterNotes } from '@/components/character/CharacterNotes'
 import { ChangedSincePanel } from '@/components/character/ChangedSincePanel'
 import { CompareCharacters } from '@/components/character/CompareCharacters'
@@ -267,7 +267,15 @@ export default function Home() {
 
         {!busy && a ? (
           <>
-            <ScrollSpyNav label="On this page" items={SECTIONS} />
+            <ScrollSpyNav
+              label="On this page"
+              items={SECTIONS.map((s) =>
+                // The findings count is the cards shown; a sound build shows a summary instead, so no count.
+                s.id === 'findings' && !a.recommendations.buildIsSound
+                  ? { ...s, count: a.recommendations.recommendations.filter((r) => r.category !== 'question').length }
+                  : s
+              )}
+            />
 
             <Section id="overview" title="Overview">
               <CharacterVerdict analysis={a}>
@@ -279,10 +287,7 @@ export default function Home() {
                   {w}
                 </p>
               ))}
-              <div className="grid-cards desk:grid-cols-2">
-                <SpareToTrade analysis={a} />
-                <SinceLastImport diff={history.diff} />
-              </div>
+              <SpareAndChanges analysis={a} diff={history.diff} />
               <DefencesGlance analysis={a} />
               <TreeDataNote analysis={a} tree={treeForNote} />
               <BuildScore assessment={a.assessment} keystones={a.keystones} />

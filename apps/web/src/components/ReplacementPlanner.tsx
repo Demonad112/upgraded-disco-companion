@@ -25,6 +25,7 @@ import {
   type SpecLine,
 } from '@poe2/core'
 import { Tag } from './ui'
+import { Button } from './shared/controls'
 import { AlternativeBases } from './AlternativeBases'
 import { useShoppingList } from '@/hooks/useShoppingList'
 
@@ -90,13 +91,10 @@ export function ReplacementPlanner({
             {plan.ilvlNeeded !== null ? ` · item level ${plan.ilvlNeeded}+ for every line below` : ''}
           </span>
         </h4>
-        <label className="flex items-center gap-1.5 text-[11px] text-ink-mute">
-          <input
-            type="checkbox"
-            checked={cap82}
-            onChange={(e) => setCap82(e.target.checked)}
-            className="size-3"
-          />
+        <label className="flex min-h-11 cursor-pointer items-center gap-1 text-xs text-ink-mute">
+          <span className="grid size-6 shrink-0 place-items-center">
+            <input type="checkbox" checked={cap82} onChange={(e) => setCap82(e.target.checked)} className="size-4" />
+          </span>
           Cap at item level 82
         </label>
       </div>
@@ -135,20 +133,17 @@ export function ReplacementPlanner({
         <div className="flex flex-wrap items-center gap-1.5 text-[11px] text-ink-mute">
           <span>Leave off the replacement:</span>
           {holding.map((r) => (
-            <button
+            <Button
               key={r.type}
-              type="button"
+              size="sm"
+              variant={omit.includes(r.type) ? 'danger' : 'secondary'}
               aria-pressed={omit.includes(r.type)}
               onClick={() => toggle(r.type)}
-              className={`border px-1.5 py-0.5 capitalize transition-colors ${
-                omit.includes(r.type)
-                  ? 'border-danger/50 bg-danger/10 text-danger'
-                  : 'border-line text-ink-dim hover:border-accent/40'
-              }`}
+              className="capitalize"
             >
               {omit.includes(r.type) ? '✕ ' : ''}
               {r.type}
-            </button>
+            </Button>
           ))}
         </div>
       ) : null}

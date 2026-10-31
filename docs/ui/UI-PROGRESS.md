@@ -24,7 +24,7 @@ session's row in its last commit. Audit rows are tracked in `docs/audit/08-PROGR
 | 10 | U5 segmented gauge | Cloud | Sonnet 5.5 · medium | done | variant/20261030-gauge | #52 | https://variant-20261030-gauge.upgraded-disco-companion.pages.dev | `Gauge` + `lib/gauge.ts` replace `ProgressBar`; one segment per unit ≤ 40, else 20; `.glow-*` removed; U8-1 done; `main` (with #50) merged in |
 | 10 | U6 phone tab bar | Cloud | Sonnet 5.5 · high | done | variant/20261030-tabbar | #53 | https://variant-20261030-tabbar.upgraded-disco-companion.pages.dev | `MobileTabBar` ≤ 720 px (hides in compact and with the keyboard); header keeps brand, offline chip, Search, Patch; short phone banner with ⓘ → Patch menu; U12-1, U12-3, U9-4 done |
 | 11 | U7 full footer | Cloud | Sonnet 5.5 · medium | done | variant/20261030-footer | #60 | https://variant-20261030-footer.upgraded-disco-companion.pages.dev | Four-column footer (Tools, Resources, Data, Settings); `InstallButton` mounted; Methodology and What's new linked; A6-3, U12-2 done |
-| 12 | U10 character page | Local | Opus 5.5 · high | todo | | | | |
+| 12 | U10 character page | Local | Opus 5.5 · high | done | variant/20261031-character | #PRNUM | https://variant-20261031-character.upgraded-disco-companion.pages.dev | `Input`/`Textarea` in controls kit; grade ladder; Spare + Since one row; defence pair footers; sliding tab underline + Findings count; overview skeleton; U4-3, U4-4, U3-2 done |
 | 12 | U11a checklist | Cloud | Sonnet 5.5 · medium | todo | | | | |
 | 13 | U11b dashboard and atlas | Cloud | Sonnet 5.5 · medium | todo | | | | |
 | 14 | U13 final QA | Local | Opus 5.5 · high | todo | | | | Final QA, local |

@@ -274,20 +274,23 @@ export function WhatIfPanel({ analysis, options }: { analysis: Analysis; options
           <ul className="grid gap-1 lg:grid-cols-2">
             {recrafts.map(({ rec, type, delta }) => (
               <li key={rec.id}>
-                <label className="flex min-h-11 cursor-pointer items-start gap-3 py-1.5 text-xs">
-                  <input
-                    type="checkbox"
-                    className="mt-0.5"
-                    checked={ticked.has(rec.id)}
-                    onChange={(e) =>
-                      setTicked((prev) => {
-                        const next = new Set(prev)
-                        if (e.target.checked) next.add(rec.id)
-                        else next.delete(rec.id)
-                        return next
-                      })
-                    }
-                  />
+                <label className="flex min-h-11 cursor-pointer items-start gap-2 py-1.5 text-xs">
+                  {/* A 24 px cell around the checkbox, so its own target clears WCAG 2.5.8. */}
+                  <span className="-mt-1 grid size-6 shrink-0 place-items-center">
+                    <input
+                      type="checkbox"
+                      className="size-4"
+                      checked={ticked.has(rec.id)}
+                      onChange={(e) =>
+                        setTicked((prev) => {
+                          const next = new Set(prev)
+                          if (e.target.checked) next.add(rec.id)
+                          else next.delete(rec.id)
+                          return next
+                        })
+                      }
+                    />
+                  </span>
                   <span className="min-w-0">
                     <span className="font-medium text-ink capitalize">
                       {delta > 0 ? '+' : ''}

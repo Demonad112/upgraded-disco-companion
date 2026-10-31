@@ -77,9 +77,9 @@ function Card({ r, rank }: { r: Recommendation; rank: number }) {
       <div className="flex flex-wrap items-center gap-1.5">
         <span
           aria-label={isQuestion ? 'Question' : `Finding ${rank}`}
-          className="tabular inline-flex size-5 items-center justify-center border border-accent-line bg-accent-soft text-[11px] font-semibold text-accent"
+          className="tabular inline-flex h-[22px] min-w-[22px] items-center justify-center border border-accent-line bg-accent-soft px-1 text-[11px] font-semibold text-accent"
         >
-          {isQuestion ? '?' : rank}
+          {isQuestion ? '?' : `#${rank}`}
         </span>
         <Tag tone={CATEGORY_TONE[r.category]}>{r.category}</Tag>
         {axis === 'damage' || axis === 'survivability' ? (
@@ -103,12 +103,13 @@ function Card({ r, rank }: { r: Recommendation; rank: number }) {
       </div>
 
       {r.tradeoff ? (
-        <p className="mt-2 text-[11px] leading-relaxed text-ink-mute">
+        <p className="mt-3 border-l-2 border-warn pl-2.5 text-[11px] leading-relaxed text-ink-mute">
           <span className="label-field">Trade-off:</span> {r.tradeoff}
         </p>
       ) : null}
 
-      <div className="mt-auto pt-2">
+      {/* Directly under the body, not pinned to the card's foot: in a two-column row the shorter card ends early. */}
+      <div className="mt-2">
         <button
           type="button"
           onClick={() => setOpen((v) => !v)}
