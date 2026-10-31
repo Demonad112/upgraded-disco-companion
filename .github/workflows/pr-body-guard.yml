@@ -16,8 +16,6 @@ jobs:
       - name: Self-test the guard
         run: node --test scripts/check-pr-body.test.mjs
       - name: No session info in PR title or body
-        # Title and body go through env, never into the script text (injection).
-        env:
-          PR_TITLE: ${{ github.event.pull_request.title }}
-          PR_BODY: ${{ github.event.pull_request.body }}
+        # Reads title and body from $GITHUB_EVENT_PATH: no `env:` (the runner prints env values in the log) and no
+        # `${{ }}` in the script text (injection).
         run: node scripts/check-pr-body.mjs

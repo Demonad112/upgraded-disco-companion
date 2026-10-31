@@ -23,7 +23,7 @@ session's row in its last commit. Audit rows are tracked in `docs/audit/08-PROGR
 | 9b | U4 controls kit | Cloud | Opus 5.5 · high | done | variant/20261030-controls | #50 | https://variant-20261030-controls.upgraded-disco-companion.pages.dev | `Select`, `Segmented`, `Range`, `Button` in `shared/controls.tsx` + `controls.css`; one focus ring; `rounded-*` removed (200 uses); keyboard pass in PR |
 | 10 | U5 segmented gauge | Cloud | Sonnet 5.5 · medium | done | variant/20261030-gauge | #52 | https://variant-20261030-gauge.upgraded-disco-companion.pages.dev | `Gauge` + `lib/gauge.ts` replace `ProgressBar`; one segment per unit ≤ 40, else 20; `.glow-*` removed; U8-1 done; `main` (with #50) merged in |
 | 10 | U6 phone tab bar | Cloud | Sonnet 5.5 · high | done | variant/20261030-tabbar | #53 | https://variant-20261030-tabbar.upgraded-disco-companion.pages.dev | `MobileTabBar` ≤ 720 px (hides in compact and with the keyboard); header keeps brand, offline chip, Search, Patch; short phone banner with ⓘ → Patch menu; U12-1, U12-3, U9-4 done |
-| 11 | U7 full footer | Cloud | Sonnet 5.5 · medium | done | variant/20261030-footer | | https://variant-20261030-footer.upgraded-disco-companion.pages.dev | Four-column footer (Tools, Resources, Data, Settings); `InstallButton` mounted; Methodology and What's new linked; A6-3, U12-2 done |
+| 11 | U7 full footer | Cloud | Sonnet 5.5 · medium | done | variant/20261030-footer | #60 | https://variant-20261030-footer.upgraded-disco-companion.pages.dev | Four-column footer (Tools, Resources, Data, Settings); `InstallButton` mounted; Methodology and What's new linked; A6-3, U12-2 done |
 | 12 | U10 character page | Local | Opus 5.5 · high | todo | | | | |
 | 12 | U11a checklist | Cloud | Sonnet 5.5 · medium | todo | | | | |
 | 13 | U11b dashboard and atlas | Cloud | Sonnet 5.5 · medium | todo | | | | |
@@ -37,3 +37,5 @@ session's row in its last commit. Audit rows are tracked in `docs/audit/08-PROGR
 | Inline glossary terms | P1 | done | #55 | `Gloss.tsx`; checklist step text and finding rationale; `GlossaryTerm.matches` |
 | 404 and error pages | P1 | done | #55 | `app/not-found.tsx` (404.html), `app/error.tsx` with Copy details |
 | Forced-colours support | P1 | done | #55 | Segments, range, select chevron, glossary in `controls.css` / `polish.css` |
+| Card-hover pulse and hero draw-in | W15-2 | done | #59 | CSS only in `polish.css`; `e2e/motion.spec.ts`; cursor spotlight stays deferred |
+| PR body guard (no session info) | SB3 | done | #58 | `pr-body-guard.yml`, `scripts/check-pr-body.mjs`; making it a required check is SB3-1 (owner) |
