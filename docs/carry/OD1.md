@@ -29,10 +29,13 @@ as D11–D15 in `docs/audit/09-OWNER-DECISIONS.md` and applies the two that chan
 Checked and not an item: the sky, Atlas map and passive-tree canvases are all sized by CSS (`100vw` or `w-full`), so the
 300 px default that caused U13b-5 can't widen the page there.
 
+## Owner answers (2026-11-01)
+- OD1-1: yes. Done on `variant/20261101-od1-followups`: the test runs on fake timers (`setTimeout` and `Date.now` move
+  together), same assertions.
+- OD1-2: closed, not restored.
+- Next programme: motion variants, A `variant/20261101-motion-polish` (MP1), then B `variant/20261101-living-sky` (LS1)
+  after A merges.
+
 ## Needs owner
-- OD1-1: allow a test-only change in `packages/core`? Recommended: yes, it's the last known flaky test.
-- OD1-2: close the lost-docs item? Recommended: yes.
-- With these rows done, the UI and audit backlogs hold no product work. The next programme (new analysis features, data
-  refresh for a new league, …) needs a direction from the owner.
 - Still the owner's: U13b-1 (real phone / Mac pass), A5-4 / W15-pulse-1 (eyeball the sky and pulse), SB4-1 (delete 3 guard
   run logs).

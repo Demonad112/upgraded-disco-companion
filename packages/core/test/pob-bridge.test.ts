@@ -11,7 +11,7 @@
  * That verification is the user's, and the README says so.
  */
 
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import {
   POB_DEFAULT_PORTS,
   PobBridge,
@@ -217,7 +217,17 @@ describe('PobBridge transport', () => {
         throw new Error('timed out')
       },
     })
-    const err = (await bridge.call('ping').catch((e: unknown) => e)) as PobBridgeError
+    // Fake timers move setTimeout and Date.now together, so the budget can't
+    // run out early on a slow machine.
+    vi.useFakeTimers()
+    let err: PobBridgeError
+    try {
+      const pending = bridge.call('ping').catch((e: unknown) => e)
+      await vi.runAllTimersAsync()
+      err = (await pending) as PobBridgeError
+    } finally {
+      vi.useRealTimers()
+    }
     expect(err.reason).toBe('timeout')
     expect(timeouts.length).toBeLessThan(4)
     expect(timeouts[1]!).toBeLessThanOrEqual(100)
