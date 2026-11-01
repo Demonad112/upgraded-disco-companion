@@ -1,6 +1,6 @@
 # Handoff
 
-Updated 2026-11-01 (U13b). Production host: `upgraded-disco-companion.pages.dev`
+Updated 2026-11-01 (U14, OD1). Production host: `upgraded-disco-companion.pages.dev`
 (default `siteUrl` in `apps/web/src/app/layout.tsx`).
 
 ## State
@@ -43,6 +43,17 @@ Updated 2026-11-01 (U13b). Production host: `upgraded-disco-companion.pages.dev`
 - Next session: if CI e2e on `main` fails on U13b-5, fix it in a **cloud** session (read the traces' cause, likely the
   "Data updated" header badge; don't loosen the test). Otherwise pick next-U / next-A rows from the Backlog.
 
+## Status 2026-11-01 (after U14 and OD1)
+
+- #66 merged, main CI green incl. e2e. **U14 (#67)** fixes U13b-2 (import CLS 0.11 → 0), U13b-3 (scroll-spy at the page
+  bottom) and U13b-5 (the 280 px flake: `CardLinksCanvas` was 300 px wide until its first frame). **OD1 (#68)** records
+  owner decisions D11–D15. Both are open for review; e2e left to CI.
+- Local branches `variant/20261101-qa` and `variant/20261029-surfaces` are deleted.
+- Backlog after both merge: next-A OD1-1 (fake timers in `pob-bridge.test.ts`, needs the owner's OK for `packages/core`),
+  next-U OD1-3 (home budget headroom) and the optional OD1-4; owner rows U13b-1, A5-4 / W15-pulse-1, SB4-1, OD1-2.
+- **Next:** the UI and audit programmes are finished. The next session needs a direction from the owner (see
+  `docs/carry/OD1.md` Needs owner).
+
 ## Correction recorded
 
 - DEP-01: Cloudflare Pages built `176fb6b` on Next 16.4.0 successfully, so the "first build stops with SecurityFatalError"
@@ -52,6 +63,7 @@ Updated 2026-11-01 (U13b). Production host: `upgraded-disco-companion.pages.dev`
 ## Open (carried over)
 
 1. Docs dropped in the transfer (`DESIGN.md`, `DATA-REFRESH.md`) are not restored. The cloud-setup hook is back (`.claude/hooks/cloud-setup.sh`, 718bd70).
-2. `packages/core/test/pob-bridge.test.ts` ("gives up once the per-call budget is spent") is timing-flaky.
+   Recommended: close (Backlog OD1-2).
+2. `packages/core/test/pob-bridge.test.ts` ("gives up once the per-call budget is spent") is timing-flaky. Backlog OD1-1.
 3. Owner steps: the Lighthouse run and the Vercel proxy deploy are done (U13b ran Lighthouse; the proxy echoes the
    production and preview origins and refuses others, `docs/carry/U13b.md`).
