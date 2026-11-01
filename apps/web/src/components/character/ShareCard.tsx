@@ -8,12 +8,12 @@
 
 import { useEffect, useRef, useState } from 'react'
 import type { Analysis } from '@poe2/core'
-import { gradeText } from '@/components/BuildScore'
+import { gradeText } from '@/lib/grade'
 import { fmt, fmtCompact } from '@/components/ui'
 import { Button } from '@/components/shared/controls'
 import { CURRENT_PATCH } from '@/lib/constants'
 import { importUrl } from '@/lib/recentCharacters'
-import { shareCardData, shareCardFileName, type ShareCardData } from '@/lib/shareCard'
+import { cutAtWord, shareCardData, shareCardFileName, type ShareCardData } from '@/lib/shareCard'
 
 const W = 1200
 const H = 630
@@ -35,15 +35,12 @@ function rng(seed: string) {
   }
 }
 
-/** Shrink a line to fit, then cut it with an ellipsis if even the smallest size is too wide. */
+/** Shrink a line to fit, then cut it at a word boundary with an ellipsis if even the smallest size is too wide. */
 function fit(ctx: CanvasRenderingContext2D, text: string, max: number, font: (px: number) => string, from: number, to: number) {
   let px = from
   ctx.font = font(px)
   while (px > to && ctx.measureText(text).width > max) ctx.font = font(--px)
-  if (ctx.measureText(text).width <= max) return text
-  let cut = text
-  while (cut.length > 1 && ctx.measureText(`${cut}…`).width > max) cut = cut.slice(0, -1)
-  return `${cut.trimEnd()}…`
+  return cutAtWord(text, (s) => ctx.measureText(s).width <= max)
 }
 
 async function draw(d: ShareCardData, host: string): Promise<Blob> {

@@ -1,6 +1,6 @@
 # Handoff
 
-Updated 2026-10-30. Production host: `upgraded-disco-companion.pages.dev`
+Updated 2026-11-01. Production host: `upgraded-disco-companion.pages.dev`
 (default `siteUrl` in `apps/web/src/app/layout.tsx`).
 
 ## State
@@ -18,7 +18,12 @@ Updated 2026-10-30. Production host: `upgraded-disco-companion.pages.dev`
   vendored (`next/font/local`, `apps/web/src/app/fonts/`), so `next build` works in cloud sessions.
 - P1 polish (#55), SB2 (#56), SB3 PR body guard (#58), W15-2 pulse and draw-in (#59) and U7 footer (#60, wave 11) merged.
   `main` CI green (run 136 on `bb6e0ba`).
-- Next: wave 12 (U10 character ∥ U11a checklist), then U11b (wave 13) and U13 (wave 14); prompts in `docs/carry/SB4.md`.
+- Waves 12–13 merged: U10 character (#63), U11a checklist (#62), U11b dashboard and atlas (#64). `main` CI green (run 146 on
+  `191d2df`).
+- Wave 14 split: U13a (cloud: code fixes, automated QA) is in its PR; U13b (local: real phone, Safari, Lighthouse on a GPU
+  machine) is next. Its checklist is `docs/carry/U13a.md` Open 1–3.
+- Weights after U13a: `/` 187,505 B br (+8.4 KB of the +10 KB budget); `/character/` 226,766 B br (was 273,620; results
+  lazy-loaded, U13a-4).
 
 ## Correction recorded
 

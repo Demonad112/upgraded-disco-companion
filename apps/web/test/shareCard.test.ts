@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { Analysis } from '@poe2/core'
-import { shareCardData, shareCardFileName } from '@/lib/shareCard'
+import { cutAtWord, shareCardData, shareCardFileName } from '@/lib/shareCard'
 import { glossSegments } from '@/components/shared/Gloss'
 
 function analysis(over: Partial<Record<string, unknown>> = {}): Analysis {
@@ -83,5 +83,28 @@ describe('inline glossary', () => {
 
   it('never marks a term with no match words', () => {
     expect(terms('The Masters (Doryani, Hilda, Jado) have trees.')).toEqual([])
+  })
+})
+
+describe('cutAtWord', () => {
+  // One unit per character stands in for measureText.
+  const width = (n: number) => (s: string) => s.length <= n
+
+  it('leaves text that fits alone', () => {
+    expect(cutAtWord('Cap chaos resistance', width(40))).toBe('Cap chaos resistance')
+  })
+
+  it('cuts at the last whole word, never mid-word', () => {
+    const out = cutAtWord('Cap chaos resistance before mapping tier 15', width(25))
+    expect(out).toBe('Cap chaos resistance…')
+    expect(out.length).toBeLessThanOrEqual(25)
+  })
+
+  it('drops punctuation left at the cut', () => {
+    expect(cutAtWord('Raise life, then swap the amulet', width(12))).toBe('Raise life…')
+  })
+
+  it('cuts a single over-wide word by character as a last resort', () => {
+    expect(cutAtWord('Supercalifragilistic tail', width(8))).toBe('Superca…')
   })
 })

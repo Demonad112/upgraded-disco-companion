@@ -1,6 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { spawnSync } from 'node:child_process';
+import { spawn, spawnSync } from 'node:child_process';
+import { createServer } from 'node:http';
 import { fileURLToPath } from 'node:url';
 import { mkdtempSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -13,6 +14,7 @@ function run(env) {
   delete clean.PR_TITLE;
   delete clean.PR_BODY;
   delete clean.GITHUB_EVENT_PATH;
+  delete clean.GITHUB_TOKEN;
   return spawnSync(process.execPath, [script], { env: { ...clean, ...env }, encoding: 'utf8' });
 }
 
@@ -78,4 +80,65 @@ test('null body in the event payload passes', () => {
 test('a hit never echoes the matched text', () => {
   const r = run({ PR_TITLE: 'x', PR_BODY: 'https://claude.ai/code/session_secret123' });
   assert.doesNotMatch(r.stdout + r.stderr, /session_secret123/);
+});
+
+// The live read: a stub API stands in for GitHub. spawn (not spawnSync) so this process can answer the request.
+async function withApi(handler, fn) {
+  const server = createServer(handler);
+  await new Promise((r) => server.listen(0, '127.0.0.1', r));
+  try {
+    return await fn(`http://127.0.0.1:${server.address().port}`);
+  } finally {
+    server.close();
+  }
+}
+
+function runLive(env) {
+  const clean = { ...process.env };
+  for (const k of ['PR_TITLE', 'PR_BODY', 'GITHUB_EVENT_PATH', 'GITHUB_TOKEN']) delete clean[k];
+  return new Promise((resolve) => {
+    const child = spawn(process.execPath, [script], { env: { ...clean, GITHUB_REPOSITORY: 'o/r', ...env } });
+    let out = '';
+    child.stdout.on('data', (d) => (out += d));
+    child.stderr.on('data', (d) => (out += d));
+    child.on('close', (status) => resolve({ status, out }));
+  });
+}
+
+test('a re-run checks the current body, not the replayed payload', async () => {
+  const stale = eventFile({ number: 7, title: 'x', body: 'https://claude.ai/code/session_old' });
+  let seen = '';
+  const r = await withApi(
+    (req, res) => {
+      seen = `${req.url} ${req.headers.authorization}`;
+      res.setHeader('content-type', 'application/json');
+      res.end(JSON.stringify({ title: 'x', body: 'edited, clean' }));
+    },
+    (api) => runLive({ GITHUB_EVENT_PATH: stale, GITHUB_TOKEN: 't0k', GITHUB_API_URL: api }),
+  );
+  assert.equal(r.status, 0);
+  assert.equal(seen, '/repos/o/r/pulls/7 Bearer t0k');
+});
+
+test('a session link in the current body fails even if the payload was clean', async () => {
+  const clean = eventFile({ number: 7, title: 'x', body: 'ok' });
+  const r = await withApi(
+    (req, res) => res.end(JSON.stringify({ title: 'x', body: 'https://claude.ai/code/session_new' })),
+    (api) => runLive({ GITHUB_EVENT_PATH: clean, GITHUB_TOKEN: 't', GITHUB_API_URL: api }),
+  );
+  assert.equal(r.status, 1);
+  assert.doesNotMatch(r.out, /session_new/);
+});
+
+test('falls back to the payload when the API fails', async () => {
+  const bad = eventFile({ number: 7, title: 'x', body: 'https://claude.ai/code/session_abc' });
+  const r = await withApi(
+    (req, res) => {
+      res.statusCode = 500;
+      res.end();
+    },
+    (api) => runLive({ GITHUB_EVENT_PATH: bad, GITHUB_TOKEN: 't', GITHUB_API_URL: api }),
+  );
+  assert.equal(r.status, 1);
+  assert.match(r.out, /HTTP 500/);
 });
