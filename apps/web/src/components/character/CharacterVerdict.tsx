@@ -12,7 +12,7 @@
 import { useSyncExternalStore, type ReactNode } from 'react'
 import { auditSpirit, dataAge, type Analysis, type BuildAssessment, type BuildTier } from '@poe2/core'
 import { Tag, fmt, fmtCompact } from '@/components/ui'
-import { gradeText } from '@/components/BuildScore'
+import { gradeText } from '@/lib/grade'
 import { cap } from './dmg'
 
 let mountedAt: number | null = null

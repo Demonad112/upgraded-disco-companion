@@ -8,7 +8,7 @@
 
 import { useEffect, useRef, useState } from 'react'
 import type { Analysis } from '@poe2/core'
-import { gradeText } from '@/components/BuildScore'
+import { gradeText } from '@/lib/grade'
 import { fmt, fmtCompact } from '@/components/ui'
 import { Button } from '@/components/shared/controls'
 import { CURRENT_PATCH } from '@/lib/constants'

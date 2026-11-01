@@ -22,8 +22,8 @@ Updated 2026-11-01. Production host: `upgraded-disco-companion.pages.dev`
   `191d2df`).
 - Wave 14 split: U13a (cloud: code fixes, automated QA) is in its PR; U13b (local: real phone, Safari, Lighthouse on a GPU
   machine) is next. Its checklist is `docs/carry/U13a.md` Open 1–3.
-- Weights after U13a: `/` 187,205 B br (+8.1 KB of the +10 KB budget); `/character/` 273,620 B br, over the 250 KB target
-  (U13a-4).
+- Weights after U13a: `/` 187,505 B br (+8.4 KB of the +10 KB budget); `/character/` 226,766 B br (was 273,620; results
+  lazy-loaded, U13a-4).
 
 ## Correction recorded
 

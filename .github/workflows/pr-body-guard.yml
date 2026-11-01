@@ -6,6 +6,7 @@ on:
 
 permissions:
   contents: read
+  pull-requests: read
 
 jobs:
   guard:
@@ -16,6 +17,9 @@ jobs:
       - name: Self-test the guard
         run: node --test scripts/check-pr-body.test.mjs
       - name: No session info in PR title or body
-        # Reads title and body from $GITHUB_EVENT_PATH: no `env:` (the runner prints env values in the log) and no
-        # `${{ }}` in the script text (injection).
+        # Reads the PR number from $GITHUB_EVENT_PATH and the current title and body from the API, so a re-run after
+        # an edit checks the edited text. Only the (masked) token goes through `env:`; title and body never do (the
+        # runner prints env values in the log), and there is no `${{ }}` in the script text (injection).
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
         run: node scripts/check-pr-body.mjs
