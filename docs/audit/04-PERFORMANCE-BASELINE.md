@@ -113,6 +113,10 @@ CLS risk is low (size-adjust fallbacks, fixed canvases); measured 0. TBT is driv
 | Sky fill/stroke calls per frame | ≤ 60 | ~1,000+ |
 | Idle Script share (desktop, headless) | ≤ 2% | 2.2% |
 
+Timing budgets (frame time, TBT, LCP, long tasks) are relative: **≤ +25 % over unmodified `main` measured in the same
+session on the same machine**. An absolute ms figure drifts with the machine (W15-pulse measured main itself 30 % slower than
+W15 did in the same container). Byte, pixel and call-count budgets above stay absolute. Decision D12 (SB3-W15-1).
+
 ## Measure (route-weight snippet)
 
 Save it as `scripts/route-weight.mjs` (T03) or run it from a scratch file. Run it from the repo root after `npm run build`.

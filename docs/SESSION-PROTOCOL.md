@@ -57,5 +57,6 @@
 3. Tick this session's row in `docs/ui/UI-PROGRESS.md` (UI) or `docs/audit/08-PROGRESS.md` (audit).
 4. Commit with `git commit -F <file>` and push. Open one PR with these sections: **Summary**, **Previous wave check**,
    **Carry-over handled**, **Gate**, **Screenshots** (list them; keep the images out of git), **Limits**, **Needs owner**.
-   Put the Pages preview URL at the top.
+   Put the Pages preview URL at the top. After creating the PR, remove any session link the tooling appended to the body;
+   the `guard` check (`scripts/check-pr-body.mjs`) fails a PR whose title or body carries one.
 5. Stop. Do not merge.

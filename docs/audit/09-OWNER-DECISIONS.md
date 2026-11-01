@@ -4,6 +4,7 @@ Each item has my recommendation first, then the tradeoff. The implementing sessi
 matching decision below is recorded (edit the **Decision** line).
 
 **Status 2026-10-22:** the owner accepted every recommendation (D1–D10). No ⛔ task is blocked on a decision.
+**Status 2026-11-01:** the owner accepted the recommendations for D11–D15 (end of the file).
 
 ### D1 — Chat CSP (SEC-01, T02)
 **Recommend A: allow the three provider origins in `connect-src`.** The chat is deliberately bring-your-own-key, the key lives
@@ -90,3 +91,28 @@ of that domain is HTTPS-only. No action while on `pages.dev`. Don't add `preload
 design work (`globals.css`, `page.tsx`, `DefensePanel.tsx`), so fixes shouldn't mix with it. Tradeoff: T05/T06/T07/T08 touch
 `ConstellationSky.tsx` and `globals.css`, so if `ui/glass-refresh` merges later it may conflict. Land the glass branch first if it's close.
 **Decision:** Accepted 2026-10-22 (owner accepted all recommendations). Fresh branch per phase off main (fix/audit-p0 … fix/audit-p3); never ui/glass-refresh
+
+### D11 — Session links in PR bodies (SB3-2)
+**Recommend yes:** add "remove any session link the tooling appended to the PR body" to `SESSION-PROTOCOL.md` Finish step 4.
+Every prompt repeated it by hand, and U11a still had to strip one. Tradeoff: none; the `guard` check stays as the backstop.
+**Decision:** Accepted 2026-11-01 (owner accepted all recommendations). Line added to Finish step 4
+
+### D12 — Timing budgets relative to same-session main (SB3-W15-1)
+**Recommend yes:** state frame-time, TBT and LCP budgets as "≤ +25 % over unmodified `main`, same session, same machine".
+W15's absolute 44.7 ms could not be applied a week later because the container itself had slowed by ~30 %. Tradeoff: each
+check has to measure `main` too. Byte and count budgets stay absolute.
+**Decision:** Accepted 2026-11-01 (owner accepted all recommendations). Rule added under Budgets in `04-PERFORMANCE-BASELINE.md`
+
+### D13 — U13 split into U13a (cloud) and U13b (local) (U13a-1)
+**Recommend accept:** device, GPU and Lighthouse checks can't run in a cloud container. Both halves have shipped (#65, #66).
+**Decision:** Accepted 2026-11-01 (owner accepted all recommendations). Recorded; no change
+
+### D14 — Close the owner's Windows-only e2e failures (A3-2)
+**Recommend close:** the 11 failures were fixed by SB1's Windows worker cap (`workers: 2` on win32). U13b's quiet full run on
+the owner's machine was 240/241; the one flake was U13b-5, with its fix in U14 (#67). Reopen with a fresh failing test name if it recurs.
+**Decision:** Accepted 2026-11-01 (owner accepted all recommendations). Closed
+
+### D15 — Live test of the PR body guard on GitHub (SB3 Open 1)
+**Recommend skip:** pushing a deliberate `Claude-Session:` trailer would put a session link on GitHub, which is what the
+guard exists to prevent. The pattern is covered by unit tests, and `guard` is a required check on `main`.
+**Decision:** Accepted 2026-11-01 (owner accepted all recommendations). Skipped
