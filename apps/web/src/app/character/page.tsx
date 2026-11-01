@@ -46,6 +46,13 @@ export default function Home() {
   const [error, setError] = useState<string | null>(null)
   // The profile URL of the current import, when it came from one.
   const [sourceUrl, setSourceUrl] = useState<string | null>(null)
+  // Whether "Load another character" is open while the import box is collapsed.
+  const [boxOpen, setBoxOpen] = useState(false)
+  // An import starting closes the box, so the skeleton sits where the panels will land (no shift when they do).
+  const setImportBusy = useCallback((b: boolean) => {
+    setBusy(b)
+    if (b) setBoxOpen(false)
+  }, [])
 
   // One fetch each, for the whole page. The gear panel and the findings list
   // must agree about what is wasted and what would fix it; the tree drawing and
@@ -120,10 +127,12 @@ export default function Home() {
   const handleResult = useCallback(async (r: ImportResult) => {
     if (!r.ok) {
       setError(r.error)
+      // Back to the bar, which shows the error next to the URL that failed.
+      setBoxOpen(true)
       return
     }
     setError(null)
-    setBusy(true)
+    setImportBusy(true)
     setSourceUrl(r.kind === 'ninja' ? (r.url ?? null) : null)
     try {
       if (r.kind === 'pob') {
@@ -143,7 +152,7 @@ export default function Home() {
       setAnalysis(null)
       setBusy(false)
     }
-  }, [])
+  }, [setImportBusy])
 
   // `?import=<poe.ninja URL>` — from the home page's "Re-import" link, a
   // reload, or a shared link. Read here, once per visit to the page.
@@ -165,6 +174,7 @@ export default function Home() {
   }, [handleResult])
 
   const a = analysis
+  const collapsed = Boolean(a || pobAnalysis || busy)
 
   return (
     <>
@@ -176,28 +186,33 @@ export default function Home() {
         description="Reads poe.ninja’s own computed character data and turns it into ranked, quantified findings. Nothing here is re-derived from scratch, and nothing is invented — where a number can’t be established, it says so."
       />
 
-      {a || pobAnalysis ? (
-        // Once a character is loaded the import box steps aside, so the verdict
-        // sits near the top. Keyed so it closes again on the next load.
-        <details data-surface="data" className="card group">
-          <summary className="flex cursor-pointer list-none items-center gap-3 text-sm text-ink-dim [&::-webkit-details-marker]:hidden">
-            <svg
-              viewBox="0 0 20 20"
-              fill="none"
-              aria-hidden="true"
-              className="size-3.5 text-accent transition-transform group-open:rotate-90"
-            >
-              <path d="M7.5 5l5 5-5 5" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-            Load another character
-          </summary>
-          <div className="dbody border-t border-line">
-            <ImportBar onResult={handleResult} busy={busy} setBusy={setBusy} />
-          </div>
-        </details>
-      ) : (
-        <ImportBar onResult={handleResult} busy={busy} setBusy={setBusy} />
-      )}
+      {/* Once an import starts the box steps aside, so the verdict sits near the top. One element either way: the bar
+          stays mounted and keeps a failed URL and its error. Open and summary-less until then. */}
+      <details
+        data-surface={collapsed ? 'data' : undefined}
+        className={collapsed ? 'card group' : 'group'}
+        open={collapsed ? boxOpen : true}
+        onToggle={(e) => {
+          if (collapsed) setBoxOpen(e.currentTarget.open)
+        }}
+      >
+        <summary
+          className={`${collapsed ? 'flex' : 'hidden'} cursor-pointer list-none items-center gap-3 text-sm text-ink-dim [&::-webkit-details-marker]:hidden`}
+        >
+          <svg
+            viewBox="0 0 20 20"
+            fill="none"
+            aria-hidden="true"
+            className="size-3.5 text-accent transition-transform group-open:rotate-90"
+          >
+            <path d="M7.5 5l5 5-5 5" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+          Load another character
+        </summary>
+        <div className={collapsed ? 'dbody border-t border-line' : undefined}>
+          <ImportBar onResult={handleResult} busy={busy} setBusy={setImportBusy} />
+        </div>
+      </details>
 
       {error ? (
         <p role="alert" className="mt-4 border border-danger/40 px-4 py-3 text-sm text-danger">

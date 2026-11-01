@@ -96,13 +96,14 @@ export function ImportBar({
       return
     }
     setBusy(true)
-    try {
-      const result = await importProfile(target)
-      if (!result.ok) setError(result.error)
-      onResult(result)
-    } finally {
+    // importProfile never throws. On success the page owns `busy` until the analysis lands; clearing it here as well
+    // dropped the skeleton for the whole analysis.
+    const result = await importProfile(target)
+    if (!result.ok) {
+      setError(result.error)
       setBusy(false)
     }
+    onResult(result)
   }
 
   function importPaste(e: React.FormEvent) {

@@ -17,6 +17,39 @@ test('?import= analyses the character and records it for the home page', async (
   await expect(page.locator('[data-tool-status="character"]')).toHaveText(/^Last import: Athrynas · (?!Lv)\S/)
 })
 
+test('a typed import collapses the box for its length, so the skeleton sits where the panels land', async ({ page }) => {
+  // Held long enough to see the busy state; then the fixture's own handler answers.
+  await page.route('**/api/character**', async (route) => {
+    await new Promise((s) => setTimeout(s, 1_500))
+    await route.fallback()
+  })
+  await page.goto('character/')
+  const box = page.locator('main details').first()
+  await expect(box).toHaveAttribute('open')
+  await expect(page.getByText('Load another character')).toBeHidden()
+
+  await page.getByLabel('poe.ninja character URL').fill(PROFILE_URL)
+  await page.getByRole('button', { name: 'Analyse', exact: true }).click()
+  await expect(box).not.toHaveAttribute('open')
+  await expect(page.getByText('Load another character')).toBeVisible()
+  await expect(page.locator('.skeleton').first()).toBeVisible()
+
+  await expect(page.getByRole('heading', { name: /Athrynas/ }).first()).toBeVisible({ timeout: 30_000 })
+  await expect(box).not.toHaveAttribute('open')
+})
+
+test('a failed import keeps the box open with the URL and the error', async ({ page }) => {
+  await page.route('**/api/character**', (route) =>
+    route.fulfill({ status: 404, contentType: 'application/json', body: '{"error":"not found"}' }),
+  )
+  await page.goto('character/')
+  await page.getByLabel('poe.ninja character URL').fill(PROFILE_URL)
+  await page.getByRole('button', { name: 'Analyse', exact: true }).click()
+  await expect(page.locator('main [role=alert]:not(:empty)').first()).toBeVisible({ timeout: 15_000 })
+  await expect(page.locator('main details').first()).toHaveAttribute('open')
+  await expect(page.getByLabel('poe.ninja character URL')).toHaveValue(PROFILE_URL)
+})
+
 test('closed analysis panels mount while idle, so their text is findable', async ({ page }) => {
   await page.goto(importUrl)
   await expect(page.getByRole('heading', { name: /Athrynas/ }).first()).toBeVisible({ timeout: 30_000 })
