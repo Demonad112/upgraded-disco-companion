@@ -31,9 +31,8 @@ export function checkProfileUrl(target: string): string | null {
 
 /**
  * Fetch a character by its poe.ninja profile URL. Shared by the import bar and
- * the character page's `?import=` handling, which must live on the page: the
- * bar is mounted in two places that swap as an analysis appears, and a bar
- * that read the parameter itself re-imported on every swap.
+ * the character page's `?import=` handling, which lives on the page: the page
+ * owns `busy` and the box's open state, and reads the parameter once per visit.
  */
 export async function importProfile(target: string): Promise<ImportResult> {
   const ref = parseProfileUrl(target)
