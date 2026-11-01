@@ -554,6 +554,14 @@ main [id] {
   max-width: 30rem;
   padding: 0.75rem;
 }
+/* Phone-width full-bleed bars (`-mx-4 px-4`, the Dashboard and Atlas tab rows) follow main's compact padding;
+   at -1rem they overhang it and the page scrolls 4 px sideways. */
+@media (width < 40rem) {
+  :root[data-compact] [data-bleed] {
+    margin-inline: -0.75rem;
+    padding-inline: 0.75rem;
+  }
+}
 :root[data-compact] .home-bento {
   grid-template-columns: minmax(0, 1fr);
   gap: 0.5rem;
