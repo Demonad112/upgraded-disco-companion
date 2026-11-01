@@ -1,5 +1,5 @@
 # MP1 carry-over · 2026-11-01
-PR: #PRNUM · Branch: variant/20261101-motion-polish · Preview: https://variant-20261101-motion-polish.upgraded-disco-companion.pages.dev
+PR: #71 · Branch: variant/20261101-motion-polish · Preview: https://variant-20261101-motion-polish.upgraded-disco-companion.pages.dev
 
 Batch 2 of the motion programme: design variant A (motion polish). Batch 1 (fake-timers test fix + doc notes) runs
 locally in parallel; Batch 3 (living-sky variant B, `components/fx/sky/*`, `polish.css`) rebases on this PR. Owner
