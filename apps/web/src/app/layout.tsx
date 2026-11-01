@@ -10,6 +10,7 @@ import { CommandPalette } from '@/components/layout/CommandPalette'
 import { HashHighlight } from '@/components/layout/HashHighlight'
 import { FxLayer } from '@/components/fx/FxLayer'
 import { ConstellationSky } from '@/components/fx/ConstellationSky'
+import { Astrolabe } from '@/components/fx/Astrolabe'
 import { PersistedStateProvider } from '@/hooks/usePersistedState'
 import { bannerBootstrap } from '@/lib/bannerDismiss'
 import { COMPACT_BOOTSTRAP } from '@/lib/compactMode'
@@ -110,6 +111,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             renders identically before and after hydration. */}
         {/* Fixed gold sky behind everything; the page wrapper below sits above it. */}
         <ConstellationSky />
+        <Astrolabe />
         <PersistedStateProvider>
           {/* One wrapper for the whole page, so the canvases behind it run the
               full document height. Banner, header, main and footer share the

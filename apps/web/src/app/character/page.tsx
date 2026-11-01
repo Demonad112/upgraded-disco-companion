@@ -179,6 +179,7 @@ export default function Home() {
   return (
     <>
       <PageHeader
+        tool="character"
         eyebrow="Character import"
         title="Character"
         accent="Analysis"

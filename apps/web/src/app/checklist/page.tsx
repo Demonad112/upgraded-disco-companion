@@ -24,6 +24,7 @@ export default function ChecklistPage() {
   return (
     <div className="flex flex-col gap-5">
       <PageHeader
+        tool="checklist"
         eyebrow="Endgame roadmap"
         title="Progression"
         accent="Checklist"

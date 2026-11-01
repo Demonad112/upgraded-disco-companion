@@ -18,6 +18,7 @@ export function ClusterNode({ cluster }: { cluster: AtlasCluster }) {
   return (
     <li
       id={cluster.id}
+      data-reveal="node"
       className={`scroll-mt-40 border px-3 py-2.5 transition-colors ${
         allocated
           ? "border-good/30 bg-good/5"

@@ -13,6 +13,7 @@ export function PageHeader({
   accent,
   description,
   source,
+  tool,
 }: {
   eyebrow: string;
   title: string;
@@ -20,11 +21,13 @@ export function PageHeader({
   description: ReactNode;
   /** Where the page's numbers come from, e.g. "poe.ninja". */
   source?: string;
+  /** The home tool card this page opens from; its title morphs into this one (MP1, styles/motion.css). */
+  tool?: "checklist" | "atlas" | "dashboard" | "character";
 }) {
   return (
     <header className="page-title">
       <div className="label-metric">{eyebrow}</div>
-      <h1 className="mt-2 font-display text-[clamp(34px,5.2vw,64px)] leading-[1.04] font-bold text-ink">
+      <h1 data-vt={tool} className="mt-2 font-display text-[clamp(34px,5.2vw,64px)] leading-[1.04] font-bold text-ink">
         {title} <span className="text-gradient-gold">{accent}</span>
       </h1>
       <Triad />

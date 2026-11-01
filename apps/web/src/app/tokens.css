@@ -116,6 +116,23 @@
   --sky-glow-mid: rgba(227, 179, 65, 0.45);
   --sky-glow-edge: rgba(227, 179, 65, 0);
   --sky-dim-fill: color-mix(in srgb, var(--page) 65%, transparent);
+  /* Lantern (MP1): the sky near a fine pointer. ConstellationSky reads the colour; the reach and fade are in sky/draw.ts. */
+  --sky-lantern: #fff3cf;
+
+  /* Motion (MP1, styles/motion.css). Moments on user actions only; reduced motion turns every one off. */
+  --motion-fade: 200ms;
+  --motion-morph: 320ms;
+  --motion-ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+  /* Gold-foil sweep on .text-gradient-gold: the shine colour, once after the hero draw-in, once per hover. */
+  --foil-shine: #fffaf0;
+  --foil-delay: 1.3s;
+  --foil-duration: 900ms;
+  /* Astrolabe scroll compass behind the header: brass ring, gold section ticks. */
+  --astro-brass: #b98a24;
+  --astro-gold: #e3b341;
+  --astro-size: 120px;
+  --astro-opacity: 0.55;
+  --astro-sweep: 330deg;
 }
 
 /* Desktop set (>= 981px): the one place breakpoint-dependent values change. */
@@ -128,5 +145,6 @@
     --title-pad-bottom: 28px;
     --block-border: 1px solid var(--line); /* quiet line, no gold frame */
     --block-border-top: 1px solid var(--line-strong);
+    --astro-size: 184px;
   }
 }

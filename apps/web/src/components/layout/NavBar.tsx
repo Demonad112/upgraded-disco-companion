@@ -1,8 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { useSyncExternalStore } from "react";
+import { usePathname, useRouter } from "next/navigation";
+import { useEffect, useRef, useSyncExternalStore } from "react";
+import { BASE_PATH } from "@/lib/basePath";
 import { OfflineChip } from "@/components/OfflineChip";
 import { OPEN_SEARCH_EVENT } from "./CommandPalette";
 import { NavMenu } from "./NavMenu";
@@ -18,9 +19,53 @@ function useShortcutLabel() {
   );
 }
 
+/**
+ * View Transitions between routes (MP1). Next's Link navigates in the same document, so the CSS
+ * `@view-transition { navigation: auto }` rule only covers full loads; this wraps every plain left click on an
+ * internal link in `document.startViewTransition` and finishes the transition once the new route has committed.
+ * Unsupported browsers and reduced motion keep plain navigation (no polyfill).
+ */
+function useRouteTransitions(pathname: string) {
+  const router = useRouter();
+  const done = useRef<(() => void) | null>(null);
+
+  useEffect(() => {
+    done.current?.();
+    done.current = null;
+  }, [pathname]);
+
+  useEffect(() => {
+    const onClick = (e: MouseEvent) => {
+      if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+      if (!document.startViewTransition || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+      const a = (e.target as Element | null)?.closest?.("a[href]");
+      if (!(a instanceof HTMLAnchorElement) || (a.target && a.target !== "_self") || a.hasAttribute("download")) return;
+      const url = new URL(a.href);
+      if (url.origin !== location.origin || (BASE_PATH && !url.pathname.startsWith(BASE_PATH))) return;
+      const path = url.pathname.slice(BASE_PATH.length) || "/";
+      const here = location.pathname.slice(BASE_PATH.length) || "/";
+      if (path.replace(/\/$/, "") === here.replace(/\/$/, "")) return;
+      // Ahead of Link's own handler, which skips a prevented click.
+      e.preventDefault();
+      document.startViewTransition(
+        () =>
+          new Promise<void>((resolve) => {
+            done.current = resolve;
+            // A navigation that never commits must not freeze the page.
+            setTimeout(resolve, 1500);
+            router.push(path + url.search + url.hash);
+          })
+      );
+    };
+    document.addEventListener("click", onClick, true);
+    return () => document.removeEventListener("click", onClick, true);
+  }, [router]);
+}
+
 export function NavBar() {
   const pathname = usePathname();
   const shortcut = useShortcutLabel();
+  useRouteTransitions(pathname);
 
   return (
     <nav className="site-nav" aria-label="Primary">

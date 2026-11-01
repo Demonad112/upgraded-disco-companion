@@ -18,6 +18,7 @@ export default function AtlasPage() {
     <AtlasMapProvider>
       <div className="flex flex-col gap-5">
         <PageHeader
+          tool="atlas"
           eyebrow="Atlas passive tree"
           title="Atlas Tree"
           accent="Planner"

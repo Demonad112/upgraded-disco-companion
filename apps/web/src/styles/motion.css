@@ -1,0 +1,260 @@
+/* MP1 motion polish (variant/20261101-motion-polish). Moments on user actions only; the sky is the one ambient loop.
+   Every value comes from tokens.css. Reduced motion: no animation at all (`animation-name: none`), final state shown.
+   Forced colours: the decorative parts hide. No backdrop-filter. */
+
+/* --- 1. View Transitions between routes ------------------------------------------------------------------------
+   Full loads use the cross-document rule (zero JS). Next's client navigation stays in the same document, so NavBar
+   wraps it in document.startViewTransition (components/layout/NavBar.tsx). Names apply only while a transition runs
+   (:active-view-transition), so they never add a stacking context to the live page. The tool card title on / and the
+   page title share a name and morph; everything else crossfades. The sky, header and astrolabe are captured on
+   their own and shown live with no animation: no flash, and the sky keeps turning. */
+@view-transition {
+  navigation: auto;
+}
+:root:active-view-transition .sky-canvas {
+  view-transition-name: sky;
+}
+:root:active-view-transition .site-header {
+  view-transition-name: site-header;
+}
+:root:active-view-transition .astrolabe {
+  view-transition-name: astrolabe;
+}
+:root:active-view-transition [data-vt='checklist'] {
+  view-transition-name: tool-checklist;
+}
+:root:active-view-transition [data-vt='atlas'] {
+  view-transition-name: tool-atlas;
+}
+:root:active-view-transition [data-vt='dashboard'] {
+  view-transition-name: tool-dashboard;
+}
+:root:active-view-transition [data-vt='character'] {
+  view-transition-name: tool-character;
+}
+:root:active-view-transition [data-vt] {
+  view-transition-class: tool-title;
+}
+::view-transition-group(root),
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: var(--motion-fade);
+}
+::view-transition-group(*.tool-title),
+::view-transition-old(*.tool-title),
+::view-transition-new(*.tool-title) {
+  animation-duration: var(--motion-morph);
+  animation-timing-function: var(--motion-ease);
+}
+::view-transition-group(sky),
+::view-transition-group(site-header),
+::view-transition-group(astrolabe),
+::view-transition-new(sky),
+::view-transition-new(site-header),
+::view-transition-new(astrolabe) {
+  animation: none;
+}
+::view-transition-old(sky),
+::view-transition-old(site-header),
+::view-transition-old(astrolabe) {
+  display: none;
+}
+
+/* --- 3. Gold-foil sweep on .text-gradient-gold ------------------------------------------------------------------
+   A narrow shine band is a second gradient layer over the gold, clipped to the text like it. The band's position is a
+   registered property, so the gradient itself animates (no pseudo overlay). Its resting value is off the right edge,
+   so without animation the lettering is plain gold. Once after the hero draw-in; once per hover of the card or link
+   the heading sits in. The hover sweep is a second animation in the list, so leaving doesn't replay the first. */
+@property --foil-x {
+  syntax: '<percentage>';
+  inherits: false;
+  initial-value: 150%;
+}
+.text-gradient-gold,
+h1.hero-title span.text-gradient-gold {
+  background-image:
+    linear-gradient(
+      100deg,
+      transparent calc(var(--foil-x) - 9%),
+      color-mix(in srgb, var(--foil-shine) 80%, transparent) var(--foil-x),
+      transparent calc(var(--foil-x) + 9%)
+    ),
+    var(--gold-text);
+}
+@keyframes foil-sweep {
+  from {
+    --foil-x: -20%;
+  }
+  to {
+    --foil-x: 120%;
+  }
+}
+@keyframes foil-hover {
+  from {
+    --foil-x: -20%;
+  }
+  to {
+    --foil-x: 120%;
+  }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .text-gradient-gold {
+    animation: foil-sweep var(--foil-duration) ease-out var(--foil-delay) both;
+  }
+  @media (hover: hover) {
+    :is(a, .card):hover .text-gradient-gold {
+      animation:
+        foil-sweep var(--foil-duration) ease-out var(--foil-delay) both,
+        foil-hover var(--foil-duration) ease-out;
+    }
+  }
+}
+
+/* --- 2. Astrolabe scroll compass (components/fx/Astrolabe.tsx) ---------------------------------------------------
+   Fixed behind the header, under the page content like the sky; hidden with it (light theme, compact). The dial turns
+   with the root scroller. Section squares on the outer ring come from ScrollSpyNav; the current one is solid gold.
+   No scroll-timeline support or reduced motion: a static ring. */
+.astrolabe {
+  position: fixed;
+  z-index: 0;
+  top: calc(var(--nav-h) - var(--astro-size) / 2);
+  right: max(var(--gutter), calc((100vw - var(--page-max)) / 2));
+  width: var(--astro-size);
+  height: var(--astro-size);
+  pointer-events: none;
+  opacity: var(--astro-opacity);
+  color: var(--astro-brass);
+}
+.astrolabe :is(circle, path) {
+  stroke: currentColor;
+}
+.astrolabe .astro-tip {
+  fill: var(--astro-gold);
+}
+.astrolabe .astro-section {
+  fill: none;
+  stroke: var(--astro-gold);
+  stroke-width: 1;
+}
+.astrolabe .astro-section[data-current] {
+  fill: var(--astro-gold);
+}
+.astro-dial {
+  transform-box: view-box;
+  transform-origin: 50% 50%;
+}
+@keyframes astro-turn {
+  from {
+    rotate: 0deg;
+  }
+  to {
+    rotate: var(--astro-sweep);
+  }
+}
+@supports (animation-timeline: scroll()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .astro-dial {
+      animation: astro-turn linear both;
+      animation-timeline: scroll(root);
+    }
+  }
+}
+:root[data-theme='light'] .astrolabe,
+:root[data-compact] .astrolabe {
+  display: none;
+}
+
+/* --- 4. Scroll-revealed Atlas -----------------------------------------------------------------------------------
+   Nodes rise 2px and fade in, fork branches draw their top stroke, trap nodes flicker --danger once, all on a view()
+   timeline: anything already on screen at load is past its range, so it paints in its final state and the first paint
+   is never held back. Unsupported or reduced motion: plain elements. */
+.reveal-stroke {
+  position: absolute;
+  inset: 0 0 auto 0;
+  width: 100%;
+  height: 2px;
+  overflow: visible;
+  pointer-events: none;
+}
+.reveal-stroke path {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 1;
+  stroke-dasharray: 1;
+  vector-effect: non-scaling-stroke;
+}
+@keyframes reveal-rise {
+  from {
+    opacity: 0;
+    translate: 0 2px;
+  }
+}
+@keyframes reveal-draw {
+  from {
+    stroke-dashoffset: 1;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+@keyframes reveal-flicker {
+  0%,
+  100% {
+    outline-color: transparent;
+  }
+  25%,
+  65% {
+    outline-color: var(--danger);
+  }
+  45% {
+    outline-color: transparent;
+  }
+}
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    [data-reveal] {
+      animation: reveal-rise linear both;
+      animation-timeline: view();
+      animation-range: entry 0% entry 80%;
+    }
+    [data-reveal='branch'] .reveal-stroke path {
+      animation: reveal-draw linear both;
+      animation-timeline: view();
+      animation-range: entry 40% cover 40%;
+    }
+    /* Outside its range the flicker has no effect (fill none), so the panel's own border and open state stand. */
+    [data-reveal='trap'] > details {
+      outline: 1px solid transparent;
+      outline-offset: -1px;
+      animation: reveal-flicker linear none;
+      animation-timeline: view();
+      animation-range: entry 60% entry 100%;
+    }
+  }
+}
+
+/* Reduced motion: no transitions between routes either (the cross-document one still runs in a browser that has it). */
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
+  }
+}
+
+@media (forced-colors: active) {
+  .astrolabe,
+  .reveal-stroke {
+    display: none;
+  }
+  .text-gradient-gold,
+  h1.hero-title span.text-gradient-gold {
+    animation: none;
+  }
+}
+
+@media print {
+  .astrolabe {
+    display: none;
+  }
+}

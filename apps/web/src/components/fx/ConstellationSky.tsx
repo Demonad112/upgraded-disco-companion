@@ -3,9 +3,14 @@
 import { useEffect, useRef } from 'react'
 import { usePathname } from 'next/navigation'
 import { buildField, type Field } from './sky/field'
-import { buildTicks, createPainter, type Ticks } from './sky/draw'
+import { buildTicks, createPainter, type Lantern, type Ticks } from './sky/draw'
 import { readPalette } from './sky/palette'
 import { makeSprites } from './sky/sprites'
+
+/** Lantern timing (MP1): idle this long and it fades; in and out over these. */
+const LAMP_IDLE = 2000
+const LAMP_IN = 160
+const LAMP_OUT = 400
 
 /**
  * Fixed, slowly rotating gold constellation sky behind the whole site. Dark
@@ -31,6 +36,10 @@ export function ConstellationSky() {
     const palette = readPalette()
     const painter = createPainter(ctx, palette, makeSprites(palette))
     const motion = window.matchMedia('(prefers-reduced-motion: reduce)')
+    // Lantern (MP1): a fine pointer lights the stars near it. Desktop only; the still frame never shows it.
+    const fine = window.matchMedia('(pointer: fine)').matches
+    const lamp: Lantern = { x: 0, y: 0, a: 0 }
+    let moved = -Infinity
     let field: Field | null = null
     let ticks: Ticks[] = []
     let dpr = 1
@@ -63,19 +72,33 @@ export function ConstellationSky() {
     }
 
     const draw = (t: number) => {
-      if (field && !hidden()) painter.paint(field, ticks, dpr, t, motion.matches)
+      if (field && !hidden()) painter.paint(field, ticks, dpr, t, motion.matches, lamp.a > 0 ? lamp : null)
+    }
+
+    /** Fades in over LAMP_IN ms after a move, out over LAMP_OUT ms once idle or gone; marks the canvas while lit. */
+    const stepLamp = (now: number, dt: number) => {
+      const on = now - moved < LAMP_IDLE
+      const a = on ? Math.min(1, lamp.a + dt / LAMP_IN) : Math.max(0, lamp.a - dt / LAMP_OUT)
+      if ((a > 0) !== (lamp.a > 0)) canvas.toggleAttribute('data-lantern', a > 0)
+      lamp.a = a
+    }
+    const douse = () => {
+      lamp.a = 0
+      canvas.removeAttribute('data-lantern')
     }
 
     const frame = (now: number) => {
       // Hidden (compact or light theme): stop; the root observer below restarts it.
       if (hidden()) {
         raf = 0
+        douse()
         return
       }
       raf = requestAnimationFrame(frame)
       // 30fps everywhere: the drift is slow, and the dense sky is the page's
       // biggest per-frame cost.
       if (now - last < 33) return
+      if (fine) stepLamp(now, Math.min(100, now - last))
       last = now
       draw((now - start) / 1000)
     }
@@ -93,8 +116,10 @@ export function ConstellationSky() {
     const run = () => {
       cancelAnimationFrame(raf)
       raf = 0
-      if (motion.matches) paintStill()
-      else raf = requestAnimationFrame(frame)
+      if (motion.matches) {
+        douse()
+        paintStill()
+      } else raf = requestAnimationFrame(frame)
     }
     kickRef.current = () => {
       if (motion.matches) paintStill()
@@ -112,6 +137,20 @@ export function ConstellationSky() {
       }, 120)
     }
     const onMotion = () => run()
+    // One passive listener; the sky's own frame reads the last position, so moves coalesce into its rAF.
+    const onPointer = (e: PointerEvent) => {
+      if (e.pointerType === 'touch') return
+      lamp.x = e.clientX
+      lamp.y = e.clientY
+      moved = performance.now()
+    }
+    const onOut = (e: PointerEvent) => {
+      if (!e.relatedTarget) moved = -Infinity
+    }
+    if (fine) {
+      window.addEventListener('pointermove', onPointer, { passive: true })
+      window.addEventListener('pointerout', onOut, { passive: true })
+    }
     const rootMo = new MutationObserver(run)
     rootMo.observe(root, { attributes: true, attributeFilter: ['data-compact', 'data-theme'] })
     window.addEventListener('resize', onResize)
@@ -125,6 +164,8 @@ export function ConstellationSky() {
       rootMo.disconnect()
       window.removeEventListener('resize', onResize)
       motion.removeEventListener('change', onMotion)
+      window.removeEventListener('pointermove', onPointer)
+      window.removeEventListener('pointerout', onOut)
     }
   }, [])
 

@@ -12,10 +12,15 @@ export function MemoryForkBranch({ fork }: { fork: MemoryFork }) {
   return (
     <div
       id={fork.id}
-      className={`scroll-mt-40 flex-1 border p-3.5 transition-colors ${
+      data-reveal="branch"
+      className={`relative scroll-mt-40 flex-1 border p-3.5 transition-colors ${
         allocated ? "border-good/30 bg-good/5" : "card hover:border-line-strong"
       }`}
     >
+      {/* The branch: a gold stroke along the top edge that draws in as the fork scrolls into view (styles/motion.css). */}
+      <svg aria-hidden className="reveal-stroke" viewBox="0 0 100 2" preserveAspectRatio="none">
+        <path d="M0 1H100" pathLength="1" />
+      </svg>
       <div className="flex items-center gap-2">
         <input
           type="checkbox"

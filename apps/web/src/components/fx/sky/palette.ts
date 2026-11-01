@@ -17,6 +17,8 @@ export type Palette = typeof FALLBACK & {
   amber: string
   /** Cool silver for a few faint field stars; falls back to warm white. */
   silver: string
+  /** The lantern's star colour (MP1); falls back to warm white. */
+  lantern: string
   /** Star colours in field order: gold, pale gold, warm white, amber, silver. */
   stars: readonly string[]
   rgb: { gold: Rgb; pale: Rgb; core: Rgb; amber: Rgb; silver: Rgb }
@@ -54,6 +56,7 @@ export function readPalette(): Palette {
     core,
     amber,
     silver,
+    lantern: cssColor('--sky-lantern', core),
     glowCore: cssColor('--sky-glow-core', FALLBACK.glowCore),
     glowMid: cssColor('--sky-glow-mid', FALLBACK.glowMid),
     glowEdge: cssColor('--sky-glow-edge', FALLBACK.glowEdge),
