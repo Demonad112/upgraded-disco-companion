@@ -37,6 +37,11 @@ Updated 2026-11-01 (U13b). Production host: `upgraded-disco-companion.pages.dev`
   `paths-ignore` on `pull_request`). Merged branches are deleted.
 - Owner, next: real-phone / Safari 17 / VoiceOver pass (Backlog U13b-1), SB3-2 and SB4-1, then delete
   `variant/20261101-qa` after #66 merges.
+- #66 gate: typecheck, lint, test and build passed locally; **e2e was left to GitHub CI** (owner's rule: no heavy jobs on
+  this PC, run them in the cloud). Local run 3 had two `[desktop]` 280 px failures, 20 px over (Backlog U13b-5; traces in
+  `C:\Dev\data\poe2-variants\20261101-qa\e2e-run3-traces\`). The compact sideways-scroll check is now its own e2e test.
+- Next session: if CI e2e on `main` fails on U13b-5, fix it in a **cloud** session (read the traces' cause, likely the
+  "Data updated" header badge; don't loosen the test). Otherwise pick next-U / next-A rows from the Backlog.
 
 ## Correction recorded
 
