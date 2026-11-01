@@ -37,7 +37,7 @@ export function TrapNodePanel() {
       </p>
       <ul className="space-y-1.5">
         {sortedTraps.map((trap, i) => (
-          <li key={trap.id} id={trap.id} className="scroll-mt-40">
+          <li key={trap.id} id={trap.id} data-reveal="trap" className="scroll-mt-40">
             {trap.group && trap.group !== sortedTraps[i - 1]?.group ? (
               <h4 className="mb-1 mt-2 text-xs font-semibold uppercase tracking-wide text-ink-mute">
                 {GROUP_LABELS[trap.group]}

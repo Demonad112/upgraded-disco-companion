@@ -152,7 +152,7 @@ export default function Home() {
             >
               {card.icon}
             </svg>
-            <h2 className="text-base text-ink">{card.title}</h2>
+            <h2 data-vt={card.status.tool} className="text-base text-ink">{card.title}</h2>
             <p className="mt-2 mb-4 text-sm text-ink-dim">{card.purpose}</p>
             <ToolStatus {...card.status} />
           </Link>

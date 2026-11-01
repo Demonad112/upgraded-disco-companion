@@ -95,3 +95,32 @@ test('the footer toggle dims behind blocks without a reload, and a reload keeps 
   await expect(page.locator('html')).not.toHaveAttribute('data-sky-dim-off')
   expect(await fill()).toBe(dimmed)
 })
+
+/** MP1 lantern: a fine pointer lights the sky near it; it fades after 2 s idle. Never on touch or reduced motion. */
+test.describe('lantern', () => {
+  const lit = (page: Page) => page.locator('canvas[data-fx="sky"]').evaluate((c) => c.hasAttribute('data-lantern'))
+
+  test('lights near a fine pointer and fades once it rests', async ({ page, isMobile }) => {
+    await page.goto('')
+    await expect(page.locator('canvas[data-fx="sky"]')).not.toHaveAttribute('width', '300')
+    await page.mouse.move(400, 300)
+    await page.mouse.move(420, 320)
+    if (isMobile) {
+      await page.waitForTimeout(500)
+      expect(await lit(page)).toBe(false)
+      return
+    }
+    await expect.poll(() => lit(page)).toBe(true)
+    // 2 s idle, then a 400 ms fade.
+    await expect.poll(() => lit(page), { timeout: 5000 }).toBe(false)
+  })
+
+  test('stays off under reduced motion', async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: 'reduce' })
+    await page.goto('')
+    await page.mouse.move(400, 300)
+    await page.mouse.move(420, 320)
+    await page.waitForTimeout(500)
+    expect(await lit(page)).toBe(false)
+  })
+})

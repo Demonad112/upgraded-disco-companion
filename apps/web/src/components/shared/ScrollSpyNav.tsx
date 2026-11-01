@@ -1,7 +1,9 @@
 'use client'
 
-import { useLayoutEffect, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { useScrollSpy } from '@/hooks/useScrollSpy'
+import { sectionAngles } from '@/lib/astrolabe'
 
 export interface SpyItem {
   id: string
@@ -19,6 +21,47 @@ export interface SpyItem {
  * The gold underline is one bar that slides to the current link (U10). Until it
  * has been measured, and without JavaScript, each link draws its own.
  */
+/** One square per section on the astrolabe's outer ring (components/fx/Astrolabe), the current one solid gold. */
+function AstrolabeTicks({ ids, active }: { ids: string[]; active: string | null }) {
+  const [target, setTarget] = useState<SVGGElement | null>(null)
+  const [angles, setAngles] = useState<number[]>([])
+  const key = ids.join('|')
+
+  useEffect(() => {
+    const g = document.querySelector<SVGGElement>('[data-astro-sections]')
+    if (!g) return
+    const root = document.documentElement
+    const place = () => {
+      const sweep = parseFloat(getComputedStyle(root).getPropertyValue('--astro-sweep')) || 330
+      const line = parseFloat(getComputedStyle(root).fontSize) * 4 + 56
+      const tops = key.split('|').map((id) => (document.getElementById(id)?.getBoundingClientRect().top ?? 0) + scrollY)
+      setAngles(sectionAngles(tops, root.scrollHeight - innerHeight, sweep, line))
+      setTarget(g)
+    }
+    // The observer's first call comes right after observe(), so it also places the ticks the first time.
+    const ro = new ResizeObserver(place)
+    ro.observe(document.body)
+    return () => ro.disconnect()
+  }, [key])
+
+  if (!target) return null
+  return createPortal(
+    ids.map((id, i) => (
+      <rect
+        key={id}
+        className="astro-section"
+        data-current={id === active ? '' : undefined}
+        x="-3"
+        y="-98"
+        width="6"
+        height="6"
+        transform={`rotate(${(angles[i] ?? 0).toFixed(1)})`}
+      />
+    )),
+    target,
+  )
+}
+
 export function ScrollSpyNav({ items, label }: { items: SpyItem[]; label: string }) {
   const [active, setActive] = useScrollSpy(items.map((i) => i.id))
   const navRef = useRef<HTMLElement>(null)
@@ -63,6 +106,7 @@ export function ScrollSpyNav({ items, label }: { items: SpyItem[]; label: string
       {ink ? (
         <span aria-hidden className="idx-ink" style={{ width: ink.w, transform: `translateX(${ink.x}px)` }} />
       ) : null}
+      <AstrolabeTicks ids={items.map((i) => i.id)} active={active} />
     </nav>
   )
 }
