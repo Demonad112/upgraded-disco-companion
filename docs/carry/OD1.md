@@ -1,5 +1,5 @@
 # OD1 carry-over · 2026-11-01
-PR: #PR · Branch: variant/20261101-owner-decisions · Preview: https://variant-20261101-owner-decisions.upgraded-disco-companion.pages.dev
+PR: #68 · Branch: variant/20261101-owner-decisions · Preview: https://variant-20261101-owner-decisions.upgraded-disco-companion.pages.dev
 
 Owner decisions batch, docs only. The owner accepted the recommendations for the five open decision rows; this records them
 as D11–D15 in `docs/audit/09-OWNER-DECISIONS.md` and applies the two that change a rule.

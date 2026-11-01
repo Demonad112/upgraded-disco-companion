@@ -46,7 +46,7 @@ Updated 2026-11-01 (U14, OD1). Production host: `upgraded-disco-companion.pages.
 ## Status 2026-11-01 (after U14 and OD1)
 
 - #66 merged, main CI green incl. e2e. **U14 (#67)** fixes U13b-2 (import CLS 0.11 → 0), U13b-3 (scroll-spy at the page
-  bottom) and U13b-5 (the 280 px flake: `CardLinksCanvas` was 300 px wide until its first frame). **OD1 (#PR)** records
+  bottom) and U13b-5 (the 280 px flake: `CardLinksCanvas` was 300 px wide until its first frame). **OD1 (#68)** records
   owner decisions D11–D15. Both are open for review; e2e left to CI.
 - Local branches `variant/20261101-qa` and `variant/20261029-surfaces` are deleted.
 - Backlog after both merge: next-A OD1-1 (fake timers in `pob-bridge.test.ts`, needs the owner's OK for `packages/core`),
