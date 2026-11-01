@@ -52,3 +52,19 @@ export function shareCardFileName(name: string): string {
     .toLowerCase()
   return `${slug || 'character'}-poe2-card.png`
 }
+
+/**
+ * Cut `text` so that it, plus an ellipsis, passes `fits`: at the last whole word that fits, with trailing punctuation dropped
+ * ("…chaos resistance…", not "…chaos resistanc…"). Only a single word too wide on its own is cut mid-word.
+ */
+export function cutAtWord(text: string, fits: (s: string) => boolean): string {
+  if (fits(text)) return text
+  const words = text.trim().split(/\s+/)
+  for (let k = words.length - 1; k >= 1; k--) {
+    const head = words.slice(0, k).join(' ').replace(/[\s,;:.·–—-]+$/u, '')
+    if (head && fits(`${head}…`)) return `${head}…`
+  }
+  let cut = words[0] ?? ''
+  while (cut.length > 1 && !fits(`${cut}…`)) cut = cut.slice(0, -1)
+  return `${cut}…`
+}

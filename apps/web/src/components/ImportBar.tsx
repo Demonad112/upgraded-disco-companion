@@ -6,7 +6,7 @@ import { PROXY_BASE } from '@/lib/proxy'
 import { useLocalStore } from '@/lib/localStore'
 import { recentCharacters } from '@/lib/recentCharacters'
 import { isOffline } from '@/lib/online'
-import { Button, Input, Segmented, Textarea } from './shared/controls'
+import { Button, Input, Segmented, Textarea, tabPanelProps } from './shared/controls'
 
 const EXAMPLE = 'https://poe.ninja/poe2/profile/Demonad112-2589/forbiddenrites/character/Yykiuy'
 const IMPORT_METHODS = [
@@ -142,84 +142,87 @@ export function ImportBar({
           setMode(m)
           setError(null)
         }}
+        idBase="import"
         className="mb-3"
       />
 
-      {mode === 'url' ? (
-        <form onSubmit={importUrl} className="flex flex-col gap-2 sm:flex-row">
-          <Input
-            type="url"
-            inputMode="url"
-            value={url}
-            onChange={(e) => setUrl(e.target.value)}
-            placeholder="https://poe.ninja/poe2/profile/Account-1234/league/character/Name"
-            aria-label="poe.ninja character URL"
-            className="flex-1"
-          />
-          <Button type="submit" variant="primary" disabled={busy}>
-            {busy ? 'Analysing…' : 'Analyse'}
-          </Button>
-        </form>
-      ) : (
-        <form onSubmit={importPaste} className="flex flex-col gap-2">
-          <Textarea
-            value={paste}
-            onChange={(e) => setPaste(e.target.value)}
-            rows={4}
-            placeholder='Paste a character model JSON, or a Path of Building export code'
-            aria-label="Character model JSON or Path of Building code"
-            className="font-mono"
-          />
-          <Button type="submit" variant="primary" disabled={busy} className="self-start">
-            Analyse pasted data
-          </Button>
-        </form>
-      )}
-
-      {mode === 'url' && recents.length > 0 ? (
-        <div className="mt-2 flex flex-wrap items-center gap-1.5 text-xs">
-          <span className="text-ink-mute">Recent:</span>
-          {recents.map((r) => (
-            <Button
-              key={r.url}
-              size="sm"
-              disabled={busy}
-              onClick={() => void runImport(r.url)}
-              title={r.url}
-              className="font-medium text-ink-dim"
-            >
-              {r.name}
-              {r.level ? <span className="text-ink-mute"> · {r.level}</span> : null}
-            </Button>
-          ))}
-        </div>
-      ) : null}
-
-      {error ? (
-        <p role="alert" className="mt-2 text-xs leading-relaxed text-danger">
-          {error}
-        </p>
-      ) : null}
-
-      <p className="mt-2 text-[11px] leading-relaxed text-ink-mute">
+      <div {...tabPanelProps('import', mode)}>
         {mode === 'url' ? (
-          <>
-            Example:{' '}
-            <button
-              type="button"
-              onClick={() => setUrl(EXAMPLE)}
-              className="text-accent underline underline-offset-2 transition-opacity hover:opacity-80"
-            >
-              {EXAMPLE}
-            </button>
-            {' '}
-            — fetched through a small proxy, because poe.ninja blocks direct browser requests. If it is unavailable,
-            paste the data instead.
-          </>
+          <form onSubmit={importUrl} className="flex flex-col gap-2 sm:flex-row">
+            <Input
+              type="url"
+              inputMode="url"
+              value={url}
+              onChange={(e) => setUrl(e.target.value)}
+              placeholder="https://poe.ninja/poe2/profile/Account-1234/league/character/Name"
+              aria-label="poe.ninja character URL"
+              className="flex-1"
+            />
+            <Button type="submit" variant="primary" disabled={busy}>
+              {busy ? 'Analysing…' : 'Analyse'}
+            </Button>
+          </form>
         ) : (
-          'Works entirely in your browser with no server. Everything below is computed locally from what you paste.'
+          <form onSubmit={importPaste} className="flex flex-col gap-2">
+            <Textarea
+              value={paste}
+              onChange={(e) => setPaste(e.target.value)}
+              rows={4}
+              placeholder='Paste a character model JSON, or a Path of Building export code'
+              aria-label="Character model JSON or Path of Building code"
+              className="font-mono"
+            />
+            <Button type="submit" variant="primary" disabled={busy} className="self-start">
+              Analyse pasted data
+            </Button>
+          </form>
         )}
-      </p>
+
+        {mode === 'url' && recents.length > 0 ? (
+          <div className="mt-2 flex flex-wrap items-center gap-1.5 text-xs">
+            <span className="text-ink-mute">Recent:</span>
+            {recents.map((r) => (
+              <Button
+                key={r.url}
+                size="sm"
+                disabled={busy}
+                onClick={() => void runImport(r.url)}
+                title={r.url}
+                className="font-medium text-ink-dim"
+              >
+                {r.name}
+                {r.level ? <span className="text-ink-mute"> · {r.level}</span> : null}
+              </Button>
+            ))}
+          </div>
+        ) : null}
+
+        {error ? (
+          <p role="alert" className="mt-2 text-xs leading-relaxed text-danger">
+            {error}
+          </p>
+        ) : null}
+
+        <p className="mt-2 text-[11px] leading-relaxed text-ink-mute">
+          {mode === 'url' ? (
+            <>
+              Example:{' '}
+              <button
+                type="button"
+                onClick={() => setUrl(EXAMPLE)}
+                className="text-accent underline underline-offset-2 transition-opacity hover:opacity-80"
+              >
+                {EXAMPLE}
+              </button>
+              {' '}
+              — fetched through a small proxy, because poe.ninja blocks direct browser requests. If it is unavailable,
+              paste the data instead.
+            </>
+          ) : (
+            'Works entirely in your browser with no server. Everything below is computed locally from what you paste.'
+          )}
+        </p>
+      </div>
     </div>
   )
 }

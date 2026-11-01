@@ -6,6 +6,7 @@ import { SourceFlag } from "@/components/shared/SourceFlag";
 import { useStrategySelection } from "@/hooks/useStrategySelection";
 import { StrategyTierBadge } from "./StrategyTable";
 import { LevelPill } from "@/components/shared/Pill";
+import { Button } from "@/components/shared/controls";
 
 export function StrategyCard({ strategy }: { strategy: FarmingStrategy }) {
   const { pinnedStrategyId, pinStrategy } = useStrategySelection();
@@ -14,10 +15,11 @@ export function StrategyCard({ strategy }: { strategy: FarmingStrategy }) {
   return (
     <div
       id={strategy.id}
+      data-surface="data"
       className={`scroll-mt-24 flex flex-col gap-2 border p-4 transition-all ${
         pinned
           ? "border-[var(--accent)]/40 bg-accent-soft shadow-[0_0_16px_-4px_color-mix(in_srgb,var(--accent)_30%,transparent)]"
-          : "border-[var(--line)] bg-[var(--surface-raised)] shadow-[var(--lift)] hover:border-line-strong"
+          : "border-[var(--line)] shadow-[var(--lift)] hover:border-line-strong"
       }`}
     >
       <div className="flex items-start justify-between gap-2">
@@ -25,16 +27,14 @@ export function StrategyCard({ strategy }: { strategy: FarmingStrategy }) {
           <StrategyTierBadge tier={strategy.tier} />
           {strategy.name}
         </h3>
-        <button
+        <Button
+          size="sm"
+          aria-pressed={pinned}
           onClick={() => pinStrategy(pinned ? undefined : strategy.id)}
-          className={`shrink-0 border px-2 py-1 text-xs transition-colors ${
-            pinned
-              ? "border-[var(--accent)]/40 text-[var(--accent)]"
-              : "border-line text-ink-mute hover:border-line hover:text-ink-dim"
-          }`}
+          className={`shrink-0 ${pinned ? "text-[var(--accent)]" : ""}`}
         >
           {pinned ? "★ Pinned" : "☆ Pin"}
-        </button>
+        </Button>
       </div>
 
       {strategy.mechanics.length > 0 && (

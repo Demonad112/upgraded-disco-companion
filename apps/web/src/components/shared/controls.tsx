@@ -60,6 +60,19 @@ export function Range({
   )
 }
 
+function tabIds(idBase: string, value: string) {
+  return { id: `${idBase}-tab-${value}`, 'aria-controls': `${idBase}-panel-${value}` }
+}
+
+/** Props for the panel of a `Segmented kind="tabs"` row rendered with the same `idBase`, showing `value`. */
+export function tabPanelProps(idBase: string, value: string) {
+  return {
+    role: 'tabpanel',
+    id: `${idBase}-panel-${value}`,
+    'aria-labelledby': `${idBase}-tab-${value}`,
+  } as const
+}
+
 export type SegmentedOption<T extends string> = {
   value: T
   label: ReactNode
@@ -69,7 +82,9 @@ export type SegmentedOption<T extends string> = {
 
 /**
  * One look for every pick-one row: sort chips, the findings focus, import tabs, page tabs.
- * `tabs` keeps tablist/tab/aria-selected (and adds arrow keys); `toggle` keeps group/aria-pressed buttons.
+ * `tabs` is the WAI-ARIA tabs pattern: tablist/tab/aria-selected, arrow keys with automatic activation, and a roving
+ * tabindex (one Tab stop per row, on the selected tab). Pass `idBase` when a panel is rendered: each tab then gets
+ * `id` and `aria-controls`, and the panel takes `tabPanelProps(idBase, value)`. `toggle` keeps group/aria-pressed buttons.
  * `scroll` puts the row in a ScrollFade strip for rows that can outgrow a phone.
  */
 export function Segmented<T extends string>({
@@ -79,6 +94,7 @@ export function Segmented<T extends string>({
   value,
   onChange,
   scroll = false,
+  idBase,
   className = '',
 }: {
   kind: 'tabs' | 'toggle'
@@ -87,12 +103,14 @@ export function Segmented<T extends string>({
   value: T
   onChange: (value: T) => void
   scroll?: boolean
+  /** Tabs only: id prefix that links each tab to its panel (see `tabPanelProps`). */
+  idBase?: string
   className?: string
 }) {
   const tabs = kind === 'tabs'
 
-  // Arrow keys, Home and End move between tabs and select (WAI-ARIA tabs, automatic activation). Every tab stays
-  // in the Tab order as before, so nothing that worked by Tab changes.
+  // Arrow keys, Home and End move between tabs and select (WAI-ARIA tabs, automatic activation). Only the selected
+  // tab is in the Tab order (roving tabindex), so Tab moves from the row straight into its panel.
   const onKeyDown = (e: KeyboardEvent<HTMLButtonElement>) => {
     if (!tabs) return
     const i = options.findIndex((o) => o.value === value)
@@ -117,7 +135,14 @@ export function Segmented<T extends string>({
         key={o.value}
         type="button"
         className="seg-item"
-        {...(tabs ? { role: 'tab', 'aria-selected': active } : { 'aria-pressed': active })}
+        {...(tabs
+          ? {
+              role: 'tab',
+              'aria-selected': active,
+              tabIndex: active ? 0 : -1,
+              ...(idBase ? tabIds(idBase, o.value) : {}),
+            }
+          : { 'aria-pressed': active })}
         onClick={() => onChange(o.value)}
         onKeyDown={onKeyDown}
       >

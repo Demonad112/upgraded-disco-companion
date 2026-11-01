@@ -105,7 +105,7 @@ function ResistanceStrip({
   onReset: () => void
 }) {
   return (
-    <div className="sticky top-16 z-10 border border-line bg-surface-raised/95 p-2 shadow-[var(--lift)] backdrop-blur">
+    <div className="sticky top-16 z-10 border border-line bg-surface-raised/95 p-2 shadow-[var(--lift)]">
       <div className="mb-1.5 flex items-center justify-between gap-2">
         <span className="text-[10px] font-medium tracking-wider text-ink-dim uppercase">
           Resistances {changes ? 'after changes' : 'now'}

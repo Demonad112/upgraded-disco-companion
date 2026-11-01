@@ -19,7 +19,7 @@ import { ClusterNode } from "./ClusterNode";
 import { MemoryForkBranch } from "./MemoryForkBranch";
 import { MechanicSubTreeList } from "./MechanicSubTreeList";
 import { TrapNodePanel } from "./TrapNodePanel";
-import { Segmented } from "@/components/shared/controls";
+import { Segmented, tabPanelProps } from "@/components/shared/controls";
 
 type TabId = "path" | "forks" | "mechanics" | "late" | "traps";
 
@@ -87,10 +87,11 @@ export function AtlasGuideTabs() {
           value={tab}
           onChange={setTab}
           scroll
+          idBase="atlas-guide"
         />
       </div>
 
-      <div role="tabpanel">
+      <div {...tabPanelProps("atlas-guide", tab)}>
         {tab === "path" ? (
           <>
             <Intro>

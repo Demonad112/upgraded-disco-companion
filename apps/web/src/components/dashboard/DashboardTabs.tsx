@@ -19,7 +19,7 @@ import { StrategyTable } from "./StrategyTable";
 import { BossCard } from "./BossCard";
 import { MetaBuildList } from "./MetaBuildList";
 import { CurrencyMilestones } from "./CurrencyMilestones";
-import { Segmented } from "@/components/shared/controls";
+import { Segmented, tabPanelProps } from "@/components/shared/controls";
 
 type TabId = "strategies" | "bosses" | "builds" | "milestones";
 
@@ -72,10 +72,11 @@ export function DashboardTabs() {
           value={tab}
           onChange={setTab}
           scroll
+          idBase="dashboard"
         />
       </div>
 
-      <div role="tabpanel">
+      <div {...tabPanelProps("dashboard", tab)}>
         {tab === "strategies" ? (
           <>
             <Intro>
