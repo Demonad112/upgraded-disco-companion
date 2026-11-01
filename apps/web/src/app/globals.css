@@ -243,7 +243,8 @@ code,
     transform: none;
   }
 
-  /* Small mono labels. */
+  /* Small mono labels. Same values as `.label-metric` (type.css), but layered: a colour utility beside it
+     (`eyebrow text-accent`, `text-warn`) wins here and would lose to the unlayered `.label-metric`. Don't alias the two. */
   .eyebrow {
     font-family: var(--font-label);
     font-size: 11px;
