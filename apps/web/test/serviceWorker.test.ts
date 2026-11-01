@@ -162,6 +162,19 @@ describe('offline worker', () => {
     await expect(w.install()).resolves.toBeUndefined()
   })
 
+  it('answers from the network when Cache Storage itself fails', async () => {
+    // Chrome throws "UnknownError" from caches.open on a damaged profile; every page and data request must still load.
+    class BrokenStores extends Map<string, Map<string, Response>> {
+      override has(): boolean {
+        throw new Error('UnknownError')
+      }
+    }
+    const w = worker('d1', new BrokenStores(), (url) => new Response(`net ${new URL(url).pathname}`), 'build1')
+    await w.activate()
+    expect(await w.get('/')).toBe('net /')
+    expect(await w.get('/passive-tree.json')).toBe('net /passive-tree.json')
+  })
+
   it('prunes an old cache the previous worker recreated after activation', async () => {
     const stores: Stores = new Map()
     const network = () => new Response('x')

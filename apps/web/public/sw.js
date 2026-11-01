@@ -63,7 +63,7 @@ self.addEventListener('install', (event) => {
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     (async () => {
-      await pruneOldCaches()
+      await pruneOldCaches().catch(() => {})
       await self.clients.claim()
     })(),
   )
@@ -126,7 +126,7 @@ self.addEventListener('fetch', (event) => {
   if (request.method !== 'GET') return
   if (!pruned) {
     pruned = true
-    event.waitUntil(pruneOldCaches())
+    event.waitUntil(pruneOldCaches().catch(() => {}))
   }
 
   const url = new URL(request.url)
@@ -142,30 +142,38 @@ self.addEventListener('fetch', (event) => {
   event.respondWith(networkFirst(request))
 })
 
+// Cache Storage can fail on its own: Chrome throws "UnknownError" from caches.open
+// on a damaged profile or a storage fault. The worker then answers from the
+// network as if it had no cache instead of failing every request, online
+// included. A cache error costs offline support, nothing more.
+const openCache = (name) => caches.open(name).catch(() => null)
+const lookup = async (cache, request) => (cache ? cache.match(request).catch(() => undefined) : undefined)
+const store = (cache, request, response) => cache?.put(request, response).catch(() => {})
+
 async function cacheFirst(request) {
-  const cache = await caches.open(DATA_CACHE)
-  const hit = await cache.match(request)
+  const cache = await openCache(DATA_CACHE)
+  const hit = await lookup(cache, request)
   if (hit) return hit
 
   const response = await fetch(request)
   // Only cache a real success. An opaque or error response cached here would
   // poison every later load with a failure that looks like data.
-  if (response.ok && response.status === 200) cache.put(request, response.clone())
+  if (response.ok && response.status === 200) store(cache, request, response.clone())
   return response
 }
 
 async function networkFirst(request) {
-  const cache = await caches.open(SHELL_CACHE)
+  const cache = await openCache(SHELL_CACHE)
   try {
     const response = await fetch(request)
-    if (response.ok && response.status === 200) cache.put(request, response.clone())
+    if (response.ok && response.status === 200) store(cache, request, response.clone())
     return response
   } catch (err) {
-    const hit = await cache.match(request)
+    const hit = await lookup(cache, request)
     if (hit) return hit
     // Navigations fall back to the app shell so a deep link still opens offline.
     if (request.mode === 'navigate') {
-      const shell = await cache.match('./')
+      const shell = await lookup(cache, './')
       if (shell) return shell
     }
     throw err

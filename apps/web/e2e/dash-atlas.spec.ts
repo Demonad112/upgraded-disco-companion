@@ -134,3 +134,18 @@ test('dashboard and atlas do not scroll sideways at 280, 320 and 390px', async (
   await page.getByRole('tab', { name: /Mechanics/ }).click()
   expect(await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)).toBeLessThanOrEqual(1)
 })
+
+// Compact mode narrows main's padding; the full-bleed tab rows must follow it.
+test('compact dashboard and atlas do not scroll sideways at 280 and 390px', async ({ page }) => {
+  await page.goto('dashboard/?compact=1')
+  for (const width of [280, 390]) {
+    await page.setViewportSize({ width, height: 700 })
+    for (const path of ['dashboard/', 'atlas/']) {
+      await page.goto(path)
+      await expect(page.locator('html')).toHaveAttribute('data-compact', '')
+      await page.waitForLoadState('networkidle')
+      const over = await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)
+      expect(over, `compact ${path} at ${width}px`).toBeLessThanOrEqual(1)
+    }
+  }
+})

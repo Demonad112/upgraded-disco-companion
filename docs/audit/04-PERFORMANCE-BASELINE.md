@@ -68,15 +68,31 @@ npx lighthouse@12 https://upgraded-disco-companion.pages.dev/ --preset=desktop -
 
 Keep the JSON out of git. Record LCP, CLS, TBT and INP (field data via CrUX, if any) in the table below.
 
-| Metric | Mobile | Desktop |
-|---|---|---|
-| Performance score | not run | not run |
-| LCP | not run | not run |
-| CLS | not run | not run |
-| TBT | not run | not run |
+**First baseline: U13b, 2026-11-01**, production `5f43423` (after #65). Lighthouse 12, Chrome 156, `--only-categories=performance`,
+default simulated throttling. Mobile adds `--screenEmulation.mobile --screenEmulation.width=390 --screenEmulation.height=844
+--screenEmulation.deviceScaleFactor=2`; desktop is `--preset=desktop` with `--screenEmulation.width=1440 --screenEmulation.height=900
+--screenEmulation.deviceScaleFactor=1`. Machine: i5-8250U laptop, Intel UHD 620 (integrated GPU), benchmark index 620–1120.
+That's below the ~1,500 Lighthouse calibrates mobile throttling for, so **mobile TBT reads high**. Compare future runs on the
+same machine, not against these absolutes. Median of 3 runs. `/character/` is the empty import page (no character loaded):
+3 of 7 runs finished, and the other 4 stopped with Lighthouse's `NO_NAVSTART` trace error (the page makes no client-side
+navigation; home never hit it).
 
-Expected risks: LCP element is the hero `<h1>` text (no hero image), so LCP depends on the EB Garamond swap. CLS risk is low
-(size-adjust fallbacks, fixed canvases). TBT is driven by the 223 KB br of JS on `/`.
+| Metric | `/` mobile | `/` desktop | `/character/` mobile (2 runs) | `/character/` desktop (1 run) |
+|---|---|---|---|---|
+| Performance score | 62 | 97 | 72 / 79 | 98 |
+| FCP | 1.3 s | 0.4 s | 1.1 s | 0.4 s |
+| LCP | 4.3 s | 0.9 s | 4.1 / 3.9 s | 0.9 s |
+| CLS | 0 | 0 | 0 | 0 |
+| TBT | 1,050 ms | 120 ms | 570 / 380 ms | 20 ms |
+| LCP element | Up next step description (`section.card > p.mt-1`, `NextStepCard`) | same | import help line (`#import-panel-url > p.mt-2`, "Example: https://poe.ninja/…") | same |
+
+INP: not measured (the Lighthouse CLI is lab-only and doesn't fetch CrUX; PageSpeed Insights would show field data if the
+origin has enough traffic). The LCP element on `/` is the Up next description, not the hero title (U8-3);
+recorded, not chased.
+
+Expected risks (audit, 2026-10-22): LCP element is the hero `<h1>` text (no hero image), so LCP depends on the EB Garamond
+swap. **Revised by the run above:** the LCP element is the Up next description on `/` and the import help line on `/character/`.
+CLS risk is low (size-adjust fallbacks, fixed canvases); measured 0. TBT is driven by the JS on `/` (187,507 B br after U13a).
 
 ## Third-party origins
 

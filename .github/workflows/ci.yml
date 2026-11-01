@@ -4,8 +4,8 @@ on:
   push:
     branches: [main]
     paths-ignore: ['**.md', 'LICENSE']
+  # No paths-ignore here: guard, test and secrets are required checks, so they must run on every PR.
   pull_request:
-    paths-ignore: ['**.md', 'LICENSE']
 
 permissions:
   contents: read
