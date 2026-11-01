@@ -98,5 +98,15 @@ export function CardLinksCanvas() {
     }
   }, [ref])
 
-  return <canvas ref={ref} aria-hidden className="pointer-events-none absolute top-0 left-0 -z-10" data-fx="card-links" />
+  // 0×0 until useCanvas sizes it: a bare canvas is 300px wide, which scrolls a 280px page sideways until the first paint.
+  return (
+    <canvas
+      ref={ref}
+      width={0}
+      height={0}
+      aria-hidden
+      className="pointer-events-none absolute top-0 left-0 -z-10"
+      data-fx="card-links"
+    />
+  )
 }
