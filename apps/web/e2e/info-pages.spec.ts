@@ -6,7 +6,7 @@ test('Methodology has its index and anchored sections, and a section link copies
   await page.goto('methodology/')
   await expect(page.getByRole('heading', { level: 1, name: /How the analysis works/ })).toBeVisible()
   const index = page.getByRole('navigation', { name: 'On this page' })
-  await expect(index.getByRole('link')).toHaveCount(7)
+  await expect(index.getByRole('link')).toHaveCount(8)
   await index.getByRole('link', { name: 'EHP' }).click()
   await expect(page).toHaveURL(/#ehp$/)
   await expect(page.locator('#ehp-title')).toBeInViewport()
