@@ -6,6 +6,7 @@ import { validate } from '@/lib/farm/rules'
 import { formatChange, pctChange, presetFor, scoreLoadout, type ScoreOptions } from '@/lib/farm/score'
 import { allSwaps, applySwap, subjectAt } from '@/lib/farm/swaps'
 import {
+  allSame,
   alternatives,
   chipsOf,
   keyOf,
@@ -126,6 +127,24 @@ describe('alternatives', () => {
         }
     }
     expect(seen).toBeGreaterThan(0)
+  })
+
+  it('when every alternative leaves Net unchanged, Reward and Danger are unchanged too (so the sheet has nothing else to show)', () => {
+    let sheets = 0
+    for (const p of picks) {
+      const l = p.recommended
+      const o = optsFor(p)
+      for (const { target } of everyTarget(l)) {
+        const alts = alternatives(d, l, o, target)
+        if (!allSame(alts)) continue
+        sheets++
+        for (const a of alts) {
+          expect(netWords(a.reward).sign).toBe(0)
+          expect(netWords(a.danger).sign).toBe(0)
+        }
+      }
+    }
+    expect(sheets).toBeGreaterThan(0)
   })
 
   it('netWords covers the edge cases', () => {

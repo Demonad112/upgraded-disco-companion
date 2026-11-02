@@ -65,4 +65,10 @@ describe('farm planner state (FP1)', () => {
     expect(parsePersisted(JSON.stringify({ version: 0, farm })).farm).toEqual(farm)
     expect(parsePersisted(JSON.stringify({ version: 0, farm: 'x' })).farm).toBeUndefined()
   })
+  it('keeps the Quick picks view (farm.view) on import and across a version bump', async () => {
+    const { parsePersisted, STORAGE_VERSION } = await import('@/lib/storage')
+    const farm = { loadouts: {}, current: 'qp-abyss', view: 'full' }
+    expect(parsePersisted(JSON.stringify({ version: STORAGE_VERSION, farm })).farm?.view).toBe('full')
+    expect(parsePersisted(JSON.stringify({ version: 0, farm: { ...farm, view: 'quick' } })).farm?.view).toBe('quick')
+  })
 })
