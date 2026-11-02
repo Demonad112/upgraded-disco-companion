@@ -43,6 +43,22 @@ FIX LIST (answer each, row per item, with URL + date + confidence):
 10. DANGER SEVERITY 0-3 per layer (ES, armour, evasion, mana/MoM, recovery). For each hazard: is the number sourced
     or your judgement? Judgement rows labelled as such with the reasoning.
 
+11. PATCH. Current patch per community sources is 0.5.5e Hotfix 1 (0.5.5b-e followed the Sep 3-4 notes). Did 0.5.5b-e
+    change any tablet or Waystone mod, range, tower socket rule, or Atlas passive used here? List changes, or "none found".
+    1.0 is reported for 2026-12-11: note anything announced about tablets/Waystones for 1.0.
+12. WAYSTONE MAX MODS. Three claims conflict: first fact-check says 6 normal / 10 corrupted (5+5); a Fubgun-sourced spec
+    says "T14-T15 8-mod Waystones" and "6-mod corrupted"; Mobalytics/Maxroll guides say 6 is the rare cap. Give the
+    number per case (rare, corrupted, any Atlas/omen/Vaal route to more), with the quoted source line. Shipped data
+    uses 6 and 10 (5+5).
+13. EXPEDITION STACKING. Shipped (1 tablet = 1 Expedition; 2 = +1 Verisium Remnant +35% density; 3 = +1 Expedition;
+    4 = +1 Remnant +35% density, City/overlap only). A second source says 4 tablets = +second Remnant AND +70% density.
+    Which is right per the 0.5.5 notes? Quote them. Also: is "density" a monster-density stat that stacks with pack size?
+14. IRRADIATED "Map has (1-2) additional random Modifiers": community guides describe "2 additional random map
+    modifiers" on Irradiated tablets for Grand Expedition farms. Confirm the real range and which tablet bases roll it.
+15. MECHANIC FACTS TO CHECK (single-source today): Delirium fog spreads to 10 maps (was 8-16); Delirium pack count
+    capped at 100% (effectiveness and rarity still to 200%); Breach rares spawn in waves of 5; Overseer tablet
+    guarantees a Rogue Exile / Powerful Boss. Say which are confirmed by the 0.5.5 notes.
+
 CALIBRATION (needed to fix Net): the planner multiplies stat totals by weights, so Waystone crit (150-200%) swamps
 reward stats (30-60%). Give a normaliser per stat that has a SOURCE (e.g. typical max roll, or a documented
 effect-per-% on monster damage/loot). No source -> "no evidence", leave empty.
