@@ -7,6 +7,15 @@ const RING_DIAMONDS = [2, 3, 2]
 /** Turn rate of the far, mid and near star layers relative to the rings (parallax). */
 export const LAYER_RATE = [0.88, 1, 1.12]
 export const MID = 1
+/**
+ * LS1: the progress constellations live in this annulus, in fractions of `ru` (the largest circle about the pivot
+ * that fits the viewport), so every progress star stays on screen as the sky turns. Generated constellations are
+ * moved out of it, `BAND_MARGIN` px clear, so a progress star never lands on one.
+ */
+export const BAND = [0.58, 0.9] as const
+export const BAND_MARGIN = 14
+/** `ru`: the radius of the largest circle about the pivot inside the viewport, the progress band's unit. */
+export const bandUnit = (w: number, h: number) => Math.min(w * PIVOT_X, w - w * PIVOT_X, h * PIVOT_Y, h - h * PIVOT_Y)
 
 /** Seeded, so the sky is identical on every load. */
 const SEED = 20261020
@@ -97,6 +106,40 @@ function allocStars(n: number): Stars {
   }
 }
 
+/**
+ * A constellation whose stars reach into the progress band is slid straight out past it, along the direction of its
+ * centroid. Once every star's projection on that direction is past the band's outer edge, so is every point of every
+ * link (a projection is never longer than the distance). Checking stars only is enough with 4 px more margin: a link
+ * (at most 70 px) bows under 3 px towards the pivot this far out, and is shorter than the band is wide, so it cannot
+ * jump it. Uses no random numbers, so the rest of the layout is untouched.
+ */
+function clearBand(pts: { x: number; y: number }[], ru: number) {
+  const inner = BAND[0] * ru - BAND_MARGIN - 4
+  const outer = BAND[1] * ru + BAND_MARGIN + 4
+  let lo = Infinity
+  let hi = 0
+  let cx = 0
+  let cy = 0
+  for (let i = 0; i < pts.length; i++) {
+    const r = Math.hypot(pts[i].x, pts[i].y)
+    hi = Math.max(hi, r)
+    lo = Math.min(lo, r)
+    cx += pts[i].x
+    cy += pts[i].y
+  }
+  if (hi < inner || lo > outer) return
+  const len = Math.hypot(cx, cy) || 1
+  const ux = len > 1e-6 ? cx / len : 1
+  const uy = len > 1e-6 ? cy / len : 0
+  let min = Infinity
+  for (const p of pts) min = Math.min(min, p.x * ux + p.y * uy)
+  const d = outer - min
+  for (const p of pts) {
+    p.x += ux * d
+    p.y += uy * d
+  }
+}
+
 export function buildField(w: number, h: number): Field {
   // The original stream lays out every star, constellation and diamond as it
   // always has; colour, brightness and the faint stars come from their own
@@ -107,6 +150,7 @@ export function buildField(w: number, h: number): Field {
   const px = w * PIVOT_X
   const py = h * PIVOT_Y
   const rm = Math.hypot(Math.max(px, w - px), Math.max(py, h - py)) * 1.03
+  const ru = bandUnit(w, h)
   const small = w < 700
   // K3 dense (design system 3.2).
   const k = (small ? 0.55 : 1) * STAR
@@ -196,6 +240,7 @@ export function buildField(w: number, h: number): Field {
       pts.push({ x: pts[2].x + Math.cos(bd) * len, y: pts[2].y + Math.sin(bd) * len, size: 0.9 + 0.9 * rand(), phase: rand() * Math.PI * 2 })
       links.push([2, pts.length - 1])
     }
+    clearBand(pts, ru)
     // The pulse runs the main chain; the branch keeps its own light.
     const at: number[] = []
     const nodeAt: number[] = pts.map(() => -1)
