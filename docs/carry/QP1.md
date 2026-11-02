@@ -1,5 +1,5 @@
 # QP1 carry-over · 2026-11-02
-PR: (see below) · Branch: variant/20261102-quick-picks · Preview: https://variant-20261102-quick-picks.upgraded-disco-companion.pages.dev (derived from the branch name; confirm on the PR's Pages check)
+PR: #76 · Branch: variant/20261102-quick-picks · Preview: https://variant-20261102-quick-picks.upgraded-disco-companion.pages.dev (derived from the branch name; confirm on the PR's Pages check)
 
 Quick picks on `/dashboard`: five curated farms, recommended tablets and Waystone as mod chips, a sheet with the 2–3 best
 legal alternatives ("Better by N%" / "Worse by N%"), result strip, shopping list, reset, Open full planner.
