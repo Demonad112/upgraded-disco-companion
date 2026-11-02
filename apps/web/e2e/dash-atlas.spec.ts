@@ -37,7 +37,7 @@ test.describe('strategy rows', () => {
 
   test('the quiz has a Reset that clears the answers', async ({ page }) => {
     await page.goto('dashboard/')
-    await page.getByRole('button', { name: 'Help me choose' }).click()
+    await page.getByRole('button', { name: 'Help me choose', exact: true }).click()
     await expect(page.getByRole('button', { name: 'Reset', exact: true })).toHaveCount(0)
     const selects = page.locator('#farm-help select')
     for (let i = 0; i < 3; i++) await selects.nth(i).selectOption({ index: 1 })
