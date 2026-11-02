@@ -32,7 +32,7 @@ test('adding a chip builds the expected link', async ({ page }) => {
   const href = await page.getByRole('link', { name: 'Open on trade site' }).getAttribute('href')
   const q = JSON.parse(decodeURIComponent(new URL(href!).search.slice(3)))
   expect(q.query.stats[0].filters).toEqual([{ id: 'explicit.stat_test_life', value: { min: 80 }, disabled: false }])
-  expect(q.query.filters.misc_filters.filters.ilvl.min).toBe(60)
+  expect(q.query.filters.type_filters.filters.ilvl.min).toBe(60)
 })
 
 test('has no serious accessibility violations', async ({ page }) => {
