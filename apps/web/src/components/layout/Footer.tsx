@@ -16,6 +16,7 @@ const TOOLS = [
   { href: "/checklist", label: "Checklist" },
   { href: "/atlas", label: "Atlas Tree" },
   { href: "/dashboard", label: "Dashboard" },
+  { href: "/trade", label: "Price check" },
 ] as const;
 
 const REPO = "https://github.com/Demonad112/upgraded-disco-companion";

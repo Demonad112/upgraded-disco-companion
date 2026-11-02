@@ -161,9 +161,10 @@ export interface SearchStatInput {
 }
 
 /**
- * Searches are limited to non-unique items of item level 60 and up. The filter
- * keys below (type_filters.rarity, misc_filters.ilvl) follow the PoE1 trade API
- * naming and are UNVERIFIED on trade2.
+ * Searches are limited to non-unique items of item level 60 and up. Filter keys
+ * type_filters.rarity and type_filters.ilvl checked against the live trade2 site
+ * (filters API and a prefilled ?q= link) on 2026-11-02. ilvl lives in type_filters,
+ * not misc_filters.
  */
 export const TRADE_MIN_ILVL = 60
 export const TRADE_RARITIES = ['rare', 'magic', 'nonunique'] as const
@@ -184,8 +185,7 @@ export interface SearchQueryBody {
     type?: string
     stats: { type: 'and'; filters: { id: string; value: { min?: number; max?: number }; disabled: false }[] }[]
     filters: {
-      type_filters: { filters: { rarity: { option: TradeRarity } } }
-      misc_filters: { filters: { ilvl: { min: number } } }
+      type_filters: { filters: { rarity: { option: TradeRarity }; ilvl: { min: number } } }
     }
   }
   sort: { price: 'asc' }
@@ -196,7 +196,7 @@ export type BuildSearchResult =
   | { ok: false; reason: 'null-stat-id'; index: number }
   | { ok: false; reason: 'unique-not-allowed' }
 
-/** Same body conventions as `buildTradeQueries`; unverified against the live trade2 site. */
+/** Same body conventions as `buildTradeQueries`; link and filter keys checked on the live trade2 site 2026-11-02. */
 export function buildSearchQuery(input: SearchQueryInput): BuildSearchResult {
   const rarity = input.rarity ?? 'nonunique'
   if (!(TRADE_RARITIES as readonly string[]).includes(rarity)) return { ok: false, reason: 'unique-not-allowed' }
@@ -217,8 +217,7 @@ export function buildSearchQuery(input: SearchQueryInput): BuildSearchResult {
         ...(input.type ? { type: input.type } : {}),
         stats: [{ type: 'and', filters }],
         filters: {
-          type_filters: { filters: { rarity: { option: rarity } } },
-          misc_filters: { filters: { ilvl: { min: TRADE_MIN_ILVL } } },
+          type_filters: { filters: { rarity: { option: rarity }, ilvl: { min: TRADE_MIN_ILVL } } },
         },
       },
       sort: { price: 'asc' },
@@ -226,8 +225,8 @@ export function buildSearchQuery(input: SearchQueryInput): BuildSearchResult {
   }
 }
 
-// Our own conservative guards on link length, NOT limits published or verified
-// for the trade site: warn past 2000 characters, refuse past 8000.
+// Our own conservative guards on link length, not published limits. A 4346-character
+// link with 35 filters opened on the live trade2 site (2026-11-02); longer was not tested.
 export const URL_WARN_LENGTH = 2000
 export const URL_MAX_LENGTH = 8000
 
@@ -235,7 +234,7 @@ export type BuildUrlResult =
   | { ok: true; url: string; length: number; warning: 'long-url' | null }
   | { ok: false; reason: 'url-too-long'; length: number }
 
-/** The `?q=` link format is confirmed for PoE1 only; unverified on trade2. */
+/** The `?q=` link format is confirmed on trade2 (2026-11-02): the site prefills the filters. */
 export function buildTradeUrl(league: string, body: SearchQueryBody): BuildUrlResult {
   const url = `https://www.pathofexile.com/trade2/search/poe2/${encodeURIComponent(league)}?q=${encodeURIComponent(JSON.stringify(body))}`
   const length = url.length

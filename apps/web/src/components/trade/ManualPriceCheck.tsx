@@ -276,13 +276,13 @@ export function ManualPriceCheck() {
 
       <div data-surface="data" className="card space-y-2 text-sm text-ink-dim">
         <p className="flex flex-wrap items-center gap-2">
-          <span>
+          <span className="min-w-0 break-words">
             Patch {snap.patch ?? 'unknown'} · fetched {snap.fetchedAt ?? 'never'} · {snap.source}
           </span>
           <ProvenanceBadge label="observed" />
         </p>
         <p>
-          The ?q= link format is confirmed for PoE1 and unverified on trade2 until tested; realm behaviour on console is
+          The ?q= link format is confirmed for PoE1 and on trade2 (prefills filters, checked 2026-11-02); realm behaviour on console is
           unverified.
         </p>
       </div>
