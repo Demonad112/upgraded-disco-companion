@@ -27,12 +27,20 @@ Before = a build of this branch with the TT1 part 2 files stashed (the earlier b
 ## Follow-up 2026-11-02 (chore/20261102-tt1-followup)
 Live checks run in Claude in Chrome on the live trade2 site, 2026-11-02, logged in. The four /trade screenshots do not exist on disk (never committed); capturing them is a screenshot sweep, left to CI/preview review.
 
+## Follow-up 2 · 2026-11-02 (same branch)
+- Nav entry (old Open 2): resolved. `/trade` is in the footer Tools list as "Price check" (`Footer.tsx`), which shows on home and every page, plus the existing command-palette entry. Not added to the header, phone tab bar or home tool cards: the tab bar is a 4-column grid and the 280px label-fit test (`dash-atlas.spec.ts`) already needs 10.5px type for "Character" in a quarter width, and the home Threads row is a 4-across rail (`globals.css` `.thread-row`); a fifth item would restyle both. `polish.spec.ts` footer tap-area and "go where they say" tests now cover "Price check" (e2e left to CI).
+- Route weight after the footer link (`node scripts/route-weight.mjs`, local build): `/` 738,370 raw / 189,276 br (+36 raw / +19 br on 738,334 / 189,257); `/trade` 746,214 / 192,113; `/character` 868,334 / 229,408. Accepted, far under budget.
+- Quick gate 2026-11-02, local: typecheck, lint, `npm test` (core 717 passed, web 246 passed), build all pass.
+- Items 2-4 of the follow-up brief (query.ts wording vs live filters API, link lengths 6,000/8,000/9,000, status values via `?q=`) were not run: the owner said to skip Claude in Chrome tests this session. Nothing in `query.ts`, `URL_MAX_LENGTH` or `TradeStatus` was changed, since nothing live contradicts them yet.
+
 ## Open
 | # | Type | For | Item | Recommended answer / action |
 |---|---|---|---|---|
-| 1 | follow-up | owner | Review `/trade` at 1440 and 390, empty and populated, on the Pages preview | Fix design breaks only |
-| 2 | follow-up | owner | Add `trade` to nav/home (1b is answered: `?q=` prefills) | Add after owner picks placement; palette-only until then |
-| 3 | unresolved | owner | Console realm behaviour on trade2 | Not tested; no promises, no branching |
+| 1 | follow-up | owner | Review `/trade` at 1440 and 390, empty and populated, on the Pages preview | Screenshot sweep: not run locally; do it on the Pages preview or a cloud session. Fix design breaks only |
+| 2 | unresolved | Chrome session | `query.ts` header still says the shape is unverified; `buildTradeQueries` body shape differs from `buildSearchQuery` | Read `/api/trade2/data/filters` (status options, stats types `and`/`count`, type field) and fix only what it contradicts. Skipped 2026-11-02 by owner |
+| 3 | unresolved | Chrome session | Link-length guards: only 4,346 chars tested | Try ~6,000, 8,000, 9,000; lower `URL_MAX_LENGTH` only if under 8,000 fails. Skipped 2026-11-02 by owner |
+| 4 | unresolved | Chrome session | `TradeStatus` values (online, securable, available, any) via `?q=` | Check each prefills; change type/labels only if contradicted. Skipped 2026-11-02 by owner |
+| 5 | unresolved | owner | Console realm behaviour on trade2 | Not tested; no promises, no branching |
 
 ## Needs owner
 - Nothing blocking.
