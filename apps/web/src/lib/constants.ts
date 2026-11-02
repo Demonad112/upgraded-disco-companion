@@ -5,6 +5,8 @@ export const CURRENT_PATCH = "0.5.5";
  * value: a Runes of Aldur character is still current.
  */
 export const LEAGUES = ["Forbidden Rites", "Runes of Aldur"] as const;
+// trade-site league string unconfirmed (Needs owner)
+export const TRADE_LEAGUE: string = LEAGUES[0];
 export const LEAGUE_LABEL = LEAGUES.join(" · ");
 
 export const MECHANIC_LABELS: Record<string, string> = {

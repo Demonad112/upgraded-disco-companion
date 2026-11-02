@@ -10,6 +10,7 @@
  * captured from a recorded stats response. Nothing here is fetched.
  */
 
+import { RESIST_STAT } from '../gear/analyze.js'
 import type { StatRequirement } from '../trade/query.js'
 
 /** Trade-site stat category. ASSUMPTION: the labels follow the public trade API's stats listing. */
@@ -99,4 +100,78 @@ export interface TradeQuerySnapshotCase {
   policy: UnverifiedPolicy
   /** Path of the committed expected-JSON file for all three variants. */
   expectedFile: string
+}
+
+// --- Stat map resolved from a recorded trade2 stats snapshot ----------------
+
+/** `packages/data/trade2-stats.json`: the trade site's stat listing, flattened. Empty until the owner records it. */
+export interface Trade2StatsSnapshot {
+  patch: string | null
+  fetchedAt: string | null
+  source: string
+  entries: readonly { id: string; text: string; type: string; group?: string }[]
+}
+
+/**
+ * The internal stats the app needs a trade id for, each with the text of its
+ * mod line. Internal ids are the `RESIST_STAT` values (`gear/analyze.ts`); the
+ * texts are copied from `packages/data/generated/mods.json` (the top-tier line
+ * of each resistance suffix). No trade id is stated here: ids come only from a
+ * snapshot, by exact normalised text match.
+ */
+export const MAPPED_STATS: readonly { internalId: string; text: string }[] = [
+  { internalId: RESIST_STAT.fire!, text: '+10% to Fire Resistance' },
+  { internalId: RESIST_STAT.cold!, text: '+10% to Cold Resistance' },
+  { internalId: RESIST_STAT.lightning!, text: '+10% to Lightning Resistance' },
+  { internalId: RESIST_STAT.chaos!, text: '+7% to Chaos Resistance' },
+]
+
+/**
+ * Lowercase, numbers and ranges (`10`, `(10-15)`, `1.5`) to `#`, drop a leading
+ * `+`, collapse whitespace. `+10% to Fire Resistance` and `+#% to Fire
+ * Resistance` both become `#% to fire resistance`.
+ */
+export function normaliseStatText(text: string): string {
+  return text
+    .toLowerCase()
+    .replace(/\(?\d+(?:\.\d+)?(?:\s*[-\u2013]\s*\d+(?:\.\d+)?)?\)?/g, '#')
+    .replace(/^\s*\+/, '')
+    .replace(/\s+/g, ' ')
+    .trim()
+}
+
+export type ResolvedStatReason = 'empty-snapshot' | 'no-match' | 'ambiguous'
+
+export interface ResolvedSnapshotStat {
+  internalId: string
+  text: string
+  /** Null unless exactly one entry of the wanted type matched. */
+  tradeId: string | null
+  patch: string | null
+  fetchedAt: string | null
+  reason: ResolvedStatReason | null
+}
+
+/**
+ * Map each `MAPPED_STATS` entry to a trade id. Exactly one exact-normalised
+ * match among entries of `typeFilter` gives the id; zero or several give a null
+ * id and a reason. Nothing is guessed.
+ */
+export function resolveTradeStatMapFromSnapshot(
+  snapshot: Trade2StatsSnapshot,
+  typeFilter = 'explicit',
+): ResolvedSnapshotStat[] {
+  const byText = new Map<string, string[]>()
+  for (const e of snapshot.entries) {
+    if (e.type !== typeFilter) continue
+    const key = normaliseStatText(e.text)
+    byText.set(key, [...(byText.get(key) ?? []), e.id])
+  }
+  return MAPPED_STATS.map((m) => {
+    const base = { internalId: m.internalId, text: m.text, patch: snapshot.patch, fetchedAt: snapshot.fetchedAt }
+    if (snapshot.entries.length === 0) return { ...base, tradeId: null, reason: 'empty-snapshot' as const }
+    const ids = byText.get(normaliseStatText(m.text)) ?? []
+    if (ids.length === 1) return { ...base, tradeId: ids[0]!, reason: null }
+    return { ...base, tradeId: null, reason: ids.length === 0 ? ('no-match' as const) : ('ambiguous' as const) }
+  })
 }

@@ -14,7 +14,8 @@
     "build:skills": "node scripts/build-skills.mjs",
     "build:pob-skills": "node scripts/build-pob-skills.mjs",
     "build:mod-tiers:pob": "node scripts/build-mod-tiers-pob.mjs",
-    "build:atlas-tree": "node scripts/build-atlas-tree.mjs"
+    "build:atlas-tree": "node scripts/build-atlas-tree.mjs",
+    "snapshot:trade-stats": "node scripts/snapshot-trade-stats.mjs"
   },
   "engines": {
     "node": ">=22"
