@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { commonMistakes } from "@/data/commonMistakes";
-import { StrategyQuiz } from "@/components/dashboard/StrategyQuiz";
+import { FarmPlanner } from "@/components/farm/FarmPlanner";
 import { DashboardTabs } from "@/components/dashboard/DashboardTabs";
 import { WarningPanel } from "@/components/shared/WarningPanel";
 import { SectionTitle } from "@/components/shared/SectionTitle";
@@ -23,8 +23,8 @@ export default function DashboardPage() {
       />
 
       <section>
-        <SectionTitle>Which strategy should I run?</SectionTitle>
-        <StrategyQuiz />
+        <SectionTitle>Farm planner</SectionTitle>
+        <FarmPlanner />
       </section>
 
       <WarningPanel mistakes={commonMistakes} stage="dashboard" />

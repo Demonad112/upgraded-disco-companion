@@ -14,14 +14,15 @@ test('ticking an Atlas node moves the allocation bar', async ({ page }) => {
   await expect(page.getByRole('tab', { name: /Path 1\/17/ })).toBeVisible()
 })
 
-test('the strategy quiz recommends once every answer is given', async ({ page }) => {
+test('Help me choose marks suggested farms once every answer is given', async ({ page }) => {
   await page.goto('dashboard/')
-  const selects = page.locator('main select')
+  await page.getByRole('button', { name: 'Help me choose' }).click()
+  const selects = page.locator('#farm-help select')
   await expect(selects).toHaveCount(3)
   for (let i = 0; i < 3; i++) {
     await selects.nth(i).selectOption({ index: 1 })
   }
-  await expect(page.getByText('Recommended for you')).toBeVisible()
+  await expect(page.getByText('Suggested', { exact: true }).first()).toBeVisible()
 })
 
 test('dashboard sort and row expansion work', async ({ page }) => {

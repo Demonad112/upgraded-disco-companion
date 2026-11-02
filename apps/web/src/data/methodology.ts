@@ -47,6 +47,12 @@ export const METHODOLOGY_SECTIONS: MethodologySection[] = [
     summary: 'Which figures are poe.ninja’s own and which are arithmetic done in this app.',
   },
   {
+    id: 'farm-planner',
+    label: 'Farm planner',
+    title: 'How the farm planner scores a map',
+    summary: 'A map score from weighted stat totals, not predicted drops; every weight carries its source.',
+  },
+  {
     id: 'not-guessed',
     label: 'Not guessed',
     title: 'What is deliberately not guessed',

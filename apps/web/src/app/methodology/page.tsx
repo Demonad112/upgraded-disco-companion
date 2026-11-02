@@ -222,6 +222,48 @@ export default function MethodologyPage() {
           </p>
         </Section>
 
+        <Section id="farm-planner">
+          {/* data/farm/tablets-0.5.5.json (rules, weights, sources), lib/farm/* (totals, score, swaps, danger) */}
+          <p>
+            The Dashboard’s farm planner scores a map, not a drop. It adds up what the tablets and the Waystone give the
+            map, weights each stat for the farm you chose, subtracts the danger, and reports three plain figures:
+          </p>
+          <Rows
+            rows={[
+              ['Reward', 'Σ (stat total × the preset’s weight for that stat). A stat with no weight in the preset adds nothing.'],
+              ['Danger', 'Σ (stat total × the stat’s danger rating). Only stats the data rates as hazards count.'],
+              ['Net', 'Reward − Danger × the danger setting: 1.5 for Play safe, 1 for Balanced, 0.5 for Greedy.'],
+            ]}
+          />
+          <p>
+            Totals add by default. A “less” stat multiplies as Π(1 + v/100) − 1, and a flag counts occurrences. Rolls are
+            scaled by the Atlas passives you tick, which are off until you tick them: tablet effect applies to tablet
+            rolls, the Enigmatic Intensification passive to Waystone rolls, and the City Biome passive on City maps only.
+            A change is shown as a signed percentage of the starting figure; from a starting figure of 0 it reads “new”.
+          </p>
+          <p>
+            Weights and danger ratings (0 to 3 per defence layer) come from a fact-check of patch 0.5.5 and are relative
+            judgements, each shown with its source and confidence in the data file. The footnote counts how many are
+            labelled unverified. The Item Rarity weight for Expedition is one of them. With “Danger for my build” on, the
+            danger rating is the mean over the layers your last imported character relies on (energy shield, armour,
+            evasion, from its latest snapshot); mana and leech are not in a snapshot, so they are not detected. The
+            threshold for “relies on” is this app’s own heuristic and is labelled unverified.
+          </p>
+          <p>
+            Rules read from the data, never hard-coded: tablets socket into Precursor Towers (up to 3 tablets per map, 4
+            with overlapping towers or a City map), magic tablets take 1 prefix and 1 suffix, rare tablets take 3 mods
+            (4 with both keystones), and a Waystone takes 6 mods (10 once corrupted). Tablet spawn weights are server-side
+            and not available, so no roll probabilities are modelled. A swap keeps the old roll’s relative position in the
+            new mod’s range.
+          </p>
+          <p>
+            It is a ranking aid. The danger scale is not calibrated against run logs yet, so treat a large Net swing from a
+            single danger stat with suspicion. A wrong value: open an issue on the{' '}
+            <a className="underline" href="https://github.com/Demonad112/upgraded-disco-companion/issues">repository</a>{' '}
+            naming the mod or weight, the value you see, the value you expect and where you read it.
+          </p>
+        </Section>
+
         <Section id="not-guessed">
           {/* packages/core/src/thresholds.ts (header), packages/core/src/score/index.ts,
               packages/core/src/defense/index.ts (ResistanceState), packages/core/src/dataage/index.ts,
