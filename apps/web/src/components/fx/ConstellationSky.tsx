@@ -4,6 +4,7 @@ import { useEffect, useRef } from 'react'
 import { usePathname } from 'next/navigation'
 import { buildField, type Field } from './sky/field'
 import { buildTicks, createPainter, type Lantern, type Ticks } from './sky/draw'
+import type { Living } from './sky/living'
 import { readPalette } from './sky/palette'
 import { makeSprites } from './sky/sprites'
 
@@ -34,7 +35,8 @@ export function ConstellationSky() {
     if (!ctx) return
     const root = document.documentElement
     const palette = readPalette()
-    const painter = createPainter(ctx, palette, makeSprites(palette))
+    const sprites = makeSprites(palette)
+    const painter = createPainter(ctx, palette, sprites)
     const motion = window.matchMedia('(prefers-reduced-motion: reduce)')
     // Lantern (MP1): a fine pointer lights the stars near it. Desktop only; the still frame never shows it.
     const fine = window.matchMedia('(pointer: fine)').matches
@@ -46,6 +48,10 @@ export function ConstellationSky() {
     let raf = 0
     let last = 0
     const start = performance.now()
+    // LS1: progress constellations and rune glyphs, a separate chunk loaded when idle after the first frame.
+    let layer: Living | null = null
+    /** The idle callback (or timeout) that loads the layer; set once, so it doubles as "queued"; -1 once unmounted. */
+    let idle = 0
 
     const hidden = () => root.dataset.theme === 'light' || root.hasAttribute('data-compact')
 
@@ -69,10 +75,26 @@ export function ConstellationSky() {
       field = buildField(w, h)
       ticks = buildTicks(field)
       painter.prepare(field, dpr)
+      layer?.prepare(field)
+    }
+
+    const loadLayer = () => {
+      const go = () => {
+        void import('./sky/living').then(({ createLiving }) => {
+          if (idle < 0) return
+          layer = createLiving({ ctx, palette, sprites, canvas, still: () => motion.matches, onChange: () => kickRef.current() })
+          if (field) layer.prepare(field)
+          kickRef.current()
+        })
+      }
+      // Safari has no requestIdleCallback.
+      idle = typeof window.requestIdleCallback === 'function' ? window.requestIdleCallback(go, { timeout: 4000 }) : window.setTimeout(go, 300)
     }
 
     const draw = (t: number) => {
-      if (field && !hidden()) painter.paint(field, ticks, dpr, t, motion.matches, lamp.a > 0 ? lamp : null)
+      if (!field || hidden()) return
+      painter.paint(field, ticks, dpr, t, motion.matches, lamp.a > 0 ? lamp : null, layer)
+      if (!idle) loadLayer()
     }
 
     /** Fades in over LAMP_IN ms after a move, out over LAMP_OUT ms once idle or gone; marks the canvas while lit. */
@@ -158,6 +180,10 @@ export function ConstellationSky() {
 
     return () => {
       kickRef.current = () => {}
+      if (typeof window.cancelIdleCallback === 'function') window.cancelIdleCallback(idle)
+      else window.clearTimeout(idle)
+      idle = -1
+      layer?.destroy()
       cancelAnimationFrame(raf)
       cancelAnimationFrame(stillQueued)
       window.clearTimeout(debounce)

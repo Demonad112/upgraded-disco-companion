@@ -17,6 +17,8 @@ test.describe('constellation sky', () => {
     await page.emulateMedia({ reducedMotion: 'reduce' })
     await page.setViewportSize({ width: 390, height: 844 })
     await page.goto('')
+    // LS1: the progress layer loads when idle after the first frame and repaints the still sky once.
+    await expect(page.locator('canvas[data-fx="sky"]')).toHaveAttribute('data-progress-lit', /\d+/)
     await settle(page)
   })
 
@@ -122,5 +124,55 @@ test.describe('lantern', () => {
     await page.mouse.move(420, 320)
     await page.waitForTimeout(500)
     expect(await lit(page)).toBe(false)
+  })
+})
+
+/**
+ * LS1 progress constellation: one star per checklist step and Atlas node. Read through the canvas's test hooks
+ * (`data-progress-lit`: stars lit; `data-progress-anim`: ignites, flares and labels running), never pixels.
+ */
+test.describe('progress constellation', () => {
+  const canvas = (page: Page) => page.locator('canvas[data-fx="sky"]')
+  const seed = (page: Page, ids: string[]) =>
+    page.addInitScript((completedStepIds) => {
+      if (sessionStorage.getItem('seeded')) return
+      sessionStorage.setItem('seeded', '1')
+      localStorage.setItem(
+        'poe2-endgame-companion:v1',
+        JSON.stringify({
+          version: 1,
+          checklist: { completedStepIds, completedActionItemKeys: [] },
+          atlas: { allocatedClusterIds: [], allocatedForkIds: [] },
+          dashboard: { lastQuizAnswers: {} },
+          character: { snapshots: [] },
+          updatedAt: new Date().toISOString(),
+        }),
+      )
+    }, ids)
+
+  test('Mark done lights a star', async ({ page }) => {
+    await page.goto('')
+    await expect(canvas(page)).toHaveAttribute('data-progress-lit', '0')
+    await page.getByRole('button', { name: 'Mark done' }).first().click()
+    await expect(canvas(page)).toHaveAttribute('data-progress-lit', '1')
+    // Read from the persisted state on the next page.
+    await page.goto('checklist/')
+    await expect(canvas(page)).toHaveAttribute('data-progress-lit', '1')
+  })
+
+  test('reduced motion shows the final state, with no ignite and a still frame', async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: 'reduce' })
+    await seed(page, ['step-campaign-end', 'step-atlas-rules'])
+    await page.goto('')
+    await expect(canvas(page)).toHaveAttribute('data-progress-lit', '2')
+    await expect(canvas(page)).toHaveAttribute('data-progress-anim', '0')
+    await page.getByRole('button', { name: 'Mark done' }).first().click()
+    await expect(canvas(page)).toHaveAttribute('data-progress-lit', '3')
+    await expect(canvas(page)).toHaveAttribute('data-progress-anim', '0')
+    const still = () => canvas(page).evaluate((c: HTMLCanvasElement) => c.toDataURL())
+    const before = await still()
+    await page.waitForTimeout(1000)
+    expect(await still()).toBe(before)
+    expect(await canvas(page).getAttribute('data-rune')).toBeNull()
   })
 })

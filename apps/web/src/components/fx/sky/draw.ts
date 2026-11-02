@@ -9,26 +9,22 @@ const RING_TICKS = [96, 144, 200]
 const LEVELS = 16
 /** A square of this side times the radius has a circle's area: sub-pixel stars keep their brightness. */
 const SQRT_PI = Math.sqrt(Math.PI)
-/** Link pulse: one run per constellation every PULSE_PERIOD s, travelling for the first PULSE_TRAVEL of it. */
-const PULSE_PERIOD = 12
-const PULSE_TRAVEL = 0.5
-const PULSE_TRAIL = 46
-/** How far (px along the chain) a star flares before and after the pulse passes it. */
-const FLARE_IN = 8
-const FLARE_OUT = 34
-/** Lantern (MP1): field stars within this many px of a fine pointer brighten and join their nearest neighbour. */
-export const LANTERN_R = 160
-/** At most this many stars take part, so the neighbour search stays small (k² ≈ 4k distance checks). */
-const LANTERN_MAX = 64
-/** Neighbours further apart than this stay unjoined, so the lines read as close pairs, not a web. */
-const LANTERN_LINK = 72
-/** Three distance bands, so the lantern is 3 fills and 3 strokes a frame (the 60-call budget, 04 Budgets). */
-const LANTERN_BANDS = [1, 0.55, 0.22]
-
 /** Pointer position in CSS px and strength 0..1 (fading in and out is the caller's). */
 export type Lantern = { x: number; y: number; a: number }
 
 export type Ticks = { short: Path2D; long: Path2D }
+
+/**
+ * An extra layer painted in the sky's own frame, after the field stars (LS1: progress constellations and rune
+ * glyphs, loaded later as their own chunk). `cos`/`sin` are the mid layer's rotation, so it turns with the sky.
+ */
+export type SkyLayer = {
+  paint: (f: Field, cos: number, sin: number, still: boolean) => void
+  /** The link pulse, drawn in the 'lighter' pass under the constellation stars (sky/pulse.ts). */
+  pulse: (f: Field, cos: number, sin: number, t: number) => void
+  /** The MP1 lantern, in the same chunk since LS1 so `/` loads none of it up front (sky/lantern.ts). */
+  lantern: (f: Field, lamp: Lantern) => void
+}
 
 /** Each ring's ticks at rest; a frame rotates them about the pivot. */
 export function buildTicks({ px, py, rm }: Field): Ticks[] {
@@ -51,7 +47,6 @@ export function buildTicks({ px, py, rm }: Field): Ticks[] {
 }
 
 const glintSize = (size: number) => 10 + size * 6
-const flareSize = (f: number) => 22 + 4 * Math.round(f * 5)
 
 /**
  * The frame painter. Field stars are sorted into colour and alpha batches
@@ -66,9 +61,6 @@ export function createPainter(ctx: CanvasRenderingContext2D, palette: Palette, s
   const ends = new Int32Array(buckets)
   const layerCos = new Float64Array(3)
   const layerSin = new Float64Array(3)
-  const lit = new Int32Array(LANTERN_MAX)
-  const litBand = new Int8Array(LANTERN_MAX)
-  const litNext = new Int32Array(LANTERN_MAX)
 
   /** Renders every sprite size this field draws, so the first frames copy rather than paint. */
   const prepare = (f: Field, dpr: number) => {
@@ -80,8 +72,6 @@ export function createPainter(ctx: CanvasRenderingContext2D, palette: Palette, s
         sprites.bloom.warm(n.size * 32)
       }
     }
-    for (let f5 = 0; f5 <= 5; f5++) sprites.bloom.warm(flareSize(f5 / 5))
-    sprites.bloom.warm(36)
     const s = f.stars
     for (let i = 0; i < s.n; i++) {
       if (!s.bright[i]) continue
@@ -90,81 +80,15 @@ export function createPainter(ctx: CanvasRenderingContext2D, palette: Palette, s
     }
   }
 
-  /**
-   * The lantern: stars near the pointer drawn again in the lantern colour, and each joined to its nearest lit
-   * neighbour by a faint gold line. Both fade with distance in three bands. Reads the screen positions the field
-   * pass just wrote (s.sx, s.sy), so it adds no placement work.
-   */
-  const paintLantern = (f: Field, lamp: Lantern) => {
-    const s = f.stars
-    const r2 = LANTERN_R * LANTERN_R
-    let k = 0
-    for (let i = 0; i < s.n && k < LANTERN_MAX; i++) {
-      if (s.bucket[i] < 0) continue
-      const dx = s.sx[i] - lamp.x
-      const dy = s.sy[i] - lamp.y
-      const d2 = dx * dx + dy * dy
-      if (d2 > r2) continue
-      lit[k] = i
-      litBand[k] = Math.min(2, Math.floor((Math.sqrt(d2) / LANTERN_R) * 3))
-      k++
-    }
-    if (k === 0) return
-    for (let p = 0; p < k; p++) {
-      let best = -1
-      let bestD = LANTERN_LINK * LANTERN_LINK
-      for (let q = 0; q < k; q++) {
-        if (q === p) continue
-        const dx = s.sx[lit[q]] - s.sx[lit[p]]
-        const dy = s.sy[lit[q]] - s.sy[lit[p]]
-        const d2 = dx * dx + dy * dy
-        if (d2 < bestD) {
-          bestD = d2
-          best = q
-        }
-      }
-      litNext[p] = best
-    }
-    ctx.globalCompositeOperation = 'lighter'
-    for (let band = 0; band < 3; band++) {
-      const fade = lamp.a * LANTERN_BANDS[band]
-      // Lines: a pair is drawn once, in the dimmer of its two bands.
-      ctx.beginPath()
-      let lines = false
-      for (let p = 0; p < k; p++) {
-        const q = litNext[p]
-        if (q < 0 || (litNext[q] === p && q < p) || Math.max(litBand[p], litBand[q]) !== band) continue
-        ctx.moveTo(s.sx[lit[p]], s.sy[lit[p]])
-        ctx.lineTo(s.sx[lit[q]], s.sy[lit[q]])
-        lines = true
-      }
-      if (lines) {
-        ctx.strokeStyle = palette.gold
-        ctx.lineWidth = 0.75
-        ctx.globalAlpha = 0.32 * fade
-        ctx.stroke()
-      }
-      ctx.beginPath()
-      let stars = false
-      for (let p = 0; p < k; p++) {
-        if (litBand[p] !== band) continue
-        const i = lit[p]
-        const size = Math.max(0.6, s.size[i]) * 1.25
-        ctx.moveTo(s.sx[i] + size, s.sy[i])
-        ctx.arc(s.sx[i], s.sy[i], size, 0, Math.PI * 2)
-        stars = true
-      }
-      if (stars) {
-        ctx.fillStyle = palette.lantern
-        ctx.globalAlpha = 0.7 * fade
-        ctx.fill()
-      }
-    }
-    ctx.lineWidth = 1
-    ctx.globalCompositeOperation = 'source-over'
-  }
-
-  const paint = (f: Field, ticks: Ticks[], dpr: number, t: number, still: boolean, lamp: Lantern | null = null) => {
+  const paint = (
+    f: Field,
+    ticks: Ticks[],
+    dpr: number,
+    t: number,
+    still: boolean,
+    lamp: Lantern | null = null,
+    layer: SkyLayer | null = null,
+  ) => {
     const { w, h, px, py, rm } = f
     const angle = still ? 0 : t * TURN_RATE
     for (let l = 0; l < 3; l++) {
@@ -183,28 +107,30 @@ export function createPainter(ctx: CanvasRenderingContext2D, palette: Palette, s
     ctx.clearRect(0, 0, w, h)
 
     // Rings: a hairline circle, glowing ticks turning against their
-    // neighbour, and small diamonds riding the ring.
-    ctx.strokeStyle = palette.gold
+    // neighbour, and small diamonds riding the ring. LS1: all three rings go
+    // into three paths (hairlines with the short ticks, then the long ticks'
+    // glow and line), so the rings cost 3 strokes rather than 12.
+    const hair = new Path2D()
+    const long = new Path2D()
     for (let i = 0; i < RING_RADII.length; i++) {
-      const spin = (i % 2 === 0 ? 1 : -1) * angle
-      ctx.lineWidth = 1
-      ctx.globalAlpha = 0.11
-      ctx.beginPath()
-      ctx.arc(px, py, rm * RING_RADII[i], 0, Math.PI * 2)
-      ctx.stroke()
-      ctx.save()
-      ctx.translate(px, py)
-      ctx.rotate(spin)
-      ctx.translate(-px, -py)
-      ctx.stroke(ticks[i].short)
-      ctx.lineWidth = 4
-      ctx.globalAlpha = 0.07
-      ctx.stroke(ticks[i].long)
-      ctx.lineWidth = 1
-      ctx.globalAlpha = 0.42
-      ctx.stroke(ticks[i].long)
-      ctx.restore()
+      const r = rm * RING_RADII[i]
+      const spin = ((i % 2 === 0 ? 1 : -1) * angle * 180) / Math.PI
+      const m = new DOMMatrix().translateSelf(px, py).rotateSelf(spin).translateSelf(-px, -py)
+      hair.moveTo(px + r, py)
+      hair.arc(px, py, r, 0, Math.PI * 2)
+      hair.addPath(ticks[i].short, m)
+      long.addPath(ticks[i].long, m)
     }
+    ctx.strokeStyle = palette.gold
+    ctx.lineWidth = 1
+    ctx.globalAlpha = 0.11
+    ctx.stroke(hair)
+    ctx.lineWidth = 4
+    ctx.globalAlpha = 0.07
+    ctx.stroke(long)
+    ctx.lineWidth = 1
+    ctx.globalAlpha = 0.42
+    ctx.stroke(long)
     ctx.fillStyle = palette.gold
     ctx.beginPath()
     for (const d of f.diamonds) {
@@ -254,64 +180,8 @@ export function createPainter(ctx: CanvasRenderingContext2D, palette: Palette, s
       }
     }
 
-    // The pulse: a comet running the chain, its trail bending round the
-    // corners behind it, and each star flaring as it passes.
-    if (!still) {
-      ctx.beginPath()
-      for (const c of f.constellations) {
-        const ph = (t / PULSE_PERIOD + c.offset) % 1
-        if (ph >= PULSE_TRAVEL || c.length === 0) continue
-        const u = ph / PULSE_TRAVEL
-        const dist = u * c.length
-        const env = Math.min(1, u * 6, (1 - u) * 6)
-        const tail = dist - PULSE_TRAIL * env
-        let hx = 0
-        let hy = 0
-        for (let j = 0; j < c.links.length; j++) {
-          const [a, b] = c.links[j]
-          if (b !== a + 1) continue
-          const p = c.stars[a]
-          const q = c.stars[b]
-          const len = Math.hypot(q.x - p.x, q.y - p.y)
-          const lo = Math.max(tail, c.at[j])
-          const hi = Math.min(dist, c.at[j] + len)
-          if (lo >= hi) continue
-          const k0 = (lo - c.at[j]) / len
-          const k1 = (hi - c.at[j]) / len
-          const x0 = p.x + (q.x - p.x) * k0
-          const y0 = p.y + (q.y - p.y) * k0
-          hx = p.x + (q.x - p.x) * k1
-          hy = p.y + (q.y - p.y) * k1
-          ctx.moveTo(px + x0 * cos - y0 * sin, py + x0 * sin + y0 * cos)
-          ctx.lineTo(px + hx * cos - hy * sin, py + hx * sin + hy * cos)
-        }
-        const x = px + hx * cos - hy * sin
-        const y = py + hx * sin + hy * cos
-        if (near(x, y)) {
-          ctx.globalAlpha = env
-          sprites.bloom.draw(ctx, x, y, 36)
-        }
-        for (let k = 0; k < c.stars.length; k++) {
-          const dd = dist - c.nodeAt[k]
-          if (c.nodeAt[k] < 0 || dd < -FLARE_IN || dd > FLARE_OUT) continue
-          const fl = dd < 0 ? 1 + dd / FLARE_IN : 1 - dd / FLARE_OUT
-          const n = c.stars[k]
-          const nx = px + n.x * cos - n.y * sin
-          const ny = py + n.x * sin + n.y * cos
-          if (!near(nx, ny)) continue
-          ctx.globalAlpha = 0.9 * fl * env
-          sprites.bloom.draw(ctx, nx, ny, flareSize(fl))
-        }
-      }
-      ctx.strokeStyle = palette.pale
-      ctx.lineWidth = 3
-      ctx.globalAlpha = 0.16
-      ctx.stroke()
-      ctx.lineWidth = 1.2
-      ctx.globalAlpha = 0.75
-      ctx.stroke()
-      ctx.lineWidth = 1
-    }
+    // The pulse (LS1: in the living-sky chunk, sky/pulse.ts).
+    if (!still) layer?.pulse(f, cos, sin, t)
     ctx.globalCompositeOperation = 'source-over'
 
     ctx.beginPath()
@@ -389,7 +259,8 @@ export function createPainter(ctx: CanvasRenderingContext2D, palette: Palette, s
       ctx.fill()
     }
 
-    if (lamp && lamp.a > 0.01 && !still) paintLantern(f, lamp)
+    if (layer) layer.paint(f, cos, sin, still)
+    if (lamp && lamp.a > 0.01 && !still) layer?.lantern(f, lamp)
 
     // Diffraction glints over the brightest stars.
     ctx.globalCompositeOperation = 'lighter'
