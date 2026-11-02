@@ -8,6 +8,7 @@ import { useFarm } from "@/hooks/useFarm";
 import "@/styles/farm.css";
 import { DecideStep } from "./DecideStep";
 import { CUSTOM_FARM, HASH_PREFIX } from "./ids";
+import { keyOf, pickById, pickByKey, QUICK_HASH_PREFIX } from "@/lib/farm/quickPickIds";
 
 // Step 2 carries the farm data and the engine; it loads when first opened so /dashboard/ stays light.
 const SetupStep = dynamic(() => import("./SetupStep"), {
@@ -15,25 +16,39 @@ const SetupStep = dynamic(() => import("./SetupStep"), {
   loading: () => <p className="text-sm text-ink-mute" role="status">Loading the planner…</p>,
 });
 
+// Quick picks' setup view (QP1) carries the engine and the sheet; same reason.
+const QuickSetup = dynamic(() => import("./QuickSetup"), {
+  ssr: false,
+  loading: () => <p className="text-sm text-ink-mute" role="status">Loading your setup…</p>,
+});
+
 type Step = "decide" | "setup";
-const known = (id: string) => id === CUSTOM_FARM || farmingStrategies.some((s) => s.id === id);
+type View = "quick" | "full";
+const known = (id: string) => id === CUSTOM_FARM || farmingStrategies.some((s) => s.id === id) || !!pickByKey(id);
 
 /** The farm planner (FP1): 1 Decide, 2 Set up. Step 2 stays disabled until a farm is picked. */
 export function FarmPlanner() {
-  const { farm, setCurrent } = useFarm();
+  const { farm, setCurrent, setView } = useFarm();
   const current = farm.current;
+  const savedView = farm.view;
   const [step, setStep] = useState<Step>("decide");
   const [picked, setPicked] = useState<string | null>(null);
+  const [view, setViewState] = useState<View>("full");
   const settled = useRef(false);
   const tabs = useRef<Record<Step, HTMLButtonElement | null>>({ decide: null, setup: null });
 
-  const open = (id: string) => {
+  const show = (id: string, v: View) => {
     settled.current = true;
     setPicked(id);
+    setViewState(v);
     setStep("setup");
     setCurrent(id);
-    history.replaceState(null, "", `#${HASH_PREFIX}${id}`);
+    setView(v);
+    const pick = pickByKey(id);
+    history.replaceState(null, "", v === "quick" && pick ? `#${QUICK_HASH_PREFIX}${pick.id}` : `#${HASH_PREFIX}${id}`);
   };
+  const open = (id: string) => show(id, "full");
+  const openQuick = (pickId: string) => show(keyOf({ id: pickId }), "quick");
   const back = () => {
     settled.current = true;
     setStep("decide");
@@ -44,18 +59,28 @@ export function FarmPlanner() {
   useEffect(() => {
     const fromHash = () => {
       const h = decodeURIComponent(window.location.hash.slice(1));
-      if (!h.startsWith(HASH_PREFIX)) return;
-      const id = h.slice(HASH_PREFIX.length);
-      if (!known(id)) return;
+      let id: string;
+      let v: View = "full";
+      if (h.startsWith(QUICK_HASH_PREFIX)) {
+        const pick = pickById(h.slice(QUICK_HASH_PREFIX.length));
+        if (!pick) return;
+        id = keyOf(pick);
+        v = "quick";
+      } else if (h.startsWith(HASH_PREFIX)) {
+        id = h.slice(HASH_PREFIX.length);
+        if (!known(id)) return;
+      } else return;
       settled.current = true;
       setPicked(id);
+      setViewState(v);
       setStep("setup");
       setCurrent(id);
+      setView(v);
     };
     fromHash();
     window.addEventListener("hashchange", fromHash);
     return () => window.removeEventListener("hashchange", fromHash);
-  }, [setCurrent]);
+  }, [setCurrent, setView]);
 
   // A reload lands back in Step 2 for the last farm, once the saved state has loaded (it is empty during hydration).
   useEffect(() => {
@@ -63,10 +88,11 @@ export function FarmPlanner() {
       if (settled.current || !current || !known(current)) return;
       settled.current = true;
       setPicked(current);
+      setViewState(savedView === "quick" && pickByKey(current) ? "quick" : "full");
       setStep("setup");
     };
     restore();
-  }, [current]);
+  }, [current, savedView]);
 
   const go = (next: Step) => {
     if (next === "setup" && !picked) return;
@@ -109,7 +135,13 @@ export function FarmPlanner() {
         {item("setup", "Set up", 2, !picked)}
       </div>
       <div {...tabPanelProps("farm", step)} id={`farm-panel-${step}`} aria-labelledby={`farm-tab-${step}`}>
-        {step === "decide" ? <DecideStep onPick={open} /> : picked ? <SetupStep key={picked} strategyId={picked} onChangeFarm={back} /> : null}
+        {step === "decide" ? (
+          <DecideStep onPick={open} onQuick={openQuick} />
+        ) : picked && view === "quick" && pickByKey(picked) ? (
+          <QuickSetup key={picked} farmKey={picked} onChangeFarm={back} onOpenFull={() => show(picked, "full")} />
+        ) : picked ? (
+          <SetupStep key={picked} strategyId={picked} onChangeFarm={back} onQuickView={pickByKey(picked) ? () => show(picked, "quick") : undefined} />
+        ) : null}
       </div>
     </div>
   );

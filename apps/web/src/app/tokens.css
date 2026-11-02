@@ -74,6 +74,9 @@
   --lh-body: 1.6;
   /* Farm Planner: a changed figure fades in over at most this long (FP1). */
   --farm-fade: 150ms;
+  --qp-sheet-motion: 150ms; /* QP1: the mod sheet appears in at most 150 ms; none under reduced motion */
+  --qp-backdrop: color-mix(in srgb, var(--page) 72%, transparent);
+  --qp-sticky-top: calc(3.5rem + env(safe-area-inset-top, 0px)); /* under the sticky header, as FP1's summary */
   --heading-tracking: 0.04em;
 
   /* Breakpoint-dependent values: MOBILE set (<= 980px). The desktop set is in

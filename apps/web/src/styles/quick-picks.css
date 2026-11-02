@@ -1,0 +1,333 @@
+/* Quick picks (QP1), screen 2 and the mod sheet. Numbers are text: no bars, gauges or charts. Square corners, tokens only.
+   Phones (≤ 720 px) are one column in DOM order: header, result strip (sticky), tablets, Waystone, details. */
+
+.qp-view {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  min-width: 0;
+}
+@media (min-width: 981px) {
+  .qp-view {
+    display: grid;
+    grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+    grid-template-rows: auto auto 1fr;
+    grid-template-areas:
+      'head head'
+      'main strip'
+      'main details';
+    gap: 20px 28px;
+    align-items: start;
+  }
+  .qp-head {
+    grid-area: head;
+  }
+  .qp-main {
+    grid-area: main;
+  }
+  .qp-strip {
+    grid-area: strip;
+  }
+  .qp-details {
+    grid-area: details;
+  }
+}
+.qp-head,
+.qp-main,
+.qp-details {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+}
+.qp-main {
+  gap: 24px;
+}
+.qp-title {
+  margin: 0;
+  color: var(--ink);
+  font-size: 26px;
+}
+.qp-estimate {
+  color: var(--accent);
+}
+
+/* Tablet and Waystone cards with mod chips */
+.qp-cards {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 12px;
+}
+@media (min-width: 721px) {
+  .qp-cards {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+.qp-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 0;
+  padding: 16px;
+  border: 1px solid var(--line);
+  background-color: var(--data-fill);
+}
+.qp-card > p {
+  margin: 0;
+}
+.qp-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.qp-chips li {
+  max-width: 100%;
+}
+.qp-chip {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  max-width: 100%;
+  min-height: 48px;
+  padding: 8px 14px;
+  border: 1px solid var(--accent-line);
+  background: transparent;
+  color: var(--ink);
+  font-size: 16px;
+  text-align: left;
+  overflow-wrap: anywhere;
+  cursor: pointer;
+}
+.qp-chip:hover {
+  border-color: var(--accent);
+}
+.qp-chip[data-danger] {
+  border-color: color-mix(in srgb, var(--danger) 60%, transparent);
+  color: var(--danger);
+}
+.qp-chip-text,
+.qp-alt-delta {
+  font-variant-numeric: tabular-nums;
+}
+.qp-flag {
+  color: var(--accent);
+  font-size: 12px;
+}
+
+/* Result strip: three plain numbers with their change vs the recommended start. Sticky under the header on phones. */
+.qp-strip dl {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin: 0;
+}
+.qp-strip dd {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 0;
+}
+.qp-big {
+  color: var(--ink);
+  font-size: 24px;
+  line-height: 1.2;
+}
+.qp-vs {
+  color: var(--ink-mute);
+  font-size: 13px;
+  line-height: 1.3;
+}
+@media (min-width: 721px) {
+  .qp-strip {
+    padding: 16px;
+    border: 1px solid var(--line);
+    background-color: var(--data-fill);
+  }
+}
+@media (max-width: 720px) {
+  .qp-strip {
+    position: sticky;
+    top: var(--qp-sticky-top);
+    z-index: 5;
+    margin: 0 -4px;
+    padding: 8px max(4px, env(safe-area-inset-right, 0px)) 8px max(4px, env(safe-area-inset-left, 0px));
+    border-bottom: 1px solid var(--line);
+    background: var(--surface);
+  }
+}
+
+.qp-lines {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.qp-lines li {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 2px 12px;
+  padding: 8px 0;
+  border-top: 1px solid var(--line);
+  font-size: 16px;
+}
+.qp-lines li[data-danger] span:first-child {
+  color: var(--danger);
+}
+.qp-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.qp-actions .btn {
+  min-height: 48px;
+  font-size: 16px;
+}
+@media (max-width: 720px) {
+  .qp-actions .btn {
+    flex: 1 1 100%;
+  }
+}
+.qp-list {
+  margin: 0;
+  padding: 12px;
+  border: 1px solid var(--line);
+  background: var(--sunken);
+  font-family: var(--font-label);
+  font-size: 14px;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+/* The mod sheet: a bottom sheet on phones, a popover next to the chip above 720 px. */
+.qp-sheet {
+  max-width: none;
+  max-height: none;
+  margin: 0;
+  padding: 0;
+  border: 1px solid var(--line-strong);
+  background: var(--overlay);
+  color: var(--ink);
+  overflow: auto;
+  overscroll-behavior: contain;
+  animation: qp-sheet-up var(--qp-sheet-motion) ease-out;
+}
+.qp-sheet::backdrop {
+  background: var(--qp-backdrop);
+}
+@media (max-width: 720px) {
+  .qp-sheet {
+    position: fixed;
+    inset: auto 0 0 0;
+    width: 100%;
+    max-height: 85dvh;
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    border-width: 1px 0 0;
+  }
+}
+@media (min-width: 721px) {
+  .qp-sheet {
+    position: fixed;
+    inset: var(--qp-top, 15vh) auto auto var(--qp-left, calc(50% - 220px));
+    width: min(440px, calc(100vw - 16px));
+    max-height: calc(100vh - 16px);
+    animation-name: qp-sheet-fade;
+  }
+}
+@keyframes qp-sheet-up {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+}
+@keyframes qp-sheet-fade {
+  from {
+    opacity: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .qp-sheet {
+    animation: none;
+  }
+}
+.qp-sheet-body {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+}
+.qp-sheet-body p {
+  margin: 0;
+}
+.qp-sheet-title {
+  margin: 0;
+  color: var(--ink);
+  font-size: 22px;
+}
+.qp-alts {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.qp-alts li {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas:
+    'name button'
+    'delta button';
+  align-items: center;
+  gap: 2px 12px;
+  padding: 10px 0;
+  border-top: 1px solid var(--line);
+}
+.qp-alts .btn {
+  grid-area: button;
+  min-width: 5.5rem;
+}
+.qp-alt-name {
+  grid-area: name;
+  font-size: 16px;
+  overflow-wrap: anywhere;
+}
+.qp-alt-delta {
+  grid-area: delta;
+  color: var(--ink-mute);
+  font-size: 15px;
+}
+.qp-alt-delta[data-tone='good'] {
+  color: var(--good);
+}
+.qp-alt-delta[data-tone='danger'] {
+  color: var(--danger);
+}
+.qp-more-danger {
+  color: var(--danger);
+}
+
+@media (min-width: 1280px) {
+  .qp-title {
+    font-size: 32px;
+  }
+  .qp-chip,
+  .qp-lines li,
+  .qp-alt-name,
+  .qp-actions .btn {
+    font-size: 18px;
+  }
+  .qp-big {
+    font-size: 30px;
+  }
+  .qp-vs {
+    font-size: 15px;
+  }
+  .qp-sheet-title {
+    font-size: 26px;
+  }
+}

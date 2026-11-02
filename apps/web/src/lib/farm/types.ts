@@ -106,6 +106,30 @@ export interface FarmData {
     risk: Record<RiskKey, number>
   }
   fixtures: FarmFixture[]
+  quickPicks: QuickPicksData
+}
+
+/** Quick picks (QP1): five curated farms with a ready loadout. Curated, not ranked by Net; `basis` says so. */
+export interface QuickPick {
+  id: string
+  name: string
+  /** One plain-language line for the tile. */
+  line: string
+  /** The farming strategy it belongs to (investment and danger level come from there). */
+  strategyId: string
+  preset: string
+  basis: 'estimate'
+  why: string
+  recommended: Loadout
+}
+export interface QuickPicksData {
+  patchNote: string
+  excluded: { farm: string; why: string }[]
+  /** `appliesTo`: "waystone" or a tablet type id. */
+  disagreements: { id: string; appliesTo: string; text: string }[]
+  /** Short chip text per mod id; `{v}` is the roll or the range. */
+  labels: Record<string, string>
+  picks: QuickPick[]
 }
 
 export interface ModPick { modId: string; tier: number; value: number }

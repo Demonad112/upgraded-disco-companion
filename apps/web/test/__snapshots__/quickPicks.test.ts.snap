@@ -1,0 +1,42 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`setup view helpers > abyss: shopping list text 1`] = `
+"Abyss + Rogue Exiles
+Tablet 1 Abyss rare: +2-3 Abyss rares, +20-30% Abyss density, +5-7% Pack size
+Tablet 2 Abyss rare: +2-3 Abyss rares, +20-30% Abyss density, +5-7% Pack size
+Tablet 3 Abyss rare: +2-3 Abyss rares, +20-30% Abyss density, +5-7% Pack size
+Waystone T15 rare: +41-50% Pack size, +55-65% Rare monsters, +25-29% Item quantity"
+`;
+
+exports[`setup view helpers > breach: shopping list text 1`] = `
+"Breach + Genesis Tree
+Tablet 1 Breach rare: +1-2 Breach rares, +30-60% Hiveblood, +5-7% Pack size
+Tablet 2 Breach rare: +1-2 Breach rares, +30-60% Wombgifts, +5-7% Pack size
+Tablet 3 Breach rare: +30-60% Hiveblood, +30-60% Wombgifts, +5-7% Pack size
+Waystone T15 rare: +41-50% Pack size, +55-65% Rare monsters, +25-29% Item quantity"
+`;
+
+exports[`setup view helpers > delirium: shopping list text 1`] = `
+"Delirium
+Tablet 1 Delirium rare: +5-10% Delirium reward progress, +5-10% Splinter stack size, +5-7% Pack size
+Tablet 2 Delirium rare: +5-10% Delirium reward progress, +5-10% Splinter stack size, +5-7% Pack size
+Tablet 3 Delirium rare: +5-10% Delirium reward progress, +5-10% Splinter stack size, +5-7% Pack size
+Waystone T15 rare: +41-50% Pack size, +25-29% Item quantity, +55-65% Rare monsters"
+`;
+
+exports[`setup view helpers > expedition: shopping list text 1`] = `
+"Expedition, 4 tablets (City map)
+Tablet 1 Expedition rare: +5-10% Logbooks, +10-15% Expedition rares, +5-7% Pack size
+Tablet 2 Expedition rare: +5-10% Artifacts, +1 Remnant, +5-7% Pack size
+Tablet 3 Expedition rare: +5-10% Logbooks, +5-10% Artifacts, +5-7% Pack size
+Tablet 4 Expedition rare: +10-15% Expedition rares, +1 Remnant, +5-7% Pack size
+Waystone T15 rare: +41-50% Pack size, +25-29% Item quantity, +55-65% Rare monsters"
+`;
+
+exports[`setup view helpers > unique-hunting: shopping list text 1`] = `
+"Unique hunting
+Tablet 1 Overseer rare: +1 map boss mod, +8-12% Item rarity, +3-7% Item quantity
+Tablet 2 Overseer rare: +1 map boss mod, +8-12% Item rarity, +3-7% Item quantity
+Tablet 3 Irradiated rare: +25-35% Rare monsters, +8-12% Item rarity, +3-7% Item quantity
+Waystone T15 rare: +101-150% Item rarity, +25-29% Item quantity, +55-65% Rare monsters"
+`;
