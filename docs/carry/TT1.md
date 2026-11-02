@@ -33,10 +33,24 @@ Live checks run in Claude in Chrome on the live trade2 site, 2026-11-02, logged 
 - Quick gate 2026-11-02, local: typecheck, lint, `npm test` (core 717 passed, web 246 passed), build all pass.
 - Items 2-4 of the follow-up brief (query.ts wording vs live filters API, link lengths 6,000/8,000/9,000, status values via `?q=`) were not run: the owner said to skip Claude in Chrome tests this session. Nothing in `query.ts`, `URL_MAX_LENGTH` or `TradeStatus` was changed, since nothing live contradicts them yet.
 
+## Design review · 2026-11-02 (cloud session, local build served from `apps/web/out`, reduced motion)
+Old Open 1 resolved. Screenshots (full page) in `docs/design/trade-{1440,390}-{empty,populated}.png`. Populated = base Sapphire Ring, 3 common-mod chips plus "+# total maximum Energy Shield", mins 30-60, a "mana" search open, link built (Open/Copy shown). In the 390 full-page captures the fixed tab bar appears mid-page; that is a full-page-screenshot artifact, not an overlap (checked scrolled to the end).
+
+| Viewport | State | Finding | Fix |
+|---|---|---|---|
+| 390x844 | both | Provenance line: the snapshot source URL (one unbreakable word) ran 25px past the card's padding into its right border | `min-w-0 break-words` on that span in `ManualPriceCheck.tsx`; text now ends inside the padding |
+| 1440, 390 | both | No horizontal scroll (scrollWidth = clientWidth), nothing past the viewport | none |
+| 1440, 390 | both | No rounded corners (computed border-radius 0 on every `main` and footer element) | none |
+| 1440, 390 | both | H1/H2 are EB Garamond uppercase; labels mono uppercase, as elsewhere | none |
+| 1440, 390 | both | All three panels are `data-surface="data"` with the `--data-fill` tint | none |
+| 390x844 | both | Bottom tab bar (top 788) clears the footer when scrolled to the end (footer ends 788.2, its own bottom padding) | none |
+| 1440, 390 | both | Footer "Price check" link: `/trade/`, same style and 24px tap row as its Tools siblings, last in the list | none |
+
+Gate after the fix: typecheck, lint, `npm test` (core 717, web 246), build, `npm run e2e -w @poe2/web` (325 passed, 3 skipped) all pass.
+
 ## Open
 | # | Type | For | Item | Recommended answer / action |
 |---|---|---|---|---|
-| 1 | follow-up | owner | Review `/trade` at 1440 and 390, empty and populated, on the Pages preview | Screenshot sweep: not run locally; do it on the Pages preview or a cloud session. Fix design breaks only |
 | 2 | unresolved | Chrome session | `query.ts` header still says the shape is unverified; `buildTradeQueries` body shape differs from `buildSearchQuery` | Read `/api/trade2/data/filters` (status options, stats types `and`/`count`, type field) and fix only what it contradicts. Skipped 2026-11-02 by owner |
 | 3 | unresolved | Chrome session | Link-length guards: only 4,346 chars tested | Try ~6,000, 8,000, 9,000; lower `URL_MAX_LENGTH` only if under 8,000 fails. Skipped 2026-11-02 by owner |
 | 4 | unresolved | Chrome session | `TradeStatus` values (online, securable, available, any) via `?q=` | Check each prefills; change type/labels only if contradicted. Skipped 2026-11-02 by owner |
