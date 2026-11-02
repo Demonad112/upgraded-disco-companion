@@ -148,3 +148,77 @@ export function constraintsFromHoldingUp(map: HoldingUpMap, slotId: number): Sta
   }
   return out
 }
+
+// --- Manual search: one query from user-chosen filters ----------------------
+
+export type TradeStatus = 'online' | 'securable' | 'available' | 'any'
+
+export interface SearchStatInput {
+  /** Trade stat id from a recorded snapshot. Null = unmapped; refused, never dropped or guessed. */
+  id: string | null
+  min?: number
+  max?: number
+}
+
+export interface SearchQueryInput {
+  name?: string
+  type?: string
+  stats: SearchStatInput[]
+  status: TradeStatus
+}
+
+export interface SearchQueryBody {
+  query: {
+    status: { option: TradeStatus }
+    name?: string
+    type?: string
+    stats: { type: 'and'; filters: { id: string; value: { min?: number; max?: number }; disabled: false }[] }[]
+  }
+  sort: { price: 'asc' }
+}
+
+export type BuildSearchResult =
+  | { ok: true; body: SearchQueryBody }
+  | { ok: false; reason: 'null-stat-id'; index: number }
+
+/** Same body conventions as `buildTradeQueries`; unverified against the live trade2 site. */
+export function buildSearchQuery(input: SearchQueryInput): BuildSearchResult {
+  const filters: SearchQueryBody['query']['stats'][number]['filters'] = []
+  for (let index = 0; index < input.stats.length; index++) {
+    const s = input.stats[index]!
+    if (s.id === null) return { ok: false, reason: 'null-stat-id', index }
+    const value: { min?: number; max?: number } = {}
+    if (s.min !== undefined) value.min = s.min
+    if (s.max !== undefined) value.max = s.max
+    filters.push({ id: s.id, value, disabled: false })
+  }
+  return {
+    ok: true,
+    body: {
+      query: {
+        status: { option: input.status },
+        ...(input.name ? { name: input.name } : {}),
+        ...(input.type ? { type: input.type } : {}),
+        stats: [{ type: 'and', filters }],
+      },
+      sort: { price: 'asc' },
+    },
+  }
+}
+
+// Our own conservative guards on link length, NOT limits published or verified
+// for the trade site: warn past 2000 characters, refuse past 8000.
+export const URL_WARN_LENGTH = 2000
+export const URL_MAX_LENGTH = 8000
+
+export type BuildUrlResult =
+  | { ok: true; url: string; length: number; warning: 'long-url' | null }
+  | { ok: false; reason: 'url-too-long'; length: number }
+
+/** The `?q=` link format is confirmed for PoE1 only; unverified on trade2. */
+export function buildTradeUrl(league: string, body: SearchQueryBody): BuildUrlResult {
+  const url = `https://www.pathofexile.com/trade2/search/poe2/${encodeURIComponent(league)}?q=${encodeURIComponent(JSON.stringify(body))}`
+  const length = url.length
+  if (length > URL_MAX_LENGTH) return { ok: false, reason: 'url-too-long', length }
+  return { ok: true, url, length, warning: length > URL_WARN_LENGTH ? 'long-url' : null }
+}

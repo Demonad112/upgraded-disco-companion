@@ -226,6 +226,20 @@ The output records the source commit. What's kept:
 What's deliberately not kept: effects whose value scales per gem level. The
 damage review reports those supports as "not quantified" rather than guessing.
 
+## `trade2-stats.json`
+
+The trade site's stat listing (`GET https://www.pathofexile.com/api/trade2/data/stats`),
+flattened to `{ id, text, type, group }` entries exactly as returned. `patch` is
+the `gameVersion` of `generated/bases.json` (the data patch this app ships), not
+a value the trade site states; `fetchedAt` is the ISO time of the request.
+
+It is recorded by hand, not in CI: set `TRADE_SNAPSHOT_CONTACT` (goes in the
+User-Agent) and run `npm run snapshot:trade-stats`, then commit the file. One
+request, no retries. The committed file starts empty (`patch` and `fetchedAt`
+null, `entries` empty) until the owner runs it; consumers treat that as
+"no snapshot yet" and never guess ids. `apps/web` copies it to `public/` via
+`sync-data`.
+
 ## Licensing
 
 Passive tree data derives from Path of Exile 2, © Grinding Gear Games. It is
