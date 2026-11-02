@@ -1,5 +1,5 @@
 # LS1 carry-over · 2026-11-02
-PR: (see PR list, branch below) · Branch: variant/20261101-living-sky · Preview: https://variant-20261101-living-sky.upgraded-disco-companion.pages.dev
+PR: #72 · Branch: variant/20261101-living-sky · Preview: https://variant-20261101-living-sky.upgraded-disco-companion.pages.dev
 
 Batch 3 of the motion programme: design variant B (living sky). Owner decisions 2026-11-01: restrained motion, no
 sounds, `/` initial JS must not grow, progress stars in the global sky on every page, glyphs from the current league.
