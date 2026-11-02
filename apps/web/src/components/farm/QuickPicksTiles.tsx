@@ -8,7 +8,7 @@ import { dangerLevel } from "@/lib/farm/quickPickIds";
 const LEVEL_WORD: Record<1 | 2 | 3, string> = { 1: "Low", 2: "Medium", 3: "High" };
 const INVEST_WORD: Record<string, string> = { low: "Low investment", medium: "Medium investment", high: "High investment" };
 
-/** Danger 1–3 as a word plus three square pips (the word carries the meaning; the pips are decoration). */
+/** Farm risk 1–3 (the strategy's own rating, not the loadout's Map danger) as a word plus three square pips (the word carries the meaning; the pips are decoration). */
 export function DangerPips({ level }: { level: 1 | 2 | 3 }) {
   return (
     <span className="qp-danger">
@@ -17,7 +17,7 @@ export function DangerPips({ level }: { level: 1 | 2 | 3 }) {
           <span key={n} className="qp-pip" data-on={n <= level || undefined} />
         ))}
       </span>
-      Danger: {LEVEL_WORD[level]}
+      Farm risk: {LEVEL_WORD[level]}
     </span>
   );
 }
@@ -31,7 +31,7 @@ export function QuickPicksTiles({ onPick, onHelp }: { onPick: (pickId: string) =
         <h3 id="qp-h" className="section-title !mb-0">Quick picks</h3>
         <p className="qp-body text-ink-dim">
           Five good farms with the tablets already chosen. Tap Set up to see what to roll.{" "}
-          <button type="button" className="qp-link" onClick={onHelp}>Not sure? Help me choose</button>
+          <button type="button" className="qp-link" onClick={onHelp}>Not sure? Compare all farms</button>
         </p>
       </div>
       <ol className="qp-tiles">

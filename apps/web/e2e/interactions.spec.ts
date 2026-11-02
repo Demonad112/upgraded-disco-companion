@@ -16,7 +16,7 @@ test('ticking an Atlas node moves the allocation bar', async ({ page }) => {
 
 test('Help me choose marks suggested farms once every answer is given', async ({ page }) => {
   await page.goto('dashboard/')
-  await page.getByRole('button', { name: 'Help me choose', exact: true }).click()
+  await page.getByRole('button', { name: 'Help me choose' }).click()
   const selects = page.locator('#farm-help select')
   await expect(selects).toHaveCount(3)
   for (let i = 0; i < 3; i++) {
