@@ -160,19 +160,33 @@ export interface SearchStatInput {
   max?: number
 }
 
+/**
+ * Searches are limited to non-unique items of item level 60 and up. The filter
+ * keys below (type_filters.rarity, misc_filters.ilvl) follow the PoE1 trade API
+ * naming and are UNVERIFIED on trade2.
+ */
+export const TRADE_MIN_ILVL = 60
+export const TRADE_RARITIES = ['rare', 'magic', 'nonunique'] as const
+export type TradeRarity = (typeof TRADE_RARITIES)[number]
+
 export interface SearchQueryInput {
-  name?: string
+  /** Base type. There is deliberately no name: names only identify uniques. */
   type?: string
   stats: SearchStatInput[]
   status: TradeStatus
+  /** Default 'nonunique'. 'unique' is not accepted by the type and is refused at runtime. */
+  rarity?: TradeRarity
 }
 
 export interface SearchQueryBody {
   query: {
     status: { option: TradeStatus }
-    name?: string
     type?: string
     stats: { type: 'and'; filters: { id: string; value: { min?: number; max?: number }; disabled: false }[] }[]
+    filters: {
+      type_filters: { filters: { rarity: { option: TradeRarity } } }
+      misc_filters: { filters: { ilvl: { min: number } } }
+    }
   }
   sort: { price: 'asc' }
 }
@@ -180,9 +194,12 @@ export interface SearchQueryBody {
 export type BuildSearchResult =
   | { ok: true; body: SearchQueryBody }
   | { ok: false; reason: 'null-stat-id'; index: number }
+  | { ok: false; reason: 'unique-not-allowed' }
 
 /** Same body conventions as `buildTradeQueries`; unverified against the live trade2 site. */
 export function buildSearchQuery(input: SearchQueryInput): BuildSearchResult {
+  const rarity = input.rarity ?? 'nonunique'
+  if (!(TRADE_RARITIES as readonly string[]).includes(rarity)) return { ok: false, reason: 'unique-not-allowed' }
   const filters: SearchQueryBody['query']['stats'][number]['filters'] = []
   for (let index = 0; index < input.stats.length; index++) {
     const s = input.stats[index]!
@@ -197,9 +214,12 @@ export function buildSearchQuery(input: SearchQueryInput): BuildSearchResult {
     body: {
       query: {
         status: { option: input.status },
-        ...(input.name ? { name: input.name } : {}),
         ...(input.type ? { type: input.type } : {}),
         stats: [{ type: 'and', filters }],
+        filters: {
+          type_filters: { filters: { rarity: { option: rarity } } },
+          misc_filters: { filters: { ilvl: { min: TRADE_MIN_ILVL } } },
+        },
       },
       sort: { price: 'asc' },
     },

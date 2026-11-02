@@ -5,6 +5,7 @@ import {
   buildTradeUrl,
   constraintsFromHoldingUp,
   URL_MAX_LENGTH,
+  TRADE_MIN_ILVL,
   URL_WARN_LENGTH,
   type TradeStatMap,
 } from '../src/trade/query.js'
@@ -126,12 +127,11 @@ describe('buildSearchQuery / buildTradeUrl', () => {
 
   it('builds the body shape', () => {
     const body = ok(
-      buildSearchQuery({ name: 'N', type: 'T', status: 'online', stats: [{ id: 'a', min: 5 }, { id: 'b', min: 1, max: 9 }, { id: 'c' }] }),
+      buildSearchQuery({ type: 'T', status: 'online', stats: [{ id: 'a', min: 5 }, { id: 'b', min: 1, max: 9 }, { id: 'c' }] }),
     )
     expect(body).toEqual({
       query: {
         status: { option: 'online' },
-        name: 'N',
         type: 'T',
         stats: [
           {
@@ -143,14 +143,31 @@ describe('buildSearchQuery / buildTradeUrl', () => {
             ],
           },
         ],
+        filters: {
+          type_filters: { filters: { rarity: { option: 'nonunique' } } },
+          misc_filters: { filters: { ilvl: { min: 60 } } },
+        },
       },
       sort: { price: 'asc' },
     })
   })
 
-  it('omits name and type when absent', () => {
+  it('carries the chosen rarity and the ilvl floor', () => {
+    const body = ok(buildSearchQuery({ status: 'online', rarity: 'rare', stats: [] }))
+    expect(body.query.filters.type_filters.filters.rarity).toEqual({ option: 'rare' })
+    expect(body.query.filters.misc_filters.filters.ilvl).toEqual({ min: TRADE_MIN_ILVL })
+    expect(TRADE_MIN_ILVL).toBe(60)
+  })
+
+  it('refuses unique', () => {
+    const input = { status: 'online', rarity: 'unique', stats: [] } as unknown as Parameters<typeof buildSearchQuery>[0]
+    expect(buildSearchQuery(input)).toEqual({ ok: false, reason: 'unique-not-allowed' })
+  })
+
+  it('omits type when absent', () => {
     const body = ok(buildSearchQuery({ status: 'any', stats: [] }))
-    expect(body.query).toEqual({ status: { option: 'any' }, stats: [{ type: 'and', filters: [] }] })
+    expect(body.query.type).toBeUndefined()
+    expect(body.query.stats).toEqual([{ type: 'and', filters: [] }])
   })
 
   it('refuses a null stat id with its index', () => {
