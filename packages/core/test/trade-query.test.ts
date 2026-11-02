@@ -144,8 +144,7 @@ describe('buildSearchQuery / buildTradeUrl', () => {
           },
         ],
         filters: {
-          type_filters: { filters: { rarity: { option: 'nonunique' } } },
-          misc_filters: { filters: { ilvl: { min: 60 } } },
+          type_filters: { filters: { rarity: { option: 'nonunique' }, ilvl: { min: 60 } } },
         },
       },
       sort: { price: 'asc' },
@@ -155,7 +154,7 @@ describe('buildSearchQuery / buildTradeUrl', () => {
   it('carries the chosen rarity and the ilvl floor', () => {
     const body = ok(buildSearchQuery({ status: 'online', rarity: 'rare', stats: [] }))
     expect(body.query.filters.type_filters.filters.rarity).toEqual({ option: 'rare' })
-    expect(body.query.filters.misc_filters.filters.ilvl).toEqual({ min: TRADE_MIN_ILVL })
+    expect(body.query.filters.type_filters.filters.ilvl).toEqual({ min: TRADE_MIN_ILVL })
     expect(TRADE_MIN_ILVL).toBe(60)
   })
 

@@ -18,20 +18,21 @@ Before = a build of this branch with the TT1 part 2 files stashed (the earlier b
 
 ## Resolved
 - Route weight (old Open 1, Needs owner TT1-4): accepted. `/` +87 B raw / +8 B br (about 0.005%, far under the 190 KB budget). No chunk diff unless `/` grows again. Timing: left to CI.
+- 1a TRADE_LEAGUE: the live URL segment is `Forbidden Rites` (`/trade2/search/poe2/Forbidden%20Rites/...`), equal to `LEAGUES[0]`. Kept; "unconfirmed" comment removed.
+- 1b `?q=` prefill: a link built to `buildSearchQuery`'s shape with 1 filter (`/trade2/search/poe2/Forbidden%20Rites?q=<json>`) loaded and the site rewrote it to its own compressed hash URL. The stat min, rarity ("Any Non-Unique") and Item Level min were filled in. The fixed note in `ManualPriceCheck.tsx` now says it is confirmed on trade2.
+- 1c 35-filter link: a 4,346-character link with 35 stat filters opened and all 35 filters were retained (the search returned "No results found", expected for 35 ANDed mods). The 2000/8000 guards are unchanged; nothing longer than 4,346 was tried, so the guards stay our own conservative limits.
+- 1d keys: `type_filters.rarity` is correct (option `nonunique` shows as "Any Non-Unique"). `misc_filters.ilvl` was wrong: the site's filters API (`/api/trade2/data/filters`) lists `ilvl` ("Item Level") under `type_filters`, and a link with `type_filters.filters.ilvl` filled Item Level min 60. `buildSearchQuery`, its type and tests now use `type_filters.ilvl`. With `misc_filters.ilvl` the Item Level field stayed empty, so the ilvl 60 floor was being silently ignored.
 - Part-1 author address (hotmail) on three commits and earlier history: left as is, no rewrite.
 
 ## Follow-up 2026-11-02 (chore/20261102-tt1-followup)
-Live-site checks 1a-1d were NOT run: the built-in browser in this session exposed no navigation tools (only preview_list/logs/stop). Nothing about trade2 is verified; code is unchanged. The four /trade screenshots do not exist on disk (never committed) and capturing them is a screenshot sweep, so left to CI/preview review.
+Live checks run in Claude in Chrome on the live trade2 site, 2026-11-02, logged in. The four /trade screenshots do not exist on disk (never committed); capturing them is a screenshot sweep, left to CI/preview review.
 
 ## Open
 | # | Type | For | Item | Recommended answer / action |
 |---|---|---|---|---|
-| 1 | question | owner | 1a: league segment of a real trade2 URL (`TRADE_LEAGUE`) | Set `TRADE_LEAGUE` in `apps/web/src/lib/constants.ts` to it if it differs from `LEAGUES[0]`; else keep and drop the "unconfirmed" comment |
-| 2 | question | owner | 1b: does `?q=` prefill with 1 filter | If yes, replace the "unverified on trade2" half of the fixed note; if no, tell the owner first |
-| 3 | question | owner | 1c: does a 35-filter link open | If it fails, lower the 2000/8000 guards in `query.ts`; else drop "unverified" from Limits |
-| 4 | question | owner | 1d: keys `type_filters.rarity`, `misc_filters.ilvl` | Fix in `buildSearchQuery` and tests only to what the live site shows |
-| 5 | follow-up | owner | Review `/trade` at 1440 and 390, empty and populated, on the Pages preview | Fix design breaks only |
-| 6 | follow-up | owner | Add `trade` to nav/home | After 1b is answered; palette-only until then |
+| 1 | follow-up | owner | Review `/trade` at 1440 and 390, empty and populated, on the Pages preview | Fix design breaks only |
+| 2 | follow-up | owner | Add `trade` to nav/home (1b is answered: `?q=` prefills) | Add after owner picks placement; palette-only until then |
+| 3 | unresolved | owner | Console realm behaviour on trade2 | Not tested; no promises, no branching |
 
 ## Needs owner
-- TT1-1..TT1-3 are open items 1-4 above (run them in a browser session with navigation tools, or by hand).
+- Nothing blocking.
