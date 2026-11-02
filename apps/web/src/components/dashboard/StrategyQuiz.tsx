@@ -4,7 +4,6 @@ import { useMemo } from "react";
 import { farmingStrategies } from "@/data/strategies";
 import { scoreStrategies, type QuizAnswers } from "@/lib/quiz";
 import { useStrategySelection } from "@/hooks/useStrategySelection";
-import { StrategyCard } from "./StrategyCard";
 import type { InvestmentTier, RiskTier } from "@/lib/types";
 import { Button, Select } from "@/components/shared/controls";
 
@@ -25,45 +24,30 @@ const STAGE_OPTIONS = [
   { value: "late-game", label: "Late-game / fully juiced" },
 ] as const;
 
-export function StrategyQuiz() {
-  const { quizAnswers, setQuizAnswer, resetQuiz } = useStrategySelection();
+/** The three quiz answers as stored; the top three strategies for them, or none until one is answered. */
+export function useSuggestedStrategies(): Set<string> {
+  const { quizAnswers } = useStrategySelection();
   const budget = quizAnswers.budget as InvestmentTier | undefined;
   const tankiness = quizAnswers.tankiness as RiskTier | undefined;
   const stage = quizAnswers.stage as QuizAnswers["stage"];
-
-  const answered = Boolean(budget || tankiness || stage);
-
-  const recommended = useMemo(() => {
-    if (!budget && !tankiness && !stage) return [];
-    return scoreStrategies(farmingStrategies, { budget, tankiness, stage }).slice(
-      0,
-      3
-    );
+  return useMemo(() => {
+    if (!budget && !tankiness && !stage) return new Set<string>();
+    return new Set(scoreStrategies(farmingStrategies, { budget, tankiness, stage }).slice(0, 3).map((s) => s.id));
   }, [budget, tankiness, stage]);
+}
+
+/** "Help me choose": the quiz questions as filters. The farm tiles highlight the matches (FarmPlanner). */
+export function QuizFilters() {
+  const { quizAnswers, setQuizAnswer, resetQuiz } = useStrategySelection();
+  const answered = Boolean(quizAnswers.budget || quizAnswers.tankiness || quizAnswers.stage);
 
   return (
-    <div className="flex flex-col gap-5 border border-line bg-surface-sunken p-5">
+    <div className="flex flex-col gap-4 border border-line bg-surface-sunken p-4">
       <div className="grid grid-cols-[minmax(0,1fr)] gap-4 sm:grid-cols-3">
-        <QuizSelect
-          label="Budget"
-          value={quizAnswers.budget}
-          options={BUDGET_OPTIONS}
-          onChange={(v) => setQuizAnswer("budget", v)}
-        />
-        <QuizSelect
-          label="Build tankiness"
-          value={quizAnswers.tankiness}
-          options={TANKINESS_OPTIONS}
-          onChange={(v) => setQuizAnswer("tankiness", v)}
-        />
-        <QuizSelect
-          label="League stage"
-          value={quizAnswers.stage}
-          options={STAGE_OPTIONS}
-          onChange={(v) => setQuizAnswer("stage", v)}
-        />
+        <QuizSelect label="Budget" value={quizAnswers.budget} options={BUDGET_OPTIONS} onChange={(v) => setQuizAnswer("budget", v)} />
+        <QuizSelect label="Build tankiness" value={quizAnswers.tankiness} options={TANKINESS_OPTIONS} onChange={(v) => setQuizAnswer("tankiness", v)} />
+        <QuizSelect label="League stage" value={quizAnswers.stage} options={STAGE_OPTIONS} onChange={(v) => setQuizAnswer("stage", v)} />
       </div>
-
       {answered ? (
         <div className="-mt-2 flex justify-end">
           <Button variant="ghost" size="sm" onClick={resetQuiz}>
@@ -71,21 +55,6 @@ export function StrategyQuiz() {
           </Button>
         </div>
       ) : null}
-
-      {recommended.length > 0 && (
-        <div>
-          <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold text-[var(--accent)]">
-            <span className="h-px flex-1 bg-gradient-to-r from-[var(--accent)]/40 to-transparent" />
-            Recommended for you
-            <span className="h-px flex-1 bg-gradient-to-l from-[var(--accent)]/40 to-transparent" />
-          </h3>
-          <div className="grid gap-3 sm:grid-cols-3">
-            {recommended.map((strategy) => (
-              <StrategyCard key={strategy.id} strategy={strategy} />
-            ))}
-          </div>
-        </div>
-      )}
     </div>
   );
 }

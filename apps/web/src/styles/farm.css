@@ -1,0 +1,247 @@
+/* Farm Planner (FP1). Numbers and signed percentages only: no bars, gauges or charts. Square corners, tokens only.
+   Components: components/farm/*. */
+
+.farm-steps {
+  align-self: flex-start;
+}
+.farm-steps .seg-item:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+/* Step 1 */
+.farm-tiles {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--card-gap, 20px);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+@media (min-width: 721px) {
+  .farm-tiles {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (min-width: 981px) {
+  .farm-tiles {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+.farm-tile {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+  width: 100%;
+  height: 100%;
+  padding: 16px;
+  border: 1px solid var(--line);
+  background-color: var(--data-fill);
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.farm-tile:hover {
+  border-color: var(--line-strong);
+}
+.farm-tile[data-suggested] {
+  border-color: var(--accent-line);
+}
+.farm-mark {
+  padding: 1px 7px;
+  border: 1px solid var(--accent-line);
+  color: var(--accent);
+  font-size: 11px;
+}
+
+/* Step 2 */
+.farm-controls {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 16px;
+}
+@media (min-width: 721px) {
+  .farm-controls {
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    align-items: start;
+  }
+}
+.farm-passives {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  min-width: 0;
+}
+.farm-cards {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--card-gap, 20px);
+}
+@media (min-width: 981px) {
+  .farm-cards {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+.farm-mod {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+.farm-mod-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+.farm-mod-select {
+  flex: 1 1 100%;
+  min-width: 0;
+}
+.farm-tier {
+  flex: 0 0 auto;
+  width: 5.5rem;
+}
+.farm-value {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.farm-value .input {
+  width: 5rem;
+}
+.farm-range,
+.farm-since {
+  color: var(--ink-mute);
+  font-size: 12px;
+}
+.farm-mod-text {
+  margin: 0;
+  color: var(--ink-mute);
+  font-size: 12px;
+}
+.farm-flag {
+  color: var(--accent);
+}
+.farm-banner {
+  margin: 0;
+  padding: 8px 12px;
+  border: 1px solid var(--accent-line);
+  color: var(--accent);
+  font-size: 13px;
+}
+.farm-errors {
+  margin: 0;
+  padding: 8px 12px;
+  border: 1px solid color-mix(in srgb, var(--danger) 50%, transparent);
+  color: var(--danger);
+  font-size: 13px;
+  list-style: none;
+}
+
+/* Result: figures are text. */
+.farm-num {
+  font-family: var(--font-label);
+  font-variant-numeric: tabular-nums;
+  animation: farm-fade var(--farm-fade) ease-out;
+}
+.farm-num[data-tone='good'] {
+  color: var(--good);
+}
+.farm-num[data-tone='danger'] {
+  color: var(--danger);
+}
+@keyframes farm-fade {
+  from {
+    opacity: 0.35;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .farm-num {
+    animation: none;
+  }
+}
+.farm-figures {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 12px;
+  margin: 0;
+}
+@media (min-width: 721px) {
+  .farm-figures {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+.farm-figures dd {
+  margin: 0;
+  font-size: 20px;
+  line-height: 1.4;
+}
+.farm-figures dd .farm-since {
+  font-size: 12px;
+}
+.farm-swaps {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.farm-swaps li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 16px;
+}
+.farm-totals {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.farm-totals li {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 2px 12px;
+  padding: 6px 0;
+  border-top: 1px solid var(--line);
+  font-size: 14px;
+}
+.farm-totals li[data-danger] .farm-total-name {
+  color: var(--danger);
+}
+.farm-total-src {
+  grid-column: 1 / -1;
+  color: var(--ink-mute);
+  font-size: 12px;
+}
+
+/* Phones: a one-line summary stays under the step bar. */
+.farm-sticky {
+  display: none;
+}
+@media (max-width: 720px) {
+  .farm-sticky {
+    display: block;
+    position: sticky;
+    top: calc(3.5rem + env(safe-area-inset-top, 0px));
+    z-index: 5;
+    margin: 0 -4px;
+    padding: 6px 4px;
+    border-bottom: 1px solid var(--line);
+    background: var(--surface);
+    font-family: var(--font-label);
+    font-variant-numeric: tabular-nums;
+    font-size: 13px;
+  }
+}
