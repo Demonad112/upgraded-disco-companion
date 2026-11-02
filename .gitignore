@@ -22,6 +22,7 @@ apps/web/public/monster-stats.json
 apps/web/public/pob-skills.json
 apps/web/public/bases.json
 apps/web/public/atlas-tree.json
+apps/web/public/trade2-stats.json
 
 # Downloaded source data for the build scripts. Regenerate with:
 #   node packages/data/scripts/build-mod-tiers.mjs
