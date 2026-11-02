@@ -1,5 +1,5 @@
 # FP1 carry-over · 2026-11-02
-PR: #<n> · Branch: variant/20261102-farm-planner · Preview: https://variant-20261102-farm-planne.upgraded-disco-companion.pages.dev (derived from the branch name; confirm on the PR's Pages check)
+PR: #73 · Branch: variant/20261102-farm-planner · Preview: https://variant-20261102-farm-planne.upgraded-disco-companion.pages.dev (derived from the branch name; confirm on the PR's Pages check)
 
 Farm planner on `/dashboard`: Step 1 Decide, Step 2 Set up, replacing the "Which strategy should I run?" quiz section.
 Plan: `docs/ui/FARM-PLANNER-PLAN.md`. Owner approved the layout change to `/dashboard`.
@@ -66,7 +66,6 @@ Plan: `docs/ui/FARM-PLANNER-PLAN.md`. Owner approved the layout change to `/dash
 - FP1-1: danger calibration (Open 1). Recommended: run the 50-map calibration the fact-check describes before relying on Net, because the weights are unvalidated.
 - FP1-2: preset mapping (Open 6). Recommended: map "Boss Rush / Tablet Rush" to Unique hunting, because its source material is boss loot, but it is your call.
 - FP1-3: the fact-check's data defects above. Recommended: re-run the fact-check for the mechanic-tablet affix sides and the out-of-range fixture rolls.
-- FP1-4: `scripts/` and docs still say the quiz section exists in places (none found); nothing to do unless you know of one.
 
 ## Not done / limits
 - Screenshots (1440 and 390, both steps) were taken in this session and kept out of git; they are not attached anywhere the PR can show them.
