@@ -48,6 +48,24 @@ Old Open 1 resolved. Screenshots (full page) in `docs/design/trade-{1440,390}-{e
 
 Gate after the fix: typecheck, lint, `npm test` (core 717, web 246), build, `npm run e2e -w @poe2/web` (325 passed, 3 skipped) all pass.
 
+## Design review re-check · 2026-11-02 (chore/20261102-trade-design-review)
+Open item 1 was already resolved by the review above (PR 79). Re-run from `main` to confirm and to add the 44px tap-target and `/` at 390 checks. Local build, `apps/web/e2e/serve.mjs`, Playwright with the preinstalled Chromium, reduced motion, full-page captures at 1440x900 and 390x844 (empty and populated: Sapphire Ring, 3 common-mod chips, mins 30/40/50, link built) plus `/` at 390. No code change.
+
+| Check | Result |
+|---|---|
+| Horizontal scroll (1440, 390, `/` at 390) | None (scrollWidth = clientWidth) |
+| Rounded corners in `main`/footer | 0 elements with border-radius > 0 |
+| Inline colour styles in `main` | 0 |
+| Provenance URL at 390 | Wraps inside the card (fix from PR 79 holds) |
+| Bottom tab bar at 390 | Clears the footer; no overlap with content |
+| Tap targets in `main` (trade form: chips, Remove, min inputs, Open, Copy) | All at least 44px |
+| Footer links incl. "Price check" at 390 and 1440 | 24px tall, 67px wide: the site-wide `hit-area` 24px policy covered by `polish.spec.ts`, not a /trade break; fits on one line at 390 (x 20-87) |
+| Header logo link | 32x44, under 44 wide; site-wide, not changed |
+
+Screenshots not committed: every capture is over 300 KB (home 410 KB, trade-390 317-331 KB, trade-1440 612-660 KB). The earlier set stays in `docs/design/`.
+
+Gate: typecheck, lint, `npm test` (core 717, web 246), build, `npm run e2e -w @poe2/web` (325 passed, 3 skipped) all pass.
+
 ## Open
 | # | Type | For | Item | Recommended answer / action |
 |---|---|---|---|---|
