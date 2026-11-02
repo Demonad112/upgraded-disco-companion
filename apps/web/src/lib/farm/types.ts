@@ -75,11 +75,12 @@ export interface FarmRules {
 export interface WeightEntry { value: number; why: string; sources: string[]; confidence: Confidence }
 export interface Preset { name: string; weights: Record<string, WeightEntry> }
 export interface FarmFixture {
+  /** Preset the fact-check scored the fixture under. */
+  preset: string
   name: string
   loadout: Loadout
   expectedTotals: Record<string, number>
   expectedErrors: number
-  expectedNetDirection: 'up' | 'down'
   why: string
 }
 
@@ -100,6 +101,7 @@ export interface FarmData {
     danger: {
       per_stat: Record<string, DangerRating & { sources: string[]; confidence: Confidence; why: string }>
       build_multipliers: Record<Layer, number>
+      layerDetect: { relativeToLargest: number; why: string; sources: string[]; confidence: Confidence }
     }
     risk: Record<RiskKey, number>
   }

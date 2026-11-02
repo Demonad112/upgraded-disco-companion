@@ -19,6 +19,7 @@ export function countByConfidence(data: FarmData = farmData): Record<Confidence,
   for (const n of data.rules.notes) add(n.confidence)
   for (const p of Object.values(data.weights.presets)) for (const w of Object.values(p.weights)) add(w.confidence)
   for (const d of Object.values(data.weights.danger.per_stat)) add(d.confidence)
+  add(data.weights.danger.layerDetect.confidence)
   return c
 }
 /** Entries labelled unverified. Zero would mean every value carries a source; the seed file would report all of them. */
