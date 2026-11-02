@@ -1,5 +1,0 @@
-index.html                11 files    738247 raw   189236 br
-checklist/index.html      11 files    802785 raw   207029 br
-character/index.html      14 files    868234 raw   228893 br
-atlas/index.html          11 files    782241 raw   201129 br
-dashboard/index.html      14 files    847232 raw   211292 br

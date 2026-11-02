@@ -13,6 +13,7 @@ const pages: Array<[string, string]> = [
   ['atlas', 'atlas/'],
   ['dashboard', 'dashboard/'],
   ['methodology', 'methodology/'],
+  ['trade', 'trade/'],
   ['whats-new', 'whats-new/'],
 ]
 

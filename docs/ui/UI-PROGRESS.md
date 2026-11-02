@@ -87,3 +87,4 @@ decides or acts; sessions don't implement it.
 | LS1-2: rune set keyed to Forbidden Rites (`LEAGUES[0]`), not Runes of Aldur | owner | decide · S | | Recommended: keep; LEAGUES[0] is the newest live league, and a new league swaps one file |
 | LS1-3: sky still averages ~73 fill+stroke calls (budget 60) | owner | decide · S | | The 16 alpha levels × 5 colours of field stars are ~55 of them; restate the budget at 75 or allow fewer levels |
 | LS1-4: eyeball ignite, flare, label and a rune glyph on a real display | owner | todo · S | | Headless Chromium only |
+| TT1: trade stat snapshot, search builder, `/trade` Manual price check (palette only) | next-U | done | | `docs/carry/TT1.md`; links unverified on trade2 |

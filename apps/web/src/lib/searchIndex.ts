@@ -67,6 +67,13 @@ export const searchIndex: SearchEntry[] = [
     href: "/methodology",
   })),
   {
+    id: "trade",
+    title: "Manual price check",
+    subtitle: "Trade search link",
+    category: "Page",
+    href: "/trade",
+  },
+  {
     id: "whats-new",
     title: "What's new",
     subtitle: "Every app change and data regeneration, newest first",
