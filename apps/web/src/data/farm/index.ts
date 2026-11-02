@@ -65,5 +65,15 @@ export function validateFarmData(d: FarmData = farmData): string[] {
   }
   for (const [sid, pid] of Object.entries(d.weights.strategyPreset)) if (!d.weights.presets[pid]) errs.push(`strategy ${sid}: unknown preset ${pid}`)
   for (const n of d.rules.notes) checkSources('rule note', n.sources, n.confidence)
+  const qp = d.quickPicks
+  for (const id of seen) if (!qp.labels[id]) errs.push(`quick picks: no label for ${id}`)
+  for (const id of Object.keys(qp.labels)) if (!seen.has(id)) errs.push(`quick picks: label for unknown mod ${id}`)
+  const pickIds = new Set<string>()
+  for (const p of qp.picks) {
+    if (pickIds.has(p.id)) errs.push(`quick pick ${p.id}: duplicate id`)
+    pickIds.add(p.id)
+    if (!d.weights.presets[p.preset]) errs.push(`quick pick ${p.id}: unknown preset ${p.preset}`)
+    if (d.weights.strategyPreset[p.strategyId] !== p.preset) errs.push(`quick pick ${p.id}: strategy ${p.strategyId} is not mapped to ${p.preset}`)
+  }
   return errs
 }
