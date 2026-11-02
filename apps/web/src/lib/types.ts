@@ -232,6 +232,8 @@ export interface FarmPersisted {
   buildAware?: boolean;
   /** Preset chosen per farm, where it differs from the mapped one. */
   presets?: Record<string, string>;
+  /** Quick picks (QP1): which Step 2 view was open last, so a reload lands back in it. */
+  view?: "quick" | "full";
 }
 
 export interface PersistedState {

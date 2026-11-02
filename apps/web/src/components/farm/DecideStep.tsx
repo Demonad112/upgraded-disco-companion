@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { farmingStrategies } from "@/data/strategies";
 import { farmData } from "@/data/farm";
 import { presetFor } from "@/lib/farm/score";
@@ -10,19 +10,33 @@ import { Button } from "@/components/shared/controls";
 import { QuizFilters, useSuggestedStrategies } from "@/components/dashboard/StrategyQuiz";
 import { useStrategySelection } from "@/hooks/useStrategySelection";
 import { CUSTOM_FARM } from "./ids";
+import { QuickPicksTiles } from "./QuickPicksTiles";
 
-/** Step 1: one tile per farm, plus Any farm / custom. "Help me choose" turns the quiz into a highlight. */
-export function DecideStep({ onPick }: { onPick: (id: string) => void }) {
+/**
+ * Step 1: Quick picks (QP1) first, then one tile per farm plus Any farm / custom. "Help me choose" turns the quiz into a
+ * highlight; the Quick picks link opens it and scrolls to it.
+ */
+export function DecideStep({ onPick, onQuick }: { onPick: (id: string) => void; onQuick: (pickId: string) => void }) {
   const [help, setHelp] = useState(false);
+  const [jump, setJump] = useState(0);
+  useEffect(() => {
+    if (!jump) return;
+    const el = document.getElementById("farm-help");
+    el?.scrollIntoView({ block: "start" });
+    document.getElementById("farm-help-toggle")?.focus({ preventScroll: true });
+  }, [jump]);
   const suggested = useSuggestedStrategies();
   const { pinnedStrategyId } = useStrategySelection();
   const sorted = [...farmingStrategies].sort((a, b) => a.rank - b.rank);
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-8">
+      <QuickPicksTiles onPick={onQuick} onHelp={() => { setHelp(true); setJump((n) => n + 1); }} />
+      <section aria-labelledby="farm-all-h" className="flex flex-col gap-4">
+      <h3 id="farm-all-h" className="section-title !mb-0">All farms</h3>
       <div className="flex flex-wrap items-center justify-between gap-3">
         <p className="text-sm text-ink-dim">Pick the farm you are setting up. Tablets and the Waystone come next.</p>
-        <Button size="sm" aria-expanded={help} aria-controls="farm-help" onClick={() => setHelp((v) => !v)}>
+        <Button id="farm-help-toggle" size="sm" aria-expanded={help} aria-controls="farm-help" onClick={() => setHelp((v) => !v)}>
           Help me choose
         </Button>
       </div>
@@ -67,6 +81,7 @@ export function DecideStep({ onPick }: { onPick: (id: string) => void }) {
           </button>
         </li>
       </ul>
+      </section>
     </div>
   );
 }

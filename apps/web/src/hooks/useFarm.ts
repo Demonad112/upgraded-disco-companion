@@ -29,7 +29,14 @@ export function useFarm() {
     (id: string, loadout: Loadout, baseline: Score | null) => patch((f) => ({ ...f, loadouts: { ...f.loadouts, [id]: { loadout, baseline } } })),
     [patch],
   );
+  /** Save a loadout only if the farm has none yet (a first view never overwrites a saved one, even mid-hydration). */
+  const ensureLoadout = useCallback(
+    (id: string, loadout: Loadout, baseline: Score | null) =>
+      patch((f) => (isLoadout(f.loadouts[id]?.loadout) ? f : { ...f, loadouts: { ...f.loadouts, [id]: { loadout, baseline } } })),
+    [patch],
+  );
   const setCurrent = useCallback((id: string | undefined) => patch((f) => ({ ...f, current: id })), [patch]);
+  const setView = useCallback((view: "quick" | "full") => patch((f) => ({ ...f, view })), [patch]);
   const setRisk = useCallback((risk: RiskKey) => patch((f) => ({ ...f, risk })), [patch]);
   const setBuildAware = useCallback((buildAware: boolean) => patch((f) => ({ ...f, buildAware })), [patch]);
   const setPreset = useCallback(
@@ -43,5 +50,5 @@ export function useFarm() {
     [patch],
   );
 
-  return { farm, saveLoadout, setCurrent, setRisk, setBuildAware, setPreset };
+  return { farm, saveLoadout, ensureLoadout, setCurrent, setView, setRisk, setBuildAware, setPreset };
 }

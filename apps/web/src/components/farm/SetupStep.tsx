@@ -13,6 +13,7 @@ import { changeSign, formatChange, pctChange, presetFor, scoreLoadout, type Chan
 import { starterLoadout, typeForPreset } from "@/lib/farm/starter";
 import { applySwap, bestSwaps, netLabels, rollFor, subjectAt, withPick, type SwapTarget } from "@/lib/farm/swaps";
 import { computeTotals } from "@/lib/farm/totals";
+import { pickByKey, recommendedLoadout } from "@/lib/farm/quickPicks";
 import type { Loadout, MapContext, ModPick, RiskKey, Side, Tablet } from "@/lib/farm/types";
 import { CUSTOM_FARM } from "./ids";
 
@@ -134,11 +135,13 @@ function fmtTotal(statId: string, total: number) {
   return `${n >= 0 ? "+" : "−"}${Math.abs(n)}${st.unit}`;
 }
 
-export default function SetupStep({ strategyId, onChangeFarm }: { strategyId: string; onChangeFarm: () => void }) {
+export default function SetupStep({ strategyId, onChangeFarm, onQuickView }: { strategyId: string; onChangeFarm: () => void; onQuickView?: () => void }) {
   const { farm, saveLoadout, setRisk, setBuildAware, setPreset } = useFarm();
   const build = useBuildLayers();
+  // A Quick picks key (QP1) opens here on the same saved loadout; its starter is the recommended loadout.
+  const quick = pickByKey(strategyId);
   const strategy = farmingStrategies.find((s) => s.id === strategyId);
-  const mapped = strategyId === CUSTOM_FARM ? { id: "general", fallback: true } : presetFor(d, strategyId);
+  const mapped = strategyId === CUSTOM_FARM ? { id: "general", fallback: true } : quick ? { id: quick.preset, fallback: false } : presetFor(d, strategyId);
   const presetId = farm.presets?.[strategyId] && d.weights.presets[farm.presets[strategyId]!] ? farm.presets[strategyId]! : mapped.id;
   const risk = farm.risk ?? "balanced";
   const layers = farm.buildAware && build ? build.layers : null;
@@ -147,7 +150,7 @@ export default function SetupStep({ strategyId, onChangeFarm }: { strategyId: st
 
   const saved = farm.loadouts[strategyId];
   const usable = saved && isLoadout(saved.loadout) ? saved : undefined;
-  const loadout: Loadout = useMemo(() => usable?.loadout ?? starterLoadout(d, strategyId, presetId, o), [usable, strategyId, presetId, o]);
+  const loadout: Loadout = useMemo(() => usable?.loadout ?? (quick ? recommendedLoadout(quick) : starterLoadout(d, strategyId, presetId, o)), [usable, quick, strategyId, presetId, o]);
   const score = useMemo(() => scoreLoadout(d, loadout, o), [loadout, o]);
   const baseline = usable?.baseline ?? score;
 
@@ -178,7 +181,7 @@ export default function SetupStep({ strategyId, onChangeFarm }: { strategyId: st
   const wLim = waystoneLimits(d, way);
   const isSeed = (() => { const c = countByConfidence(); return c.confirmed + c.single === 0; })();
   const preset = d.weights.presets[presetId]!;
-  const title = strategy ? strategy.name : "Any farm / custom";
+  const title = quick ? quick.name : strategy ? strategy.name : "Any farm / custom";
 
   const targetName = (index: number) => (index < loadout.tablets.length ? `Tablet ${index + 1}` : "Waystone");
   const targetOf = (t: SwapTarget) => ({ ...t });
@@ -238,7 +241,10 @@ export default function SetupStep({ strategyId, onChangeFarm }: { strategyId: st
       <header data-surface="data" className="card flex flex-col gap-3">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <h3 className="title-sentence text-[19px] text-ink">{title}</h3>
-          <Button size="sm" onClick={onChangeFarm}>Change farm</Button>
+          <span className="flex flex-wrap gap-2">
+            {onQuickView ? <Button size="sm" onClick={onQuickView}>Quick view</Button> : null}
+            <Button size="sm" onClick={onChangeFarm}>Change farm</Button>
+          </span>
         </div>
         <div className="farm-controls">
           <div className="flex flex-col gap-1.5">

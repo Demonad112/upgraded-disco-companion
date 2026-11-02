@@ -245,3 +245,94 @@
     font-size: 13px;
   }
 }
+
+/* Quick picks (QP1), screen 1. The setup view and the sheet are in quick-picks.css (lazy, with QuickSetup). */
+.qp-body {
+  margin: 0;
+  font-size: 16px;
+  line-height: 1.5;
+}
+.qp-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--tap-min);
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--accent);
+  font: inherit;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+.qp-tiles {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--card-gap, 20px);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+@media (min-width: 721px) {
+  .qp-tiles {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (min-width: 981px) {
+  .qp-tiles {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+.qp-tile {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+  height: 100%;
+  padding: 20px;
+  border: 1px solid var(--line);
+  background-color: var(--data-fill);
+}
+.qp-tile-name {
+  margin: 0;
+  color: var(--ink);
+  font-size: 22px;
+}
+.qp-danger {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--ink-dim);
+  font-size: 15px;
+}
+.qp-pips {
+  display: inline-flex;
+  gap: 3px;
+}
+.qp-pip {
+  width: 10px;
+  height: 10px;
+  border: 1px solid var(--danger);
+}
+.qp-pip[data-on] {
+  background: var(--danger);
+}
+.qp-setup {
+  width: 100%;
+  min-height: 48px;
+  margin-top: auto;
+  font-size: 16px;
+}
+/* TV distance (an Xbox browser at 1280+): one size up. */
+@media (min-width: 1280px) {
+  .qp-body {
+    font-size: 18px;
+  }
+  .qp-tile-name {
+    font-size: 26px;
+  }
+  .qp-danger,
+  .qp-setup {
+    font-size: 17px;
+  }
+}
