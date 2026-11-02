@@ -206,3 +206,33 @@ describe('swaps', () => {
     expect(ms).toBeLessThan(30)
   })
 })
+
+import { removePick, setMapContext, setTabletRarity, setTabletType, setWaystone } from '@/lib/farm/edit'
+describe('edit helpers', () => {
+  const full = (): Loadout => ({
+    ...base({ tablets: [tab('rare', [m('t-pack-size', 5), m('t-item-rarity', 8)], [m('t-rare-monsters', 30), m('t-magic-monsters', 31)])] }),
+    options: { mapContext: 'standard', keystones: true, effects: [] },
+  })
+  it('rare → magic trims to 1 + 1', () => {
+    const t = setTabletRarity(d, full(), 0, 'magic').tablets[0]!
+    expect([t.prefixes.length, t.suffixes.length]).toEqual([1, 1])
+    expect(validate(d, setTabletRarity(d, full(), 0, 'magic'))).toEqual([])
+  })
+  it('changing tablet type drops mods that do not roll there', () => {
+    const l = { ...full(), tablets: [tab('rare', [], [m('t-abyss-rares', 2), m('t-rare-monsters', 30)], 'abyss')] }
+    expect(setTabletType(l, 0, 'breach').tablets[0]!.suffixes.map((x) => x.modId)).toEqual(['t-rare-monsters'])
+  })
+  it('Waystone tier 16 keeps up to 10; dropping to a plain rare trims to 6', () => {
+    const pick = (id: string) => m(id, d.waystoneMods.find((x) => x.id === id)!.tiers[0]!.min)
+    const l = base({ waystone: { tier: 16, rarity: 'rare', corrupted: true, prefixes: ['w-quantity', 'w-pack-size', 'w-rare-monsters', 'w-magic-monsters', 'w-rarity'].map(pick), suffixes: ['w-extra-fire', 'w-extra-cold', 'w-extra-lightning', 'w-extra-chaos', 'w-less-recovery'].map(pick) } })
+    expect(validate(d, l)).toEqual([])
+    const down = setWaystone(d, l, { tier: 15, corrupted: false })
+    expect(down.waystone.prefixes.length + down.waystone.suffixes.length).toBe(6)
+    expect(validate(d, down)).toEqual([])
+  })
+  it('leaving City drops the City passive; removePick removes one mod', () => {
+    const l = { ...full(), options: { mapContext: 'city' as const, keystones: true, effects: ['city-tablet-effect', 'tablet-effect-gateway'] } }
+    expect(setMapContext(l, 'standard').options.effects).toEqual(['tablet-effect-gateway'])
+    expect(removePick(full(), { index: 0, side: 'suffix', slot: 0 }).tablets[0]!.suffixes.map((x) => x.modId)).toEqual(['t-magic-monsters'])
+  })
+})

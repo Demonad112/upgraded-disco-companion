@@ -223,6 +223,17 @@ export interface CurrencyMilestone {
   source: SourceRef;
 }
 
+/** Farm Planner (FP1): a saved loadout per farm, plus the danger setting. Absent in older payloads. */
+export interface FarmPersisted {
+  loadouts: Record<string, { loadout: import("./farm/types").Loadout; baseline: import("./farm/types").Score | null }>;
+  /** The farm last opened, so a reload lands back in Step 2. */
+  current?: string;
+  risk?: import("./farm/types").RiskKey;
+  buildAware?: boolean;
+  /** Preset chosen per farm, where it differs from the mapped one. */
+  presets?: Record<string, string>;
+}
+
 export interface PersistedState {
   version: number;
   checklist: {
@@ -241,6 +252,7 @@ export interface PersistedState {
     lastQuizAnswers: Record<string, string>;
     pinnedStrategyId?: string;
   };
+  farm?: FarmPersisted;
   /**
    * Character history.
    *

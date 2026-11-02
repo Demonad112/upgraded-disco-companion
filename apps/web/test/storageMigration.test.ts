@@ -50,3 +50,19 @@ describe("parsePersisted", () => {
     expect(parsePersisted("42")).toBe(defaultState());
   });
 });
+
+describe('farm planner state (FP1)', () => {
+  it('an old payload without the farm slice loads cleanly', async () => {
+    const { parsePersisted, STORAGE_VERSION } = await import('@/lib/storage')
+    const old = JSON.stringify({ version: STORAGE_VERSION, checklist: { completedStepIds: ['a'], completedActionItemKeys: [] }, atlas: { allocatedClusterIds: [], allocatedForkIds: [] }, dashboard: { lastQuizAnswers: {} }, character: { snapshots: [] } })
+    const s = parsePersisted(old)
+    expect(s.farm).toBeUndefined()
+    expect(s.checklist.completedStepIds).toEqual(['a'])
+  })
+  it('keeps the farm slice across a version bump, and drops a malformed one', async () => {
+    const { parsePersisted } = await import('@/lib/storage')
+    const farm = { loadouts: {}, current: 'abyss-amanamu', risk: 'safe' }
+    expect(parsePersisted(JSON.stringify({ version: 0, farm })).farm).toEqual(farm)
+    expect(parsePersisted(JSON.stringify({ version: 0, farm: 'x' })).farm).toBeUndefined()
+  })
+})

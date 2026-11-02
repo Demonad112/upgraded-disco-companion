@@ -62,6 +62,7 @@ function salvage(parsed: Record<string, unknown>): PersistedState {
     ...(isRecord(parsed.gear) && Array.isArray(parsed.gear.shoppingList)
       ? { gear: parsed.gear as unknown as NonNullable<PersistedState["gear"]> }
       : {}),
+    ...(isRecord(parsed.farm) && isRecord(parsed.farm.loadouts) ? { farm: parsed.farm as unknown as NonNullable<PersistedState["farm"]> } : {}),
     ...(isRecord(parsed.gems) ? { gems: parsed.gems as NonNullable<PersistedState["gems"]> } : {}),
   };
 }
