@@ -121,7 +121,7 @@ export function CharacterResults({
 
       <Section id="defences" title="Defences">
         <DefensePanel d={a.defense} />
-        <Headroom defense={a.defense} />
+        <Headroom defense={a.defense} level={a.identity.level} />
         <WhatIfPanel analysis={a} options={analysisOptions} />
       </Section>
 

@@ -86,3 +86,23 @@ test('the defences checklist lists resistances and never reads missing ailment p
   await expect(list.locator('[data-check="max-hit"]')).toBeVisible()
   await expect(list.locator('[data-check^="ail-"][data-status="fail"]')).toHaveCount(0)
 })
+
+test('waystone survivability gives a verdict, four tier groups up to T16, and what to raise next', async ({ page }) => {
+  await page.goto(importUrl)
+  await expect(page.getByRole('heading', { name: /Athrynas/ }).first()).toBeVisible({ timeout: 30_000 })
+  const block = page.getByRole('region', { name: 'Survivability by waystone tier' })
+  await expect(block.getByTestId('headroom-verdict')).toHaveText(/Run T11–T14\.\s*Best: T14/, { timeout: 15_000 })
+  const groups = block.getByRole('combobox', { name: 'Tiers' })
+  await expect(groups.locator('option')).toHaveText(['T1–T4', 'T5–T8', 'T9–T12', 'T13–T16'])
+  // Opens on the group holding the best tier, and the last group reaches T16.
+  await expect(groups.locator('option:checked')).toHaveText('T13–T16')
+  const tiers = block.getByRole('list', { name: /Waystone tiers/ })
+  await expect(tiers.getByRole('listitem', { name: /^Tier 16, area level 80/ })).toBeVisible()
+  await expect(tiers.getByRole('listitem', { name: /^Tier/ })).toHaveCount(4)
+  await groups.selectOption({ label: 'T1–T4' })
+  await expect(tiers.getByRole('listitem', { name: /^Tier 1, area level 65/ })).toBeVisible()
+  await expect(block.getByTestId('headroom-needs')).toContainText('Chaos resistance')
+  // A lower level moves the XP limit: at 70, T1 loses no XP.
+  await block.getByLabel('Your level').fill('70')
+  await expect(tiers.getByRole('listitem', { name: /^Tier 1, .*XP lost 0%/ })).toBeVisible()
+})
