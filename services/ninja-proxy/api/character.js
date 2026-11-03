@@ -17,7 +17,15 @@
  * ../README.md.
  */
 
-import { applyCors, badQueryParam, politeFetch, revalidatingFetch } from './_upstream.js'
+import {
+  applyCors,
+  badQueryParam,
+  busyResult,
+  coalesced,
+  isBusyStatus,
+  politeFetch,
+  revalidatingFetch,
+} from './_upstream.js'
 
 const NINJA = 'https://poe.ninja'
 // Kept under the browser client's own 20 s timeout so the caller gets this
@@ -36,6 +44,7 @@ export const FIRST_FRAME_MS = 12_000
 export async function readVersion(url, signal, { fetchImpl, firstFrameMs = FIRST_FRAME_MS } = {}) {
   const upstream = await politeFetch(url, { signal, headers: { accept: 'text/event-stream' } }, { fetchImpl })
   if (upstream.status === 404) return { error: 'not-found' }
+  if (isBusyStatus(upstream.status)) return { busy: upstream }
   if (!upstream.ok || !upstream.body) return { error: `upstream ${upstream.status}` }
 
   const reader = upstream.body.getReader()
@@ -87,9 +96,27 @@ export default async function handler(req, res) {
   const bad = badQueryParam(req.query, ['account', 'league', 'character'])
   if (bad) return res.status(400).json({ error: `${bad} is too long or repeated.` })
 
-  const e = encodeURIComponent
   // poe.ninja renders accounts as Name#1234 but its API path wants Name-1234.
   const acct = String(account).replace('#', '-')
+  // Identical requests share one upstream round trip and its answer for a minute.
+  const result = await coalesced(`${acct}\n${league}\n${character}`, () => load(acct, league, character))
+
+  for (const [k, v] of Object.entries(result.headers ?? {})) res.setHeader(k, v)
+  if (result.etag) {
+    // Passed on so the CDN and the browser can revalidate with If-None-Match.
+    res.setHeader('ETag', result.etag)
+    if (req.headers?.['if-none-match'] === result.etag) return res.status(304).end()
+  }
+  if (result.body !== undefined) {
+    res.setHeader('Content-Type', 'application/json; charset=utf-8')
+    return res.status(result.status).send(result.body)
+  }
+  return res.status(result.status).json(result.json)
+}
+
+/** The two-step fetch for one character, as `{ status, json | body, headers, etag? }`. Never throws. */
+async function load(acct, league, character) {
+  const e = encodeURIComponent
   const controller = new AbortController()
   const timer = setTimeout(() => controller.abort(), TIMEOUT_MS)
 
@@ -99,35 +126,40 @@ export default async function handler(req, res) {
       controller.signal,
     )
 
+    if (versionResult.busy) return busyResult(versionResult.busy)
     if (versionResult.error === 'not-found') {
-      return res
-        .status(404)
-        .json({ error: 'poe.ninja has no indexed record of that character. Check the profile is public.' })
+      return {
+        status: 404,
+        json: { error: 'poe.ninja has no indexed record of that character. Check the profile is public.' },
+        headers: { 'Cache-Control': 's-maxage=60, stale-while-revalidate=120' },
+      }
     }
     if (versionResult.error) {
-      return res.status(502).json({ error: `Could not read the character version (${versionResult.error}).` })
+      return { status: 502, json: { error: `Could not read the character version (${versionResult.error}).` } }
     }
 
     const modelUrl = `${NINJA}/poe2/api/profile/characters/${e(acct)}/${e(league)}/${e(character)}/model/${versionResult.version}`
     const model = await revalidatingFetch(modelUrl, { signal: controller.signal })
-    if (model.status === 404) return res.status(404).json({ error: 'Character model not found.' })
-    if (!model.ok) return res.status(502).json({ error: `poe.ninja returned ${model.status} for the model.` })
-
-    res.setHeader('Content-Type', 'application/json; charset=utf-8')
-    res.setHeader('Cache-Control', 's-maxage=60, stale-while-revalidate=600')
-    // Passed on so the CDN and the browser can revalidate with If-None-Match.
-    if (model.etag) {
-      res.setHeader('ETag', model.etag)
-      if (req.headers?.['if-none-match'] === model.etag) return res.status(304).end()
+    if (model.status === 404) return { status: 404, json: { error: 'Character model not found.' } }
+    if (!model.ok) {
+      if (isBusyStatus(model.status)) return busyResult(model)
+      return { status: 502, json: { error: `poe.ninja returned ${model.status} for the model.` } }
     }
-    return res.status(200).send(model.body)
+
+    return {
+      status: 200,
+      body: model.body,
+      etag: model.etag,
+      headers: { 'Cache-Control': 's-maxage=60, stale-while-revalidate=120' },
+    }
   } catch (err) {
     // The raw error stays in the function log; the caller gets a fixed message.
     console.error('character fetch failed', err)
     const aborted = err?.name === 'AbortError'
-    return res
-      .status(aborted ? 504 : 502)
-      .json({ error: aborted ? 'poe.ninja took too long to respond.' : 'Upstream request failed.' })
+    return {
+      status: aborted ? 504 : 502,
+      json: { error: aborted ? 'poe.ninja took too long to respond.' : 'Upstream request failed.' },
+    }
   } finally {
     clearTimeout(timer)
   }

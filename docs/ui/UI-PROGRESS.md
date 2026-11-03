@@ -36,8 +36,8 @@ session's row in its last commit. Audit rows are tracked in `docs/audit/08-PROGR
 | 19 | QP1 quick picks (variant) | Cloud | — | done | variant/20261102-quick-picks | #76 | https://variant-20261102-quick-picks.upgraded-disco-companion.pages.dev | Five curated farms with ready tablets and Waystone; mod sheet with 2–3 engine alternatives (Better/Worse by N%); shopping list; shares FP1's loadout store (`qp-<id>`); `/dashboard/` 208,827 → 211,297 B br, `/` +43 B (tokens); `docs/carry/QP1.md`. Follow-up QP1b: tile "Farm risk" vs strip "Map danger", link renamed "Compare all farms", `farm.view` test; `/dashboard/` 211,285 B br, `/` 189,229 B |
 | 20 | W0 prep (lazy overlays, fake timers, palette, prefs) | Local | Sonnet 5.5 · medium | done | ui/20261103-w0-prep | #82 | | `docs/ui/LAUNCH-PLAN.md`; runs with IMG-1 (owner, Claude chat) |
 | 21 | C1 content short + pro | Cloud | Opus 5.5 · high | done | variant/20261103-short-copy | #85 | | `why` on 32 steps, Pro detail toggle (checklist, Atlas, dashboard), `diagram` slots; `/` 189,425 B br; `docs/carry/C1.md`; runs with H1, L1 |
-| 21 | H1 home picker | Local | Opus 5.5 · high | todo | | | | runs with C1, L1 |
-| 21 | L1 launch hardening (proxy, share target, paste, patch switch, Lighthouse CI) | Cloud | Sonnet 5.5 · medium | todo | | | | runs with C1, H1; owner deploys the proxy |
+| 21 | H1 home picker | Local | Opus 5.5 · high | done | variant/20261103-home-picker | #83 | | runs with C1, L1 |
+| 21 | L1 launch hardening (proxy, share target, paste, patch switch, Lighthouse CI) | Cloud | Sonnet 5.5 · medium | done | feat/20261103-launch-hardening | | | runs with C1, H1; owner deploys the proxy |
 | 22 | CH1 character showcase + share card v2 + fix→trade | Cloud | Opus 5.5 · high | todo | | | | runs with V1 |
 | 22 | V1 SVG diagrams | Local | Opus 5.5 · high | todo | | | | runs with CH1 |
 | 23 | PD patch-day data | Cloud | Opus 5.5 · high | todo | | | | when the December patch notes land |
