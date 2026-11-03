@@ -44,6 +44,13 @@ The RePoE-fork route (`npm run build:mod-tiers -w @poe2/data`, then
 stat ids that the PoB build carries over. Afterwards, update the counts quoted
 below and run `npm test`.
 
+## `generated/version.json`
+
+Machine-readable data revision (`<gameVersion>@<PoB commit>`), export date and source of the canonical
+artifacts. Written by `build:mod-tiers:pob` (`scripts/lib/version.mjs`); the committed file was stamped by
+hand from the values above (0.5.5, `ce566ea`, 2026-09-25). `@poe2/core` reads it with `readDataVersion` and
+stamps answers with `provenanceFor` (tiers ported from demonad112/poe2-mcp2, MIT).
+
 ## `mod-tiers.json` from Path of Building
 
 Built by `scripts/build-mod-tiers-pob.mjs` from PoB's `src/Data/ModItem.lua`,

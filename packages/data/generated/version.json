@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "dataRevision": "0.5.5@ce566ea",
+  "gameVersion": "0.5.5",
+  "extractedAt": "2026-09-25",
+  "source": "PathOfBuilding-PoE2@ce566ea",
+  "artifacts": [
+    "mod-tiers.json",
+    "bases.json"
+  ]
+}

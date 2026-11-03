@@ -53,6 +53,11 @@ export class BaseCatalog {
     return this.data.bases[name] ?? null
   }
 
+  /** Every base name in the catalogue. */
+  names(): string[] {
+    return Object.keys(this.data.bases)
+  }
+
   /** Obtainable bases of the same item type as `name`, `name` itself included when obtainable. */
   sameSlot(name: string): { name: string; base: BaseRaw }[] {
     const own = this.get(name)
