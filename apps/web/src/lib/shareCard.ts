@@ -1,4 +1,40 @@
-import type { Analysis } from '@poe2/core'
+import type { Analysis, SkillDamage, SnapshotDiff } from '@poe2/core'
+
+/** Damage types in the order the ring and the split bar draw them. */
+export const RING_ORDER = ['physical', 'fire', 'cold', 'lightning', 'chaos'] as const
+
+export interface RingSlice {
+  type: string
+  percent: number
+}
+
+/** The main skill's damage split for the element ring: hits first, else damage over time; empty when unknown. */
+export function ringSplit(skill: Pick<SkillDamage, 'damageSplit' | 'dotSplit'> | null | undefined): RingSlice[] {
+  if (!skill) return []
+  const split = skill.damageSplit?.length ? skill.damageSplit : (skill.dotSplit ?? [])
+  return split
+    .filter((s) => s.percent > 0)
+    .map((s) => ({ type: s.type, percent: s.percent }))
+    .sort((a, b) => RING_ORDER.indexOf(a.type as never) - RING_ORDER.indexOf(b.type as never))
+}
+
+export interface ShareDelta {
+  label: string
+  /** Signed, with its unit: "+400", "-12%". */
+  text: string
+  improved: boolean
+}
+
+/** Up to `n` "since last import" moves, largest relative change first (the diff's own order). */
+export function shareDeltas(diff: SnapshotDiff | null | undefined, n = 3): ShareDelta[] {
+  if (!diff) return []
+  return diff.changes.slice(0, n).map((c) => {
+    const unit = c.unit === 'percent' ? '%' : ''
+    const abs = Math.abs(c.delta)
+    const num = Number.isInteger(abs) ? abs.toLocaleString('en-US') : abs.toLocaleString('en-US', { maximumFractionDigits: 1 })
+    return { label: c.label, text: `${c.delta > 0 ? '+' : c.delta < 0 ? '−' : ''}${num}${unit}`, improved: c.improved }
+  })
+}
 
 /** Everything the share card prints, read straight off the analysis (nothing computed beyond picking and ordering). */
 export interface ShareCardData {
@@ -10,11 +46,17 @@ export interface ShareCardData {
   /** The weakest max hit: what kills the character first. */
   killer: { value: number; type: string } | null
   vitals: { label: string; value: number | null; caption?: string }[]
-  /** Up to three actionable findings, most important first. */
+  /** Up to three actionable findings, most important first. Kept for the alt text and MCP parity; v2 draws the showcase instead. */
   findings: string[]
+  /** The main skill and its DPS, the figure inside the ring. */
+  dps: { value: number; skill: string } | null
+  /** The main skill's damage split, drawn as the element ring. */
+  ring: RingSlice[]
+  /** "Since last import" moves; empty without history. */
+  deltas: ShareDelta[]
 }
 
-export function shareCardData(a: Analysis, grade: ShareCardData['grade']): ShareCardData {
+export function shareCardData(a: Analysis, grade: ShareCardData['grade'], diff: SnapshotDiff | null = null): ShareCardData {
   const { identity, defense, dps } = a
   const weakest = [...defense.maxHits].sort((x, y) => x.value - y.value)[0]
   return {
@@ -38,6 +80,9 @@ export function shareCardData(a: Analysis, grade: ShareCardData['grade']): Share
       .filter((r) => r.category !== 'question')
       .slice(0, 3)
       .map((r) => r.action),
+    dps: dps.primary ? { value: dps.primary.totalDps, skill: dps.primary.name } : null,
+    ring: ringSplit(dps.primary),
+    deltas: shareDeltas(diff),
   }
 }
 

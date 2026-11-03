@@ -281,7 +281,7 @@ function oneShotRule(ctx: Context): Recommendation[] {
     make({
       id: `one-shot-${lowest.type}`,
       category: 'survivability',
-      action: `Shore up ${lowest.type} mitigation — it is this build's one-shot vector at ${lowest.value.toLocaleString()} damage.`,
+      action: `Toughen up against ${lowest.type} hits — a ${lowest.value.toLocaleString()} ${lowest.type} hit kills you first.`,
       rationale:
         `${lowest.type[0]!.toUpperCase()}${lowest.type.slice(1)} has the lowest maximum survivable hit of any damage type ` +
         `that can kill this character, ${ratio.toFixed(1)}x below the strongest. The figure opposite is the CEILING — what this vector ` +
@@ -367,7 +367,7 @@ function armourRule(ctx: Context): Recommendation[] {
     make({
       id: 'armour-negligible',
       category: 'survivability',
-      action: `Treat armour as a non-defence at ${d.armour.toLocaleString()} — rely on ${fallbacks.join(', ')}, or commit to armour properly.`,
+      action: `Your ${d.armour.toLocaleString()} armour barely helps — lean on ${fallbacks.join(', ')}, or invest in armour properly.`,
       rationale: `${d.armour.toLocaleString()} armour reduces physical damage by only ${dr}%. Partial investment in armour is the worst of both worlds; the stat scales badly until it is large.`,
       // No impact figure: the honest target armour value cannot be derived from
       // this payload, and rendering the current 2% as a "gain" would read as
@@ -471,7 +471,7 @@ function weaponTierRule(ctx: Context): Recommendation[] {
     make({
       id: 'weapon-ilvl-lag',
       category: 'damage',
-      action: `Upgrade the main hand — ${weapon.name} is item level ${weapon.itemLevel}, ${gap} below the rest of the kit.`,
+      action: `Upgrade your weapon — ${weapon.name} is item level ${weapon.itemLevel}, ${gap} below your other gear.`,
       rationale: `Weapon damage multiplies every skill that uses it, so the weapon is the highest-leverage slot on a martial build. At ilvl ${weapon.itemLevel} it cannot roll the top affix tiers the ilvl-${median} armour pieces already carry.`,
       impact: {
         stat: 'weaponItemLevel',

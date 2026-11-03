@@ -234,8 +234,11 @@ export type BuildUrlResult =
   | { ok: true; url: string; length: number; warning: 'long-url' | null }
   | { ok: false; reason: 'url-too-long'; length: number }
 
-/** The `?q=` link format is confirmed on trade2 (2026-11-02): the site prefills the filters. */
-export function buildTradeUrl(league: string, body: SearchQueryBody): BuildUrlResult {
+/**
+ * The `?q=` link format is confirmed on trade2 (2026-11-02): the site prefills the filters. Takes either body shape:
+ * a `buildSearchQuery` body or one variant's `query` from `buildTradeQueries`.
+ */
+export function buildTradeUrl(league: string, body: SearchQueryBody | TradeQuery): BuildUrlResult {
   const url = `https://www.pathofexile.com/trade2/search/poe2/${encodeURIComponent(league)}?q=${encodeURIComponent(JSON.stringify(body))}`
   const length = url.length
   if (length > URL_MAX_LENGTH) return { ok: false, reason: 'url-too-long', length }

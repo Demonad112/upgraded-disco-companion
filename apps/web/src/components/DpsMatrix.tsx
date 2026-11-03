@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { describePobConfig, type DpsSummary, type PobConfig, type SkillDamage } from '@poe2/core'
 import { Empty, Tag, fmt, fmtCompact } from './ui'
-import { DMG_VAR, Diamond, TYPE_ORDER, cap } from './character/dmg'
+import { Diamond, TYPE_ORDER, cap, dmgFill } from './character/dmg'
 
 /**
  * Damage-type split as one full-width bar, with its percentages in the title
@@ -17,7 +17,7 @@ function SplitBar({ skill }: { skill: SkillDamage }) {
   return (
     <div role="img" aria-label={`Damage split: ${text}`} title={text} className="flex h-4 w-full gap-px overflow-hidden bg-sunken">
       {ordered.map((s) => (
-        <div key={s.type} style={{ width: `${s.percent}%`, background: DMG_VAR[s.type] }} />
+        <div key={s.type} style={{ width: `${s.percent}%`, ...dmgFill(s.type) }} />
       ))}
     </div>
   )

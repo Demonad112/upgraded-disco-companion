@@ -285,8 +285,8 @@ export function critInvestmentRule(ctx: OffenceContext): Recommendation[] {
       id: 'dps-crit-uninvested',
       category: 'damage',
       action: carryingMultiplier
-        ? `Commit to critical strike chance or stop paying for critical damage — at ${skill.critChance!.toFixed(1)}% chance, crit adds only ${contribution.toFixed(1)}% to your damage.`
-        : `Decide whether this build uses critical strikes — at ${skill.critChance!.toFixed(1)}% chance and ${skill.critMultiplier!.toFixed(2)}x, crit adds only ${contribution.toFixed(1)}% to your damage.`,
+        ? `Invest in crit chance or drop crit damage — at ${skill.critChance!.toFixed(1)}% chance, crits add only ${contribution.toFixed(1)}% to your damage.`
+        : `Decide if this build crits — at ${skill.critChance!.toFixed(1)}% chance and ${skill.critMultiplier!.toFixed(2)}x, crits add only ${contribution.toFixed(1)}% to your damage.`,
       rationale:
         `Critical strikes multiply damage only as often as they happen. ${skill.name} crits ${skill.critChance!.toFixed(1)}% of the time, ` +
         `so the ${skill.critMultiplier!.toFixed(2)}x multiplier applies to one hit in ${Math.round(100 / skill.critChance!)} and returns ` +
@@ -329,7 +329,7 @@ export function dotArchetypeRule(ctx: OffenceContext): Recommendation[] {
     make({
       id: 'dps-dot-dominant',
       category: 'damage',
-      action: `Scale the ailment or degeneration itself — ${Math.round(share * 100)}% of ${skill.name}'s damage is damage over time, not hits.`,
+      action: `Scale damage over time — ${Math.round(share * 100)}% of ${skill.name}'s damage comes from it, not from hits.`,
       rationale:
         `${Math.round(share * 100)}% of ${skill.name}'s ${Math.round(skill.totalDps).toLocaleString()} damage comes from damage over time. ` +
         `Hit damage, critical strikes and attack speed scale the other ${Math.round((1 - share) * 100)}%, so modifiers aimed at them do ` +

@@ -1,6 +1,6 @@
 'use client'
 
-/** "Changed since last report": the move between the two latest stored snapshots. */
+/** "Since last import": the move between the two latest stored snapshots. */
 
 import type { Analysis, CharacterSnapshot, MetricDelta } from '@poe2/core'
 import { changedFor } from '@/lib/characterNotes'
@@ -33,8 +33,8 @@ export function ChangedSincePanel({ analysis, snapshots }: { analysis: Analysis;
   const ch = changedFor(analysis, snapshots)
 
   return (
-    <section data-surface="data" className="card" aria-label="Changed since last report">
-      <h3 className="h3">Changed since last report</h3>
+    <section data-surface="data" className="card" aria-label="Since last import">
+      <h3 className="h3">Since last import</h3>
       {!ch.available ? (
         <p className="mt-1.5 text-xs text-ink-dim">Import again after playing; two reports are needed to compare.</p>
       ) : (

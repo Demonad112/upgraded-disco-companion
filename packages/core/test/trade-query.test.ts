@@ -202,3 +202,18 @@ describe('buildSearchQuery / buildTradeUrl', () => {
     expect(!r.ok && r.length).toBeGreaterThan(URL_MAX_LENGTH)
   })
 })
+
+describe('buildTradeUrl with a buildTradeQueries variant', () => {
+  it('links the exact variant through ?q=', () => {
+    const [exact] = buildTradeQueries(
+      { mustKeep: [], wanted: [{ statId: 'base_chaos_damage_resistance_%', min: 21 }] },
+      { 'base_chaos_damage_resistance_%': 'explicit.stat_2923486259' },
+    )
+    const r = buildTradeUrl('Runes of Aldur', exact!.query)
+    expect(r.ok).toBe(true)
+    if (!r.ok) return
+    expect(r.url.startsWith('https://www.pathofexile.com/trade2/search/poe2/Runes%20of%20Aldur?q=')).toBe(true)
+    const q = JSON.parse(decodeURIComponent(r.url.split('?q=')[1]!))
+    expect(q.query.stats[0].filters[0]).toEqual({ id: 'explicit.stat_2923486259', value: { min: 21 }, disabled: false })
+  })
+})
