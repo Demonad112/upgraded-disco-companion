@@ -39,7 +39,7 @@ session's row in its last commit. Audit rows are tracked in `docs/audit/08-PROGR
 | 21 | H1 home picker | Local | Opus 5.5 · high | done | variant/20261103-home-picker | #83 | | runs with C1, L1 |
 | 21 | L1 launch hardening (proxy, share target, paste, patch switch, Lighthouse CI) | Cloud | Sonnet 5.5 · medium | done | feat/20261103-launch-hardening | | | runs with C1, H1; owner deploys the proxy |
 | 22 | CH1 character showcase + share card v2 + fix→trade | Cloud | Opus 5.5 · high | todo | | | | runs with V1 |
-| 22 | V1 SVG diagrams | Local | Opus 5.5 · high | done | variant/20261103-diagrams | | | waystone ladder, Atlas path, boss order (lazy SVG chunks); `/checklist/` 208,394 → 209,062 B br; `docs/carry/V1.md`; runs with CH1 |
+| 22 | V1 SVG diagrams | Local | Opus 5.5 · high | done | variant/20261103-diagrams | #86 | | waystone ladder, Atlas path, boss order (lazy SVG chunks); `/checklist/` 208,394 → 209,062 B br; `docs/carry/V1.md`; runs with CH1 |
 | 23 | PD patch-day data | Cloud | Opus 5.5 · high | todo | | | | when the December patch notes land |
 | 24 | IMG-2 visual build + QA sweep | Cloud | Opus 5.5 · high / Sonnet 5.5 · medium | todo | | | | needs IMG-1 picks |
 
