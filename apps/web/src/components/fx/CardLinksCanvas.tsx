@@ -76,7 +76,7 @@ export function CardLinksCanvas() {
         ctx.stroke()
       }
     }
-  }, FX_LINKS_EVENT)
+  }, FX_LINKS_EVENT, undefined, 1)
 
   // Cards load and resize after route paint (progress state hydrates); redraw
   // whenever main's content changes size or structure.

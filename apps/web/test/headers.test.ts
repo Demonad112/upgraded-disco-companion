@@ -24,7 +24,7 @@ describe('Cloudflare _headers', () => {
     for (const origin of origins) expect(connect).toContain(origin)
   })
 
-  // CF-01: unhashed images and icons get a day of caching. Data JSON, the manifest and HTML stay on revalidate.
+  // CF-01: unhashed images and icons get a day of caching. The manifest and HTML stay on revalidate; data JSON is immutable (versioned URL).
   describe('cache rules', () => {
     const rules = new Map<string, string[]>()
     let current = ''
@@ -37,8 +37,13 @@ describe('Cloudflare _headers', () => {
       expect(rules.get(path)).toContain('Cache-Control: public, max-age=86400, stale-while-revalidate=604800')
     })
 
-    it('leaves data JSON and the manifest on revalidate', () => {
-      for (const path of ['/manifest.webmanifest', '/*.json']) expect(rules.has(path)).toBe(false)
+    it('leaves the manifest on revalidate', () => {
+      expect(rules.has('/manifest.webmanifest')).toBe(false)
+    })
+
+    // Data is fetched as <file>.json?v=<data fingerprint> (lib/basePath dataUrl), so a new deploy is a new URL.
+    it('caches data JSON forever, as the fetch URL carries the data version', () => {
+      expect(rules.get('/*.json')).toContain('Cache-Control: public, max-age=31536000, immutable')
     })
   })
 })

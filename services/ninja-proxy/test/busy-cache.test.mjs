@@ -104,7 +104,7 @@ test('handler: a good answer carries the 60 s cache header and the second call i
     const res = fakeRes()
     await handler(req(Q), res)
     assert.equal(res.statusCode, 200)
-    assert.equal(res.headers['Cache-Control'], 's-maxage=60, stale-while-revalidate=120')
+    assert.equal(res.headers['Cache-Control'], 'public, s-maxage=60, stale-while-revalidate=300')
     const before = calls
     const res2 = fakeRes()
     await handler(req(Q), res2)

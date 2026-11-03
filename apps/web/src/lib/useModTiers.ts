@@ -14,8 +14,9 @@
 
 import { useEffect, useState } from 'react'
 import { ModTiers, type ModTierData } from '@poe2/core'
+import { dataUrl } from '@/lib/basePath'
 
-const DATA_URL = `${process.env.NEXT_PUBLIC_BASE_PATH ?? ''}/mod-tiers.json`
+const DATA_URL = dataUrl('mod-tiers.json')
 
 export type ModTiersState =
   | { status: 'idle' }

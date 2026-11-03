@@ -25,8 +25,9 @@ import {
 } from '@poe2/core'
 import { Empty, fmt } from './ui'
 import { Input, Select } from '@/components/shared/controls'
+import { dataUrl } from '@/lib/basePath'
 
-const DATA_URL = `${process.env.NEXT_PUBLIC_BASE_PATH ?? ''}/monster-stats.json`
+const DATA_URL = dataUrl('monster-stats.json')
 const GROUP = 4
 const DEFAULT_LEVEL = 75
 const TITLE = 'Survivability by waystone tier'

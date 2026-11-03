@@ -9,7 +9,7 @@
 import { useEffect, useState } from 'react'
 import { resolveTradeStatMapFromSnapshot, type RecommendationReport, type Trade2StatsSnapshot, type TradeStatMap } from '@poe2/core'
 import { fmt } from '@/components/ui'
-import { BASE_PATH } from '@/lib/basePath'
+import { BASE_PATH, dataUrl } from '@/lib/basePath'
 import { TRADE_LEAGUE } from '@/lib/constants'
 import { fixAnchor, splitAction, topFixes, tradeLinkFor, tradeStatFor } from './topFixes'
 
@@ -19,7 +19,8 @@ function useTradeMap(wanted: boolean): TradeStatMap | null {
   useEffect(() => {
     if (!wanted) return
     let live = true
-    fetch(`${BASE_PATH}/trade2-stats.json`)
+    const load = () =>
+      fetch(dataUrl('trade2-stats.json'))
       .then((r) => (r.ok ? (r.json() as Promise<Trade2StatsSnapshot>) : Promise.reject(new Error(String(r.status)))))
       .then((snap) => {
         if (!live) return
@@ -28,8 +29,13 @@ function useTradeMap(wanted: boolean): TradeStatMap | null {
         setMap(m)
       })
       .catch(() => live && setMap({}))
+    // 1.4 MB: fetched when the browser is idle, not during the first paint (Safari has no requestIdleCallback).
+    const ric = typeof window.requestIdleCallback === 'function'
+    const handle = ric ? window.requestIdleCallback(load, { timeout: 3000 }) : window.setTimeout(load, 500)
     return () => {
       live = false
+      if (ric) window.cancelIdleCallback(handle)
+      else window.clearTimeout(handle)
     }
   }, [wanted])
   return map

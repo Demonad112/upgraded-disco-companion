@@ -13,6 +13,9 @@
 /sw.js
   Cache-Control: no-cache
 
+/*.json
+  Cache-Control: public, max-age=31536000, immutable
+
 /images/*
   Cache-Control: public, max-age=86400, stale-while-revalidate=604800
 
@@ -27,3 +30,6 @@
 
 /favicon.ico
   Cache-Control: public, max-age=86400, stale-while-revalidate=604800
+
+/character/*
+  Link: <https://poe2-v3-ninja-proxy.vercel.app>; rel=preconnect; crossorigin

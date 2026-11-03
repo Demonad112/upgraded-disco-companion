@@ -23,6 +23,8 @@ const SEED = 20261020
 const STAR = 1.8
 /** Faint background stars per field star: desktop, phone (lighter). */
 const FAINT = [2, 1]
+/** Most stars (field + faint) drawn per frame; lite mode halves it. */
+export const STAR_CAP = 1200
 
 export function mulberry32(seed: number) {
   return () => {
@@ -140,7 +142,7 @@ function clearBand(pts: { x: number; y: number }[], ru: number) {
   }
 }
 
-export function buildField(w: number, h: number): Field {
+export function buildField(w: number, h: number, lite = false): Field {
   // The original stream lays out every star, constellation and diamond as it
   // always has; colour, brightness and the faint stars come from their own
   // streams, so the layout never moves.
@@ -161,8 +163,11 @@ export function buildField(w: number, h: number): Field {
     return { x: Math.cos(a) * r, y: Math.sin(a) * r }
   }
 
-  const starCount = Math.max(40, Math.min(Math.round(560 * Math.max(1, STAR)), Math.round(((w * h) / 7500) * k)))
-  const s = allocStars(starCount + Math.round(starCount * FAINT[small ? 1 : 0]))
+  const faintPer = FAINT[small ? 1 : 0]
+  // Total (field + faint) is capped: the 2D fill cost, not the JS, is what drops frames.
+  const cap = Math.floor((lite ? STAR_CAP / 2 : STAR_CAP) / (1 + faintPer))
+  const starCount = Math.max(40, Math.min(cap, Math.round(560 * Math.max(1, STAR)), Math.round(((w * h) / 7500) * k)))
+  const s = allocStars(starCount + Math.round(starCount * faintPer))
   for (let i = 0; i < starCount; i++) {
     const p = inDisk()
     let size = 0.35 + 1.4 * Math.pow(rand(), 3)

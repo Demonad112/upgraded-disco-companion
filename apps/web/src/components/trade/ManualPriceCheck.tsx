@@ -8,7 +8,7 @@ import {
   resolveTradeStatMapFromSnapshot,
   type Trade2StatsSnapshot,
 } from '@poe2/core'
-import { BASE_PATH } from '@/lib/basePath'
+import { dataUrl } from '@/lib/basePath'
 import { TRADE_LEAGUE } from '@/lib/constants'
 import { ProvenanceBadge } from '@/components/shared/ProvenanceBadge'
 import { Button, Input } from '@/components/shared/controls'
@@ -26,7 +26,7 @@ type Load =
 const MAX_LIST = 8
 
 async function getJson(path: string): Promise<unknown> {
-  const res = await fetch(`${BASE_PATH}/${path}`)
+  const res = await fetch(dataUrl(path))
   if (!res.ok) throw new Error(`${path}: HTTP ${res.status}`)
   return res.json()
 }
