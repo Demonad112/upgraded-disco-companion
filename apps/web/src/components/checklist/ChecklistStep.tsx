@@ -18,6 +18,7 @@ import { actionItemKey, useChecklistState } from "@/hooks/useChecklistState";
 import { commonMistakes } from "@/data/commonMistakes";
 import { usePrefs } from "@/hooks/usePrefs";
 import { GlossSegments, glossSegments } from "@/components/shared/Gloss";
+import { StepDiagram } from "@/components/diagrams/StepDiagram";
 
 export function ChecklistStep({
   step,
@@ -111,6 +112,7 @@ export function ChecklistStep({
         </summary>
 
         <div className="space-y-3 border-t border-line px-3 pt-3 pb-3.5 sm:pl-[4.25rem]">
+          {step.diagram ? <StepDiagram kind={step.diagram} /> : null}
           <p className="text-sm leading-relaxed text-ink-dim">{descriptionText}</p>
           <div className="flex flex-wrap items-center gap-1.5 empty:hidden">
             {proDetail ? <SourceFlag source={step.source} /> : null}
