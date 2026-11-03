@@ -26,7 +26,7 @@ export function stepSummaries(): StepSummary[] {
     id: step.id,
     phaseLabel: ROADMAP_PHASE_LABELS[step.phase] ?? step.phase,
     title: step.title,
-    description: step.description,
+    description: step.why ?? step.description,
     actionItems: step.actionItems ?? [],
     gates: benchmarkGates
       .filter((g) => step.benchmarkGateIds?.includes(g.id))

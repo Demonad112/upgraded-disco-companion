@@ -32,6 +32,9 @@ test('what-if marks where a hit bar started', async ({ page }) => {
 })
 
 test('a glossary term in a checklist step shows its definition and closes on Escape', async ({ page }) => {
+  await page.addInitScript(() =>
+    localStorage.setItem('poe2-endgame-companion:v1', JSON.stringify({ version: 1, prefs: { homeStart: null, proDetail: true } })),
+  )
   await page.goto('checklist/')
   const step = page.locator('details#step-atlas-rules')
   await step.evaluate((d: HTMLDetailsElement) => (d.open = true))
@@ -71,6 +74,9 @@ test('glossary terms never sit inside another interactive element', async ({ pag
 })
 
 test('an open glossary tip follows its word when the page scrolls', async ({ page }) => {
+  await page.addInitScript(() =>
+    localStorage.setItem('poe2-endgame-companion:v1', JSON.stringify({ version: 1, prefs: { homeStart: null, proDetail: true } })),
+  )
   await page.goto('checklist/')
   const step = page.locator('details#step-atlas-rules')
   await step.evaluate((d: HTMLDetailsElement) => (d.open = true))

@@ -19,6 +19,7 @@ export const roadmapSteps: RoadmapStep[] = [
     order: 1,
     phase: "campaign-end",
     title: "Finish campaign, enter the Ziggurat Refuge",
+    why: "Unlocks your hideout map device and the NPCs everything else depends on.",
     description:
       "Open the Waygate, rush the first map straight to its boss (ignore every mechanic in it), and talk to Doryani and Farrow to start quests — this unlocks your hideout map device. Set up your hideout and the Verisium Anvil — outside Runes of Aldur (Standard, Forbidden Rites) the Anvil unlocks by completing The Runeseeker quest in Act 4, and Farrow can then be placed in your hideout.",
     source: video05Source(["VSeDfybR3Cc@02:01"], {
@@ -30,6 +31,8 @@ export const roadmapSteps: RoadmapStep[] = [
     order: 2,
     phase: "campaign-end",
     title: "Know the three rules of the Atlas rush",
+    why: "Until the Atlas is unlocked, maps are for pathing, not loot. Juicing now just delays your full tree.",
+    coreTips: [2],
     description:
       "Until your Atlas is fully unlocked, maps are for pathing, not loot: mechanics are weak without Atlas points, so every hour spent juicing now is an hour your full tree is delayed.",
     tips: [
@@ -51,6 +54,7 @@ export const roadmapSteps: RoadmapStep[] = [
     order: 3,
     phase: "campaign-end",
     title: "Hilda's Camp — first Great Beast only → Mighty Prey",
+    why: "Mighty Prey upgrades map bosses to drop a higher-tier Waystone: your main tier-climbing engine.",
     description:
       "Hilda's camp is right next to where you start. Kill only her first Great Beast and take Mighty Prey: 25% chance to upgrade a Normal Map Boss to a Powerful Map Boss, which drops a Waystone one tier higher. One point is enough for now — this is your core tier-climbing engine. Her next beast needs a T5+ Waystone, so leave the rest for later.",
     benchmarkGateIds: ["b-waystone-breakpoints"],
@@ -63,6 +67,8 @@ export const roadmapSteps: RoadmapStep[] = [
     order: 4,
     phase: "campaign-end",
     title: "Run the Waystone engine",
+    why: "Running out of Waystones is the most common early stall. Powerful bosses and the 3→1 bench keep you climbing.",
+    diagram: "waystone-ladder",
     description:
       "Waystone starvation is the #1 early-endgame stall. Only Powerful Map Boss nodes (red demon icon) and the reforge bench move you up a tier, so route every map around them.",
     actionItems: [
@@ -95,6 +101,8 @@ export const roadmapSteps: RoadmapStep[] = [
     order: 5,
     phase: "precursor-fortress",
     title: "Rush the first Precursor Tower → Ancient Gateway → Burning Monolith",
+    why: "Revealing the Fortress is what starts giving Atlas points, so go straight there.",
+    diagram: "atlas-path",
     description:
       "The nearest Precursor Tower (about 3 maps away) reveals the Fortress. Path straight to the Ancient Gateway — maps inside the Fortress area start giving Atlas points — then to the Burning Monolith, through as many Powerful Map Boss nodes as you can. Grab the guaranteed trial-key (Djinn Barya) nodes just off the middle path.",
     actionItems: [
@@ -118,6 +126,7 @@ export const roadmapSteps: RoadmapStep[] = [
     order: 6,
     phase: "precursor-fortress",
     title: "Light both Gateway beacons",
+    why: "Lighting both beacons gets you the missing fragments at the Burning Monolith.",
     description:
       "At the Burning Monolith you're missing two fragments. East Gateway: kill the Precursor Refiner and activate the beacon (needs a T5+ Waystone). West Gateway: kill the Precursor Separator. Scorpius does the lower-tier West side first.",
     benchmarkGateIds: ["b-gateway-t5"],
@@ -128,6 +137,7 @@ export const roadmapSteps: RoadmapStep[] = [
     order: 7,
     phase: "precursor-fortress",
     title: "Enigma Chambers → Weathered + Ancient Crisis Fragments",
+    why: "These two chamber bosses drop the fragments you need for your first Arbiter of Ash.",
     description:
       "Both need a T10+ Waystone. Each Enigma Chamber is a smaller version of a Citadel: kill the boss in the Western and the Eastern chamber for the Ancient and Weathered Crisis Fragments. The quest supplies the third fragment for your first Arbiter of Ash.",
     tips: [
@@ -146,6 +156,7 @@ export const roadmapSteps: RoadmapStep[] = [
     order: 8,
     phase: "precursor-fortress",
     title: "Allocate the sustain/tablet-unlock cluster",
+    why: "These points only add Waystone drops and tablet unlocks. League mechanics here are the classic trap.",
     description:
       "Allocate in this order — this block is 100% sustain and tablet unlocks, zero league mechanics. Eons of Domination unlocks Overseer Tablets; Atop the World unlocks generic Precursor Tablet drops while maxing Waystone drop chance. Putting early points into Abyss, Delirium or Breach here is the classic trap.",
     actionItems: [
@@ -173,6 +184,9 @@ export const roadmapSteps: RoadmapStep[] = [
     order: 9,
     phase: "arbiter-of-ash",
     title: "Kill Arbiter of Ash (quest version)",
+    why: "Beating Ash unlocks stronger tablets (3 modifiers), a big boost to map sustain.",
+    coreTips: [0],
+    diagram: "boss-order",
     description:
       "Bring the two Enigma fragments to the Burning Monolith. The quest fight is ~1.2M HP with two phases, unlimited attempts and no XP loss — it's mechanic-heavy, so learn it rather than face-tank it. Since 0.5.5 it has Fire Resistance and Cold Vulnerability instead of All Elemental Resistances. Upgrade gear before you try, or you'll be here a while.",
     tips: [
@@ -193,6 +207,7 @@ export const roadmapSteps: RoadmapStep[] = [
     order: 10,
     phase: "t11-checkpoint",
     title: "Pick your track: fast-track to T15, or park at T11",
+    why: "Your clear speed decides whether you push to T15 now or gear up at T11 first.",
     description:
       "After Arbiter of Ash, your build's clear speed decides the route. Strong build: Track A, skip side mechanics and push into the inner Fortress at T14 to T15. Average, SSF or hardcore build: Track B, stop climbing at T11 and gear up there. Both end at the same two Arbiter of Divinity kills.",
     tips: [
@@ -210,6 +225,7 @@ export const roadmapSteps: RoadmapStep[] = [
     order: 11,
     phase: "t11-checkpoint",
     title: "Grind T11 as the key gearing checkpoint",
+    why: "T11 drops already cover most good gear, and T15 is rarely better. Don't climb past what you clear fast.",
     description:
       "T11 Waystones are area level 75 — enough for tier-1 flat damage on rings/gloves, tier-1/2 life, tier-2 resistances and defences, +3 amulets, tier-2 physical on weapons and level-18 gems. T15 rarely does better. If T14–T15 is slow for your build, stop climbing and farm T11 until your gear is right.",
     tips: [
@@ -225,6 +241,7 @@ export const roadmapSteps: RoadmapStep[] = [
     order: 12,
     phase: "t11-checkpoint",
     title: "Take one Doryani point for the extra revival",
+    why: "One cheap Doryani point gives you an extra revive in maps.",
     description:
       "Clear the nearest corrupted zone's nexus (kill its boss) to unlock Doryani and one point — spend it on the extra revive (Stitch the Flesh).",
     tips: [
@@ -237,6 +254,7 @@ export const roadmapSteps: RoadmapStep[] = [
     order: 13,
     phase: "t11-checkpoint",
     title: "Delirium Part 1 only — amulet anointing unlock",
+    why: "Unlocks amulet anointing. Stop there: the rest of Delirium is the hardest and comes last.",
     description:
       "Path to the Withered Willow, kill 5 map bosses with delirium mirror fog active to unlock amulet anointing, then clear the first 4 passive-point maps for more liquid emotion drops. Otherwise just pass through mirrors incidentally — don't push Delirium further yet, it's the hardest mechanic and is sequenced last. Skip it entirely if your build has no cheap anoint.",
     source: video05Source(["VSeDfybR3Cc@14:10", "5Vp_3gUFbwI@06:53"]),
@@ -246,6 +264,7 @@ export const roadmapSteps: RoadmapStep[] = [
     order: 14,
     phase: "t11-checkpoint",
     title: "Layer Abyss, then Breach, while mapping",
+    why: "Abyss then Breach are the best early currency and gear sources while you keep mapping.",
     description:
       "Canonical opener: Abyss (universal currency, Desecrated Bones, Omens; Well of Souls → Kulemak), then Breach (jewellery and catalysts at the Monastery → Xesht) — best for early gearing, especially belts. Abyss → Ritual is a valid alternative. Point maps can be run at your cheapest Waystone tier.",
     tips: [
@@ -259,6 +278,7 @@ export const roadmapSteps: RoadmapStep[] = [
     order: 15,
     phase: "t11-checkpoint",
     title: "Hit level 85+, finish your 4th Ascendancy",
+    why: "Your 3rd and 4th Ascendancy points are worth roughly 30–40% more damage for most classes.",
     description:
       "The lowest 4-trial Barya is level 75, which T11 farming guarantees. The 3rd and 4th Ascendancy points are ~30–40% more damage for most classes — \"optional, but not really\".",
     benchmarkGateIds: ["b-level85-ascendancy"],
@@ -271,6 +291,7 @@ export const roadmapSteps: RoadmapStep[] = [
     order: 16,
     phase: "arbiter-of-divinity-loop",
     title: "Quest Halls: Matriarch Hall + Patriarch Hall",
+    why: "Both Halls must be cleared to build the Origin Core you need for the Arbiter of Divinity.",
     description:
       "At the Origin Tower, Doryani sends you to the Patriarch Hall (Origin Spark) and Matriarch Hall (Origin Cradle) either side of the tower. Both bosses are hard — you should be comfortable in red maps. Look for the smooth orange beam; the pair usually spawns together, and since 0.5.5 they spawn much closer to the Ziggurat Refuge.",
     source: videoSource(["5Vp_3gUFbwI@06:53", "lsu7-ITJe_M@13:08"]),
@@ -280,6 +301,8 @@ export const roadmapSteps: RoadmapStep[] = [
     order: 17,
     phase: "arbiter-of-divinity-loop",
     title: "Kill #1: quest Arbiter of Divinity",
+    why: "This kill opens the top of the Atlas tree. It does not unlock the full Atlas yet; kill #2 does.",
+    coreTips: [0, 1],
     description:
       "Combine the Cradle and Spark into the Origin Core (Doryani / Engine Room), carry it to the top of the Origin Tower and kill the Arbiter. Two phases, unlimited attempts, no XP loss. It has 45% Lightning Resistance and Fire Vulnerability (0.5.5) — lightning builds should bring exposure and a curse.",
     tips: [
@@ -299,6 +322,7 @@ export const roadmapSteps: RoadmapStep[] = [
     order: 18,
     phase: "arbiter-of-divinity-loop",
     title: "Allocate the top-of-tree passives and memory forks",
+    why: "These top-of-tree points give better tablets and early jewellery. Take them right after kill #1.",
     description:
       "Reverse Transcription (Regal tablets) → Rogue Exile cluster (Competing Explorers, Competitive Archaeology — early jewellery) → essence/magic-monster paths → Mountain Mastery: Tablets, then the three memory forks. Grab them immediately after the first Divinity kill.",
     actionItems: [
@@ -321,6 +345,7 @@ export const roadmapSteps: RoadmapStep[] = [
     order: 19,
     phase: "arbiter-of-divinity-loop",
     title: "Hunt one Matriarch + Patriarch pair outside the Fortress",
+    why: "Kill #2 needs a second Origin Core, so find one Matriarch and Patriarch Hall pair outside the Fortress.",
     description:
       "For kill #2 you need a non-quest Origin Core: find one Matriarch Hall and one Patriarch Hall outside the Fortress walls (orange beam in the fog — if you see one, the other is close), clear both, and combine the Cradle and Spark. The old 5-cycle Cardinal Device loop is gone.",
     tips: [
@@ -338,6 +363,7 @@ export const roadmapSteps: RoadmapStep[] = [
     order: 20,
     phase: "arbiter-of-divinity-loop",
     title: "Kill #2: non-quest Arbiter of Divinity → full Atlas unlocked",
+    why: "The second kill completes the Fortress and unlocks every Atlas point at once.",
     description:
       "Kill the stronger, non-quest Arbiter of Divinity with your non-quest Origin Core. Since 0.5.5 this completes the entire Precursor Fortress and unlocks every Atlas point at once — no region-by-region clearing. (Before 0.5.5 each kill let you hit a Cardinal Device for one ~40-point region, five times over.)",
     tips: [
@@ -355,6 +381,7 @@ export const roadmapSteps: RoadmapStep[] = [
     order: 21,
     phase: "arbiter-of-divinity-loop",
     title: "Spend the full tree — skip the trap nodes",
+    why: "Atlas points can't be refunded, so fill the tree toward your farm and skip the trap nodes.",
     description:
       "With every point unlocked, fill the tree toward your farm. Check the trap-node list first: points can't be refunded.",
     actionItems: [
@@ -379,6 +406,7 @@ export const roadmapSteps: RoadmapStep[] = [
     order: 22,
     phase: "full-tree",
     title: "Close out the remaining tree",
+    why: "Spend what's left on generic quantity, then the mechanic sub-trees you want, hardest last.",
     description:
       "Once the Fortress is complete, remaining points go to generic quantity/rarity/pack-size, then the mechanic sub-trees you still want. Recommended close-out order: Ritual → Vaal Temple → Delirium (hardest last). Fubgun's alternative: pick the one mechanic you'll farm right after the first Divinity kill and earn currency with its tablets while you hunt Halls.",
     relatedMistakeIds: ["m-spread-atlas-points"],
@@ -391,6 +419,7 @@ export const roadmapSteps: RoadmapStep[] = [
     order: 23,
     phase: "masters-and-mechanics",
     title: "Master: Doryani — corrupted nexuses",
+    why: "Doryani's nexuses cleanse regions for bonus currency and unlock his branch.",
     description:
       "Doryani enhances base maps and biome control; his branch is the best for exploration. Each corrupted nexus you clear cleanses its region (cleansed maps grant bonus currency and can drop Fracturing Orbs).",
     actionItems: [
@@ -405,6 +434,7 @@ export const roadmapSteps: RoadmapStep[] = [
     order: 24,
     phase: "masters-and-mechanics",
     title: "Master: Hilda — Great Beasts",
+    why: "Great Beasts feed boss-rush and Omen Abyss setups.",
     description:
       "Hilda reveals Great Beasts in maps near her camp. Best Master for boss-rush and Omen-Abyss setups.",
     actionItems: [
@@ -419,6 +449,7 @@ export const roadmapSteps: RoadmapStep[] = [
     order: 25,
     phase: "masters-and-mechanics",
     title: "Master: Jado — Sealed Vault and anomaly maps",
+    why: "Jado unlocks exceptional items and Lineage Support gems.",
     description:
       "Jado's unlock is the Sealed Vault (the node with blood coming out, usually right in front of the Fortress). He's the Master for exceptional items and Lineage Support gems.",
     actionItems: [
@@ -436,6 +467,8 @@ export const roadmapSteps: RoadmapStep[] = [
     order: 26,
     phase: "masters-and-mechanics",
     title: "Ritual — King in the Mists → The Bodach",
+    why: "Quest Ritual without Ritual tablets to finish its chain and earn its points.",
+    coreTips: [0],
     description:
       "Ritual's hub sits next to the Fortress. Quest it without Ritual tablets.",
     actionItems: [
@@ -459,6 +492,7 @@ export const roadmapSteps: RoadmapStep[] = [
     order: 27,
     phase: "masters-and-mechanics",
     title: "Vaal Temple — Architect → Atziri",
+    why: "Build a path to the top rather than sprawling wide; its passives work even if you never run it.",
     description:
       "Build roads and rooms toward the top of the temple rather than sprawling wide. Its passives (Offerings to the Queen, Military Reinforcements) work even when you don't run the Temple.",
     actionItems: [
@@ -474,6 +508,7 @@ export const roadmapSteps: RoadmapStep[] = [
     order: 28,
     phase: "masters-and-mechanics",
     title: "Delirium — Grand Mirror → Simulacrum → Tangmazu",
+    why: "Part 2 of Delirium is the hardest mechanic, so it goes last.",
     description:
       "Part 2 of Delirium, saved for last because it's the hardest. Since 0.5.5 Grand Mirror fog spreads to exactly 10 maps and pack count stops scaling past 100% Deliriousness (Monster Effectiveness and Rarity still scale to 200%). Recurring Nightmares adds +30% Deliriousness (spec, unverified).",
     actionItems: [
@@ -493,6 +528,7 @@ export const roadmapSteps: RoadmapStep[] = [
     order: 29,
     phase: "masters-and-mechanics",
     title: "Abyss — Well of Souls → Kulemak",
+    why: "Finishing Abyss gives about 6 Atlas points and the Kulemak fight.",
     description:
       "Your first Abyss in a map reveals the Well of Souls. Prioritise Balance of Power: Ulaman; avoid From Below / Sprawling Rapture while questing (bigger Abysses are slower).",
     actionItems: [
@@ -506,6 +542,7 @@ export const roadmapSteps: RoadmapStep[] = [
     order: 30,
     phase: "masters-and-mechanics",
     title: "Breach — Monastery → Breach Colony → Xesht",
+    why: "Unlocks the Genesis Tree and Hivemind via Xesht.",
     description:
       "Unlocks the Genesis Tree and Hivemind. Sub-tree priority: Breeding Program: Banded Fruit → Diverse Control → monster-count nodes → Sole Purpose: Destruction.",
     actionItems: [
@@ -520,6 +557,7 @@ export const roadmapSteps: RoadmapStep[] = [
     order: 31,
     phase: "masters-and-mechanics",
     title: "Expedition — Ruins of Kingsmarch → Olroth → crater",
+    why: "Expedition is the #1 farm and its chain awards Atlas points, so it pays for itself.",
     description:
       "Follow the Logbook quest line from the Ruins of Kingsmarch. Grand Expeditions award Atlas points in 0.5.5 — and Expedition is the #1 farm, so this chain pays for itself.",
     tips: [
@@ -544,6 +582,7 @@ export const roadmapSteps: RoadmapStep[] = [
     order: 32,
     phase: "juiced-farming",
     title: "Commit to a juiced single-mechanic farming loop",
+    why: "Late game pays best from one juiced mechanic with matching biomes, tablets and Master.",
     description:
       "Pick one S-tier farm from the dashboard (Expedition, Omen Abyss, Breach Hiveblood, Delirium/Lineage rush), match biomes and tablets to it, and pair the right Master (Hilda for boss rushes and Omen Abyss, Jado for unique/Lineage hunts, Doryani for safety and biome control).",
     actionItems: [

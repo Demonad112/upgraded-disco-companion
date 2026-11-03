@@ -2,6 +2,7 @@
 
 import type { FarmingStrategy } from "@/lib/types";
 import { Tag } from "@/components/shared/Tag";
+import { ProOnly } from "@/components/shared/ProToggle";
 import { SourceFlag } from "@/components/shared/SourceFlag";
 import { useStrategySelection } from "@/hooks/useStrategySelection";
 import { StrategyTierBadge } from "./StrategyTable";
@@ -45,7 +46,9 @@ export function StrategyCard({ strategy }: { strategy: FarmingStrategy }) {
         </div>
       )}
 
-      <p className="text-sm text-ink-mute">{strategy.atlasSetup}</p>
+      <ProOnly>
+        <p className="text-sm text-ink-mute">{strategy.atlasSetup}</p>
+      </ProOnly>
       <p className="text-sm text-ink-dim">{strategy.expectedReturn}</p>
 
       <div className="mt-1 flex flex-wrap items-center gap-2 text-xs">
@@ -57,7 +60,7 @@ export function StrategyCard({ strategy }: { strategy: FarmingStrategy }) {
         {strategy.lateGameViable && (
           <span className="text-ink-mute">Late-game viable</span>
         )}
-        <SourceFlag source={strategy.source} />
+        <ProOnly><SourceFlag source={strategy.source} /></ProOnly>
       </div>
     </div>
   );

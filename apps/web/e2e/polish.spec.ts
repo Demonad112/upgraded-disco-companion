@@ -55,6 +55,9 @@ test.describe('small controls have a 24px tap area', () => {
   })
 
   test('checklist video timestamps', async ({ page }) => {
+  await page.addInitScript(() =>
+    localStorage.setItem('poe2-endgame-companion:v1', JSON.stringify({ version: 1, prefs: { homeStart: null, proDetail: true } })),
+  )
     await page.goto('checklist/')
     expect(await tapsWithin24px(page.locator('main a[href*="youtu"]:visible').first())).toBe(true)
   })

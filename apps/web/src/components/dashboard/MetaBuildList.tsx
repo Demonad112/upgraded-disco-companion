@@ -1,4 +1,5 @@
 import type { MetaBuild } from "@/lib/types";
+import { ProOnly } from "@/components/shared/ProToggle";
 import { SourceFlag } from "@/components/shared/SourceFlag";
 
 const BUDGET_LABELS: Record<string, string> = {
@@ -27,7 +28,7 @@ export function MetaBuildList({ builds }: { builds: MetaBuild[] }) {
             <span className="text-xs text-ink-mute">
               {BUDGET_LABELS[build.budgetTier]}
             </span>
-            <SourceFlag source={build.source} />
+            <ProOnly><SourceFlag source={build.source} /></ProOnly>
           </div>
           <p className="mt-1 text-xs text-ink-mute">{build.role}</p>
         </li>

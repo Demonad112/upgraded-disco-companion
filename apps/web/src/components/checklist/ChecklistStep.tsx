@@ -16,6 +16,7 @@ import { BenchmarkGate } from "@/components/shared/BenchmarkGate";
 import { SourceFlag } from "@/components/shared/SourceFlag";
 import { actionItemKey, useChecklistState } from "@/hooks/useChecklistState";
 import { commonMistakes } from "@/data/commonMistakes";
+import { usePrefs } from "@/hooks/usePrefs";
 import { GlossSegments, glossSegments } from "@/components/shared/Gloss";
 
 export function ChecklistStep({
@@ -28,6 +29,7 @@ export function ChecklistStep({
   /** The first incomplete step of the checklist — opened by default. */
   isNext: boolean;
 }) {
+  const { proDetail } = usePrefs();
   const { isStepComplete, toggleStep, isActionItemComplete, toggleActionItem, hideCompleted } = useChecklistState();
   const complete = isStepComplete(step.id);
   const avoid = commonMistakes.filter((m) => step.relatedMistakeIds?.includes(m.id));
@@ -40,8 +42,11 @@ export function ChecklistStep({
   // (P1-1). Segments are built here, in this render, not inside <Glossed>, so a double render can't empty the set.
   const seen = new Set<string>();
   const gloss = (text: string) => <GlossSegments segments={glossSegments(text, seen)} />;
-  const descriptionText = gloss(step.description);
+  const descriptionText = gloss(proDetail ? step.description : (step.why ?? step.description));
   const tipTexts = (step.tips ?? []).map(gloss);
+  const visibleTips = (step.tips ?? [])
+    .map((tip, i) => ({ tip, i }))
+    .filter(({ i }) => proDetail || step.coreTips?.includes(i));
   const avoidTexts = avoid.map((m) => gloss(m.description));
 
   return (
@@ -108,12 +113,12 @@ export function ChecklistStep({
         <div className="space-y-3 border-t border-line px-3 pt-3 pb-3.5 sm:pl-[4.25rem]">
           <p className="text-sm leading-relaxed text-ink-dim">{descriptionText}</p>
           <div className="flex flex-wrap items-center gap-1.5 empty:hidden">
-            <SourceFlag source={step.source} />
+            {proDetail ? <SourceFlag source={step.source} /> : null}
           </div>
 
-          {step.tips && step.tips.length > 0 ? (
+          {visibleTips.length > 0 ? (
             <ul className="list-disc space-y-1 pl-4 text-xs leading-relaxed text-ink-mute marker:text-accent">
-              {step.tips.map((tip, i) => (
+              {visibleTips.map(({ tip, i }) => (
                 <li key={tip}>{tipTexts[i]}</li>
               ))}
             </ul>
@@ -139,6 +144,16 @@ export function ChecklistStep({
             <ul className="overflow-hidden border border-line">
               {avoid.map((m, i) => (
                 <li key={m.id} className="border-b border-line last:border-b-0">
+                  {!proDetail ? (
+                    <p className="flex items-center gap-2 px-2.5 py-1.5 text-xs text-ink-dim">
+                      <span aria-hidden className="text-danger">
+                        ⚠
+                      </span>
+                      <span className="min-w-0 flex-1">
+                        <span className="text-ink-mute">Avoid:</span> {m.title}
+                      </span>
+                    </p>
+                  ) : (
                   <details className="group/avoid">
                     <summary className="flex cursor-pointer list-none items-center gap-2 px-2.5 py-1.5 text-xs text-ink-dim [&::-webkit-details-marker]:hidden">
                       <span aria-hidden className="text-danger">
@@ -151,6 +166,7 @@ export function ChecklistStep({
                     </summary>
                     <p className="px-2.5 pb-2 pl-7 text-xs leading-relaxed text-ink-mute">{avoidTexts[i]}</p>
                   </details>
+                  )}
                 </li>
               ))}
             </ul>

@@ -1,6 +1,7 @@
 "use client";
 
 import type { MemoryFork } from "@/lib/types";
+import { ProOnly } from "@/components/shared/ProToggle";
 import { SourceFlag } from "@/components/shared/SourceFlag";
 import { useAtlasProgress } from "@/hooks/useAtlasProgress";
 import { ShowOnTreeButton } from "./AtlasMapContext";
@@ -30,7 +31,7 @@ export function MemoryForkBranch({ fork }: { fork: MemoryFork }) {
           className="size-4"
         />
         <h4 className="font-semibold text-ink">{fork.title}</h4>
-        <SourceFlag source={fork.source} />
+        <ProOnly><SourceFlag source={fork.source} /></ProOnly>
         <span className="ml-auto">
           <ShowOnTreeButton names={fork.treeNodes} label={fork.title} />
         </span>
