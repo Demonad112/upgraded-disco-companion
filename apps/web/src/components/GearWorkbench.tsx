@@ -40,6 +40,7 @@ import {
   type EquippedItem,
   type GearDraft,
   type ItemAnalysis,
+  type ModIssue,
   type ItemModAnalysis,
   type LineEdit,
   type ModTiers,
@@ -349,6 +350,8 @@ interface Shared {
   defense: DefenseSummary
   attribution: AttributionReport
   characterName: string
+  /** Impossible-craft flags for the drafted gear, by slot id. */
+  issues: Record<number, ModIssue[]>
   attributes?: Partial<Record<'str' | 'dex' | 'int', number>>
 }
 
@@ -493,6 +496,12 @@ function ItemRow({ item, row, saved, shared }: { item: ItemAnalysis; row: Replac
             </p>
           ))}
 
+          {(shared.issues[item.slotId] ?? []).map((issue) => (
+            <p key={`${issue.kind}:${issue.modIds.join(',')}`} role="alert" className="border border-warn/40 px-2 py-1 text-[11px] leading-relaxed text-warn">
+              Not craftable: {issue.message}
+            </p>
+          ))}
+
           <div className="flex flex-wrap items-center gap-1.5 px-1">
             {edits + added.length ? (
               <button
@@ -566,7 +575,7 @@ export function GearWorkbench({
     return { active, analysed, swaps, ranking: rankReplacements(analysed, defense, attribution) }
   }, [state, items, defense, attribution])
 
-  const { draft, setDraft, dropped } = useGearDraft(
+  const { draft, setDraft, dropped, issues } = useGearDraft(
     characterName,
     base?.analysed ?? null,
     state.status === 'ready' ? state.tiers : null,
@@ -609,6 +618,7 @@ export function GearWorkbench({
     defense,
     attribution,
     characterName,
+    issues,
     ...(attributes ? { attributes } : {}),
   }
   const savedSlots = new Set(

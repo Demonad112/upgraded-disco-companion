@@ -217,3 +217,32 @@ values that come back are the real ones (lowest max hit 3,808 chaos; Ice Shot
 category correctly rejected; tier C with damage left unscored; a ring whose 22%
 fire resistance costs nothing behind overcap while its 35% lightning drops the
 sheet from 75% to 48%). Runs in CI.
+Also asserts the MCP2 additions: `poe2_list_keystones` returns `structuredContent` and a
+provenance stamp in `_meta`, a misspelt keystone gets a "Did you mean" suggestion, the
+`poe2://data/version` and `poe2://character/current` resources read, and the `audit_build`
+and `plan_upgrade` prompts render.
+
+## Structured output, resources and prompts
+
+- **Structured output.** Every tool declares an object `outputSchema` and returns
+  `structuredContent` next to the original JSON text block (kept for older clients). A
+  schema test (`npm test -w @poe2/mcp`) fails if any input or output schema has a
+  top-level `oneOf`, `anyOf` or `allOf`, which the Anthropic API rejects.
+- **Provenance.** Each result's `_meta["poe2/provenance"]` states the tier and where the
+  numbers came from: `canonical` (the PoB2 export in `packages/data`), `computed`
+  (derived by `@poe2/core` from poe.ninja figures), `interpreted` (the hand-written
+  mechanics text) or `external` (poe.ninja, or a live Path of Building). It carries the data
+  revision and extraction date; poe.ninja answers add `_meta["poe2/dataAge"]`.
+- **Fuzzy lookups.** A near miss on a passive node, keystone, base, mod, support gem
+  or mechanic name returns "Did you mean: …" suggestions instead of an error.
+- **Resources.** `poe2://character/current` (the loaded character's summary) and
+  `poe2://data/version`.
+- **Prompts.** `audit_build` and `plan_upgrade`.
+
+## Credits
+
+The mod and base validation tools, fuzzy name matching, provenance tiers and the
+structured-output, resource and prompt design were ported as ideas from
+[`poe2-mcp2`](https://github.com/demonad112/poe2-mcp2) (MIT licence, © its contributors),
+reimplemented in TypeScript on `@poe2/core`. That project's EHP and DPS calculators were
+deliberately not ported: this server uses poe.ninja's numbers as given.

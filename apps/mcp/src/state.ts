@@ -19,10 +19,14 @@ import {
   PassiveTree,
   PobBridge,
   ModTiers,
+  BaseCatalog,
   indexSupports,
+  readDataVersion,
   parseAllSetups,
   type Analysis,
+  type BaseData,
   type CharModel,
+  type DataVersion,
   type LadderSummary,
   type ModBaseData,
   type ModData,
@@ -62,6 +66,36 @@ let mods: ModDatabase | null = null
 let pob: PobBridge | null = null
 let gearTiers: ModTiers | null = null
 let monsters: MonsterStatData | null = null
+let bases: BaseCatalog | null = null
+let version: DataVersion | null | undefined
+let affixNames: string[] | null = null
+
+/** Item base catalogue (generated/bases.json), read on first use. */
+export function baseCatalog(): BaseCatalog {
+  if (!bases) bases = new BaseCatalog(JSON.parse(readFileSync(join(dataDir, 'bases.json'), 'utf8')) as BaseData)
+  return bases
+}
+
+/** The shipped data version (generated/version.json); null when absent so a missing file never breaks a tool. */
+export function dataVersion(): DataVersion | null {
+  if (version === undefined) {
+    try {
+      version = readDataVersion(JSON.parse(readFileSync(join(dataDir, 'version.json'), 'utf8')))
+    } catch {
+      version = null
+    }
+  }
+  return version
+}
+
+/** Distinct affix names in the mod table, for "did you mean" on a search miss. */
+export function modAffixNames(): string[] {
+  if (!affixNames) {
+    const data = JSON.parse(readFileSync(join(dataDir, 'mods.json'), 'utf8')) as ModData
+    affixNames = [...new Set(data.mods.map((m) => m.affix).filter((a): a is string => !!a))]
+  }
+  return affixNames
+}
 
 /**
  * Affix ladders. 2 MB, so loaded on first use like the mod table.

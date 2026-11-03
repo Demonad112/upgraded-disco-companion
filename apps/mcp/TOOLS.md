@@ -5,7 +5,7 @@
 
 # Tools
 
-31 tools. 27 are read-only; 4 marked ⚠️ act on a running Path of Building on this machine (`poe2_pob_load_character`, `poe2_pob_simulate_node`, `poe2_pob_simulate_mods`, `poe2_pob_rank_nodes`). Nothing here ever writes to a game account, a file, or poe.ninja.
+36 tools. 32 are read-only; 4 marked ⚠️ act on a running Path of Building on this machine (`poe2_pob_load_character`, `poe2_pob_simulate_node`, `poe2_pob_simulate_mods`, `poe2_pob_rank_nodes`). Nothing here ever writes to a game account, a file, or poe.ninja.
 
 | Tool | Purpose | Parameters |
 |---|---|---|
@@ -18,7 +18,7 @@
 | `poe2_find_stat_sources` | Attribute a stat to the exact items, passives, quests and attributes that grant it, using poe.ninja’s own per-stat breakdown. | `stat` |
 | `poe2_analyze_passive_tree` | Passive allocation for the loaded character, resolved against the tree data. | — |
 | `poe2_inspect_passive_node` | Look up a passive node by id or by name, returning its stats, kind, ascendancy and neighbours. | `id`, `name`, `limit` |
-| `poe2_find_path_to_node` | Shortest route from the loaded character’s allocated tree to a target passive node, walking unallocated nodes. | `nodeId` |
+| `poe2_find_path_to_node` | Shortest route from the loaded character’s allocated tree to a target passive node, walking unallocated nodes. | `nodeId`, `name` |
 | `poe2_get_skill_setups` | Every skill setup on the loaded character with its support gems, each support’s own tags, its category and the stats it grants — all read from the character payload rather than a gem database. | `skill` |
 | `poe2_validate_support_gems` | Check a set of support gems against a skill. | `skill`, `supports` |
 | `poe2_import_pob` | Decode a Path of Building export code and return the build level, class and Path of Building’s own computed stats. | `code` |
@@ -40,6 +40,11 @@
 | `poe2_pob_rank_nodes` ⚠️ | Simulate each candidate passive node in the running Path of Building and rank them by the measured change per point spent. | `nodeIds`, `forStat`, `metric`, `maxCandidates`, `maxCost` |
 | `poe2_explain_mechanic` | Explain a Path of Exile 2 mechanic, with the basis for each claim stated so it can be weighed. | `query` |
 | `poe2_health_check` | Report which data sets are loaded, whether a character is active, whether poe.ninja is reachable and whether a live Path of Building is connected. | `checkNetwork`, `checkPob` |
+| `poe2_get_available_mods` | Every prefix and suffix group that can roll on one item base at a given item level, each with the tiers that item level can reach (T1 is the best). | `baseType`, `itemLevel`, `limit` |
+| `poe2_validate_item_mods` | Check a set of modifiers on a base against what the game allows: two mods from the same group, a tier above the item level, more than three prefixes or suffixes, and a mod that cannot spawn on that base. | `baseType`, `itemLevel`, `modIds`, `mods` |
+| `poe2_inspect_base_item` | Look up one item base by name: its type, implicit, base defences or weapon stats, attribute requirements, item class and the spawn tags that decide which affixes can roll. | `name` |
+| `poe2_list_keystones` | Every keystone on the passive tree with its stat text, owning ascendancy (if any) and whether this project corrects other advice for it. | `query`, `limit` |
+| `poe2_inspect_keystone` | One keystone by name: its stat text, ascendancy and the correction this project applies for it, if any (what it invalidates about the rest of the analysis). | `name` |
 
 Every tool is a thin adapter over `@poe2/core`. The MCP server contains no
 analysis logic of its own, so it and the web app return the same numbers by
@@ -132,7 +137,8 @@ Look up a passive node by id or by name, returning its stats, kind, ascendancy a
 
 Shortest route from the loaded character’s allocated tree to a target passive node, walking unallocated nodes. Returns the nodes that would need allocating and the passive-point cost. Returns a zero-cost result when the node is already allocated, and reports unreachable rather than guessing.
 
-- `nodeId` — Target passive node id.
+- `nodeId` *(optional)* — Target passive node id.
+- `name` *(optional)* — Target node name, used when nodeId is omitted. A near miss returns "Did you mean" names; a name shared by several nodes picks the cheapest to reach.
 
 ### `poe2_get_skill_setups`
 
@@ -318,4 +324,50 @@ Report which data sets are loaded, whether a character is active, whether poe.ni
 
 - `checkNetwork` *(optional)* — Also probe poe.ninja. Default false.
 - `checkPob` *(optional)* — Also probe the local Path of Building bridge. Default false.
+
+### `poe2_get_available_mods`
+
+**List the affixes that can roll on a base**
+
+Every prefix and suffix group that can roll on one item base at a given item level, each with the tiers that item level can reach (T1 is the best). Answers "what could this base roll" and "what does the next item level unlock". A misspelt base returns "Did you mean" names instead of an error.
+
+- `baseType` — Base item name, e.g. "Militant Bow". Case-insensitive; near misses are suggested.
+- `itemLevel` *(optional)* — Item level to roll at. Default 100 (everything reachable).
+- `limit` *(optional)* — Maximum groups listed per side. Default 40.
+
+### `poe2_validate_item_mods`
+
+**Check an item’s modifiers are possible**
+
+Check a set of modifiers on a base against what the game allows: two mods from the same group, a tier above the item level, more than three prefixes or suffixes, and a mod that cannot spawn on that base. Pass modIds (as poe.ninja ships them) for the full check. Pass mods as text lines instead for the weaker class-legality check only. Ids the tier table does not carry (implicits, runes) are reported as unknown, never as violations.
+
+- `baseType` — Base item name, e.g. "Militant Bow". Near misses are suggested.
+- `itemLevel` *(optional)* — Item level. Omit to skip the item-level check.
+- `modIds` *(optional)* — Explicit mod ids, e.g. "IncreasedLife7". Gives the full check.
+- `mods` *(optional)* — Modifier text lines, used when no ids are known. Class-legality check only.
+
+### `poe2_inspect_base_item`
+
+**Inspect an item base**
+
+Look up one item base by name: its type, implicit, base defences or weapon stats, attribute requirements, item class and the spawn tags that decide which affixes can roll. A misspelling returns "Did you mean" names.
+
+- `name` — Base item name, e.g. "Militant Bow".
+
+### `poe2_list_keystones`
+
+**List the keystones**
+
+Every keystone on the passive tree with its stat text, owning ascendancy (if any) and whether this project corrects other advice for it. Filter by a fragment of the name or stat text.
+
+- `query` *(optional)* — Keep keystones whose name or stat text contains this fragment.
+- `limit` *(optional)* — Maximum keystones returned. Default 50.
+
+### `poe2_inspect_keystone`
+
+**Inspect a keystone**
+
+One keystone by name: its stat text, ascendancy and the correction this project applies for it, if any (what it invalidates about the rest of the analysis). A misspelling returns "Did you mean" names instead of an error.
+
+- `name` — Keystone name, e.g. "Chaos Inoculation".
 
