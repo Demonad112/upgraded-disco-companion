@@ -3,7 +3,11 @@
 import { lazy, Suspense, useEffect, useState } from "react";
 
 /** Loaded on first open — see SearchDialog. */
-const SearchDialog = lazy(() => import("./SearchDialog"));
+const loadSearchDialog = () => import("./SearchDialog");
+const SearchDialog = lazy(loadSearchDialog);
+
+/** Fetch the dialog chunk ahead of the first open (trigger hover/focus). */
+export const preloadSearch = () => void loadSearchDialog();
 
 export const OPEN_SEARCH_EVENT = "app:open-search";
 
@@ -14,12 +18,16 @@ export function CommandPalette() {
     const onKeyDown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
         e.preventDefault();
+        preloadSearch();
         setOpen((o) => !o);
       } else if (e.key === "Escape") {
         setOpen(false);
       }
     };
-    const onOpenEvent = () => setOpen(true);
+    const onOpenEvent = () => {
+      preloadSearch();
+      setOpen(true);
+    };
     window.addEventListener("keydown", onKeyDown);
     window.addEventListener(OPEN_SEARCH_EVENT, onOpenEvent);
     return () => {

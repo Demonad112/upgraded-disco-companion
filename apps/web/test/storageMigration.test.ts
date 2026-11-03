@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { PersistedState } from "../src/lib/types";
-import { defaultState, parsePersisted, STORAGE_VERSION } from "../src/lib/storage";
+import { defaultState, getPrefs, parsePersisted, STORAGE_VERSION } from "../src/lib/storage";
 
 const row = {
   at: "2026-10-01T00:00:00.000Z", updatedUtc: null, key: "a/b", level: 90, life: 1, energyShield: 1, ward: 0,
@@ -72,3 +72,19 @@ describe('farm planner state (FP1)', () => {
     expect(parsePersisted(JSON.stringify({ version: 0, farm: { ...farm, view: 'quick' } })).farm?.view).toBe('quick')
   })
 })
+
+describe("prefs", () => {
+  it("reads defaults from a payload written before prefs existed", () => {
+    const old: Partial<PersistedState> = { ...defaultState(), version: STORAGE_VERSION };
+    delete old.prefs;
+    const out = parsePersisted(JSON.stringify(old));
+    expect(out.prefs).toBeUndefined();
+    expect(getPrefs(out)).toEqual({ homeStart: null, proDetail: false });
+  });
+
+  it("keeps valid prefs and drops malformed fields when salvaging another version", () => {
+    const out = parsePersisted(JSON.stringify({ version: 0, prefs: { homeStart: "farming", proDetail: "yes" } }));
+    expect(getPrefs(out)).toEqual({ homeStart: "farming", proDetail: false });
+    expect(getPrefs(parsePersisted(JSON.stringify({ ...defaultState(), prefs: { homeStart: "bogus", proDetail: true } })))).toEqual({ homeStart: null, proDetail: true });
+  });
+});

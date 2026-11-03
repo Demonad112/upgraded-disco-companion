@@ -36,12 +36,14 @@
   --surface-overlay: var(--overlay);
   --border: var(--line);
 
-  /* Validated dark steps — dataviz validator, ALL CHECKS PASS */
-  --dmg-physical: #199e70;
-  --dmg-fire: #d95926;
-  --dmg-cold: #3987e5;
-  --dmg-lightning: #c98500;
-  --dmg-chaos: #9085e9;
+  /* Damage colours. Each fill is >= 3:1 against --surface (physical 10.5, fire 4.2, cold 11.1, lightning 15.0, chaos 3.0). */
+  --dmg-physical: #c4beb4;
+  --dmg-fire: #cf4524;
+  --dmg-cold: #86ccf7;
+  --dmg-lightning: #ffe23d;
+  --dmg-lightning-core: #fff7c2;
+  --dmg-chaos: #8634c2;
+  --dmg-chaos-edge: #14061f;
 
   /* Gold surfaces (2.1): fill for buttons and gauges, text gradient for headings. */
   --gold-top: color-mix(in srgb, #e3b341 86%, white);

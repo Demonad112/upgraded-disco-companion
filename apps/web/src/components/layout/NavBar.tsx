@@ -5,7 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useSyncExternalStore } from "react";
 import { BASE_PATH } from "@/lib/basePath";
 import { OfflineChip } from "@/components/OfflineChip";
-import { OPEN_SEARCH_EVENT } from "./CommandPalette";
+import { OPEN_SEARCH_EVENT, preloadSearch } from "./CommandPalette";
 import { NavMenu } from "./NavMenu";
 import { TOOL_LINKS } from "./navLinks";
 
@@ -108,8 +108,8 @@ export function NavBar() {
           <button
             onClick={() => window.dispatchEvent(new Event(OPEN_SEARCH_EVENT))}
             // Warm the lazily loaded dialog before the click lands.
-            onPointerEnter={() => void import("./SearchDialog")}
-            onFocus={() => void import("./SearchDialog")}
+            onPointerEnter={preloadSearch}
+            onFocus={preloadSearch}
             aria-label="Search"
             className="nav-search flex min-w-[var(--tap-min)] shrink-0 items-center justify-center gap-2 border border-line-strong bg-surface-sunken/60 px-2.5 text-xs text-ink-mute transition-colors hover:border-accent hover:text-ink"
           >
