@@ -37,6 +37,7 @@ import { readFileSync, readdirSync, writeFileSync } from 'node:fs'
 import { gzipSync } from 'node:zlib'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { writeDataVersion } from './lib/version.mjs'
 
 const here = dirname(fileURLToPath(import.meta.url))
 const outDir = join(here, '..', 'generated')
@@ -254,6 +255,7 @@ writeFileSync(join(outDir, 'mod-tiers.json'), json)
 
 const basesJson = JSON.stringify({ version: 1, generatedFrom: `${source} src/Data/Bases/*.lua`, gameVersion: '0.5.5', bases })
 writeFileSync(join(outDir, 'bases.json'), basesJson)
+writeDataVersion(outDir, { gameVersion: '0.5.5', pobCommit, source, artifacts: ['mod-tiers.json', 'bases.json'] })
 
 // --- report ------------------------------------------------------------------
 const size = (s) => `${(s.length / 1024).toFixed(0)} KB raw · ${(gzipSync(s, { level: 9 }).length / 1024).toFixed(0)} KB gzipped`

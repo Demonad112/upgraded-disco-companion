@@ -24,6 +24,9 @@
  */
 
 import type { DefenseSummary } from '../defense/index.js'
+import { NODE_KIND, type PassiveTree } from '../tree/index.js'
+import { fuzzyFind } from '../search/fuzzy.js'
+import type { Lookup } from '../gear/validate.js'
 
 export interface KeystoneEffects {
   /** Chaos damage cannot hurt this character; chaos resistance is moot. */
@@ -271,4 +274,43 @@ export function effectiveArmour(
   effects: KeystoneEffects = NO_KEYSTONE_EFFECTS,
 ): number {
   return effects.evasionIsArmour ? defense.armour + defense.evasion : defense.armour
+}
+
+export interface KeystoneInfo {
+  id: number
+  name: string
+  /** The node's stat text, verbatim from the tree data. */
+  stats: string[]
+  /** Ascendancy that owns the node; null on the main tree. */
+  ascendancy: string | null
+  /** Whether this codebase corrects other advice for it (see `keystoneEffectsOf`). */
+  hasRule: boolean
+  /** What the keystone invalidates about the rest of the analysis; null when no rule is carried. */
+  note: string | null
+}
+
+function keystoneInfo(node: { id: number; name: string; stats: string[]; ascendancy: string | null }): KeystoneInfo {
+  const rule = hasKeystoneRule(node.name) ? RULES[node.name]! : null
+  return {
+    id: node.id,
+    name: node.name,
+    stats: node.stats,
+    ascendancy: node.ascendancy,
+    hasRule: rule !== null,
+    note: rule?.note ?? null,
+  }
+}
+
+/** Every keystone on the passive tree, by name. */
+export function listKeystones(tree: PassiveTree): KeystoneInfo[] {
+  const out: KeystoneInfo[] = []
+  for (const node of tree.allNodes()) if (node.kind === NODE_KIND.keystone) out.push(keystoneInfo(node))
+  return out.sort((a, b) => a.name.localeCompare(b.name) || a.id - b.id)
+}
+
+/** One keystone by name, case-insensitively, with "did you mean" names on a miss. */
+export function inspectKeystone(tree: PassiveTree, name: string): Lookup<KeystoneInfo> {
+  const all = listKeystones(tree)
+  const { match, suggestions } = fuzzyFind(name, all.map((k) => k.name))
+  return { found: all.find((k) => k.name === match) ?? null, suggestions }
 }
