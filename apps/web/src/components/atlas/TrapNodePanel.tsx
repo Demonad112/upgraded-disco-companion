@@ -1,6 +1,7 @@
 "use client";
 
 import { atlasTrapNodes } from "@/data/trapNodes";
+import { ProOnly } from "@/components/shared/ProToggle";
 import { SourceFlag } from "@/components/shared/SourceFlag";
 import { ShowOnTreeButton } from "./AtlasMapContext";
 
@@ -70,7 +71,7 @@ export function TrapNodePanel() {
               <div className="border-t border-line px-3 py-2.5 text-xs leading-relaxed text-ink-dim">
                 <p>{trap.problem}</p>
                 <div className="mt-1.5">
-                  <SourceFlag source={trap.source} />
+                  <ProOnly><SourceFlag source={trap.source} /></ProOnly>
                 </div>
               </div>
             </details>

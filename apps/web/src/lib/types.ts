@@ -37,6 +37,10 @@ export interface RoadmapStep {
   phase: RoadmapPhase;
   title: string;
   description: string;
+  /** One plain-words sentence (≤ 140 chars) on why this step is chosen. Shown instead of `description` unless Pro detail is on. */
+  why?: string;
+  /** Illustration slot for the V1 diagrams (type only; nothing renders it yet). */
+  diagram?: "waystone-ladder" | "atlas-path" | "boss-order";
   /**
    * Checkable sub-steps. Progress is stored by index, so on an existing step
    * only ever append to this list — never insert or reorder.
@@ -44,6 +48,8 @@ export interface RoadmapStep {
   actionItems?: string[];
   /** Non-checkable pointers and warnings shown under the description. */
   tips?: string[];
+  /** Indexes into `tips` that stay visible without Pro detail. All other tips are Pro-only. */
+  coreTips?: number[];
   benchmarkGateIds?: string[];
   relatedMistakeIds?: string[];
   source: SourceRef;

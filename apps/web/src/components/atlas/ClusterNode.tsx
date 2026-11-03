@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import type { AtlasCluster } from "@/lib/types";
+import { ProOnly } from "@/components/shared/ProToggle";
 import { SourceFlag } from "@/components/shared/SourceFlag";
 import { useAtlasProgress } from "@/hooks/useAtlasProgress";
 import { ShowOnTreeButton } from "./AtlasMapContext";
@@ -44,7 +45,7 @@ export function ClusterNode({ cluster }: { cluster: AtlasCluster }) {
             {cluster.killGated ? (
               <span className="border border-line px-1.5 py-px text-[10px] text-ink-mute">kill-gated</span>
             ) : null}
-            <SourceFlag source={cluster.source} />
+            <ProOnly><SourceFlag source={cluster.source} /></ProOnly>
           </div>
           <p className={`mt-1 text-xs leading-relaxed text-ink-dim ${long && !expanded ? "line-clamp-2" : ""}`}>
             {cluster.description}

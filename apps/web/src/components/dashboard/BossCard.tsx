@@ -1,5 +1,7 @@
 import type { PinnacleBoss } from "@/lib/types";
 import { Tag } from "@/components/shared/Tag";
+import { usePrefs } from "@/hooks/usePrefs";
+import { ProOnly } from "@/components/shared/ProToggle";
 import { SourceFlag } from "@/components/shared/SourceFlag";
 
 /**
@@ -10,7 +12,8 @@ import { SourceFlag } from "@/components/shared/SourceFlag";
 export function BossCard({ boss }: { boss: PinnacleBoss }) {
   const fragmentTotal = boss.fragmentCost.reduce((n, f) => n + f.quantity, 0);
   const steps = boss.gatingRequirements.length;
-  const detail = boss.gatingRequirements.length > 0 || Boolean(boss.notes);
+  const { proDetail } = usePrefs();
+  const detail = boss.gatingRequirements.length > 0 || (proDetail && Boolean(boss.notes));
   return (
     <details
       id={boss.id}
@@ -79,11 +82,11 @@ export function BossCard({ boss }: { boss: PinnacleBoss }) {
               ))}
             </ol>
           ) : null}
-          {boss.notes ? <p className="text-xs leading-relaxed text-ink-mute">{boss.notes}</p> : null}
+          {proDetail && boss.notes ? <p className="text-xs leading-relaxed text-ink-mute">{boss.notes}</p> : null}
         </div>
       ) : null}
       <div className="flex flex-wrap items-center gap-1.5 px-4 pb-3 empty:hidden">
-        <SourceFlag source={boss.source} />
+        <ProOnly><SourceFlag source={boss.source} /></ProOnly>
       </div>
     </details>
   );

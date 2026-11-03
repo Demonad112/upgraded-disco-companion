@@ -1,4 +1,5 @@
 import type { CurrencyMilestone } from "@/lib/types";
+import { ProOnly } from "@/components/shared/ProToggle";
 import { SourceFlag } from "@/components/shared/SourceFlag";
 
 export function CurrencyMilestones({
@@ -17,7 +18,7 @@ export function CurrencyMilestones({
             <span className="font-medium text-ink">
               {milestone.label}
             </span>
-            <SourceFlag source={milestone.source} />
+            <ProOnly><SourceFlag source={milestone.source} /></ProOnly>
           </div>
           <p className="mt-1 text-xs text-ink-mute">{milestone.description}</p>
         </li>

@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import type { FarmingStrategy } from "@/lib/types";
 import { Tag } from "@/components/shared/Tag";
+import { ProOnly } from "@/components/shared/ProToggle";
 import { SourceFlag } from "@/components/shared/SourceFlag";
 import { TIER_LIST_PATCH } from "@/data/strategies";
 import { Segmented } from "@/components/shared/controls";
@@ -116,7 +117,7 @@ export function StrategyTable({ strategies }: { strategies: FarmingStrategy[] })
                     {strategy.atlasSetup}
                   </p>
                   <div className="flex flex-wrap items-center gap-1.5 empty:hidden">
-                    <SourceFlag source={strategy.source} />
+                    <ProOnly><SourceFlag source={strategy.source} /></ProOnly>
                   </div>
                 </div>
               </details>

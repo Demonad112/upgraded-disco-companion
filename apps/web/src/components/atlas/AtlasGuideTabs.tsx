@@ -19,6 +19,7 @@ import { ClusterNode } from "./ClusterNode";
 import { MemoryForkBranch } from "./MemoryForkBranch";
 import { MechanicSubTreeList } from "./MechanicSubTreeList";
 import { TrapNodePanel } from "./TrapNodePanel";
+import { ProToggle } from "@/components/shared/ProToggle";
 import { Segmented, tabPanelProps } from "@/components/shared/controls";
 
 type TabId = "path" | "forks" | "mechanics" | "late" | "traps";
@@ -79,6 +80,9 @@ export function AtlasGuideTabs() {
 
   return (
     <div>
+      <div className="mb-2 flex justify-end">
+        <ProToggle />
+      </div>
       <div data-bleed className="sticky top-14 z-10 -mx-4 mb-4 border-b border-line bg-surface/95 px-4 py-2 sm:mx-0 sm:border-b-0 sm:bg-transparent sm:p-0">
         <Segmented
           kind="tabs"
