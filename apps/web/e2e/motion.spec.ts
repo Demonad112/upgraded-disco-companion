@@ -41,7 +41,7 @@ test.describe('reduced motion', () => {
 
   test('hero is static', async ({ page }) => {
     const hero = page.locator('[data-draw-in]')
-    for (const sel of ['.eyebrow', 'h1', 'p', 'ul', '.triad > i', '.triad > span']) {
+    for (const sel of ['.hero-pill', 'h1', 'p', 'ul', '.triad > i', '.triad > span']) {
       expect(await animationOf(hero.locator(sel).first()), sel).toBe('none')
     }
   })

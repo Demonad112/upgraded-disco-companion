@@ -80,6 +80,12 @@ function toolCards(): { href: string; title: string; purpose: string; icon: Reac
   ];
 }
 
+// The hero's short count row: guideCounts minus meta builds, "pinnacles".
+const heroCounts = () =>
+  guideCounts()
+    .filter((c) => !c.label.startsWith("meta"))
+    .map((c) => ({ ...c, label: c.label.replace(/ boss(es)?$/, (_, p) => (p ? "s" : "")) }));
+
 export default function Home() {
   const totals = progressTotals();
   const updated = dataUpdated();
@@ -89,37 +95,40 @@ export default function Home() {
     <div className="home-bento grid grid-cols-1 gap-5 sm:grid-cols-10">
       <section className="sm:col-span-10" data-compact-hide>
         <div data-draw-in className="hero-rule flex flex-col items-center gap-3 py-2 sm:py-6">
-          <span className="eyebrow text-[var(--accent)]">
+          <span className="hero-pill border border-accent-line px-2.5 py-1.5 font-semibold tracking-wider text-accent uppercase">
             Patch {CURRENT_PATCH} · {LEAGUE_LABEL}
           </span>
-          <h1 className="hero-title font-display text-3xl font-bold text-balance uppercase sm:text-[44px] sm:leading-tight">
+          <h1 className="hero-title text-4xl text-balance sm:text-6xl">
             <span className="text-gradient-gold">Path of Exile 2</span>
             <br />
-            <span className="hero-title-ink text-ink">Endgame Companion</span>
+            Endgame Companion
           </h1>
-          <Triad />
-          <p className="hero-more max-w-2xl text-base text-ink-dim sm:text-lg">
-            A second-monitor guide for the {CURRENT_PATCH} endgame, built on what
-            top creators teach: what to do next, which Waystones to run, which
-            Atlas nodes to skip, and which farm to commit to.
-          </p>
+          <span className="hero-gem flex items-center gap-2.5" aria-hidden>
+            <i />
+          </span>
           {/* Counted from the guide data at build time; never typed in. No
               separators: a wrapped line would start with one. */}
           <ul
             aria-label="What the guide covers"
-            className="hero-more label-metric flex max-w-2xl flex-wrap justify-center gap-x-4 gap-y-1"
+            className="hero-counts label-metric flex flex-wrap justify-center gap-x-4 gap-y-1.5"
           >
-            {guideCounts().map((c) => (
+            {heroCounts().map((c) => (
               <li key={c.label}>
                 <span className="tabular text-ink">{c.value}</span> {c.label}
               </li>
             ))}
           </ul>
+          <p className="hero-more max-w-2xl text-base text-ink-dim sm:text-lg">
+            A second-monitor guide for the {CURRENT_PATCH} endgame, built on what
+            top creators teach: what to do next, which Waystones to run, which
+            Atlas nodes to skip, and which farm to commit to.
+          </p>
           {updated ? (
             <p className="hero-more label-metric -mt-2">
               Data updated <time dateTime={updated} className="tabular text-ink-dim">{updated}</time>
             </p>
           ) : null}
+          <Triad />
         </div>
       </section>
 

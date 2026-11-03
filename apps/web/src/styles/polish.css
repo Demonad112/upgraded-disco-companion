@@ -133,9 +133,10 @@
 
   /* Hero: the headline and copy rise in, the triad's diamonds pop and its line draws, once on load. Transform and
      opacity only. `backwards` holds the start state during the delay; the resting state is the plain styles. */
+  /* Not 0: Chrome skips opacity-0 text for LCP, so the big phone title would count only once the rise ends. */
   @keyframes hero-rise {
     from {
-      opacity: 0;
+      opacity: 0.1;
       transform: translateY(8px);
     }
   }
@@ -150,7 +151,7 @@
       transform: scaleX(0);
     }
   }
-  [data-draw-in] > .eyebrow,
+  [data-draw-in] > .hero-pill,
   [data-draw-in] > h1,
   [data-draw-in] > p,
   [data-draw-in] > ul {
@@ -182,7 +183,7 @@
   @media (prefers-reduced-motion: reduce) {
     [data-pulse]:hover,
     [data-pulse]:focus-visible,
-    [data-draw-in] > .eyebrow,
+    [data-draw-in] > .hero-pill,
     [data-draw-in] > h1,
     [data-draw-in] > p,
     [data-draw-in] > ul,

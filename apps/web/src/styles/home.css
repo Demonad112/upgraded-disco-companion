@@ -43,28 +43,38 @@
   }
 }
 
-/* Phone: the hero is one line (title plus the patch eyebrow). */
+/* Hero C, compact bold: pill, two-line title, gold gem rule, count row. */
+.hero-pill {
+  background: linear-gradient(var(--accent-soft), transparent);
+  font-size: 11.5px;
+}
+.hero-gem::before,
+.hero-gem::after {
+  content: "";
+  width: 70px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--accent));
+}
+.hero-gem::after {
+  scale: -1;
+}
+.hero-gem i {
+  width: 7px;
+  height: 7px;
+  background: var(--accent);
+  rotate: 45deg;
+}
+.hero-counts {
+  letter-spacing: 0.14em;
+}
+
+/* Phone: eyebrow, title and the count row only. */
 @media (max-width: 720px) {
   .hero-more,
-  .hero-rule .triad,
-  .hero-title br {
+  .hero-rule .triad {
     display: none;
   }
   .hero-rule {
-    gap: 0.25rem;
     padding-block: 0;
-  }
-  h1.hero-title {
-    font-size: 1.5rem;
-    line-height: 1.2;
-  }
-  /* Visually hidden on phones; screen readers still read the full title. */
-  .hero-title .text-gradient-gold {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    overflow: hidden;
-    clip-path: inset(50%);
-    white-space: nowrap;
   }
 }

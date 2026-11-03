@@ -28,7 +28,7 @@ const garamond = localFont({
   src: [
     { path: './fonts/eb-garamond-latin.woff2', weight: '500', style: 'normal' },
     { path: './fonts/eb-garamond-latin.woff2', weight: '600', style: 'normal' },
-    { path: './fonts/eb-garamond-latin.woff2', weight: '700', style: 'normal' },
+    { path: './fonts/eb-garamond-latin.woff2', weight: '700 800', style: 'normal' },
   ],
   variable: '--font-garamond',
   display: 'swap',

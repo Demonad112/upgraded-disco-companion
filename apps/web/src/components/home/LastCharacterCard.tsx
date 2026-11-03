@@ -1,17 +1,32 @@
 "use client";
 
 import Link from "next/link";
+import type { CSSProperties } from "react";
 import type { CharacterSnapshot } from "@poe2/core";
 import { usePersistedState } from "@/hooks/usePersistedState";
 import { importPath, recentCharacters } from "@/lib/recentCharacters";
 import { useLocalStore } from "@/lib/localStore";
 
 const RES = [
-  ["fire", "Fire", "bg-fire"],
-  ["cold", "Cold", "bg-cold"],
-  ["lightning", "Light.", "bg-lightning"],
-  ["chaos", "Chaos", "bg-chaos"],
+  ["fire", "Fire", "var(--dmg-fire)"],
+  ["cold", "Cold", "var(--dmg-cold)"],
+  ["lightning", "Light.", "var(--dmg-lightning)"],
+  ["chaos", "Chaos", "var(--dmg-chaos)"],
 ] as const;
+
+// Square-cut 16px glyphs, one per figure, tinted by the well's --c colour.
+const ICON: Record<string, string> = {
+  Life: "M8 15 1 7.5v-4L3.5 1H6l2 2 2-2h2.5L15 3.5v4z",
+  "Energy shield": "M8 .5 14.5 3v5c0 3.5-2.8 6-6.5 7.5C4.3 14 1.5 11.5 1.5 8V3z",
+  "Main skill DPS": "m1.5 3.5 2-2 11 11-2 2zm11-2 2 2-11 11-2-2z",
+  "Killed by": "M3 1h10l2 3v5l-3 2v4H4v-4L1 9V4zm1.5 5v2.5h3V6zm4 0v2.5h3V6z",
+};
+const TONE: Record<string, string> = {
+  Life: "var(--dmg-fire)",
+  "Energy shield": "var(--dmg-cold)",
+  "Main skill DPS": "var(--accent)",
+  "Killed by": "var(--dmg-physical)",
+};
 
 function compact(n: number): string {
   if (Math.abs(n) >= 1_000_000) return `${(n / 1_000_000).toFixed(2)}M`;
@@ -32,7 +47,7 @@ function Delta({ now, before }: { now: number; before: number | undefined }) {
   if (before === undefined || now === before || before === 0) return null;
   const up = now > before;
   return (
-    <span className={`ml-1 text-[11px] font-medium ${up ? "text-good" : "text-danger"}`}>
+    <span className={`tabular mt-2 inline-block border px-1.5 py-0.5 text-[11px] font-medium ${up ? "border-good/40 bg-good/10 text-good" : "border-danger/40 bg-danger/10 text-danger"}`}>
       {up ? "▲" : "▼"} {compact(Math.abs(now - before))}
     </span>
   );
@@ -71,58 +86,71 @@ export function LastCharacterCard() {
   ];
 
   return (
-    <section
-      aria-labelledby="last-character-title"
-      className="card relative overflow-hidden p-6"
-    >
-      <div className="flex flex-wrap items-baseline justify-between gap-2">
-        <span className="eyebrow">Last character</span>
+    <section aria-labelledby="last-character-title" className="card lc-plate overflow-hidden">
+      <div className="lc-strip flex flex-wrap items-baseline justify-between gap-2 px-5 py-2.5">
+        <span className="eyebrow text-accent">Last character</span>
         <span className="text-xs text-ink-mute">Analysed {ago(latest.at)}</span>
       </div>
-      <h2 id="last-character-title" className="mt-1 font-display text-xl font-semibold text-ink">
-        {name}
-        <span className="ml-2 font-sans text-sm font-normal text-ink-mute">
+      <div className="px-5 pt-4 pb-5">
+        <h2 id="last-character-title" className="text-gradient-gold font-display text-3xl leading-none font-bold tracking-wide uppercase">
+          {name}
+        </h2>
+        <p className="lc-name mt-2 inline-flex items-center gap-2.5 px-2.5 py-1 font-display text-sm tracking-[0.16em] text-ink-dim uppercase">
           {latest.level === null ? "Level unknown" : `Level ${latest.level}`}
-          {recent?.className ? ` ${recent.className}` : ""}
-        </span>
-      </h2>
+          {recent?.className ? (
+            <>
+              <i aria-hidden className="size-1 rotate-45 bg-accent" /> {recent.className}
+            </>
+          ) : null}
+        </p>
 
-      <dl className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4">
-        {figures
-          .filter((f) => f.show)
-          .map((f) => (
-            <div key={f.label} className="min-w-0 border border-line/80 bg-surface-sunken/80 px-3 py-2.5">
-              <dt className="label-metric truncate">{f.label}</dt>
-              <dd title={f.value.toLocaleString()} className="tabular mt-1 truncate text-xl leading-none font-semibold text-ink">
-                {compact(f.value)}
+        <dl className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4">
+          {figures
+            .filter((f) => f.show)
+            .map((f) => (
+              <div key={f.label} className="lc-well min-w-0 px-3 py-2.5" style={{ "--c": TONE[f.label] } as CSSProperties}>
+                <dt className="label-metric flex items-center gap-1.5">
+                  <svg aria-hidden viewBox="0 0 16 16" className="size-3.5 shrink-0 fill-current">
+                    <path d={ICON[f.label]} />
+                  </svg>
+                  {f.label}
+                </dt>
+                <dd title={f.value.toLocaleString()} className="tabular mt-1.5 text-2xl leading-none font-semibold text-ink">
+                  {compact(f.value)}
+                </dd>
                 <Delta now={f.value} before={f.before} />
-              </dd>
-            </div>
-          ))}
-      </dl>
+              </div>
+            ))}
+        </dl>
 
-      <ul className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-xs text-ink-dim" aria-label="Resistances">
-        {RES.map(([type, label, dot]) => {
-          const value = latest[type];
-          // 75 is the base cap; a value below it is under cap whatever the maximum.
-          const short = type !== "chaos" && value !== null && value < 75;
-          return (
-            <li key={type} className="flex items-center gap-1.5">
-              <span aria-hidden className={`inline-block size-1.5 ${dot}`} />
-              {label}
-              <span className={`tabular font-semibold ${short ? "text-danger" : "text-ink"}`}>{value === null ? "unknown" : `${value}%`}</span>
-            </li>
-          );
-        })}
-      </ul>
+        <ul className="mt-3 grid grid-cols-4 gap-1.5" aria-label="Resistances">
+          {RES.map(([type, label, tone]) => {
+            const value = latest[type];
+            // 75 is the base cap; a value below it is under cap whatever the maximum.
+            const short = type !== "chaos" && value !== null && value < 75;
+            return (
+              <li key={type} className="lc-pip px-2 pt-1.5 pb-2 text-xs text-ink-dim" style={{ "--c": tone } as CSSProperties}>
+                <span className="flex items-center gap-1.5">
+                  <span aria-hidden className="size-1.5 rotate-45 bg-(--c)" />
+                  {label}
+                </span>
+                <span className={`tabular mt-0.5 block text-base font-semibold ${short ? "text-danger" : "text-ink"}`}>
+                  {value === null ? "unknown" : `${value}%`}
+                </span>
+              </li>
+            );
+          })}
+        </ul>
 
-      <div className="mt-4 flex flex-wrap items-center gap-2">
-        <Link href={href} className="btn btn-secondary btn-sm text-accent">
-          {recent ? "Re-import and analyse" : "Open character page"} →
-        </Link>
-        {previous ? (
-          <span className="text-xs text-ink-mute">▲▼ change since the import before, {ago(previous.at)}</span>
-        ) : null}
+        <div className="gold-rule my-4" />
+        <div className="flex flex-wrap items-center gap-2">
+          <Link href={href} className="btn btn-secondary btn-sm text-accent">
+            {recent ? "Re-import and analyse" : "Open character page"} →
+          </Link>
+          {previous ? (
+            <span className="text-xs text-ink-mute">▲▼ change since the import before, {ago(previous.at)}</span>
+          ) : null}
+        </div>
       </div>
     </section>
   );
