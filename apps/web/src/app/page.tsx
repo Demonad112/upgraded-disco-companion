@@ -8,6 +8,7 @@ import { CompactAlerts } from "@/components/compact/CompactAlerts";
 import { Triad } from "@/components/layout/Triad";
 import { LastCharacterCard } from "@/components/home/LastCharacterCard";
 import { ToolStatus, type ToolStatusProps } from "@/components/home/ToolStatus";
+import { StartPicker, type StartTile } from "@/components/home/StartPicker";
 import { dataUpdated, guideCounts, strategyNames } from "@/lib/homeStats";
 import { progressTotals, stepSummaries } from "@/lib/stepSummary";
 
@@ -35,7 +36,15 @@ const ICONS = {
       <path d="M5.5 19.5c0-3.6 2.9-6.5 6.5-6.5s6.5 2.9 6.5 6.5" />
     </>
   ),
+  farming: <path d="M12 3l7 9-7 9-7-9zM5 12h14" />,
 };
+
+// Farming falls back to the planner's farm list; StartPicker swaps in the last farm.
+const START_TILES: StartTile[] = [
+  { id: "dashboard", label: "Dashboard", href: "/dashboard", icon: ICONS.dashboard },
+  { id: "farming", label: "Farming", href: "/dashboard#farm-all-h", icon: ICONS.farming },
+  { id: "character", label: "Character", href: "/character", icon: ICONS.character },
+];
 
 function toolCards(): { href: string; title: string; purpose: string; icon: ReactNode; status: ToolStatusProps }[] {
   const { stepIds, atlasIds } = progressTotals();
@@ -89,7 +98,7 @@ export default function Home() {
             <span className="hero-title-ink text-ink">Endgame Companion</span>
           </h1>
           <Triad />
-          <p className="max-w-2xl text-base text-ink-dim sm:text-lg">
+          <p className="hero-more max-w-2xl text-base text-ink-dim sm:text-lg">
             A second-monitor guide for the {CURRENT_PATCH} endgame, built on what
             top creators teach: what to do next, which Waystones to run, which
             Atlas nodes to skip, and which farm to commit to.
@@ -98,7 +107,7 @@ export default function Home() {
               separators: a wrapped line would start with one. */}
           <ul
             aria-label="What the guide covers"
-            className="label-metric flex max-w-2xl flex-wrap justify-center gap-x-4 gap-y-1"
+            className="hero-more label-metric flex max-w-2xl flex-wrap justify-center gap-x-4 gap-y-1"
           >
             {guideCounts().map((c) => (
               <li key={c.label}>
@@ -107,12 +116,16 @@ export default function Home() {
             ))}
           </ul>
           {updated ? (
-            <p className="label-metric -mt-2">
+            <p className="hero-more label-metric -mt-2">
               Data updated <time dateTime={updated} className="tabular text-ink-dim">{updated}</time>
             </p>
           ) : null}
         </div>
       </section>
+
+      <div className="sm:col-span-10" data-compact-hide>
+        <StartPicker tiles={START_TILES} />
+      </div>
 
       <div className="flex min-w-0 flex-col gap-5 sm:col-span-10 lg:col-span-6 [&>section]:flex-1" data-compact-keep>
         <NextStepCard steps={stepSummaries()} />
