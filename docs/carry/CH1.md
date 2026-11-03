@@ -1,5 +1,5 @@
 # CH1 carry-over · 2026-11-03
-PR: see PR · Branch: variant/20261103-showcase · Preview: see PR
+PR: #87 · Branch: variant/20261103-showcase · Preview: https://variant-20261103-showcase.upgraded-disco-companion.pages.dev
 
 ## Checked (previous wave)
 - C1: ok (#85 merged; row ticked; `why` lines and Pro detail toggle on `main`).
