@@ -114,8 +114,9 @@ h4 {
 /* The home title keeps its pre-restyle font and colours (see --hero-title-*). */
 h1.hero-title {
   font-family: var(--hero-title-font);
-  font-weight: 600;
-  letter-spacing: 0.05em;
+  font-weight: 800;
+  line-height: 0.95;
+  letter-spacing: 0.02em;
   text-transform: uppercase;
   color: var(--hero-title-ink);
 }
@@ -125,9 +126,6 @@ h1.hero-title .text-gradient-gold {
   background-clip: text;
   color: transparent;
   text-shadow: none;
-}
-h1.hero-title .hero-title-ink {
-  color: var(--hero-title-ink);
 }
 
 /* Labels and figures: IBM Plex Mono with tabular figures. */

@@ -66,12 +66,11 @@ test('ticking the next step on the home page survives a reload', async ({ page }
   expect(saved).toContain('"completedStepIds":[')
 })
 
-test('home tool cards show live progress and the meta strip counts the guide', async ({ page, isMobile }) => {
+test('home tool cards show live progress and the meta strip counts the guide', async ({ page }) => {
   await page.goto('')
-  // Phones hide the meta strip: the hero is one line there (H1).
-  const meta = page.getByRole('list', { name: 'What the guide covers', includeHidden: true })
-  if (isMobile) await expect(meta).toBeHidden()
-  else await expect(meta).toContainText(/\d+ steps/)
+  // Hero C: the short count row shows at every width.
+  const meta = page.getByRole('list', { name: 'What the guide covers' })
+  await expect(meta).toContainText(/\d+ steps/)
   const steps = page.locator('[data-tool-status="checklist"]')
   await expect(steps).toHaveText(/^0 \/ \d+ steps$/)
   await expect(page.locator('[data-tool-status="dashboard"]')).toHaveText('Pick a strategy')
