@@ -193,7 +193,7 @@ function openAffixRule(analysed: ItemAnalysis[]): Recommendation[] {
       id: 'gear-open-affixes',
       category: 'gear',
       action:
-        `Craft into the ${slots} empty affix slot${slots === 1 ? '' : 's'} on your gear — starting with ${worst.analysis.name}, ` +
+        `Fill the ${slots} empty affix slot${slots === 1 ? '' : 's'} on your gear — start with ${worst.analysis.name}, ` +
         `which has ${describeSlots(worst.prefixes, worst.suffixes)} unused.`,
       rationale:
         `${counted} active item${counted === 1 ? '' : 's'} carry ${used} of a possible ${capacity} affixes, with ` +
@@ -361,7 +361,7 @@ export function gearRecommendations({ items, defense, tiers }: GearRecommendatio
       id,
       category: 'gear',
       action:
-        `Recraft the ${best.replace.text} suffix on ${best.itemName} into "${candidate.affix ?? candidate.id}" ` +
+        `Swap a suffix on ${best.itemName} for "${candidate.affix ?? candidate.id}" — it replaces ${best.replace.text} ` +
         `(tier ${candidate.tier}, ${candidate.min}-${candidate.max}% ${shortfall.type} resistance).`,
       rationale:
         `${best.replace.reason} ` +

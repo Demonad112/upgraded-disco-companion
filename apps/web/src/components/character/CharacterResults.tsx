@@ -22,13 +22,14 @@ import { Progress } from '@/components/Progress'
 import { Reconciliation } from '@/components/Reconciliation'
 import { Recommendations } from '@/components/Recommendations'
 import { TreePanel } from '@/components/tree/TreePanel'
-import { CharacterVerdict } from './CharacterVerdict'
 import { ChangedSincePanel } from './ChangedSincePanel'
 import { CharacterNotes } from './CharacterNotes'
 import { CompareCharacters } from './CompareCharacters'
 import { CopyLink } from './CopyLink'
 import { DefencesGlance, SpareAndChanges, TreeDataNote } from './OverviewCards'
 import { ShareCard } from './ShareCard'
+import { Showcase } from './Showcase'
+import { TopFixes } from './TopFixes'
 import { WhatIfPanel } from './WhatIfPanel'
 import { useShoppingList } from '@/hooks/useShoppingList'
 import type { attributesFrom } from '@/lib/attributes'
@@ -44,8 +45,9 @@ const SECTIONS = [
   { id: 'defences', label: 'Defences' },
   { id: 'damage', label: 'Damage' },
   { id: 'gear', label: 'Gear' },
-  { id: 'checks', label: 'Checks' },
   { id: 'progress', label: 'Progress' },
+  // "Checks", not "Advanced": the phone tab bar has no room for the longer word (it widened the page by 12 px).
+  { id: 'advanced', label: 'Checks' },
 ]
 
 function Section({ id, title, children }: { id: string; title: string; children: ReactNode }) {
@@ -96,10 +98,12 @@ export function CharacterResults({
       />
 
       <Section id="overview" title="Overview">
-        <CharacterVerdict analysis={a}>
+        <Showcase analysis={a}>
           {sourceUrl ? <CopyLink url={sourceUrl} name={a.identity.name} /> : null}
-          <ShareCard analysis={a} sourceUrl={sourceUrl} />
-        </CharacterVerdict>
+          <ShareCard analysis={a} sourceUrl={sourceUrl} diff={history.diff} />
+        </Showcase>
+        <TopFixes report={a.recommendations} league={a.identity.league} />
+        <ChangedSincePanel analysis={a} snapshots={history.snapshots} />
         {a.warnings.map((w) => (
           <p key={w} data-surface="data" className="card border-warn/50 text-xs leading-relaxed text-warn">
             {w}
@@ -174,57 +178,10 @@ export function CharacterResults({
             bare
           />
         </Accordion>
-        <Accordion
-          id="attribution"
-          title="What each item is holding up"
-          summary={`${a.attribution.items.length} item${a.attribution.items.length === 1 ? '' : 's'} attributed`}
-          badge={overcapped.length > 0 ? <StatusChip tone="muted">{overcapped.length} over cap</StatusChip> : undefined}
-        >
-          <Attribution report={a.attribution} bare />
-        </Accordion>
       </Section>
 
-      <Section id="checks" title="Checks">
-        <div className="flex items-center">
-          <PanelControls targetId="checks-list" />
-        </div>
-        <div id="checks-list" className="grid-cards">
-          <Accordion
-            id="detail-checks"
-            title="Detail checks"
-            summary="Sockets, gem quality, jewels and spare attributes"
-          >
-            <AuditPanel model={a.model} pobStats={a.pobStats} state={tiersState} bare />
-          </Accordion>
-          <Accordion id="character-notes" title="Ailments and inactive weapon set" summary="Immunities, main-skill note, idle gear">
-            <CharacterNotes analysis={a} />
-          </Accordion>
-          <Accordion
-            id="passive-tree"
-            title="Passive tree"
-            summary={`${a.passives.counts.passives} points allocated`}
-            lazy
-          >
-            <TreePanel allocation={a.passives} state={treeState} bare />
-          </Accordion>
-          {a.reconciliation ? (
-            <Accordion
-              id="reconciliation"
-              title="Cross-validation"
-              summary={`${a.reconciliation.matches} agree${a.reconciliation.minor ? ` · ${a.reconciliation.minor} minor` : ''}${a.reconciliation.unmapped ? ` · ${a.reconciliation.unmapped} unmapped` : ''}`}
-              badge={
-                a.reconciliation.major > 0 ? <StatusChip tone="danger">{a.reconciliation.major} major</StatusChip> : undefined
-              }
-            >
-              <Reconciliation report={a.reconciliation} bare />
-            </Accordion>
-          ) : null}
-        </div>
-        <Chat analysis={a} />
-      </Section>
 
       <Section id="progress" title="Progress">
-        <ChangedSincePanel analysis={a} snapshots={history.snapshots} />
         <Accordion
           id="progress-history"
           title="Trends across imports"
@@ -250,7 +207,67 @@ export function CharacterResults({
         >
           <CompareCharacters currentKey={snapshotKey(a.identity)} currentName={a.identity.name} bare />
         </Accordion>
+        <Chat analysis={a} />
       </Section>
+
+      <section id="advanced" className="page-section" aria-labelledby="advanced-title">
+        <details id="advanced-fold" className="group">
+          <summary className="flex cursor-pointer list-none items-center gap-2 [&::-webkit-details-marker]:hidden">
+            <svg viewBox="0 0 20 20" fill="none" aria-hidden className="size-3.5 shrink-0 text-ink-mute transition-transform group-open:rotate-90">
+              <path d="M7.5 5l5 5-5 5" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+            <h2 id="advanced-title" className="section-title !mb-0">
+              Advanced
+            </h2>
+            <span className="text-xs text-ink-mute">Checks, what each item holds up, cross-validation</span>
+          </summary>
+          <div className="mt-4 grid-cards">
+            <div className="flex items-center">
+              <PanelControls targetId="checks-list" />
+            </div>
+            <div id="checks-list" className="grid-cards">
+              <Accordion
+                id="detail-checks"
+                title="Detail checks"
+                summary="Sockets, gem quality, jewels and spare attributes"
+              >
+                <AuditPanel model={a.model} pobStats={a.pobStats} state={tiersState} bare />
+              </Accordion>
+              <Accordion id="character-notes" title="Ailments and inactive weapon set" summary="Immunities, main-skill note, idle gear">
+                <CharacterNotes analysis={a} />
+              </Accordion>
+              <Accordion
+                id="passive-tree"
+                title="Passive tree"
+                summary={`${a.passives.counts.passives} points allocated`}
+                lazy
+              >
+                <TreePanel allocation={a.passives} state={treeState} bare />
+              </Accordion>
+              {a.reconciliation ? (
+                <Accordion
+                  id="reconciliation"
+                  title="Cross-validation"
+                  summary={`${a.reconciliation.matches} agree${a.reconciliation.minor ? ` · ${a.reconciliation.minor} minor` : ''}${a.reconciliation.unmapped ? ` · ${a.reconciliation.unmapped} unmapped` : ''}`}
+                  badge={
+                    a.reconciliation.major > 0 ? <StatusChip tone="danger">{a.reconciliation.major} major</StatusChip> : undefined
+                  }
+                >
+                  <Reconciliation report={a.reconciliation} bare />
+                </Accordion>
+              ) : null}
+            </div>
+            <Accordion
+              id="attribution"
+              title="What each item is holding up"
+              summary={`${a.attribution.items.length} item${a.attribution.items.length === 1 ? '' : 's'} attributed`}
+              badge={overcapped.length > 0 ? <StatusChip tone="muted">{overcapped.length} over cap</StatusChip> : undefined}
+            >
+              <Attribution report={a.attribution} bare />
+            </Accordion>
+          </div>
+        </details>
+      </section>
     </>
   )
 }
