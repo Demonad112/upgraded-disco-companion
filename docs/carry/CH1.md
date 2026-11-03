@@ -26,7 +26,7 @@ PR: #87 · Branch: variant/20261103-showcase · Preview: https://variant-2026110
 ## Open
 | # | Type | For | Item | Recommended answer / action |
 |---|---|---|---|---|
-| 1 | recommendation | next-U | The Trade search asks one item for the whole shortfall. | Cap the minimum at the best tier's max roll from `mod-tiers.json` when the finding names a candidate (gear suffix swap). |
+| 1 | recommendation | done | The Trade search asked one item for the whole shortfall. | Done: minimum capped at the best single-mod roll in `mod-tiers.json` (45 elemental, 47 chaos) in `topFixes.ts`; a shortfall above the cap still needs two items. |
 | 2 | follow-up | IMG-2 | The ring, stamp and share card art follow this batch's own reading of the brief. | Restyle to the owner's IMG-1 picks. |
 | 3 | follow-up | owner | Top fixes fetch `trade2-stats.json` (1.36 MB raw) when a fix is a resistance. | Ship a trimmed four-stat map in `packages/data` (Needs owner: packages/data). |
 

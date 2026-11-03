@@ -37,12 +37,15 @@ export const fixAnchor = (r: Pick<Recommendation, 'category'>): string => `#${AN
 
 const RESIST = /^(fire|cold|lightning|chaos)Resistance$/
 
+/** Highest single-mod resistance roll in `mod-tiers.json` (T1 suffix); no one affix can exceed it, so a bigger minimum can never match. */
+const MAX_SINGLE_ROLL: Record<string, number> = { fire: 45, cold: 45, lightning: 45, chaos: 47 }
+
 /** The internal stat a finding asks for on gear, when it is one the trade map covers (the four resistances). */
 export function tradeStatFor(r: Pick<Recommendation, 'impact'>): { statId: string; min: number } | null {
   const type = r.impact?.stat.match(RESIST)?.[1]
   if (!type || !r.impact || r.impact.delta <= 0) return null
   const stat = MAPPED_STATS.find((m) => m.internalId.includes(`_${type}_`))
-  return stat ? { statId: stat.internalId, min: Math.ceil(r.impact.delta) } : null
+  return stat ? { statId: stat.internalId, min: Math.min(Math.ceil(r.impact.delta), MAX_SINGLE_ROLL[type] ?? Infinity) } : null
 }
 
 /**
