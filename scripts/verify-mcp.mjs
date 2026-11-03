@@ -523,6 +523,88 @@ if (health.passiveTree?.nodes !== 4975 || !health.character?.loaded) {
 }
 console.log(`health: ${health.toolCount} tools, ${health.passiveTree?.nodes} tree nodes, character loaded`)
 
+// --- MCP2 port: keystones, fuzzy match, structured output, resources, prompts ---
+// Raw response, to see structuredContent and _meta, which callTool discards.
+const rawKeystones = await send('tools/call', { name: 'poe2_list_keystones', arguments: {} })
+const keystoneList = JSON.parse(rawKeystones.result?.content?.[0]?.text ?? '{}')
+if (!(keystoneList.total > 0) || !keystoneList.keystones?.some((k) => k.name === 'Chaos Inoculation')) {
+  failures.push(`list_keystones wrong: ${JSON.stringify(keystoneList).slice(0, 160)}`)
+}
+const structured = rawKeystones.result?.structuredContent
+if (!structured || structured.total !== keystoneList.total) {
+  failures.push(`structuredContent missing or different from the text block: ${JSON.stringify(structured)?.slice(0, 120)}`)
+}
+const stamp = rawKeystones.result?._meta?.['poe2/provenance']
+if (stamp?.tier !== 'canonical' || !stamp?.dataRevision) {
+  failures.push(`_meta provenance missing or wrong tier: ${JSON.stringify(rawKeystones.result?._meta)}`)
+}
+console.log(`list_keystones: ${keystoneList.total} keystones, structuredContent present, provenance ${stamp?.tier} @ ${stamp?.dataRevision}`)
+
+const typo = await callTool('poe2_inspect_keystone', { name: 'Chaos Inoculaton' })
+if (typo.found !== false || !typo.didYouMean?.includes('Chaos Inoculation') || !typo.note?.includes('Did you mean')) {
+  failures.push(`inspect_keystone typo should suggest Chaos Inoculation: ${JSON.stringify(typo).slice(0, 200)}`)
+} else {
+  console.log(`inspect_keystone typo: ${typo.note}`)
+}
+
+const fuzzyNode = await callTool('poe2_inspect_passive_node', { name: 'Gathering Wnds' })
+if (!fuzzyNode.didYouMean?.length) failures.push(`inspect_passive_node typo gave no suggestion: ${JSON.stringify(fuzzyNode).slice(0, 160)}`)
+
+const baseMiss = await callTool('poe2_inspect_base_item', { name: 'Militant Bw' })
+if (baseMiss.found !== false || !baseMiss.didYouMean?.length) failures.push(`inspect_base_item typo gave no suggestion: ${JSON.stringify(baseMiss).slice(0, 160)}`)
+
+const avail = await callTool('poe2_get_available_mods', { baseType: 'Militant Bow', itemLevel: 76 })
+if (avail.found !== true || !avail.prefixes?.length) failures.push(`get_available_mods wrong: ${JSON.stringify(avail).slice(0, 160)}`)
+
+const validated = await callTool('poe2_validate_item_mods', { baseType: 'Militant Bow', itemLevel: 76, mods: ['+10 to Strength'] })
+if (validated.found !== true) failures.push(`validate_item_mods wrong: ${JSON.stringify(validated).slice(0, 160)}`)
+
+// Errors still carry structured-free text and isError, never a protocol failure.
+const bad = await send('tools/call', { name: 'poe2_inspect_keystone', arguments: {} })
+if (!bad.result?.isError) failures.push('inspect_keystone with no name should be a tool error')
+
+// Every tool advertises an object outputSchema.
+for (const tool of tools) {
+  if (tool.outputSchema?.type !== 'object') failures.push(`${tool.name} has no object outputSchema`)
+  for (const key of ['oneOf', 'anyOf', 'allOf']) {
+    if (key in (tool.inputSchema ?? {}) || key in (tool.outputSchema ?? {})) failures.push(`${tool.name} has top-level ${key}`)
+  }
+}
+
+// Resources.
+const resources = (await send('resources/list', {})).result?.resources ?? []
+for (const uri of ['poe2://data/version', 'poe2://character/current']) {
+  if (!resources.some((r) => r.uri === uri)) failures.push(`resource ${uri} is not listed`)
+}
+const versionRes = await send('resources/read', { uri: 'poe2://data/version' })
+const versionDoc = JSON.parse(versionRes.result?.contents?.[0]?.text ?? '{}')
+if (!versionDoc.version?.dataRevision || !versionDoc.tiers?.canonical) {
+  failures.push(`poe2://data/version wrong: ${JSON.stringify(versionDoc).slice(0, 160)}`)
+} else {
+  console.log(`resource poe2://data/version: ${versionDoc.version.dataRevision} (${versionDoc.version.extractedAt})`)
+}
+const charRes = await send('resources/read', { uri: 'poe2://character/current' })
+const charDoc = JSON.parse(charRes.result?.contents?.[0]?.text ?? '{}')
+if (charDoc.loaded !== true || charDoc.identity?.name !== 'Athrynas') {
+  failures.push(`poe2://character/current wrong: ${JSON.stringify(charDoc).slice(0, 160)}`)
+}
+
+// Prompts.
+const prompts = (await send('prompts/list', {})).result?.prompts ?? []
+for (const name of ['audit_build', 'plan_upgrade']) {
+  if (!prompts.some((p) => p.name === name)) failures.push(`prompt ${name} is not listed`)
+}
+const auditPrompt = await send('prompts/get', { name: 'audit_build', arguments: { focus: 'survivability' } })
+const auditText = auditPrompt.result?.messages?.[0]?.content?.text ?? ''
+if (!auditText.includes('poe2_assess_build') || !auditText.includes('survivability')) {
+  failures.push(`audit_build prompt did not render: ${JSON.stringify(auditPrompt).slice(0, 200)}`)
+}
+const plan = await send('prompts/get', { name: 'plan_upgrade', arguments: { goal: 'damage' } })
+if (!(plan.result?.messages?.[0]?.content?.text ?? '').includes('poe2_validate_item_mods')) {
+  failures.push(`plan_upgrade prompt did not render: ${JSON.stringify(plan).slice(0, 200)}`)
+}
+console.log(`resources: ${resources.length}, prompts: ${prompts.map((p) => p.name).join(', ')}`)
+
 child.kill()
 
 if (failures.length) {

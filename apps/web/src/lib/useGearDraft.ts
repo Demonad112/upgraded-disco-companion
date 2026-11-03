@@ -5,9 +5,12 @@ import {
   EMPTY_DRAFT,
   anchorDraft,
   draftSize,
+  lineKey,
   restoreDraft,
+  validateItemMods,
   type GearDraft,
   type ItemAnalysis,
+  type ModIssue,
   type ModTiers,
   type SavedDraft,
 } from '@poe2/core'
@@ -22,6 +25,32 @@ const drafts = createLocalStore<SavedDrafts>(
   {},
   (v) => typeof v === 'object' && v !== null && !Array.isArray(v),
 )
+
+/**
+ * Impossible-craft flags for the drafted gear, by slot id. Only items the draft
+ * touches are checked, so an untouched item is never flagged for what it already
+ * wears. Each item's mod ids are its current lines, minus removed ones, with
+ * replaced lines and added lines at their drafted ids.
+ */
+export function draftModIssues(items: ItemAnalysis[], draft: GearDraft, tiers: ModTiers): Record<number, ModIssue[]> {
+  const out: Record<number, ModIssue[]> = {}
+  for (const item of items) {
+    const touched =
+      item.mods.some((_, i) => draft.edits[lineKey(item.slotId, i)]) || draft.added.some((a) => a.slotId === item.slotId)
+    if (!touched) continue
+    const modIds: string[] = []
+    item.mods.forEach((mod, i) => {
+      const edit = draft.edits[lineKey(item.slotId, i)]
+      if (edit?.kind === 'remove') return
+      const id = edit?.kind === 'set' ? edit.modId : mod.id
+      if (id) modIds.push(id)
+    })
+    for (const a of draft.added) if (a.slotId === item.slotId) modIds.push(a.modId)
+    const { issues } = validateItemMods(tiers, { base: item.baseType, itemLevel: item.itemLevel, modIds })
+    if (issues.length) out[item.slotId] = issues
+  }
+  return out
+}
 
 /**
  * The workbench draft, saved per character so a reload or a re-import keeps
@@ -55,5 +84,7 @@ export function useGearDraft(characterName: string, items: ItemAnalysis[] | null
     [characterName, items],
   )
 
-  return { draft, setDraft, dropped }
+  const issues = useMemo(() => (items && tiers ? draftModIssues(items, draft, tiers) : {}), [items, draft, tiers])
+
+  return { draft, setDraft, dropped, issues }
 }

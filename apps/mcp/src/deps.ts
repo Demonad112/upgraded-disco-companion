@@ -7,6 +7,16 @@
 
 export {
   ATTRIBUTABLE_STATS,
+  TIER_MEANING,
+  availableMods,
+  dataAge,
+  externalProvenance,
+  fuzzyFind,
+  inspectBase,
+  inspectKeystone,
+  listKeystones,
+  provenanceFor,
+  validateItemMods,
   CANDIDATE_GROUP_LABEL,
   EMPTY_DRAFT,
   NODE_KIND,
@@ -48,6 +58,8 @@ export {
   validateByName,
   validateSetup,
   type AttributableStat,
+  type ProvenanceStamp,
+  type SiteSource,
   type GearDraft,
   type LedgerChange,
 } from '@poe2/core'

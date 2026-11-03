@@ -16,6 +16,15 @@ import {
   CANDIDATE_GROUP_LABEL,
   EMPTY_DRAFT,
   NODE_KIND,
+  availableMods,
+  dataAge,
+  externalProvenance,
+  fuzzyFind,
+  inspectBase,
+  inspectKeystone,
+  listKeystones,
+  provenanceFor,
+  validateItemMods,
   analyzeContent,
   analyzeItem,
   applyLedger,
@@ -55,11 +64,17 @@ import {
   type AttributableStat,
   type GearDraft,
   type LedgerChange,
+  type ProvenanceStamp,
+  type SiteSource,
 } from './deps.js'
+import { MECHANICS } from './mechanics.js'
 import {
+  baseCatalog,
   client,
+  dataVersion,
   loadCharacter,
   loadedCharacter,
+  modAffixNames,
   modDatabase,
   modTiers,
   monsterStats,
@@ -68,11 +83,19 @@ import {
   requireCharacter,
 } from './state.js'
 
+/** Where a tool's numbers come from, which decides the provenance tier in `_meta`. */
+export type ToolSource = SiteSource | 'pob'
+
+type ToolDefInput = Omit<ToolDef, 'outputSchema' | 'source'>
+
 export interface ToolDef {
   name: string
   title: string
   description: string
   inputSchema: z.ZodRawShape
+  /** Top-level object schema of `structuredContent`. Never a top-level oneOf/anyOf/allOf (the Anthropic API rejects it). */
+  outputSchema: z.ZodObject
+  source: ToolSource
   annotations: {
     readOnlyHint: boolean
     destructiveHint: boolean
@@ -93,11 +116,18 @@ function modClassesFor(db: ReturnType<typeof modDatabase>, modId: string): strin
   return db.classesForMod(modId)
 }
 
+/** "Did you mean" text for a miss; the suggestions themselves go in a `didYouMean` field. */
+function missNote(kind: string, query: string, suggestions: string[]): string {
+  return suggestions.length
+    ? `No exact ${kind} matches "${query}". Did you mean: ${suggestions.join(', ')}?`
+    : `No ${kind} matches "${query}", and nothing is close.`
+}
+
 function truncate<T>(items: T[], limit: number): { items: T[]; total: number; truncated: boolean } {
   return { items: items.slice(0, limit), total: items.length, truncated: items.length > limit }
 }
 
-export const TOOLS: ToolDef[] = [
+const DEFINITIONS: ToolDefInput[] = [
   {
     name: 'poe2_load_character',
     title: 'Load a character',
@@ -435,6 +465,10 @@ export const TOOLS: ToolDef[] = [
       const name = String(args.name ?? '').trim().toLowerCase()
       if (!name) throw new Error('Provide either an id or a name.')
       const matches = [...tree.allNodes()].filter((n) => n.name.toLowerCase().includes(name))
+      if (!matches.length) {
+        const { suggestions } = fuzzyFind(name, new Set([...tree.allNodes()].map((n) => n.name).filter(Boolean)))
+        return { query: args.name, total: 0, truncated: false, matches: [], didYouMean: suggestions, note: missNote('passive node', String(args.name), suggestions) }
+      }
       const { items, total, truncated } = truncate(matches, Number(args.limit ?? 10))
       return { query: args.name, total, truncated, matches: items.map((n) => describe(n.id)) }
     },
@@ -448,13 +482,29 @@ export const TOOLS: ToolDef[] = [
       'nodes. Returns the nodes that would need allocating and the passive-point cost. Returns a zero-cost result ' +
       'when the node is already allocated, and reports unreachable rather than guessing.',
     inputSchema: {
-      nodeId: z.number().int().describe('Target passive node id.'),
+      nodeId: z.number().int().optional().describe('Target passive node id.'),
+      name: z.string().optional().describe('Target node name, used when nodeId is omitted. A near miss returns "Did you mean" names; a name shared by several nodes picks the cheapest to reach.'),
     },
     annotations: READ_ONLY,
     handler: (args) => {
       const { analysis } = requireCharacter()
       const tree = passiveTree()
-      const target = Number(args.nodeId)
+      let target: number
+      if (typeof args.nodeId === 'number') {
+        target = args.nodeId
+      } else {
+        const wanted = String(args.name ?? '').trim()
+        if (!wanted) throw new Error('Provide either nodeId or name.')
+        const all = [...tree.allNodes()].filter((n) => n.name)
+        const { match, suggestions } = fuzzyFind(wanted, new Set(all.map((n) => n.name)))
+        const exact = all.filter((n) => n.name.toLowerCase() === wanted.toLowerCase())
+        const named = exact.length ? exact : match ? all.filter((n) => n.name === match) : []
+        if (!named.length) {
+          return { reachable: false, found: false, query: wanted, didYouMean: suggestions, note: missNote('passive node', wanted, suggestions) }
+        }
+        const cost = (id: number) => pathToNode(tree, analysis.passives.live, id)?.cost ?? Infinity
+        target = named.reduce((best, n) => (cost(n.id) < cost(best.id) ? n : best)).id
+      }
       const node = tree.node(target)
       if (!node) throw new Error(`No passive node with id ${target} in the tree data.`)
 
@@ -526,17 +576,24 @@ export const TOOLS: ToolDef[] = [
       const skill = String(args.skill)
       const setup = setups.find((s) => (s.skill ?? '').toLowerCase() === skill.toLowerCase())
       if (!setup) {
+        const available = setups.map((s) => s.skill).filter((n): n is string => !!n)
+        const { suggestions } = fuzzyFind(skill, available)
+        if (suggestions.length) {
+          return { found: false, skill, didYouMean: suggestions, note: missNote('skill on the loaded character', skill, suggestions) }
+        }
         throw new Error(
           `"${skill}" is not a skill on the loaded character, so its tags are unknown and nothing can be checked against it. ` +
-            `Available: ${setups.map((s) => s.skill).filter(Boolean).join(', ')}.`,
+            `Available: ${available.join(', ')}.`,
         )
       }
 
       const names = Array.isArray(args.supports) ? (args.supports as string[]) : setup.supports.map((s) => s.name)
       const { validation, unknown } = validateByName(known, skill, setup.skillTags, names)
+      const gemNames = [...known.keys()]
       return {
         ...validation,
         unknownGems: unknown,
+        didYouMean: Object.fromEntries(unknown.map((g) => [g, fuzzyFind(g, gemNames).suggestions])),
         unknownNote: unknown.length
           ? `${unknown.join(', ')} are not among the gem definitions on this character, so they were not checked.`
           : null,
@@ -638,6 +695,10 @@ export const TOOLS: ToolDef[] = [
       const results = db.search(String(args.query), opts)
 
       if (!results.length) {
+        const { suggestions } = fuzzyFind(String(args.query), modAffixNames())
+        if (suggestions.length) {
+          return { results: [], didYouMean: suggestions, note: missNote('affix name', String(args.query), suggestions), limitation: db.limitation }
+        }
         throw new Error(
           `No modifier matches "${args.query}". Search matches affix names and rendered stat text, e.g. "to Strength" or "increased Attack Speed".`,
         )
@@ -1277,6 +1338,11 @@ export const TOOLS: ToolDef[] = [
     handler: (args) => {
       const matches = findMechanicSafe(String(args.query ?? ''))
       if (!matches.length) {
+        const query = String(args.query)
+        const { suggestions } = fuzzyFind(query, MECHANICS.flatMap((m) => [m.id, m.title]))
+        if (suggestions.length) {
+          return { matches: [], didYouMean: suggestions, note: missNote('mechanic', query, suggestions) }
+        }
         throw new Error(
           `Nothing covered for "${args.query}". This reference deliberately omits mechanics that have not been verified.`,
         )
@@ -1336,9 +1402,148 @@ export const TOOLS: ToolDef[] = [
       }
     },
   },
+
+  {
+    name: 'poe2_get_available_mods',
+    title: 'List the affixes that can roll on a base',
+    description:
+      'Every prefix and suffix group that can roll on one item base at a given item level, each with the tiers that ' +
+      'item level can reach (T1 is the best). Answers "what could this base roll" and "what does the next item level ' +
+      'unlock". A misspelt base returns "Did you mean" names instead of an error.',
+    inputSchema: {
+      baseType: z.string().describe('Base item name, e.g. "Militant Bow". Case-insensitive; near misses are suggested.'),
+      itemLevel: z.number().int().min(1).max(100).optional().describe('Item level to roll at. Default 100 (everything reachable).'),
+      limit: z.number().int().min(1).max(200).optional().describe('Maximum groups listed per side. Default 40.'),
+    },
+    annotations: READ_ONLY,
+    handler: (args) => {
+      const query = String(args.baseType ?? '').trim()
+      if (!query) throw new Error('Provide baseType.')
+      const { match, suggestions } = fuzzyFind(query, baseCatalog().names())
+      if (!match) return { found: false, query, didYouMean: suggestions, note: missNote('item base', query, suggestions) }
+      const itemLevel = Number(args.itemLevel ?? 100)
+      const limit = Number(args.limit ?? 40)
+      const result = availableMods(modTiers(), match, itemLevel)
+      if (!result) {
+        return { found: false, query, base: match, note: `"${match}" is a known base but carries no affix pool in the tier data, so nothing can be listed.` }
+      }
+      const prefixes = truncate(result.prefixes, limit)
+      const suffixes = truncate(result.suffixes, limit)
+      return {
+        found: true,
+        base: result.base,
+        itemClass: result.itemClass,
+        itemLevel: result.itemLevel,
+        prefixes: prefixes.items,
+        suffixes: suffixes.items,
+        totals: { prefixGroups: prefixes.total, suffixGroups: suffixes.total, truncated: prefixes.truncated || suffixes.truncated },
+        note: 'Tiers are per item class: T1 is the best this item level can reach. A rare holds at most 3 prefixes and 3 suffixes, one per group.',
+      }
+    },
+  },
+
+  {
+    name: 'poe2_validate_item_mods',
+    title: 'Check an item’s modifiers are possible',
+    description:
+      'Check a set of modifiers on a base against what the game allows: two mods from the same group, a tier above the ' +
+      'item level, more than three prefixes or suffixes, and a mod that cannot spawn on that base. Pass modIds (as ' +
+      'poe.ninja ships them) for the full check. Pass mods as text lines instead for the weaker class-legality check ' +
+      'only. Ids the tier table does not carry (implicits, runes) are reported as unknown, never as violations.',
+    inputSchema: {
+      baseType: z.string().describe('Base item name, e.g. "Militant Bow". Near misses are suggested.'),
+      itemLevel: z.number().int().min(1).max(100).optional().describe('Item level. Omit to skip the item-level check.'),
+      modIds: z.array(z.string()).optional().describe('Explicit mod ids, e.g. "IncreasedLife7". Gives the full check.'),
+      mods: z.array(z.string()).optional().describe('Modifier text lines, used when no ids are known. Class-legality check only.'),
+    },
+    annotations: READ_ONLY,
+    handler: (args) => {
+      const query = String(args.baseType ?? '').trim()
+      if (!query) throw new Error('Provide baseType.')
+      const { match, suggestions } = fuzzyFind(query, baseCatalog().names())
+      if (!match) return { found: false, query, didYouMean: suggestions, note: missNote('item base', query, suggestions) }
+
+      if (Array.isArray(args.modIds) && args.modIds.length) {
+        const report = validateItemMods(modTiers(), {
+          base: match,
+          itemLevel: typeof args.itemLevel === 'number' ? args.itemLevel : null,
+          modIds: (args.modIds as unknown[]).map(String),
+        })
+        return { found: true, check: 'full', ...report }
+      }
+      if (Array.isArray(args.mods) && args.mods.length) {
+        return {
+          found: true,
+          check: 'class-legality',
+          base: match,
+          ...modDatabase().validateItemMods(match, (args.mods as unknown[]).map(String)),
+          note: 'Text lines carry no group or tier, so only item-class legality was checked. Pass modIds for duplicate-group, item-level and affix-count checks.',
+        }
+      }
+      throw new Error('Provide modIds (full check) or mods (class-legality check).')
+    },
+  },
+
+  {
+    name: 'poe2_inspect_base_item',
+    title: 'Inspect an item base',
+    description:
+      'Look up one item base by name: its type, implicit, base defences or weapon stats, attribute requirements, ' +
+      'item class and the spawn tags that decide which affixes can roll. A misspelling returns "Did you mean" names.',
+    inputSchema: {
+      name: z.string().describe('Base item name, e.g. "Militant Bow".'),
+    },
+    annotations: READ_ONLY,
+    handler: (args) => {
+      const query = String(args.name ?? '').trim()
+      if (!query) throw new Error('Provide a base name.')
+      const { found, suggestions } = inspectBase(baseCatalog(), query, modTiers())
+      if (!found) return { found: false, query, didYouMean: suggestions, note: missNote('item base', query, suggestions) }
+      return { found: true, ...found }
+    },
+  },
+
+  {
+    name: 'poe2_list_keystones',
+    title: 'List the keystones',
+    description:
+      'Every keystone on the passive tree with its stat text, owning ascendancy (if any) and whether this project ' +
+      'corrects other advice for it. Filter by a fragment of the name or stat text.',
+    inputSchema: {
+      query: z.string().optional().describe('Keep keystones whose name or stat text contains this fragment.'),
+      limit: z.number().int().min(1).max(100).optional().describe('Maximum keystones returned. Default 50.'),
+    },
+    annotations: READ_ONLY,
+    handler: (args) => {
+      const q = String(args.query ?? '').trim().toLowerCase()
+      const all = listKeystones(passiveTree())
+      const kept = q ? all.filter((k) => `${k.name} ${k.stats.join(' ')}`.toLowerCase().includes(q)) : all
+      const { items, total, truncated } = truncate(kept, Number(args.limit ?? 50))
+      return { total, truncated, keystones: items }
+    },
+  },
+
+  {
+    name: 'poe2_inspect_keystone',
+    title: 'Inspect a keystone',
+    description:
+      'One keystone by name: its stat text, ascendancy and the correction this project applies for it, if any (what it ' +
+      'invalidates about the rest of the analysis). A misspelling returns "Did you mean" names instead of an error.',
+    inputSchema: {
+      name: z.string().describe('Keystone name, e.g. "Chaos Inoculation".'),
+    },
+    annotations: READ_ONLY,
+    handler: (args) => {
+      const query = String(args.name ?? '').trim()
+      if (!query) throw new Error('Provide a keystone name.')
+      const { found, suggestions } = inspectKeystone(passiveTree(), query)
+      if (!found) return { found: false, query, didYouMean: suggestions, note: missNote('keystone', query, suggestions) }
+      return { found: true, ...found }
+    },
+  },
 ]
 
-function summarize(loaded: ReturnType<typeof loadedCharacter> extends null ? never : NonNullable<ReturnType<typeof loadedCharacter>>) {
+export function summarize(loaded: ReturnType<typeof loadedCharacter> extends null ? never : NonNullable<ReturnType<typeof loadedCharacter>>) {
   const { analysis } = loaded
   return {
     identity: analysis.identity,
@@ -1369,4 +1574,156 @@ function summarize(loaded: ReturnType<typeof loadedCharacter> extends null ? nev
     warnings: analysis.warnings,
     source: loaded.source,
   }
+}
+
+// --- structured output and provenance ----------------------------------------
+
+const any = z.unknown().optional()
+const list = z.array(z.unknown()).optional()
+const text = z.string().nullable().optional()
+const bool = z.boolean().optional()
+const count = z.number().optional()
+
+/** Result of a failed lookup: the suggestions, never an error. */
+const MISS = { found: bool, query: any, didYouMean: any, note: text } as const
+
+/**
+ * Top-level keys of each tool's `structuredContent`. Objects are loose (extra keys
+ * allowed) and nested values stay `unknown`: the schema names what a caller can
+ * rely on being present without freezing every nested shape. Each tool must have
+ * an entry, enforced below at load time and by test/schema.test.ts.
+ */
+const OUTPUTS: Record<string, z.ZodRawShape> = {
+  poe2_load_character: {
+    identity: any, survivability: any, primarySkill: any, assessment: any, keystones: any,
+    findingCount: count, crossValidated: bool, warnings: any, source: text,
+  },
+  poe2_get_defenses: {
+    lowestMaximumHit: any, lowestMaximumHitType: any, effectiveHealthPool: any, ehpOverstatementRatio: any,
+    note: text, maxHits: any, resistances: any, pools: any, mitigation: any, ailments: any, missingFromPayload: any,
+  },
+  poe2_get_skill_damage: { primary: any, skills: list, provenance: any, unresolved: any, computedUnder: any },
+  poe2_assess_build: { tier: any, score: any, keystones: any, suppressedFindings: any },
+  poe2_item_contributions: { stat: any, summary: any, excludedReason: any, carriedBy: list, items: list },
+  poe2_get_recommendations: { recommendations: list, suppressed: any },
+  poe2_find_stat_sources: {
+    stat: text, label: any, total: any, base: any, increasedPercent: any, more: any, derivation: any, cap: any,
+    idConfidence: any, sources: list,
+  },
+  poe2_analyze_passive_tree: {
+    counts: any, activeWeaponSet: any, weaponSetNodeCounts: any, notables: list, keystones: list,
+    jewelSockets: list, ascendancy: list, groups: list, unresolvedNodeIds: any,
+  },
+  poe2_inspect_passive_node: {
+    ...MISS, id: any, name: text, kind: text, stats: any, ascendancy: any, neighbours: list,
+    total: count, truncated: bool, matches: list,
+  },
+  poe2_find_path_to_node: {
+    ...MISS, target: any, reachable: bool, alreadyAllocated: bool, cost: count, path: list,
+  },
+  poe2_get_skill_setups: { setups: list },
+  poe2_validate_support_gems: { ...MISS, setups: list, skill: text, unknownGems: any, unknownNote: text },
+  poe2_import_pob: { playerStats: any, statCount: count, headline: any },
+  poe2_get_pob_code: { code: text, note: text, playerStats: any, length: count },
+  poe2_cross_validate: { available: bool, note: text, summary: any, disagreements: list, unverifiable: list },
+  poe2_search_mods: { results: list, didYouMean: any, limitation: any, note: text },
+  poe2_analyze_item_mods: { source: text, item: any, equipped: list, compatibility: any, note: text },
+  poe2_export_pob_with_tree: { code: text, added: list, removed: list, nodeCount: any, warnings: any, note: text },
+  poe2_analyze_gear: { items: list, totals: any, note: text },
+  poe2_find_gear_improvements: { shortfallSummary: any, resistanceSwaps: list, tierUpgrades: any, totals: any, note: text },
+  poe2_rank_affix_candidates: {
+    item: any, replacing: any, openSlots: any, resistances: list, candidates: list, total: count, notes: any, note: text,
+  },
+  poe2_audit_character: { summary: any, note: text, jewels: list, emptySockets: list, attributes: list },
+  poe2_survivability_headroom: {},
+  poe2_constraint_map: { map: any, ledger: any },
+  poe2_pob_status: {
+    connected: bool, reason: text, hint: text, port: any, addonVersion: any, pobVersion: any, buildLoaded: bool,
+    buildName: text, calcs: any, note: text,
+  },
+  poe2_pob_load_character: { loaded: bool, character: any, treeEdits: any, note: text },
+  poe2_pob_simulate_node: { provenance: text },
+  poe2_pob_simulate_mods: { provenance: text, note: text },
+  poe2_pob_rank_nodes: { provenance: text, note: text },
+  poe2_explain_mechanic: { matches: list, didYouMean: any, note: text },
+  poe2_health_check: { toolCount: count, passiveTree: any, character: any, poeNinja: text, pathOfBuilding: text },
+  poe2_get_available_mods: {
+    ...MISS, base: text, itemClass: text, itemLevel: count, prefixes: list, suffixes: list, totals: any,
+  },
+  poe2_validate_item_mods: {
+    ...MISS, check: text, base: text, itemClass: text, baseKnown: bool, prefixes: any, suffixes: any, issues: list,
+    unknown: any, valid: bool,
+  },
+  poe2_inspect_base_item: { ...MISS, name: text, base: any, itemClass: text, tags: any },
+  poe2_list_keystones: { total: count, truncated: bool, keystones: list },
+  poe2_inspect_keystone: { ...MISS, id: any, name: text, stats: any, ascendancy: any, hasRule: bool },
+}
+
+const SOURCES: Record<string, ToolSource> = {
+  poe2_load_character: 'ninja',
+  poe2_get_defenses: 'derived',
+  poe2_get_skill_damage: 'ninja',
+  poe2_assess_build: 'derived',
+  poe2_item_contributions: 'derived',
+  poe2_get_recommendations: 'derived',
+  poe2_find_stat_sources: 'ninja',
+  poe2_analyze_passive_tree: 'generated',
+  poe2_inspect_passive_node: 'generated',
+  poe2_find_path_to_node: 'generated',
+  poe2_get_skill_setups: 'ninja',
+  poe2_validate_support_gems: 'ninja',
+  poe2_import_pob: 'ninja',
+  poe2_get_pob_code: 'ninja',
+  poe2_cross_validate: 'derived',
+  poe2_search_mods: 'generated',
+  poe2_analyze_item_mods: 'generated',
+  poe2_export_pob_with_tree: 'ninja',
+  poe2_analyze_gear: 'derived',
+  poe2_find_gear_improvements: 'derived',
+  poe2_rank_affix_candidates: 'derived',
+  poe2_audit_character: 'derived',
+  poe2_survivability_headroom: 'derived',
+  poe2_constraint_map: 'derived',
+  poe2_pob_status: 'pob',
+  poe2_pob_load_character: 'pob',
+  poe2_pob_simulate_node: 'pob',
+  poe2_pob_simulate_mods: 'pob',
+  poe2_pob_rank_nodes: 'pob',
+  poe2_explain_mechanic: 'mechanics',
+  poe2_health_check: 'generated',
+  poe2_get_available_mods: 'generated',
+  poe2_validate_item_mods: 'generated',
+  poe2_inspect_base_item: 'generated',
+  poe2_list_keystones: 'generated',
+  poe2_inspect_keystone: 'generated',
+}
+
+export const TOOLS: ToolDef[] = DEFINITIONS.map((def) => {
+  const shape = OUTPUTS[def.name]
+  const source = SOURCES[def.name]
+  if (!shape || !source) throw new Error(`${def.name} needs an entry in both OUTPUTS and SOURCES (apps/mcp/src/tools.ts).`)
+  return { ...def, outputSchema: z.looseObject(shape), source }
+})
+
+/** The provenance stamp for one tool's answer, dated as of `now`. */
+export function toolProvenance(tool: ToolDef, now = new Date()): ProvenanceStamp {
+  if (tool.source === 'pob') return provenanceFor('ninja', null, 'live Path of Building engine')
+  if (tool.source === 'ninja') {
+    const loaded = loadedCharacter()
+    return loaded ? externalProvenance(loaded.model.updatedUtc, now) : provenanceFor('ninja', null)
+  }
+  return provenanceFor(tool.source, dataVersion())
+}
+
+/** Result `_meta`: tier, data revision and date, plus the character's age for poe.ninja answers. */
+export function toolMeta(tool: ToolDef, now = new Date()): Record<string, unknown> {
+  const meta: Record<string, unknown> = { 'poe2/provenance': toolProvenance(tool, now) }
+  if (tool.source === 'ninja') meta['poe2/dataAge'] = dataAge(loadedCharacter()?.model.updatedUtc, now)
+  return meta
+}
+
+/** `structuredContent` must be a JSON object: wrap anything else, and drop non-JSON values. */
+export function toStructured(result: unknown): Record<string, unknown> {
+  const plain: unknown = JSON.parse(JSON.stringify(result ?? null))
+  return plain && typeof plain === 'object' && !Array.isArray(plain) ? (plain as Record<string, unknown>) : { result: plain }
 }
