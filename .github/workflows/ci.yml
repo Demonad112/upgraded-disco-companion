@@ -86,3 +86,24 @@ jobs:
           npm run tools --workspace @poe2/mcp
           git diff --exit-code apps/mcp/TOOLS.md \
             || (echo "TOOLS.md is stale — run 'npm run tools -w @poe2/mcp' and commit the result." && exit 1)
+
+  lighthouse:
+    # Mobile Lighthouse on the built static site. Warn-only for now: it reports LCP (2.5 s) and CLS (0.1) but never
+    # fails the run. Tighten to "error" once a few runs show the numbers are stable.
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Build web
+        # No GITHUB_ACTIONS basePath: the static server below serves the export from its root.
+        env:
+          GITHUB_ACTIONS: ''
+        run: npm run build
+      - name: Lighthouse (mobile, / and /character/)
+        run: npx --yes @lhci/cli@0.14.0 autorun --config=lighthouserc.json

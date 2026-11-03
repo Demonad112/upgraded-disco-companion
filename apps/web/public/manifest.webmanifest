@@ -38,6 +38,15 @@
   "display_override": [
     "standalone"
   ],
+  "share_target": {
+    "action": "./character/",
+    "method": "GET",
+    "params": {
+      "title": "title",
+      "text": "text",
+      "url": "url"
+    }
+  },
   "shortcuts": [
     {
       "name": "Character",
