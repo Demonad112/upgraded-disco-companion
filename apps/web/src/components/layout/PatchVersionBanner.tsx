@@ -1,4 +1,5 @@
-import { CURRENT_PATCH, LEAGUE_LABEL } from "@/lib/constants";
+import Link from "next/link";
+import { CURRENT_PATCH, DATA_MAY_BE_OUTDATED, LEAGUE_LABEL } from "@/lib/constants";
 import { BannerDismiss } from "./BannerDismiss";
 import { BannerInfo } from "./BannerInfo";
 
@@ -13,11 +14,19 @@ export function PatchVersionBanner() {
     <div className="patch-banner border-b border-line bg-surface/70 text-[12px] leading-relaxed text-ink-mute">
       <div className="shell flex items-center gap-2 py-1.5">
         <p className="min-w-0 flex-1 text-center">
-          <span className="sm:hidden">
+          {DATA_MAY_BE_OUTDATED ? (
+            <>
+              <strong className="font-semibold text-warn">New patch:</strong> some data may be outdated.{" "}
+              <Link href="/whats-new" className="text-accent underline underline-offset-2 hover:text-ink">
+                What’s new
+              </Link>
+            </>
+          ) : null}
+          <span className={DATA_MAY_BE_OUTDATED ? "hidden" : "sm:hidden"}>
             Patch <strong className="font-semibold text-ink">{CURRENT_PATCH}</strong> · community data{" "}
             <BannerInfo />
           </span>
-          <span className="hidden sm:inline">
+          <span className={DATA_MAY_BE_OUTDATED ? "hidden" : "hidden sm:inline"}>
             Data current as of patch{" "}
             <strong className="font-semibold text-ink">{CURRENT_PATCH}</strong>{" "}
             ({LEAGUE_LABEL}) — community-derived, may drift from future patches. Key:{" "}
