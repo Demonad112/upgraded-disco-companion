@@ -284,7 +284,21 @@ export interface PersistedState {
      */
     maxSupportTier?: number | null;
   };
+  /**
+   * Display preferences. Optional and unversioned like `gear`: older payloads
+   * lack it and read the defaults (`homeStart: null`, `proDetail: false`).
+   */
+  prefs?: Partial<Prefs>;
   updatedAt: string;
+}
+
+export type HomeStart = "dashboard" | "farming" | "character";
+
+export interface Prefs {
+  /** Where the home page sends the player first. `null` = not chosen yet. */
+  homeStart: HomeStart | null;
+  /** Show the expert layer of checklist, Atlas and dashboard text. */
+  proDetail: boolean;
 }
 
 /**

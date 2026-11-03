@@ -1,5 +1,5 @@
 import { migrateSnapshots } from "@poe2/core";
-import type { PersistedState } from "./types";
+import type { HomeStart, PersistedState, Prefs } from "./types";
 
 export const STORAGE_KEY = "poe2-endgame-companion:v1";
 export const STORAGE_VERSION = 1;
@@ -64,7 +64,27 @@ function salvage(parsed: Record<string, unknown>): PersistedState {
       : {}),
     ...(isRecord(parsed.farm) && isRecord(parsed.farm.loadouts) ? { farm: parsed.farm as unknown as NonNullable<PersistedState["farm"]> } : {}),
     ...(isRecord(parsed.gems) ? { gems: parsed.gems as NonNullable<PersistedState["gems"]> } : {}),
+    ...(isRecord(parsed.prefs) ? { prefs: readPrefs(parsed.prefs) } : {}),
   };
+}
+
+const HOME_STARTS: readonly HomeStart[] = ["dashboard", "farming", "character"];
+
+/** Keep only the preference fields that have the right shape. */
+function readPrefs(raw: Record<string, unknown>): Partial<Prefs> {
+  return {
+    ...(HOME_STARTS.includes(raw.homeStart as HomeStart) || raw.homeStart === null
+      ? { homeStart: raw.homeStart as HomeStart | null }
+      : {}),
+    ...(typeof raw.proDetail === "boolean" ? { proDetail: raw.proDetail } : {}),
+  };
+}
+
+export const DEFAULT_PREFS: Prefs = { homeStart: null, proDetail: false };
+
+/** Preferences with defaults filled in; tolerates payloads written before they existed. */
+export function getPrefs(state: PersistedState): Prefs {
+  return { ...DEFAULT_PREFS, ...(state.prefs ? readPrefs(state.prefs as Record<string, unknown>) : {}) };
 }
 
 /**
