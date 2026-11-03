@@ -73,6 +73,10 @@ Run `npm ci`, then `npm run build -w @poe2/core`, before `npm run typecheck` or 
 - Answer open questions yourself (including "Needs owner" items) with your best recommendation, act on it, and state
   each answer and its reason in your reply. Leave a question open for the owner only if it is high priority, or if you
   are blocked on it 3 times; then stop and ask.
+- **Token economy.** Every request re-reads the whole context, so: send independent tool calls together in one
+  message; grep first and read only the part you need (whole reads only for files you will edit), never `cat`
+  several files at once; cap listings and data dumps (`| head`), but never truncate errors or failing tests;
+  compact or hand off at a task boundary, never mid-task.
 - Don't sit watching PRs or CI: use a scheduled check-in or PR Auto-fix and come back later.
 - Suggest a plugin, connector or tool only when the task needs one.
 - The owner is proficient in Python; skip the basics.
