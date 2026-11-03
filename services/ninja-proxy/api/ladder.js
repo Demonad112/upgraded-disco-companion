@@ -35,7 +35,7 @@
 // columns (`skills`, `keypassives`) carry neither shape — they are per-row
 // lists — and are left undecoded since nothing here reads them.
 
-import { applyCors, badQueryParam, politeFetch } from "./_upstream.js";
+import { applyCors, badQueryParam, busyResult, isBusyStatus, politeFetch } from "./_upstream.js";
 
 // Upstream calls abort after this long, so a stalled poe.ninja cannot hold the function open.
 const TIMEOUT_MS = 20_000;
@@ -248,6 +248,13 @@ export function findSnapshot(snapshotVersions, league, displayName = league) {
   );
 }
 
+/** Answers 503 + Retry-After for a throttled or failing upstream. */
+function sendBusy(res, upstream) {
+  const { status, json, headers } = busyResult(upstream);
+  for (const [k, v] of Object.entries(headers)) res.setHeader(k, v);
+  res.status(status).json(json);
+}
+
 export default async function handler(req, res) {
   applyCors(req, res, "Content-Type");
   if (req.method === "OPTIONS") {
@@ -271,6 +278,7 @@ export default async function handler(req, res) {
   try {
     const idxRes = await politeFetch(`${NINJA_BASE}/poe2/api/data/index-state`, { signal: controller.signal });
     if (!idxRes.ok) {
+      if (isBusyStatus(idxRes.status)) return sendBusy(res, idxRes);
       res.status(502).json({ error: `index-state returned ${idxRes.status}` });
       return;
     }
@@ -287,6 +295,7 @@ export default async function handler(req, res) {
 
     const searchRes = await politeFetch(searchUrl, { signal: controller.signal });
     if (!searchRes.ok) {
+      if (isBusyStatus(searchRes.status)) return sendBusy(res, searchRes);
       res.status(502).json({ error: `builds search returned ${searchRes.status}` });
       return;
     }

@@ -1,5 +1,10 @@
 export const CURRENT_PATCH = "0.5.5";
 /**
+ * Patch-day switch. Set to true when a new patch is live but the data has not been updated yet: the banner then says
+ * "New patch: some data may be outdated" and links to What's new. Ships as false.
+ */
+export const DATA_MAY_BE_OUTDATED = false;
+/**
  * Every challenge league currently live, newest first. 0.5.5 launched Forbidden
  * Rites while Runes of Aldur kept running, so "the current league" is not one
  * value: a Runes of Aldur character is still current.

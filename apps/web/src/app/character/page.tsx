@@ -10,7 +10,7 @@ import {
   type PobAnalysis,
 } from '@poe2/core'
 import { attributesFrom } from '@/lib/attributes'
-import { ImportBar, importProfile, type ImportResult } from '@/components/ImportBar'
+import { ImportBar, importProfile, sharedProfileUrl, type ImportResult } from '@/components/ImportBar'
 import { Skeleton } from '@/components/Skeleton'
 import { useCharacterHistory } from '@/lib/useCharacterHistory'
 import { recordRecent } from '@/lib/recentCharacters'
@@ -157,7 +157,8 @@ export default function Home() {
   // `?import=<poe.ninja URL>` — from the home page's "Re-import" link, a
   // reload, or a shared link. Read here, once per visit to the page.
   useEffect(() => {
-    const target = new URLSearchParams(window.location.search).get('import')
+    // `?url=` / `?text=` come from the PWA share target (Android, Samsung); iOS has none.
+    const target = new URLSearchParams(window.location.search).get('import') ?? sharedProfileUrl(window.location.search)
     if (!target) return
     let cancelled = false
     // The effect starts a fetch; the page has to show it is busy for its length.

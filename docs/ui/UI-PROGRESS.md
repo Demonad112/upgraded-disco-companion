@@ -37,7 +37,7 @@ session's row in its last commit. Audit rows are tracked in `docs/audit/08-PROGR
 | 20 | W0 prep (lazy overlays, fake timers, palette, prefs) | Local | Sonnet 5.5 · medium | done | ui/20261103-w0-prep | #82 | | `docs/ui/LAUNCH-PLAN.md`; runs with IMG-1 (owner, Claude chat) |
 | 21 | C1 content short + pro | Cloud | Opus 5.5 · high | todo | | | | runs with H1, L1 |
 | 21 | H1 home picker | Local | Opus 5.5 · high | done | variant/20261103-home-picker | #83 | | runs with C1, L1 |
-| 21 | L1 launch hardening (proxy, share target, paste, patch switch, Lighthouse CI) | Cloud | Sonnet 5.5 · medium | todo | | | | runs with C1, H1; owner deploys the proxy |
+| 21 | L1 launch hardening (proxy, share target, paste, patch switch, Lighthouse CI) | Cloud | Sonnet 5.5 · medium | done | feat/20261103-launch-hardening | | | runs with C1, H1; owner deploys the proxy |
 | 22 | CH1 character showcase + share card v2 + fix→trade | Cloud | Opus 5.5 · high | todo | | | | runs with V1 |
 | 22 | V1 SVG diagrams | Local | Opus 5.5 · high | todo | | | | runs with CH1 |
 | 23 | PD patch-day data | Cloud | Opus 5.5 · high | todo | | | | when the December patch notes land |

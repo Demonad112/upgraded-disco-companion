@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { NinjaClient, NinjaError, looksLikePobCode, parseProfileUrl } from '@poe2/core'
 import { PROXY_BASE } from '@/lib/proxy'
 import { useLocalStore } from '@/lib/localStore'
@@ -19,7 +19,48 @@ export type ImportResult =
   | { ok: true; kind: 'ninja'; data: unknown; url?: string }
   /** A Path of Building export code. Fewer stats, all of them real. */
   | { ok: true; kind: 'pob'; code: string }
-  | { ok: false; error: string; canPaste: boolean }
+  | { ok: false; error: string; canPaste: boolean; cancelled?: boolean }
+
+/** Shown while the proxy reports poe.ninja as busy (429/503): `seconds` left before retry `step` of `of`. */
+export type BusyInfo = { seconds: number; step: number; of: number }
+
+/** Waits between retries when the proxy sends no `Retry-After`. Three steps, then the error shows. */
+export const BACKOFF_SECONDS = [3, 6, 12] as const
+const MAX_RETRY_AFTER_S = 30
+
+/** A poe.ninja PoE2 profile URL in free text (a share sheet's `text` is often "Check this out https://…"). */
+export function findProfileUrl(text: string | null | undefined): string | null {
+  const m = text?.match(/https?:\/\/(?:www\.)?poe\.ninja\/poe2\/profile\/[^\s"'<>]+/i)
+  if (!m) return null
+  const url = m[0].replace(/[).,;!?]+$/, '')
+  return parseProfileUrl(url) ? url : null
+}
+
+/** The profile URL a PWA share (`?url=` / `?text=`) carries, or null. */
+export function sharedProfileUrl(search: string): string | null {
+  const q = new URLSearchParams(search)
+  return findProfileUrl(q.get('url')) ?? findProfileUrl(q.get('text'))
+}
+
+function waitSeconds(seconds: number, signal: AbortSignal | undefined, tick: (left: number) => void): Promise<boolean> {
+  return new Promise((resolve) => {
+    let left = seconds
+    tick(left)
+    const done = (ok: boolean) => {
+      clearInterval(timer)
+      signal?.removeEventListener('abort', onAbort)
+      resolve(ok)
+    }
+    const onAbort = () => done(false)
+    const timer = setInterval(() => {
+      left -= 1
+      if (left <= 0) done(true)
+      else tick(left)
+    }, 1000)
+    if (signal?.aborted) done(false)
+    else signal?.addEventListener('abort', onAbort)
+  })
+}
 
 /** Why `target` can't be imported, or null when it looks like a full profile URL. */
 export function checkProfileUrl(target: string): string | null {
@@ -34,7 +75,10 @@ export function checkProfileUrl(target: string): string | null {
  * the character page's `?import=` handling, which lives on the page: the page
  * owns `busy` and the box's open state, and reads the parameter once per visit.
  */
-export async function importProfile(target: string): Promise<ImportResult> {
+export async function importProfile(
+  target: string,
+  opts: { onBusy?: (info: BusyInfo | null) => void; signal?: AbortSignal } = {},
+): Promise<ImportResult> {
   const ref = parseProfileUrl(target)
   if (!ref?.leagueSlug) return { ok: false, error: checkProfileUrl(target) ?? 'Invalid URL.', canPaste: false }
   if (isOffline()) {
@@ -45,9 +89,41 @@ export async function importProfile(target: string): Promise<ImportResult> {
       canPaste: true,
     }
   }
+  // The client's own retry is off: the proxy answers 429/503 when poe.ninja is busy, and the bar shows that wait
+  // (with a Cancel) instead of sitting silent.
+  let busy: { retryAfter: number | null } | null = null
+  const client = new NinjaClient({
+    fetch: async (i, init) => {
+      const res = await fetch(i, init)
+      const header = Number(res.headers.get('retry-after'))
+      busy =
+        res.status === 429 || res.status === 503
+          ? { retryAfter: Number.isFinite(header) && header > 0 ? header : null }
+          : null
+      return res
+    },
+    proxyBaseUrl: PROXY_BASE,
+    retries: 0,
+  })
   try {
-    const client = new NinjaClient({ fetch: (i, init) => fetch(i, init), proxyBaseUrl: PROXY_BASE })
-    const data = await client.fetchCharacter(ref.account, ref.leagueSlug, ref.character)
+    let data: unknown
+    for (let attempt = 0; ; attempt++) {
+      busy = null
+      try {
+        data = await client.fetchCharacter(ref.account, ref.leagueSlug, ref.character)
+        break
+      } catch (err) {
+        const hint = busy as { retryAfter: number | null } | null
+        if (!hint || attempt >= BACKOFF_SECONDS.length) throw err
+        const seconds = Math.min(MAX_RETRY_AFTER_S, Math.ceil(hint.retryAfter ?? BACKOFF_SECONDS[attempt]))
+        const step = attempt + 1
+        const resumed = await waitSeconds(seconds, opts.signal, (left) =>
+          opts.onBusy?.({ seconds: left, step, of: BACKOFF_SECONDS.length }),
+        )
+        if (!resumed) return { ok: false, error: 'Import cancelled.', canPaste: true, cancelled: true }
+      }
+    }
+    opts.onBusy?.(null)
     // Put the profile in the address bar, so a reload or a shared link
     // re-imports the same character instead of landing on an empty page.
     try {
@@ -59,8 +135,13 @@ export async function importProfile(target: string): Promise<ImportResult> {
     }
     return { ok: true, kind: 'ninja', data, url: target }
   } catch (err) {
+    opts.onBusy?.(null)
     const message =
-      err instanceof NinjaError ? err.message : `Import failed: ${(err as Error).message ?? 'unknown error'}`
+      err instanceof NinjaError && /returned (429|503)\b/.test(err.message)
+        ? 'poe.ninja is still busy after three retries. Try again in a minute, or paste the character data instead.'
+        : err instanceof NinjaError
+          ? err.message
+          : `Import failed: ${(err as Error).message ?? 'unknown error'}`
     return { ok: false, error: message, canPaste: true }
   }
 }
@@ -79,6 +160,8 @@ export function ImportBar({
   const [paste, setPaste] = useState('')
   const [error, setError] = useState<string | null>(null)
   const recents = useLocalStore(recentCharacters)
+  const [busyInfo, setBusyInfo] = useState<BusyInfo | null>(null)
+  const abortRef = useRef<AbortController | null>(null)
 
   async function importUrl(e: React.FormEvent) {
     e.preventDefault()
@@ -97,12 +180,32 @@ export function ImportBar({
     setBusy(true)
     // importProfile never throws. On success the page owns `busy` until the analysis lands; clearing it here as well
     // dropped the skeleton for the whole analysis.
-    const result = await importProfile(target)
+    const controller = new AbortController()
+    abortRef.current = controller
+    const result = await importProfile(target, { onBusy: setBusyInfo, signal: controller.signal })
+    abortRef.current = null
+    setBusyInfo(null)
+    if (!result.ok && result.cancelled) {
+      setBusy(false)
+      return
+    }
     if (!result.ok) {
       setError(result.error)
       setBusy(false)
     }
     onResult(result)
+  }
+
+  /** iOS has no share target, so a tap reads the clipboard (permission prompt included) and fills the box. */
+  async function pasteUrl() {
+    setError(null)
+    try {
+      const found = findProfileUrl(await navigator.clipboard.readText())
+      if (found) setUrl(found)
+      else setError('The clipboard has no poe.ninja PoE2 profile URL. Copy it from the character page and tap Paste again.')
+    } catch {
+      setError('Could not read the clipboard. Long-press the box and paste the URL instead.')
+    }
   }
 
   function importPaste(e: React.FormEvent) {
@@ -158,6 +261,9 @@ export function ImportBar({
               aria-label="poe.ninja character URL"
               className="flex-1"
             />
+            <Button type="button" onClick={() => void pasteUrl()} disabled={busy}>
+              Paste
+            </Button>
             <Button type="submit" variant="primary" disabled={busy}>
               {busy ? 'Analysing…' : 'Analyse'}
             </Button>
@@ -195,6 +301,17 @@ export function ImportBar({
               </Button>
             ))}
           </div>
+        ) : null}
+
+        {busyInfo ? (
+          <p role="status" className="mt-2 flex flex-wrap items-center gap-2 text-xs leading-relaxed text-ink-dim">
+            <span>
+              poe.ninja is busy, retrying in {busyInfo.seconds} s (try {busyInfo.step} of {busyInfo.of})
+            </span>
+            <Button size="sm" onClick={() => abortRef.current?.abort()}>
+              Cancel
+            </Button>
+          </p>
         ) : null}
 
         {error ? (
