@@ -7,20 +7,6 @@ async function importCharacter(page: import('@playwright/test').Page) {
   await expect(page.getByRole('heading', { name: /Athrynas/ }).first()).toBeVisible({ timeout: 30_000 })
 }
 
-test('a workbench draft goes onto the shopping list', async ({ page }) => {
-  await importCharacter(page)
-  const gear = page.locator('details#gear-workbench')
-  await gear.locator('summary').click()
-  await gear.locator('li button[aria-expanded]').first().click()
-  await gear.getByRole('button', { name: /^Remove / }).first().click()
-  await gear.getByRole('button', { name: 'Add draft to shopping list' }).click()
-  await expect(gear.getByText('on shopping list', { exact: true })).toBeVisible()
-
-  await page.goto('checklist/')
-  await expect(page.getByText(/: rework /).first()).toBeVisible()
-  await expect(page.getByText('Changes to make:')).toBeVisible()
-})
-
 test('"Copy link" copies a link that re-imports this character', async ({ page }) => {
   await page.addInitScript(() => {
     // Deterministic across devices: no share sheet, and a clipboard we can read back.

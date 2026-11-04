@@ -15,7 +15,6 @@ import { Chat } from '@/components/Chat'
 import { DamageReview } from '@/components/DamageReview'
 import { DefensePanel } from '@/components/DefensePanel'
 import { DpsMatrix } from '@/components/DpsMatrix'
-import { GearWorkbench } from '@/components/GearWorkbench'
 import { Headroom } from '@/components/Headroom'
 import { PobAnalysisView } from '@/components/PobAnalysisView'
 import { Progress } from '@/components/Progress'
@@ -26,13 +25,12 @@ import { ChangedSincePanel } from './ChangedSincePanel'
 import { CharacterNotes } from './CharacterNotes'
 import { CompareCharacters } from './CompareCharacters'
 import { CopyLink } from './CopyLink'
+import { GearTargets } from './GearTargets'
 import { DefencesGlance, SpareAndChanges, TreeDataNote } from './OverviewCards'
 import { ShareCard } from './ShareCard'
 import { Showcase } from './Showcase'
 import { TopFixes } from './TopFixes'
 import { WhatIfPanel } from './WhatIfPanel'
-import { useShoppingList } from '@/hooks/useShoppingList'
-import type { attributesFrom } from '@/lib/attributes'
 import type { CharacterHistory } from '@/lib/useCharacterHistory'
 import type { ModTiersState } from '@/lib/useModTiers'
 import type { PassiveTreeState } from '@/lib/usePassiveTree'
@@ -70,7 +68,6 @@ export function CharacterResults({
   treeState,
   catalogState,
   analysisOptions,
-  attributes,
 }: {
   analysis: Analysis
   sourceUrl: string | null
@@ -79,9 +76,7 @@ export function CharacterResults({
   treeState: PassiveTreeState
   catalogState: SupportCatalogState
   analysisOptions: AnalyzeOptions
-  attributes: ReturnType<typeof attributesFrom>
 }) {
-  const shopping = useShoppingList()
   const treeForNote = treeState.status === 'ready' ? treeState.tree : null
   const overcapped = a.attribution.stats.filter((st) => st.overcap > 0)
 
@@ -154,30 +149,13 @@ export function CharacterResults({
       </Section>
 
       <Section id="gear" title="Gear">
-        <Accordion
-          id="gear-workbench"
-          title="Gear workbench"
-          summary={
-            tiersState.status === 'error'
-              ? 'Affix tier data unavailable'
-              : 'Replace-first ranking · remove, re-tier or swap affixes and watch your resistances'
-          }
-          badge={(() => {
-            const open = shopping.entries.filter((e) => e.characterName === a.identity.name && !e.done).length
-            return open ? <StatusChip tone="good">{open} on shopping list</StatusChip> : undefined
-          })()}
-        >
-          <GearWorkbench
-            items={a.items}
-            defense={a.defense}
-            attribution={a.attribution}
-            state={tiersState}
-            characterName={a.identity.name}
-            recommendations={a.recommendations.recommendations}
-            {...(attributes ? { attributes } : {})}
-            bare
-          />
-        </Accordion>
+        <GearTargets
+          items={a.items}
+          defense={a.defense}
+          attribution={a.attribution}
+          state={tiersState}
+          league={a.identity.league}
+        />
       </Section>
 
 

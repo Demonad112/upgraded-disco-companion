@@ -39,7 +39,7 @@ describe('xp penalty', () => {
     expect(xpMultiplier(86, 78)).toBe(1)
     expect(xpMultiplier(86, 94)).toBe(1)
     // 86 - 75 = 11, minus safe zone 8 = 3: (91 / (91 + 3^2.5))^1.3
-    expect(xpMultiplier(86, 75)).toBeCloseTo(Math.pow(91 / (91 + Math.pow(3, 2.5)), 1.3), 10)
+    expect(xpMultiplier(86, 75)).toBeCloseTo(Math.pow(91 / (91 + Math.pow(3, 2.5)), 1.5), 10)
     expect(xpMultiplier(86, 65)).toBeLessThan(xpMultiplier(86, 75))
   })
 })
@@ -82,11 +82,11 @@ describe('planWaystones, character mode', () => {
     expect(plan.riskLimitTier).toBe(report.highestComfortableTier)
     expect(plan.runTo).toBe(14)
     expect(plan.best).toBe(14)
-    // T11 keeps at least the floor, T10 does not.
-    expect(1 - plan.rows[10]!.xpLost).toBeGreaterThanOrEqual(XP_WORTH_FLOOR)
-    expect(1 - plan.rows[9]!.xpLost).toBeLessThan(XP_WORTH_FLOOR)
-    expect(plan.runFrom).toBe(11)
-    expect(plan.xpLimitTier).toBe(11)
+    // T12 keeps at least the floor, T11 does not.
+    expect(1 - plan.rows[11]!.xpLost).toBeGreaterThanOrEqual(XP_WORTH_FLOOR)
+    expect(1 - plan.rows[10]!.xpLost).toBeLessThan(XP_WORTH_FLOOR)
+    expect(plan.runFrom).toBe(12)
+    expect(plan.xpLimitTier).toBe(12)
     expect(plan.rows.find((r) => r.tier === 15)).toMatchObject({ band: 'some', xpLost: 0 })
   })
 

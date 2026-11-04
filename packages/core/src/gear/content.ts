@@ -184,7 +184,7 @@ export function analyzeContent(defense: DefenseSummary, data: MonsterStatData): 
         question: 'How much harder does a specific rare, unique or map modifier hit?',
         missing:
           'Monster damage multipliers per rarity and per map modifier are not in the data used here. Only the base ' +
-          'monster figure for the area level is derived, so a hit estimate is a base hit, not what a modified rare or unique deals.',
+          'monster figure for the area level is derived, so rare, unique and boss hits are not scored.',
       },
     ],
   }

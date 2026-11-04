@@ -50,30 +50,19 @@ test('a failed import keeps the box open with the URL and the error', async ({ p
   await expect(page.getByLabel('poe.ninja character URL')).toHaveValue(PROFILE_URL)
 })
 
-test('closed analysis panels mount while idle, so their text is findable', async ({ page }) => {
+test('gear lists only what can be improved, each with a weighted-sum trade search', async ({ page }) => {
   await page.goto(importUrl)
   await expect(page.getByRole('heading', { name: /Athrynas/ }).first()).toBeVisible({ timeout: 30_000 })
-  const gear = page.locator('details#gear-workbench')
-  await expect(gear).not.toHaveAttribute('open')
-  // The workbench's own heading exists inside the still-closed panel.
-  await expect(gear.getByText('Gear workbench', { exact: true })).toBeAttached({ timeout: 15_000 })
-})
-
-test('a workbench edit is saved and restored after a reload', async ({ page }) => {
-  await page.goto(importUrl)
-  await expect(page.getByRole('heading', { name: /Athrynas/ }).first()).toBeVisible({ timeout: 30_000 })
-  const gear = page.locator('details#gear-workbench')
-  await gear.locator('summary').click()
-  await gear.locator('li button[aria-expanded]').first().click()
-  await gear.getByRole('button', { name: /^Remove / }).first().click()
-  await expect(gear.getByRole('button', { name: /1 change · reset/ })).toBeVisible()
-
-  await page.reload()
-  await expect(page.getByRole('heading', { name: /Athrynas/ }).first()).toBeVisible({ timeout: 30_000 })
-  await page.locator('details#gear-workbench summary').click()
-  await expect(page.locator('details#gear-workbench').getByRole('button', { name: /1 change · reset/ })).toBeVisible({
-    timeout: 15_000,
-  })
+  const gear = page.locator('section#gear')
+  await expect(gear.getByText('Checking gear…')).toHaveCount(0, { timeout: 15_000 })
+  await expect(gear.locator('details')).toHaveCount(0)
+  const rows = gear.locator('[data-gear-targets] > li')
+  if (await rows.count()) {
+    const link = gear.locator('a[data-trade="weighted"]').first()
+    await expect(link).toBeVisible({ timeout: 15_000 })
+    const q = JSON.parse(new URL((await link.getAttribute('href'))!).searchParams.get('q')!)
+    expect(q.query.stats.some((g: { type: string }) => g.type === 'weight')).toBe(true)
+  }
 })
 
 test('the defences checklist lists resistances and never reads missing ailment proof as a fail', async ({ page }) => {
@@ -91,7 +80,7 @@ test('waystone survivability gives a verdict, four tier groups up to T16, and wh
   await page.goto(importUrl)
   await expect(page.getByRole('heading', { name: /Athrynas/ }).first()).toBeVisible({ timeout: 30_000 })
   const block = page.getByRole('region', { name: 'Survivability by waystone tier' })
-  await expect(block.getByTestId('headroom-verdict')).toHaveText(/Run T11–T14\.\s*Best: T14/, { timeout: 15_000 })
+  await expect(block.getByTestId('headroom-verdict')).toHaveText(/Run T12–T14\.\s*Best: T14/, { timeout: 15_000 })
   const groups = block.getByRole('combobox', { name: 'Tiers' })
   await expect(groups.locator('option')).toHaveText(['T1–T4', 'T5–T8', 'T9–T12', 'T13–T16'])
   // Opens on the group holding the best tier, and the last group reaches T16.

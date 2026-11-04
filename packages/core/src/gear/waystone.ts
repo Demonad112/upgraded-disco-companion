@@ -7,9 +7,9 @@
  *
  *   safe zone      = floor(3 + level / 16)
  *   effective gap  = max(0, |level - areaLevel| - safe zone)
- *   XP multiplier  = ((level + 5) / (level + 5 + gap^2.5))^1.3
+ *   XP multiplier  = ((level + 5) / (level + 5 + gap^2.5))^1.5
  *
- * The 1.3 exponent is the owner's choice; some sources give 1.5. Both live in
+ * 1.5 is the canonical exponent (CH4-1; was 1.3). Both constants live in
  * XP_PENALTY so a correction is one line.
  *
  * Waystone tier n opens area level 64 + n (T1 = 65 … T16 = 80). Tier 16 only
@@ -19,7 +19,7 @@
 import type { DefenseSummary } from '../defense/index.js'
 import { COMFORT_THRESHOLDS, type ContentReport, type TierEntry } from './content.js'
 
-export const XP_PENALTY = { gapPower: 2.5, exponent: 1.3 } as const
+export const XP_PENALTY = { gapPower: 2.5, exponent: 1.5 } as const
 
 /** Below this share of full XP a tier is "not worth it". Project judgement. */
 export const XP_WORTH_FLOOR = 0.8

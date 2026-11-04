@@ -14,7 +14,7 @@ import { TRADE_LEAGUE } from '@/lib/constants'
 import { fixAnchor, splitAction, topFixes, tradeLinkFor, tradeStatFor } from './topFixes'
 
 /** Internal stat id → trade id, from the committed trade2 snapshot. Fetched only when a fix can use it. */
-function useTradeMap(wanted: boolean): TradeStatMap | null {
+export function useTradeMap(wanted: boolean): TradeStatMap | null {
   const [map, setMap] = useState<TradeStatMap | null>(null)
   useEffect(() => {
     if (!wanted) return
