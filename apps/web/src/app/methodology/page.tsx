@@ -258,9 +258,7 @@ export default function MethodologyPage() {
           </p>
           <p>
             It is a ranking aid. The danger scale is not calibrated against run logs yet, so treat a large Net swing from a
-            single danger stat with suspicion. A wrong value: open an issue on the{' '}
-            <a className="underline" href="https://github.com/Demonad112/upgraded-disco-companion/issues">repository</a>{' '}
-            naming the mod or weight, the value you see, the value you expect and where you read it.
+            single danger stat with suspicion.
           </p>
         </Section>
 
