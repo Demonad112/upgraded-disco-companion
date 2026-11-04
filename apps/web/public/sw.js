@@ -76,7 +76,7 @@ self.addEventListener('activate', (event) => {
     (async () => {
       await pruneOldCaches().catch(() => {})
       // Navigations start their network request while the worker boots instead of after.
-      await self.registration.navigationPreload?.enable().catch(() => {})
+      await self.registration?.navigationPreload?.enable().catch(() => {})
       await self.clients.claim()
     })(),
   )
