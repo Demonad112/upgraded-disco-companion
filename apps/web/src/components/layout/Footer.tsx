@@ -19,7 +19,6 @@ const TOOLS = [
   { href: "/trade", label: "Price check" },
 ] as const;
 
-const REPO = "https://github.com/Demonad112/upgraded-disco-companion";
 
 /** Short hash of the generated game data (hashed into the build by next.config.ts); "dev" outside a build. */
 const DATA_VERSION = (process.env.NEXT_PUBLIC_DATA_VERSION ?? "dev").slice(0, 8);
@@ -60,16 +59,6 @@ export function Footer() {
                 <Link href="/whats-new" className="footer-link">
                   What&apos;s new
                 </Link>
-              </li>
-              <li>
-                <a href={REPO} className="footer-link" target="_blank" rel="noopener noreferrer">
-                  GitHub repo
-                </a>
-              </li>
-              <li>
-                <a href={`${REPO}/issues`} className="footer-link" target="_blank" rel="noopener noreferrer">
-                  Report an issue
-                </a>
               </li>
             </ul>
           </section>

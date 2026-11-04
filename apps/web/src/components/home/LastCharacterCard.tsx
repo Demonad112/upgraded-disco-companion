@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import type { CSSProperties } from "react";
+import type { CSSProperties, ReactNode } from "react";
 import type { CharacterSnapshot } from "@poe2/core";
 import { usePersistedState } from "@/hooks/usePersistedState";
 import { importPath, recentCharacters } from "@/lib/recentCharacters";
@@ -28,7 +28,7 @@ const TONE: Record<string, string> = {
   "Killed by": "var(--dmg-physical)",
 };
 
-function compact(n: number): string {
+export function compact(n: number): string {
   if (Math.abs(n) >= 1_000_000) return `${(n / 1_000_000).toFixed(2)}M`;
   if (Math.abs(n) >= 10_000) return `${(n / 1000).toFixed(1)}k`;
   return n.toLocaleString(undefined, { maximumFractionDigits: 0 });
@@ -86,24 +86,72 @@ export function LastCharacterCard() {
   ];
 
   return (
-    <section aria-labelledby="last-character-title" className="card lc-plate overflow-hidden">
+    <CharacterCard
+      name={name}
+      level={latest.level}
+      className={recent?.className}
+      status={`Analysed ${ago(latest.at)}`}
+      figures={figures}
+      resists={latest}
+      actions={
+        <>
+          <Link href={href} className="btn btn-secondary btn-sm text-accent">
+            {recent ? "Re-import and analyse" : "Open character page"} →
+          </Link>
+          {previous ? (
+            <span className="text-xs text-ink-mute">▲▼ change since the import before, {ago(previous.at)}</span>
+          ) : null}
+        </>
+      }
+    />
+  );
+}
+
+export type CardFigure = { label: string; value: number; before?: number; show: boolean };
+
+/** The card itself, shared by home (last snapshot) and the character page (live analysis). */
+export function CharacterCard({
+  name,
+  level,
+  className,
+  status,
+  figures,
+  resists,
+  children,
+  actions,
+  titleId = "last-character-title",
+  eyebrow = "Last character",
+}: {
+  name: string;
+  level: number | null;
+  className?: string | null;
+  status?: ReactNode;
+  figures: CardFigure[];
+  resists: Record<(typeof RES)[number][0], number | null>;
+  children?: ReactNode;
+  actions?: ReactNode;
+  titleId?: string;
+  eyebrow?: string;
+}) {
+  return (
+    <section aria-labelledby={titleId} className="card lc-plate overflow-hidden">
       <div className="lc-strip flex flex-wrap items-baseline justify-between gap-2 px-5 py-2.5">
-        <span className="eyebrow text-accent">Last character</span>
-        <span className="text-xs text-ink-mute">Analysed {ago(latest.at)}</span>
+        <span className="eyebrow text-accent">{eyebrow}</span>
+        {status ? <span className="text-xs text-ink-mute">{status}</span> : null}
       </div>
       <div className="px-5 pt-4 pb-5">
-        <h2 id="last-character-title" className="text-gradient-gold font-display text-3xl leading-none font-bold tracking-wide uppercase">
+        <h2 id={titleId} className="text-gradient-gold font-display text-3xl leading-none font-bold tracking-wide uppercase">
           {name}
         </h2>
         <p className="lc-name mt-2 inline-flex items-center gap-2.5 px-2.5 py-1 font-display text-sm tracking-[0.16em] text-ink-dim uppercase">
-          {latest.level === null ? "Level unknown" : `Level ${latest.level}`}
-          {recent?.className ? (
+          {level === null ? "Level unknown" : `Level ${level}`}
+          {className ? (
             <>
-              <i aria-hidden className="size-1 rotate-45 bg-accent" /> {recent.className}
+              <i aria-hidden className="size-1 rotate-45 bg-accent" /> {className}
             </>
           ) : null}
         </p>
-
+        {children}
         <dl className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4">
           {figures
             .filter((f) => f.show)
@@ -125,7 +173,7 @@ export function LastCharacterCard() {
 
         <ul className="mt-3 grid grid-cols-4 gap-1.5" aria-label="Resistances">
           {RES.map(([type, label, tone]) => {
-            const value = latest[type];
+            const value = resists[type];
             // 75 is the base cap; a value below it is under cap whatever the maximum.
             const short = type !== "chaos" && value !== null && value < 75;
             return (
@@ -142,15 +190,12 @@ export function LastCharacterCard() {
           })}
         </ul>
 
-        <div className="gold-rule my-4" />
-        <div className="flex flex-wrap items-center gap-2">
-          <Link href={href} className="btn btn-secondary btn-sm text-accent">
-            {recent ? "Re-import and analyse" : "Open character page"} →
-          </Link>
-          {previous ? (
-            <span className="text-xs text-ink-mute">▲▼ change since the import before, {ago(previous.at)}</span>
-          ) : null}
-        </div>
+        {actions ? (
+          <>
+            <div className="gold-rule my-4" />
+            <div className="flex flex-wrap items-center gap-2">{actions}</div>
+          </>
+        ) : null}
       </div>
     </section>
   );
