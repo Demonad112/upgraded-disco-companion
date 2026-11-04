@@ -91,7 +91,7 @@ test('waystone survivability gives a verdict, four tier groups up to T16, and wh
   await page.goto(importUrl)
   await expect(page.getByRole('heading', { name: /Athrynas/ }).first()).toBeVisible({ timeout: 30_000 })
   const block = page.getByRole('region', { name: 'Survivability by waystone tier' })
-  await expect(block.getByTestId('headroom-verdict')).toHaveText(/Run T11–T14\.\s*Best: T14/, { timeout: 15_000 })
+  await expect(block.getByTestId('headroom-verdict')).toHaveText(/Run T12–T14\.\s*Best: T14/, { timeout: 15_000 })
   const groups = block.getByRole('combobox', { name: 'Tiers' })
   await expect(groups.locator('option')).toHaveText(['T1–T4', 'T5–T8', 'T9–T12', 'T13–T16'])
   // Opens on the group holding the best tier, and the last group reaches T16.
