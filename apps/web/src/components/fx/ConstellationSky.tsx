@@ -45,6 +45,12 @@ export function ConstellationSky() {
     let field: Field | null = null
     let ticks: Ticks[] = []
     let dpr = 1
+    // Lite (data saver, <=2 cores/GB): half the stars, 15fps.
+    const nav = navigator as Navigator & { connection?: { saveData?: boolean }; deviceMemory?: number }
+    const lite = !!nav.connection?.saveData || (nav.hardwareConcurrency || 8) <= 2 || (nav.deviceMemory ?? 8) <= 2
+    const interval = lite ? 1000 / 15 - 2 : 1000 / 24 - 2
+    let scrolling = false
+    let scrollTimer = 0
     let raf = 0
     let last = 0
     const start = performance.now()
@@ -63,7 +69,7 @@ export function ConstellationSky() {
     const rebuild = () => {
       const w = window.innerWidth
       const h = window.innerHeight
-      const ratio = Math.min(window.devicePixelRatio || 1, 2)
+      const ratio = Math.min(window.devicePixelRatio || 1, 1.5)
       if (field && w === builtW && h <= builtH && ratio === dpr) return
       builtW = w
       builtH = h
@@ -72,7 +78,7 @@ export function ConstellationSky() {
       canvas.height = Math.round(h * dpr)
       canvas.style.width = `${w}px`
       canvas.style.height = `${h}px`
-      field = buildField(w, h)
+      field = buildField(w, h, lite)
       ticks = buildTicks(field)
       painter.prepare(field, dpr)
       layer?.prepare(field)
@@ -117,9 +123,9 @@ export function ConstellationSky() {
         return
       }
       raf = requestAnimationFrame(frame)
-      // 30fps everywhere: the drift is slow, and the dense sky is the page's
-      // biggest per-frame cost.
-      if (now - last < 33) return
+      // 24fps (lite 15): the drift is slow, and the dense sky is the page's biggest per-frame cost.
+      // No repaint while scrolling or while the tab is hidden.
+      if (scrolling || document.hidden || now - last < interval) return
       if (fine) stepLamp(now, Math.min(100, now - last))
       last = now
       draw((now - start) / 1000)
@@ -153,11 +159,21 @@ export function ConstellationSky() {
     let debounce = 0
     const onResize = () => {
       window.clearTimeout(debounce)
+      window.clearTimeout(scrollTimer)
+      window.removeEventListener('scroll', onScroll, { capture: true })
       debounce = window.setTimeout(() => {
         rebuild()
         if (motion.matches) paintStill()
       }, 120)
     }
+    const onScroll = () => {
+      scrolling = true
+      window.clearTimeout(scrollTimer)
+      scrollTimer = window.setTimeout(() => {
+        scrolling = false
+      }, 150)
+    }
+    window.addEventListener('scroll', onScroll, { passive: true, capture: true })
     const onMotion = () => run()
     // One passive listener; the sky's own frame reads the last position, so moves coalesce into its rAF.
     const onPointer = (e: PointerEvent) => {

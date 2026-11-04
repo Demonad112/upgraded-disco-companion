@@ -115,19 +115,41 @@
     0%,
     100% {
       border-color: var(--accent-line);
-      box-shadow: var(--card-highlight), 0 0 0 0 transparent;
     }
     50% {
       border-color: var(--accent);
-      box-shadow: var(--card-highlight), 0 0 14px -2px color-mix(in srgb, var(--accent) 55%, transparent);
     }
+  }
+  /* The glow is a pseudo-element whose opacity animates (composited); animating box-shadow repainted the card every frame. */
+  @keyframes card-glow {
+    0%,
+    100% {
+      opacity: 0;
+    }
+    50% {
+      opacity: 1;
+    }
+  }
+  [data-pulse]::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0;
+    box-shadow: 0 0 14px -2px color-mix(in srgb, var(--accent) 55%, transparent);
   }
   [data-pulse]:focus-visible {
     animation: card-pulse 1.8s ease-in-out infinite;
   }
+  [data-pulse]:focus-visible::after {
+    animation: card-glow 1.8s ease-in-out infinite;
+  }
   @media (hover: hover) {
     [data-pulse]:hover {
       animation: card-pulse 1.8s ease-in-out infinite;
+    }
+    [data-pulse]:hover::after {
+      animation: card-glow 1.8s ease-in-out infinite;
     }
   }
 
@@ -183,6 +205,8 @@
   @media (prefers-reduced-motion: reduce) {
     [data-pulse]:hover,
     [data-pulse]:focus-visible,
+    [data-pulse]:hover::after,
+    [data-pulse]:focus-visible::after,
     [data-draw-in] > .hero-pill,
     [data-draw-in] > h1,
     [data-draw-in] > p,

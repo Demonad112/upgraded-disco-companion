@@ -9,8 +9,9 @@
 
 import { useEffect, useState } from 'react'
 import { PassiveTree, type PassiveTreeData } from '@poe2/core'
+import { dataUrl } from '@/lib/basePath'
 
-const DATA_URL = `${process.env.NEXT_PUBLIC_BASE_PATH ?? ''}/atlas-tree.json`
+const DATA_URL = dataUrl('atlas-tree.json')
 
 export interface AtlasTreeData extends PassiveTreeData {
   generatedFrom: string

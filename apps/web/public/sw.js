@@ -1,8 +1,8 @@
 /**
  * Offline support.
  *
- * The point is the data artifacts: the passive tree is 604 KB and the affix
- * ladders 2 MB, and both are versioned build outputs that never change between
+ * The point is the data artifacts (passive tree, affix ladders, monster stats, atlas tree, bases, PoB skills, trade
+ * stats), and the content-hashed /_next/static chunks: all are versioned build outputs that never change between
  * deploys. Refetching them on every visit is waste; serving them from cache
  * makes the tree and the gear panel work with no network at all.
  *
@@ -36,7 +36,18 @@ const SHELL_CACHE = `poe2-shell-${BUILD}`
 const DATA_CACHE = `poe2-data-${VERSION}`
 
 /** Immutable per deploy. Cache-first. */
-const DATA_FILES = ['/passive-tree.json', '/mod-tiers.json', '/monster-stats.json']
+const DATA_FILES = [
+  '/passive-tree.json',
+  '/mod-tiers.json',
+  '/monster-stats.json',
+  '/pob-skills.json',
+  '/bases.json',
+  '/trade2-stats.json',
+  '/atlas-tree.json',
+]
+
+/** Content-hashed build output: the URL changes whenever the bytes do, so a hit is always right. Cache-first. */
+const isHashedAsset = (url) => url.pathname.includes('/_next/static/')
 
 /** Install metadata, cached with the shell (relative to the root, so it follows the base path). */
 const INSTALL_FILES = ['manifest.webmanifest', 'icon.svg', 'icon-192.png']
@@ -64,6 +75,8 @@ self.addEventListener('activate', (event) => {
   event.waitUntil(
     (async () => {
       await pruneOldCaches().catch(() => {})
+      // Navigations start their network request while the worker boots instead of after.
+      await self.registration?.navigationPreload?.enable().catch(() => {})
       await self.clients.claim()
     })(),
   )
@@ -135,11 +148,16 @@ self.addEventListener('fetch', (event) => {
   if (url.origin !== self.location.origin) return
 
   if (isDataRequest(url)) {
-    event.respondWith(cacheFirst(request))
+    event.respondWith(cacheFirst(request, DATA_CACHE))
     return
   }
 
-  event.respondWith(networkFirst(request))
+  if (isHashedAsset(url)) {
+    event.respondWith(cacheFirst(request, SHELL_CACHE))
+    return
+  }
+
+  event.respondWith(networkFirst(request, event))
 })
 
 // Cache Storage can fail on its own: Chrome throws "UnknownError" from caches.open
@@ -150,8 +168,8 @@ const openCache = (name) => caches.open(name).catch(() => null)
 const lookup = async (cache, request) => (cache ? cache.match(request).catch(() => undefined) : undefined)
 const store = (cache, request, response) => cache?.put(request, response).catch(() => {})
 
-async function cacheFirst(request) {
-  const cache = await openCache(DATA_CACHE)
+async function cacheFirst(request, name) {
+  const cache = await openCache(name)
   const hit = await lookup(cache, request)
   if (hit) return hit
 
@@ -162,10 +180,10 @@ async function cacheFirst(request) {
   return response
 }
 
-async function networkFirst(request) {
+async function networkFirst(request, event) {
   const cache = await openCache(SHELL_CACHE)
   try {
-    const response = await fetch(request)
+    const response = (await event.preloadResponse) || (await fetch(request))
     if (response.ok && response.status === 200) store(cache, request, response.clone())
     return response
   } catch (err) {

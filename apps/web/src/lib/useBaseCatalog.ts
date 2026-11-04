@@ -10,8 +10,9 @@
 
 import { useEffect, useState } from 'react'
 import { BaseCatalog, type BaseData } from '@poe2/core'
+import { dataUrl } from '@/lib/basePath'
 
-const DATA_URL = `${process.env.NEXT_PUBLIC_BASE_PATH ?? ''}/bases.json`
+const DATA_URL = dataUrl('bases.json')
 
 export type BaseCatalogState =
   | { status: 'idle' }

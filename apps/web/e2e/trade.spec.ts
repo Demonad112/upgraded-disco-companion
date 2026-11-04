@@ -13,7 +13,7 @@ const fixture = {
 const empty = { patch: null, fetchedAt: null, source: 'https://example.test/stats', entries: [] }
 
 const stub = (page: import('@playwright/test').Page, body: unknown) =>
-  page.route('**/trade2-stats.json', (r) => r.fulfill({ json: body }))
+  page.route('**/trade2-stats.json*', (r) => r.fulfill({ json: body }))
 
 test('empty snapshot says what is missing and offers no link', async ({ page }) => {
   await stub(page, empty)

@@ -26,6 +26,7 @@ export function useCanvas(
   draw: (ctx: CanvasRenderingContext2D, w: number, h: number, root: HTMLElement) => void,
   extraEvent?: string,
   maxHeight?: number,
+  maxDpr = 2,
 ) {
   const ref = useRef<HTMLCanvasElement>(null)
   const pathname = usePathname()
@@ -43,7 +44,7 @@ export function useCanvas(
       frame = 0
       const w = root.clientWidth
       const h = Math.min(root.clientHeight, maxHeight ?? Infinity)
-      const dpr = Math.min(window.devicePixelRatio || 1, 2)
+      const dpr = Math.min(window.devicePixelRatio || 1, maxDpr)
       const pw = Math.round(w * dpr)
       const ph = Math.round(h * dpr)
       if (canvas.width !== pw) canvas.width = pw
@@ -79,7 +80,7 @@ export function useCanvas(
       window.removeEventListener('resize', schedule)
     }
     // pathname re-subscribes so a route change always redraws.
-  }, [pathname, extraEvent, maxHeight])
+  }, [pathname, extraEvent, maxHeight, maxDpr])
 
   return ref
 }

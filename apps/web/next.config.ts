@@ -34,9 +34,8 @@ const basePath = isCI && repo ? `/${repo}` : ''
  * The service worker keys its caches on this, so a deploy that regenerates any
  * of them installs a new worker and drops the old copies. With a hand-set
  * version, returning visitors kept stale data until someone remembered to bump
- * it. The atlas tree, bases and PoB skills are fetched network-first today, so
- * they would refresh anyway; they are hashed too so that a later switch to
- * cache-first can't quietly serve an old patch. Keep this list in step with
+ * it. All of them are served cache-first by public/sw.js, so the fingerprint is
+ * what stops an old patch being served. Keep this list in step with
  * scripts/sync-data.mjs.
  */
 const dataVersion = (() => {

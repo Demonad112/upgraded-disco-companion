@@ -18,8 +18,9 @@
 
 import { useEffect, useState } from 'react'
 import { PassiveTree, type PassiveTreeData } from '@poe2/core'
+import { dataUrl } from '@/lib/basePath'
 
-const DATA_URL = `${process.env.NEXT_PUBLIC_BASE_PATH ?? ''}/passive-tree.json`
+const DATA_URL = dataUrl('passive-tree.json')
 
 export type PassiveTreeState =
   | { status: 'idle' }

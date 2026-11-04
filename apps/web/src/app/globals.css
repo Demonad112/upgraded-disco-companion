@@ -86,7 +86,7 @@ body {
   overflow-x: hidden;
 }
 
-/* Film grain: SVG noise, soft-light, on a fixed layer above everything and
+/* Film grain: SVG noise at low plain opacity (no blend mode: it forced a full-screen GPU blend), on a fixed layer above everything and
    inert to input. */
 body::after {
   content: '';
@@ -94,8 +94,7 @@ body::after {
   inset: 0;
   z-index: 60;
   pointer-events: none;
-  opacity: var(--grain-opacity);
-  mix-blend-mode: soft-light;
+  opacity: calc(var(--grain-opacity) * 0.6);
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 1 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 

@@ -9,8 +9,9 @@
 
 import { useEffect, useState } from 'react'
 import { SupportCatalog, type PobSkillData } from '@poe2/core'
+import { dataUrl } from '@/lib/basePath'
 
-const DATA_URL = `${process.env.NEXT_PUBLIC_BASE_PATH ?? ''}/pob-skills.json`
+const DATA_URL = dataUrl('pob-skills.json')
 
 export type SupportCatalogState =
   | { status: 'idle' }

@@ -8,3 +8,7 @@
  * root-relative URLs that 404 in production. See apps/web/next.config.ts.
  */
 export const BASE_PATH = process.env.NEXT_PUBLIC_BASE_PATH ?? ''
+
+/** Data JSON URL keyed by the data fingerprint, so `immutable` caching can never serve stale data. */
+export const dataUrl = (file: string): string =>
+  `${BASE_PATH}/${file}?v=${process.env.NEXT_PUBLIC_DATA_VERSION ?? 'dev'}`

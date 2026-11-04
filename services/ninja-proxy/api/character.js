@@ -131,7 +131,7 @@ async function load(acct, league, character) {
       return {
         status: 404,
         json: { error: 'poe.ninja has no indexed record of that character. Check the profile is public.' },
-        headers: { 'Cache-Control': 's-maxage=60, stale-while-revalidate=120' },
+        headers: { 'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300' },
       }
     }
     if (versionResult.error) {
@@ -150,7 +150,7 @@ async function load(acct, league, character) {
       status: 200,
       body: model.body,
       etag: model.etag,
-      headers: { 'Cache-Control': 's-maxage=60, stale-while-revalidate=120' },
+      headers: { 'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300' },
     }
   } catch (err) {
     // The raw error stays in the function log; the caller gets a fixed message.
