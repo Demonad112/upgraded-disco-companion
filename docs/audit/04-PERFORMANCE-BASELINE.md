@@ -106,7 +106,7 @@ CLS risk is low (size-adjust fallbacks, fixed canvases); measured 0. TBT is driv
 
 | Budget | Target | Today |
 |---|---|---|
-| `/` JS+CSS brotli | ≤ 190 KB | 223 KB |
+| `/` JS+CSS brotli | ≤ 192 KB (raised from 190 in CH5) | 223 KB |
 | Any route JS+CSS brotli | ≤ 250 KB | 263 KB (`/character/`) |
 | `/` HTML brotli | ≤ 16 KB | 13.5 KB |
 | Decorative canvas pixels per canvas (phone) | ≤ 3 MP | 6.1 MP |
