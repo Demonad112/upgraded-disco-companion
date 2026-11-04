@@ -59,9 +59,6 @@ function salvage(parsed: Record<string, unknown>): PersistedState {
       ...(typeof dashboard.pinnedStrategyId === "string" ? { pinnedStrategyId: dashboard.pinnedStrategyId } : {}),
     },
     character: { snapshots: migrateSnapshots(character.snapshots).snapshots },
-    ...(isRecord(parsed.gear) && Array.isArray(parsed.gear.shoppingList)
-      ? { gear: parsed.gear as unknown as NonNullable<PersistedState["gear"]> }
-      : {}),
     ...(isRecord(parsed.farm) && isRecord(parsed.farm.loadouts) ? { farm: parsed.farm as unknown as NonNullable<PersistedState["farm"]> } : {}),
     ...(isRecord(parsed.gems) ? { gems: parsed.gems as NonNullable<PersistedState["gems"]> } : {}),
     ...(isRecord(parsed.prefs) ? { prefs: readPrefs(parsed.prefs) } : {}),

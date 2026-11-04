@@ -9,7 +9,6 @@ import {
   type Analysis,
   type PobAnalysis,
 } from '@poe2/core'
-import { attributesFrom } from '@/lib/attributes'
 import { ImportBar, importProfile, sharedProfileUrl, type ImportResult } from '@/components/ImportBar'
 import { Skeleton } from '@/components/Skeleton'
 import { useCharacterHistory } from '@/lib/useCharacterHistory'
@@ -66,7 +65,6 @@ export default function Home() {
   // how to leave damage unscored and say why.
   const ladder = useLadder(analysis?.identity.league ?? null, analysis?.identity.className ?? null)
   // Memoised so the gear panels' own memos don't recompute on every render.
-  const attributes = useMemo(() => attributesFrom(analysis?.pobStats ?? null), [analysis])
 
   // One options object for the main analysis and the what-if re-runs.
   const analysisOptions = useMemo(
@@ -248,7 +246,6 @@ export default function Home() {
             treeState={treeState}
             catalogState={catalogState}
             analysisOptions={analysisOptions}
-            attributes={attributes}
           />
         ) : null}
       </div>

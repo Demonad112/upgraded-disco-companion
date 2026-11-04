@@ -45,12 +45,14 @@ export type TradeVariantName = 'exact' | 'wider' | 'best-value'
 
 export interface TradeFilter {
   id: string
-  value: { min: number }
+  /** `min` for and/count groups; `weight` for a weighted-sum group. */
+  value: { min: number } | { weight: number }
   disabled: false
 }
 
 export interface TradeStatGroup {
-  type: 'and' | 'count'
+  /** `weight` = weighted sum: the listing's score is the sum of weight x stat value, and `value.min` is the lowest score shown. */
+  type: 'and' | 'count' | 'weight'
   value?: { min: number }
   filters: TradeFilter[]
 }
@@ -127,6 +129,49 @@ export function buildTradeQueries(target: TradeTarget, map: TradeStatMap): Trade
       'At least one wanted mod must be present; compare listings on price.',
     ),
   ]
+}
+
+export interface WeightedTarget {
+  baseType?: string
+  /** Minimums that keep the build as it is (never relaxed). */
+  mustKeep: StatRequirement[]
+  /** Stats scored in the sum. Weight 1 = one point of that stat; weights must be positive. */
+  weights: { statId: string; weight: number }[]
+  /** Lowest weighted sum a listing may have. */
+  minScore: number
+}
+
+/**
+ * One trade2 query that ranks by a weighted sum of several stats ("a weight group"): a listing scores
+ * the sum of weight x stat value over the group, and anything under `minScore` is hidden. Stats with no
+ * trade id are reported in `unmapped` and left out, never guessed. Null when no weighted stat is mapped.
+ */
+export function buildWeightedQuery(
+  target: WeightedTarget,
+  map: TradeStatMap,
+): { query: TradeQuery; unmapped: TradeVariant['unmapped'] } | null {
+  const keep = split(target.mustKeep, map)
+  const unmapped = [...keep.unmapped]
+  const filters: TradeFilter[] = []
+  for (const w of target.weights) {
+    const id = map[w.statId]
+    if (!id || !(w.weight > 0)) {
+      unmapped.push({ statId: w.statId, reason: 'No trade stat id (or no positive weight) for this stat, so it is not in the sum.' })
+      continue
+    }
+    filters.push({ id, value: { weight: w.weight }, disabled: false })
+  }
+  if (!filters.length) return null
+  const stats: TradeStatGroup[] = []
+  if (keep.filters.length) stats.push({ type: 'and', filters: keep.filters })
+  stats.push({ type: 'weight', value: { min: Math.max(1, Math.ceil(target.minScore)) }, filters })
+  return {
+    query: {
+      query: { status: { option: 'online' }, ...(target.baseType ? { type: target.baseType } : {}), stats },
+      sort: { price: 'asc' },
+    },
+    unmapped,
+  }
 }
 
 const RESIST_TYPES = Object.keys(RESIST_STAT)
