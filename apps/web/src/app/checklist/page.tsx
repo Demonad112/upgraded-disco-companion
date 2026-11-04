@@ -4,7 +4,6 @@ import { ChecklistSection } from "@/components/checklist/ChecklistSection";
 import { ChecklistProgressHeader } from "@/components/checklist/ChecklistProgressHeader";
 import { ChecklistPhaseNav } from "@/components/checklist/ChecklistPhaseNav";
 import { CommonMistakesPanel } from "@/components/checklist/CommonMistakesPanel";
-import { GearShoppingList } from "@/components/checklist/GearShoppingList";
 import { GlossaryPanel } from "@/components/checklist/GlossaryPanel";
 import { MechanicsPrimer } from "@/components/checklist/MechanicsPrimer";
 import { PatchChangesPanel } from "@/components/checklist/PatchChangesPanel";
@@ -38,8 +37,6 @@ export default function ChecklistPage() {
         <NextStepCard steps={stepSummaries()} onChecklistPage />
 
         <ChecklistTools />
-
-        <GearShoppingList />
 
         <section aria-labelledby="checklist-reference" data-reference="" className="flex flex-col gap-3">
           <h2 id="checklist-reference" className="label-metric">
