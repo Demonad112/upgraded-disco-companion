@@ -129,27 +129,35 @@ export function DefencesGlance({ analysis }: { analysis: Analysis }) {
     <section data-surface="data" className="card" aria-label="Defences at a glance">
       <h3 className="h3">Defences at a glance</h3>
       <div className="mt-3 grid grid-cols-2 gap-3 min-[621px]:grid-cols-4">
-        {analysis.defense.resistances.map((r) => (
-          <div key={r.type} className="border border-line bg-sunken/65 px-3.5 py-3">
-            <div className="flex items-center gap-2">
-              <Diamond type={r.type} />
-              <span className="serif-label">{cap(r.type)}</span>
-            </div>
-            <div className="tabular mt-2 font-mono text-xl text-ink">
-              {r.value === null ? 'unknown' : <>{r.value}</>}
-              {r.value === null ? null : <span className="text-sm text-ink-mute">/{r.max}</span>}
-            </div>
-            <div className="mt-2">
+        {analysis.defense.resistances.map((r) => {
+          // Edge: red under cap, green capped or up to 15 over, amber more than 15 over (wasted), grey unknown.
+          const under = r.underCap !== null && r.underCap > 0
+          const over = r.overCap ?? 0
+          const edge = r.value === null ? 'var(--line)' : under ? 'var(--danger)' : over > 15 ? 'var(--warn)' : 'var(--good)'
+          return (
+            <div key={r.type} className="border border-line border-l-[3px] bg-sunken/65 px-3.5 py-3" style={{ borderLeftColor: edge }}>
+              <div className="flex items-center gap-2">
+                <Diamond type={r.type} />
+                <span className="serif-label">{cap(r.type)}</span>
+              </div>
               {r.value === null ? (
-                <Tag>unknown</Tag>
-              ) : r.underCap !== null && r.underCap > 0 ? (
-                <Tag tone="danger">{fmt(r.underCap)} under</Tag>
+                <div className="mt-2">
+                  <Tag>unknown</Tag>
+                </div>
               ) : (
-                <Tag tone="good">OK</Tag>
+                <>
+                  <div className="tabular mt-2 font-mono text-3xl leading-none text-ink">
+                    {r.value}
+                    <span className="text-base text-ink-mute">/{r.max}</span>
+                  </div>
+                  <div className="tabular mt-1.5 font-mono text-sm" style={{ color: edge }}>
+                    {under ? `−${fmt(r.underCap!)} under` : over > 0 ? `+${fmt(over)} over` : 'capped'}
+                  </div>
+                </>
               )}
             </div>
-          </div>
-        ))}
+          )
+        })}
       </div>
       <DefenceChecklist analysis={analysis} />
     </section>
