@@ -122,9 +122,11 @@
   --sky-glow-core: rgba(246, 220, 146, 1);
   --sky-glow-mid: rgba(227, 179, 65, 0.45);
   --sky-glow-edge: rgba(227, 179, 65, 0);
-  --sky-dim-fill: color-mix(in srgb, var(--page) 65%, transparent);
+  --sky-dim-fill: color-mix(in srgb, var(--page) 50%, transparent);
   /* Lantern (MP1): the sky near a fine pointer. ConstellationSky reads the colour; the reach and fade are in sky/draw.ts. */
   --sky-lantern: #fff3cf;
+  /* Hero motto (Stay Sane Exile): ember red, 4.8:1 on --page. */
+  --ember: #c95a46;
 
   /* Motion (MP1, styles/motion.css). Moments on user actions only; reduced motion turns every one off. */
   --motion-fade: 200ms;

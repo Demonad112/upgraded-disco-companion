@@ -103,6 +103,7 @@ export default function Home() {
             <br />
             Endgame Companion
           </h1>
+          <p className="hero-motto">Stay Sane Exile</p>
           <span className="hero-gem flex items-center gap-2.5" aria-hidden>
             <i />
           </span>

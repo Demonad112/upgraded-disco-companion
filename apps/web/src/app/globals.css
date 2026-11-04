@@ -665,8 +665,8 @@ main [id] {
 /* --- Constellation sky ------------------------------------------------------
    Fixed behind everything (page content is z-index 1). Dark theme only. */
 
-/* Dim behind blocks (footer toggle, lib/skyDim): the outermost blocks take 65%
-   of the page colour over the sky, so 35% of it shows through and the dim
+/* Dim behind blocks (footer toggle, lib/skyDim): the outermost blocks take 50%
+   of the page colour over the sky, so half of it shows through and the dim
    scrolls with them. In the components layer, so a block's own bg-* utility
    still wins; a block that needs its own fill under this needs it as an image
    layer instead. data-sky-dim-off is set before paint. The page's banner
@@ -694,8 +694,8 @@ main [id] {
 }
 .sky-scrim {
   background:
-    radial-gradient(ellipse 55% 50% at 22% 26%, color-mix(in srgb, var(--page) 62%, transparent), transparent 72%),
-    radial-gradient(ellipse 120% 120% at 50% 50%, transparent 55%, color-mix(in srgb, var(--page) 70%, transparent) 100%);
+    radial-gradient(ellipse 55% 50% at 22% 26%, color-mix(in srgb, var(--page) 45%, transparent), transparent 72%),
+    radial-gradient(ellipse 120% 120% at 50% 50%, transparent 55%, color-mix(in srgb, var(--page) 55%, transparent) 100%);
 }
 :root[data-theme='light'] .sky-canvas,
 :root[data-theme='light'] .sky-scrim {
@@ -864,4 +864,20 @@ details.drow[open] .chev {
 }
 .card.lc-plate:hover {
   border-color: var(--accent-line);
+}
+
+/* Hero motto: static, under the title. */
+.hero-motto {
+  margin-top: calc(var(--spacing) * 2);
+  font-family: var(--font-heading);
+  text-transform: uppercase;
+  letter-spacing: 0.42em;
+  font-size: 0.8rem;
+  color: var(--ember);
+  text-shadow: 0 0 10px color-mix(in srgb, var(--ember) 55%, transparent), 0 1px 2px #000;
+}
+@media (min-width: 640px) {
+  .hero-motto {
+    font-size: 0.95rem;
+  }
 }
