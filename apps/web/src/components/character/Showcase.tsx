@@ -19,6 +19,9 @@ const subscribeNever = () => () => {}
 const clientNow = (): number => (mountedAt ??= Date.now())
 const serverNow = (): number | null => null
 
+const LADDER: readonly BuildTier[] = ['D', 'C', 'B', 'A']
+
+/** The grade letters worst to best, with the letter (or every letter of a `D–B` range) lit. */
 function GradeLadder({ assessment }: { assessment: BuildAssessment }) {
   const lo = assessment.tier ?? assessment.tierRange?.worst
   const hi = assessment.tier ?? assessment.tierRange?.best
@@ -52,7 +55,6 @@ const STAMP = {
   transform: 'rotate(-6deg)',
   boxShadow: 'inset 0 0 0 3px var(--page), inset 0 0 0 4px var(--accent-line)',
 } as const
-const RING_BOX = { width: 'clamp(208px,24vw,236px)', height: 'clamp(208px,24vw,236px)' } as const
 
 /**
  * The grade as a square ink stamp. It lands once on mount (Web Animations, so no global keyframes); with reduced
@@ -87,10 +89,6 @@ function GradeStamp({ letter }: { letter: string }) {
     </div>
   )
 }
-
-/** Square perimeter, starting top-centre and running clockwise; `pathLength` 100 makes dash lengths percentages. */
-const RING_PATH = 'M100 8H192V192H8V8Z'
-const GAP = 0.8
 
 /** Opens the "Why this grade" disclosure before the fragment link scrolls to it. */
 const openAssessment = () => document.getElementById('assessment')?.setAttribute('open', '')
