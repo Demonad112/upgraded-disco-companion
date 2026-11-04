@@ -1,5 +1,5 @@
 # CH6 carry-over · 2026-11-04
-PR: variant/20261104-gear-targets · Branch: variant/20261104-gear-targets · Preview: https://variant-20261104-gear-targets.upgraded-disco-companion.pages.dev
+PR: variant/20261104-gear-targets · Branch: variant/20261104-gear-targets · Preview: https://variant-20261104-gear-target.upgraded-disco-companion.pages.dev
 
 ## Checked (previous wave)
 - CH5: PR chore/20261104-carry open (budget `/` 192,000, CH5 notes).
