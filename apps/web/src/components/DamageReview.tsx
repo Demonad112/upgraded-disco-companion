@@ -162,7 +162,7 @@ export function DamageReview({
           </label>
           {review.dealt.length ? (
             <span className="text-ink-mute">
-              deals {review.dealt.map((d) => `${d.percent}% ${d.type}`).join(', ')}
+              deals {review.dealt.map((d) => `${Number.isInteger(d.percent) ? d.percent : d.percent.toFixed(1)}% ${d.type}`).join(', ')}
             </span>
           ) : null}
         </div>

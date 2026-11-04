@@ -9,16 +9,26 @@ import { Diamond, TYPE_ORDER, cap, dmgFill } from './character/dmg'
  * Damage-type split as one full-width bar, with its percentages in the title
  * and aria-label so the split never depends on colour alone.
  */
-function SplitBar({ skill }: { skill: SkillDamage }) {
+const pct = (n: number): string => `${Number.isInteger(n) ? n : n.toFixed(1).replace(/\.0$/, '')}%`
+
+function orderedSplit(skill: SkillDamage) {
   const split = skill.damageSplit.length ? skill.damageSplit : skill.dotSplit
-  if (!split.length) return <span className="text-xs text-ink-mute">Damage split unknown</span>
-  const ordered = [...split].sort((a, b) => TYPE_ORDER.indexOf(a.type) - TYPE_ORDER.indexOf(b.type))
-  const text = ordered.map((s) => `${cap(s.type)} ${s.percent}%`).join(', ')
+  return [...split].sort((a, b) => TYPE_ORDER.indexOf(a.type) - TYPE_ORDER.indexOf(b.type))
+}
+
+/** Damage-type split as a full-width bar plus a text row, so the split never depends on colour alone. */
+function SplitBar({ skill }: { skill: SkillDamage }) {
+  const ordered = orderedSplit(skill)
+  if (!ordered.length) return <span className="text-xs text-ink-mute">Damage split unknown</span>
+  const text = ordered.map((s) => `${cap(s.type)} ${pct(s.percent)}`).join(', ')
   return (
-    <div role="img" aria-label={`Damage split: ${text}`} title={text} className="flex h-4 w-full gap-px overflow-hidden bg-sunken">
-      {ordered.map((s) => (
-        <div key={s.type} style={{ width: `${s.percent}%`, ...dmgFill(s.type) }} />
-      ))}
+    <div>
+      <div role="img" aria-label={`Damage split: ${text}`} className="flex h-4 w-full gap-px overflow-hidden bg-sunken">
+        {ordered.map((s) => (
+          <div key={s.type} style={{ width: `${s.percent}%`, ...dmgFill(s.type) }} />
+        ))}
+      </div>
+      <p className="tabular mt-1.5 font-mono text-[11px] text-ink-mute">{text}</p>
     </div>
   )
 }
@@ -47,7 +57,9 @@ function Mini({ label, value, sub, title }: { label: string; value: string; sub?
 }
 
 /** One skill: collapsed to its name, DPS and a bar scaled to the top skill. */
-function SkillRow({ s, isPrimary, top }: { s: SkillDamage; isPrimary: boolean; top: number }) {
+function SkillRow({ s, isPrimary, top, total }: { s: SkillDamage; isPrimary: boolean; top: number; total: number }) {
+  const split = orderedSplit(s)
+  const share = total > 0 ? (s.totalDps / total) * 100 : null
   return (
     <details className="drow border-t border-line first:border-t-0" open={isPrimary}>
       <summary className="block cursor-pointer list-none py-3 [&::-webkit-details-marker]:hidden">
@@ -71,8 +83,17 @@ function SkillRow({ s, isPrimary, top }: { s: SkillDamage; isPrimary: boolean; t
           </svg>
         </span>
         <span aria-hidden className="mt-2 block h-2 w-full bg-sunken">
-          <span className="block h-full bg-accent" style={{ width: `${top > 0 ? Math.max(1, (s.totalDps / top) * 100) : 0}%` }} />
+          <span className="flex h-full gap-px overflow-hidden" style={{ width: `${top > 0 ? Math.max(1, (s.totalDps / top) * 100) : 0}%` }}>
+            {split.length ? (
+              split.map((d) => <span key={d.type} className="block h-full" style={{ width: `${d.percent}%`, ...dmgFill(d.type) }} />)
+            ) : (
+              <span className="block h-full w-full bg-accent" />
+            )}
+          </span>
         </span>
+        {share !== null ? (
+          <span className="tabular mt-1 block font-mono text-[11px] text-ink-mute">{pct(share)} of listed damage</span>
+        ) : null}
       </summary>
       <div className="pb-4">
         <div className="grid grid-cols-3 gap-3">
@@ -147,6 +168,7 @@ export function DpsMatrix({
   const rows = showAll ? dps.skills : dps.hitSkills
   const hidden = dps.skills.length - rows.length
   const top = Math.max(0, ...rows.map((s) => s.totalDps))
+  const total = rows.reduce((a, s) => a + s.totalDps, 0)
   const primary = dps.primary
 
   return (
@@ -157,7 +179,7 @@ export function DpsMatrix({
       </div>
       <div className="mt-3">
         {rows.map((s) => (
-          <SkillRow key={s.name} s={s} isPrimary={s.name === primary?.name} top={top} />
+          <SkillRow key={s.name} s={s} isPrimary={s.name === primary?.name} top={top} total={total} />
         ))}
       </div>
 
