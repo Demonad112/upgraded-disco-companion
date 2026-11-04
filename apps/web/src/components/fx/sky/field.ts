@@ -24,7 +24,7 @@ const STAR = 1.8
 /** Faint background stars per field star: desktop, phone (lighter). */
 const FAINT = [2, 1]
 /** Most stars (field + faint) drawn per frame; lite mode halves it. */
-export const STAR_CAP = 1200
+export const STAR_CAP = 1800
 
 export function mulberry32(seed: number) {
   return () => {
@@ -155,7 +155,7 @@ export function buildField(w: number, h: number, lite = false): Field {
   const ru = bandUnit(w, h)
   const small = w < 700
   // K3 dense (design system 3.2).
-  const k = (small ? 0.55 : 1) * STAR
+  const k = (small ? 0.8 : 1) * STAR
 
   const inDisk = (limit = 1) => {
     const r = rm * limit * Math.sqrt(rand())
@@ -170,7 +170,7 @@ export function buildField(w: number, h: number, lite = false): Field {
   const s = allocStars(starCount + Math.round(starCount * faintPer))
   for (let i = 0; i < starCount; i++) {
     const p = inDisk()
-    let size = 0.35 + 1.4 * Math.pow(rand(), 3)
+    let size = 0.45 + 1.5 * Math.pow(rand(), 3)
     rand() // the old flat alpha; brightness now comes from `tint`
     s.speed[i] = 0.6 + 1.6 * rand()
     s.phase[i] = rand() * Math.PI * 2
@@ -182,7 +182,7 @@ export function buildField(w: number, h: number, lite = false): Field {
     s.x[i] = p.x
     s.y[i] = p.y
     s.size[i] = size
-    s.alpha[i] = 0.2 + 0.8 * b
+    s.alpha[i] = 0.32 + 0.68 * b
     s.colour[i] = c < 0.5 ? GOLD : c < 0.78 ? PALE : c < 0.92 ? WHITE : AMBER
     // Bright stars twinkle less than faint ones.
     s.twinkle[i] = (0.14 + 0.2 * tint()) * (1 - 0.4 * b)
@@ -213,8 +213,8 @@ export function buildField(w: number, h: number, lite = false): Field {
     const c = faint()
     s.x[i] = x
     s.y[i] = y
-    s.size[i] = 0.45 + 0.35 * faint()
-    s.alpha[i] = 0.14 + 0.36 * Math.pow(faint(), 1.6)
+    s.size[i] = 0.55 + 0.4 * faint()
+    s.alpha[i] = 0.22 + 0.4 * Math.pow(faint(), 1.6)
     s.colour[i] = c < 0.5 ? GOLD : c < 0.75 ? PALE : SILVER
     s.speed[i] = 0.4 + 1.2 * faint()
     s.phase[i] = faint() * Math.PI * 2
