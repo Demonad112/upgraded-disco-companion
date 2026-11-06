@@ -17,6 +17,7 @@ import { keystoneEffectsOf } from '../src/keystones/index.js'
 import {
   appendSnapshot,
   diffSnapshots,
+  hasGearLeech,
   historyFor,
   latestDiff,
   MAX_SNAPSHOTS,
@@ -84,6 +85,24 @@ describe('taking a snapshot', () => {
     expect(corrected.life).toBe(1448)
   })
 
+  it('flags Mind Over Matter only when the keystone is allocated and noted', () => {
+    expect(base.manaBeforeLife).toBe(false)
+    const mom = keystoneEffectsOf([{ name: 'Mind Over Matter' }], analysis.defense)
+    expect(toSnapshot(analysis, base.at, mom).manaBeforeLife).toBe(true)
+  })
+
+  it('reads gear leech as life or ES only; mana leech on the fixture does not count', () => {
+    // The fixture carries "[ManaLeech|Leech] 8.4% of [Physical] [Attack] Damage as Mana" and nothing else.
+    expect(base.gearLeech).toBe(false)
+    const life = { active: true, mods: ['[LifeLeech|Leeches] 6% of [Physical] Damage as Life'] }
+    const es = { active: true, mods: ['Leech 3% of Physical Attack Damage as Energy Shield'] }
+    expect(hasGearLeech([life])).toBe(true)
+    expect(hasGearLeech([es])).toBe(true)
+    expect(hasGearLeech([{ ...life, active: false }])).toBe(false)
+    expect(hasGearLeech([{ active: true, mods: ['Leech 8.4% of Physical Attack Damage as Mana'] }])).toBe(false)
+    expect(toSnapshot({ ...analysis, items: [...analysis.items, { ...analysis.items[0]!, ...life }] }, base.at).gearLeech).toBe(true)
+  })
+
   it('keys history per character, not per browser', () => {
     expect(snapshotKey({ account: 'Demonad112#2589', name: 'Athrynas' })).toBe('Demonad112#2589/Athrynas')
   })
@@ -137,6 +156,15 @@ describe('accumulating history', () => {
     const twice = appendSnapshot(once, { ...base, at: '2026-07-25T00:00:00.000Z' })
     expect(twice).toHaveLength(1)
     expect(twice[0]!.at).toBe(base.at)
+  })
+
+  it('refreshes the derived layer flags in place instead of adding a row (older rows lack them)', () => {
+    const { manaBeforeLife: _m, gearLeech: _g, ...old } = base
+    const history = appendSnapshot([old], { ...base, at: '2026-07-25T00:00:00.000Z', gearLeech: true })
+    expect(history).toHaveLength(1)
+    expect(history[0]).toMatchObject({ at: base.at, gearLeech: true, manaBeforeLife: false })
+    // And a true no-op still returns the same array.
+    expect(appendSnapshot(history, { ...base, gearLeech: true })).toBe(history)
   })
 
   it('appends when a figure actually moved', () => {

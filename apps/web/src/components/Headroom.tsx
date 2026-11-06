@@ -56,7 +56,7 @@ function LimitLine({ children }: { children: string }) {
 function TierRow({ row }: { row: WaystoneRow }) {
   return (
     <li
-      className="grid grid-cols-[5rem_1fr_4.5rem] items-center gap-3 border-b border-l-2 border-line py-3 pl-3"
+      className="grid grid-cols-[3.5rem_minmax(0,1fr)_4rem] items-center gap-2 sm:grid-cols-[5rem_minmax(0,1fr)_4.5rem] sm:gap-3 border-b border-l-2 border-line py-3 pl-3"
       style={{ borderLeftColor: BAND_VAR[row.band] }}
       aria-label={`Tier ${row.tier}, area level ${row.areaLevel}: ${BAND_WORD[row.band].toLowerCase()} risk, ${row.risk}%. XP lost ${xpLostLabel(row.xpLost)}.`}
     >

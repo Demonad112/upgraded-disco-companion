@@ -54,6 +54,14 @@
   color: var(--accent);
   font-size: 11px;
 }
+.farm-mark[data-fit="fits"] {
+  border-color: var(--good);
+  color: var(--good);
+}
+.farm-mark[data-fit="harder"] {
+  border-color: var(--warn);
+  color: var(--warn);
+}
 
 /* Step 2 */
 .farm-controls {

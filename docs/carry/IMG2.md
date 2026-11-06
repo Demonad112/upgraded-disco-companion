@@ -45,6 +45,8 @@ under 2 KB left), the share card, `Headroom` tier bars (not in the R03 list).
 | `/dashboard/` | 211,542 | 211,560 |
 | `/trade/` | 192,568 | — |
 
+After merging `main` with #109 in it: `/` 190,259, `/character/` 230,426, `/atlas/` 204,047, `/dashboard/` 218,833; all within budget, and e2e (features, a11y, farm, dash-atlas, quick-picks) 128/128.
+
 `bars.css` loads as its own lazy chunk (859 B br), so `/` doesn't carry it.
 
 ## Resolved from earlier carry files
@@ -57,8 +59,8 @@ under 2 KB left), the share card, `Headroom` tier bars (not in the R03 list).
 |---|---|---|---|---|
 | 1 | follow-up | owner | R46 eyeball list (sky 30 s, hover pulse, hero draw-in, lantern, foil, route transitions, glyphs) plus the new bar fill on a real display and Safari | Tick the PR "Owner verify" list |
 | 2 | follow-up | owner | R45 on a real Android phone (install PWA, share a poe.ninja link) | Tick the PR list; the emulated path passes |
-| 3 | follow-up | next-U | Changelog entry for the new look left out: B3 (#109) adds a 2026-11-06 entry at the same spot, and both would conflict | Add one line to B3's entry, or a new entry, after #109 merges |
-| 4 | follow-up | next-U | Icons only on two surfaces; tablet/waystone/trade would also help the farm planner and Gear targets | Place them once #109 merges (it owns the farm files) |
+| 3 | done | — | Changelog line for the new look | Added to B3's 2026-11-06 entry after #109 merged |
+| 4 | follow-up | next-U | Icons only on two surfaces; tablet/waystone/trade would also help the farm planner and Gear targets | #109 has merged; place them in a later batch (outside IMG-2 scope) |
 
 ## Needs owner
 - None. Questions answered in-session: changelog deferred (#3, avoids a guaranteed conflict); home resist chips kept

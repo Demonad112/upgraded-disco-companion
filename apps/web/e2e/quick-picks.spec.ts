@@ -141,4 +141,46 @@ test.describe('quick picks', () => {
     r = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa']).analyze()
     expect(r.violations.map((v) => v.id)).toEqual([])
   })
+
+  // R47 (emulated part): the sheet fits the screen with its actions reachable, and the sticky strip stays small.
+  for (const [w, h] of [[390, 844], [360, 780]] as const) {
+    test(`R47: sheet and sticky strip sizing at ${w}x${h}`, async ({ page }) => {
+      await page.setViewportSize({ width: w, height: h })
+      await openAbyss(page)
+      const strip = await page.getByTestId('qp-result').boundingBox()
+      expect(strip!.height, 'sticky strip height').toBeLessThanOrEqual(h * 0.3)
+      await page.locator('[data-chip]').first().click()
+      const sheet = page.getByTestId('qp-sheet')
+      await expect(sheet).toBeVisible()
+      await sheet.evaluate((el) => Promise.all(el.getAnimations().map((a) => a.finished)))
+      const box = (await sheet.boundingBox())!
+      expect(box.y).toBeGreaterThanOrEqual(0)
+      expect(box.y + box.height).toBeLessThanOrEqual(h + 1)
+      expect(box.width).toBeLessThanOrEqual(w)
+      await expect(sheet.getByRole('button', { name: 'Keep' })).toBeInViewport()
+      await sheet.getByRole('button', { name: /^Apply / }).first().scrollIntoViewIfNeeded()
+      await expect(sheet.getByRole('button', { name: /^Apply / }).first()).toBeInViewport()
+    })
+  }
+
+  // R44 (emulated part): a visual viewport much shorter than the layout viewport reads as the keyboard and hides the tab bar.
+  test('R44: the tab bar hides while the on-screen keyboard is up, and comes back', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 })
+    await page.goto('dashboard/')
+    const bar = page.getByRole('navigation', { name: 'Tools' })
+    await expect(bar).toBeVisible()
+    const fake = (vh: number) =>
+      page.evaluate((v) => {
+        Object.defineProperty(window.visualViewport!, 'height', { configurable: true, get: () => v })
+        window.visualViewport!.dispatchEvent(new Event('resize'))
+      }, vh)
+    // Re-fire until the hook has hydrated and attached its listener.
+    await expect(async () => {
+      await fake(500)
+      await expect(bar).toBeHidden({ timeout: 500 })
+    }).toPass()
+    await fake(844)
+    await expect(bar).toBeVisible()
+  })
 })
+
