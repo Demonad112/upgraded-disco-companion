@@ -7,29 +7,24 @@
  */
 
 import { useEffect, useState } from 'react'
-import { resolveTradeStatMapFromSnapshot, type RecommendationReport, type Trade2StatsSnapshot, type TradeStatMap } from '@poe2/core'
+import type { RecommendationReport, TradeStatMap } from '@poe2/core'
 import { fmt } from '@/components/ui'
 import { BASE_PATH, dataUrl } from '@/lib/basePath'
 import { TRADE_LEAGUE } from '@/lib/constants'
 import { fixAnchor, splitAction, topFixes, tradeLinkFor, tradeStatFor } from './topFixes'
 
-/** Internal stat id → trade id, from the committed trade2 snapshot. Fetched only when a fix can use it. */
+/** Internal stat id → trade id, resolved from the trade2 snapshot at build (`trade-map.json`, about 1 KB). Fetched only when a fix can use it. */
 export function useTradeMap(wanted: boolean): TradeStatMap | null {
   const [map, setMap] = useState<TradeStatMap | null>(null)
   useEffect(() => {
     if (!wanted) return
     let live = true
     const load = () =>
-      fetch(dataUrl('trade2-stats.json'))
-      .then((r) => (r.ok ? (r.json() as Promise<Trade2StatsSnapshot>) : Promise.reject(new Error(String(r.status)))))
-      .then((snap) => {
-        if (!live) return
-        const m: Record<string, string> = {}
-        for (const s of resolveTradeStatMapFromSnapshot(snap)) if (s.tradeId) m[s.internalId] = s.tradeId
-        setMap(m)
-      })
-      .catch(() => live && setMap({}))
-    // 1.4 MB: fetched when the browser is idle, not during the first paint (Safari has no requestIdleCallback).
+      fetch(dataUrl('trade-map.json'))
+        .then((r) => (r.ok ? (r.json() as Promise<{ map?: TradeStatMap }>) : Promise.reject(new Error(String(r.status)))))
+        .then((j) => live && setMap(j.map ?? {}))
+        .catch(() => live && setMap({}))
+    // Fetched when the browser is idle, not during the first paint (Safari has no requestIdleCallback).
     const ric = typeof window.requestIdleCallback === 'function'
     const handle = ric ? window.requestIdleCallback(load, { timeout: 3000 }) : window.setTimeout(load, 500)
     return () => {
