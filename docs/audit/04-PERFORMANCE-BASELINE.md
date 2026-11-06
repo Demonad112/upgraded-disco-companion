@@ -86,6 +86,24 @@ navigation; home never hit it).
 | TBT | 1,050 ms | 120 ms | 570 / 380 ms | 20 ms |
 | LCP element | Up next step description (`section.card > p.mt-1`, `NextStepCard`) | same | import help line (`#import-panel-url > p.mt-2`, "Example: https://poe.ninja/…") | same |
 
+**B1 re-run, 2026-11-06**, `main` @ `3b4f5ba`, Lighthouse 12, Chromium 1243 headless on a Linux cloud container (not the U13b laptop,
+so absolutes aren't comparable), `--only-categories=performance`, default simulated throttling, mobile 390×844 @2x, 3 runs
+each against `serve` on `apps/web/out`.
+
+| Route | Score | FCP | LCP | CLS | TBT | LCP element |
+|---|---|---|---|---|---|---|
+| `/` | 91 / 93 / 93 | 0.91 s | 3.09–3.15 s | 0 | 84–187 ms | hero `h1.hero-title` |
+| `/character/` | 92 ×3 | 0.91 s | 3.23–3.25 s | 0 | 128–129 ms | `#import-panel-url > p.mt-2` |
+| `/dashboard/` | 96 / 91 / 92 | 1.06 s | 2.72–3.40 s | 0 | 72–108 ms | `header.page-title > p.mt-4` |
+
+- No `NO_NAVSTART` in 9/9 runs (R54). CI: the last five `main` Lighthouse jobs raised no LCP/CLS assertion.
+- `/` LCP element is now the hero title, not the Up next description. The observed LCP equals FCP (191 ms); the ~3.1 s is
+  Lighthouse's simulated graph (render delay), so there is no real paint delay to fix. No change made.
+- R39: the lazy sky chunk (`3sxtdmqi6gdkm.js`, 54,474 B raw / 16,457 B br) is `roadmap` + `atlasTree` data. An id/phase index of the
+  74 ids would be ~670 B br, a ~15 KB saving, but the chunk loads at idle, is immutable-cached and is outside route weight. Not done.
+- Route weight (br, JS/CSS first load), before = after (no app code changed): `/` 190,017 · `/checklist/` 207,669 · `/character/` 229,962 ·
+  `/atlas/` 201,318 · `/dashboard/` 211,554 · `/trade/` 192,531.
+
 INP: not measured (the Lighthouse CLI is lab-only and doesn't fetch CrUX; PageSpeed Insights would show field data if the
 origin has enough traffic). The LCP element on `/` is the Up next description, not the hero title (U8-3);
 recorded, not chased.
