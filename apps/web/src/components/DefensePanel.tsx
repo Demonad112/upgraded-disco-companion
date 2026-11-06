@@ -6,10 +6,16 @@
  * poe.ninja's own, read as given.
  */
 
+import type { CSSProperties } from 'react'
 import type { DefenseSummary } from '@poe2/core'
 import { Tag, fmt } from './ui'
 import { Diamond, DMG_VAR, cap } from './character/dmg'
 import { ProvenanceBadge } from './shared/ProvenanceBadge'
+import { useFirstView } from '@/hooks/useFirstView'
+import '@/styles/bars.css'
+
+/** A 0–1 position on a bar's well, for the cap pin and the dashed marker (styles/bars.css). */
+const at = (f: number): CSSProperties => ({ '--at': Math.max(0, Math.min(1, f)) }) as CSSProperties
 
 /** Resistance tracks are drawn to a 0–90% scale so values above the cap stay visible. */
 const RES_SCALE = 90
@@ -34,39 +40,43 @@ function Meter({ r }: { r: DefenseSummary['resistances'][number] }) {
             ? `${cap(r.type)} resistance ${value}% of a ${r.max}% cap${under ? `, ${r.underCap} under cap` : over ? `, ${r.overCap} over cap` : ''}`
             : `${cap(r.type)} resistance unknown`
         }
-        className="relative block h-[16px] bg-sunken"
+        className="etrough"
       >
-        {known ? (
-          <>
-            <span className="absolute inset-y-0 left-0" style={{ width: pos(Math.min(value, r.max)), background: color }} />
-            {over ? (
-              <span
-                className="absolute inset-y-0"
-                style={{
-                  left: pos(r.max),
-                  width: `calc(${pos(value)} - ${pos(r.max)})`,
-                  background: `repeating-linear-gradient(45deg, ${color} 0 3px, transparent 3px 6px)`,
-                }}
-              />
-            ) : null}
-            {under ? (
-              <span
-                className="absolute inset-y-[3px]"
-                style={{
-                  left: pos(value),
-                  width: `calc(${pos(r.max)} - ${pos(value)})`,
-                  borderTop: '1px dashed var(--danger)',
-                  borderBottom: '1px dashed var(--danger)',
-                  background: 'color-mix(in srgb, var(--danger) 18%, transparent)',
-                }}
-              />
-            ) : null}
-          </>
-        ) : null}
-        <span className="absolute -top-1 -bottom-1 w-0.5 bg-white" style={{ left: `calc(${pos(r.max)} - 1px)` }} />
+        <span className="ewell">
+          {known ? (
+            <>
+              <span className="efill egrow" data-abs data-dmg={r.type} style={{ width: pos(Math.min(value, r.max)) }} />
+              {over ? (
+                <span
+                  className="absolute inset-y-0"
+                  style={{
+                    left: pos(r.max),
+                    width: `calc(${pos(value)} - ${pos(r.max)})`,
+                    background: `repeating-linear-gradient(45deg, ${color} 0 3px, transparent 3px 6px)`,
+                  }}
+                />
+              ) : null}
+              {under ? (
+                <span
+                  className="absolute inset-y-[3px]"
+                  style={{
+                    left: pos(value),
+                    width: `calc(${pos(r.max)} - ${pos(value)})`,
+                    borderTop: '1px dashed var(--danger)',
+                    borderBottom: '1px dashed var(--danger)',
+                    background: 'color-mix(in srgb, var(--danger) 18%, transparent)',
+                  }}
+                />
+              ) : null}
+            </>
+          ) : null}
+        </span>
+        <span className="ecap" style={at(Math.min(r.max, RES_SCALE) / RES_SCALE)} />
       </span>
       <span className="flex flex-wrap items-center gap-2 min-[621px]:justify-end">
-        <span className="tabular font-mono text-sm text-ink">{known ? `${value}%` : 'unknown'}</span>
+        <span className={`eplate tabular text-sm ${under ? 'text-danger' : over ? 'text-accent' : 'text-ink'}`}>
+          {known ? `${value}%` : 'unknown'}
+        </span>
         {!known ? <Tag>unknown</Tag> : under ? <Tag tone="danger">{r.underCap} under</Tag> : <Tag tone="good">OK</Tag>}
         {over ? <span className="tabular font-mono text-[11px] text-ink-mute">{r.overCap} over cap</span> : null}
       </span>
@@ -80,12 +90,13 @@ const PAIR_CARD = 'card flex flex-col'
 const PAIR_FOOTER = 'mt-auto border-t border-line pt-3'
 
 function ResistanceMeters({ d }: { d: DefenseSummary }) {
+  const seen = useFirstView<HTMLUListElement>()
   // The same over-cap figure the Overview's Spare to trade lists.
   const spare = d.resistances.filter((r) => r.value !== null && r.overCap !== null && r.overCap > 0)
   return (
     <section data-surface="data" className={PAIR_CARD} aria-label="Resistances">
       <h3 className="h3">Resistances</h3>
-      <ul className="mt-4 mb-4 space-y-4">
+      <ul ref={seen} className="mt-4 mb-4 space-y-4">
         {d.resistances.map((r) => (
           <Meter key={r.type} r={r} />
         ))}
@@ -100,7 +111,7 @@ function ResistanceMeters({ d }: { d: DefenseSummary }) {
           )}
         </p>
         <ul className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-[11px] text-ink-mute">
-          <li>White tick: cap</li>
+          <li>Gold pin: cap</li>
           <li>Hatched: over cap</li>
           <li>Dashed: shortfall to cap</li>
           <li>Scale: 0–{RES_SCALE}%</li>
@@ -114,15 +125,16 @@ function ResistanceMeters({ d }: { d: DefenseSummary }) {
 const niceCeil = (n: number): number => Math.max(2000, Math.ceil(n / 2000) * 2000)
 
 function LargestHit({ d }: { d: DefenseSummary }) {
+  const seen = useFirstView<HTMLUListElement>()
   const hits = [...d.maxHits].sort((a, b) => a.value - b.value)
   if (!hits.length) return null
   const scale = niceCeil(Math.max(...hits.map((h) => h.value), d.effectiveHealthPool ?? 0))
   const res = new Map(d.resistances.map((r) => [r.type as string, r]))
-  const ehpAt = d.effectiveHealthPool !== null ? `${(d.effectiveHealthPool / scale) * 100}%` : null
+  const ehpAt = d.effectiveHealthPool !== null ? d.effectiveHealthPool / scale : null
   return (
     <section data-surface="data" className={PAIR_CARD} aria-label="Largest hit you survive">
       <h3 className="h3">Largest hit you survive</h3>
-      <ul className="mt-4 mb-4 space-y-4">
+      <ul ref={seen} className="mt-4 mb-4 space-y-4">
         {hits.map((h) => {
           const r = res.get(h.type)
           const note =
@@ -144,21 +156,20 @@ function LargestHit({ d }: { d: DefenseSummary }) {
               <span
                 role="img"
                 aria-label={`${cap(h.type)} maximum hit ${fmt(h.value)}`}
-                className="relative block h-[16px] bg-sunken"
+                className="etrough"
               >
-                <span
-                  className="absolute inset-y-0 left-0"
-                  style={{ width: `${Math.max(1, (h.value / scale) * 100)}%`, background: DMG_VAR[h.type] ?? 'var(--ink-dim)' }}
-                />
-                {ehpAt ? (
+                <span className="ewell">
                   <span
-                    className="absolute -top-1 -bottom-1 border-l border-dashed border-accent"
-                    style={{ left: ehpAt }}
+                    className="efill egrow"
+                    data-abs
+                    data-dmg={h.type}
+                    style={{ width: `${Math.max(1, (h.value / scale) * 100)}%` }}
                   />
-                ) : null}
+                </span>
+                {ehpAt !== null ? <span className="emark" style={at(ehpAt)} /> : null}
               </span>
               <span className="flex flex-wrap items-center gap-2 min-[621px]:justify-end">
-                <span className="tabular font-mono text-sm text-ink">{fmt(h.value)}</span>
+                <span className="eplate tabular text-sm text-ink">{fmt(h.value)}</span>
                 {h.isLowest ? <Tag tone="danger">Kills first</Tag> : null}
               </span>
               {note ? <span className="tabular font-mono text-[11px] text-ink-mute min-[621px]:col-start-2">{note}</span> : null}

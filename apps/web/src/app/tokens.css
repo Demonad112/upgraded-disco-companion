@@ -45,6 +45,12 @@
   --dmg-chaos: #8634c2;
   --dmg-chaos-edge: #14061f;
 
+  /* Engraved bars (IMG-2, docs/ui/img/img1-bars-b.html): bevelled metal trough, deep well, value plate. */
+  --metal-hi: #4a4332;
+  --metal-lo: #1a170f;
+  --well: #050506;
+  --plate-line: #3a3322;
+
   /* Gold surfaces (2.1): fill for buttons and gauges, text gradient for headings. */
   --gold-top: color-mix(in srgb, #e3b341 86%, white);
   --gold-mid: #e3b341;

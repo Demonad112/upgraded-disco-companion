@@ -3,7 +3,9 @@
 import { useState } from 'react'
 import { describePobConfig, type DpsSummary, type PobConfig, type SkillDamage } from '@poe2/core'
 import { Empty, Tag, fmt, fmtCompact } from './ui'
-import { Diamond, TYPE_ORDER, cap, dmgFill } from './character/dmg'
+import { Diamond, TYPE_ORDER, cap } from './character/dmg'
+import { useFirstView } from '@/hooks/useFirstView'
+import '@/styles/bars.css'
 
 /**
  * Damage-type split as one full-width bar, with its percentages in the title
@@ -23,10 +25,14 @@ function SplitBar({ skill }: { skill: SkillDamage }) {
   const text = ordered.map((s) => `${cap(s.type)} ${pct(s.percent)}`).join(', ')
   return (
     <div>
-      <div role="img" aria-label={`Damage split: ${text}`} className="flex h-4 w-full gap-px overflow-hidden bg-sunken">
-        {ordered.map((s) => (
-          <div key={s.type} style={{ width: `${s.percent}%`, ...dmgFill(s.type) }} />
-        ))}
+      <div role="img" aria-label={`Damage split: ${text}`} className="etrough">
+        <span className="ewell">
+          <span className="egrow flex h-full w-full gap-px">
+            {ordered.map((s) => (
+              <span key={s.type} className="efill" data-dmg={s.type} style={{ width: `${s.percent}%` }} />
+            ))}
+          </span>
+        </span>
       </div>
       <p className="tabular mt-1.5 font-mono text-[11px] text-ink-mute">{text}</p>
     </div>
@@ -82,13 +88,15 @@ function SkillRow({ s, isPrimary, top, total }: { s: SkillDamage; isPrimary: boo
             <path d="M5 7.5l5 5 5-5" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
         </span>
-        <span aria-hidden className="mt-2 block h-2 w-full bg-sunken">
-          <span className="flex h-full gap-px overflow-hidden" style={{ width: `${top > 0 ? Math.max(1, (s.totalDps / top) * 100) : 0}%` }}>
-            {split.length ? (
-              split.map((d) => <span key={d.type} className="block h-full" style={{ width: `${d.percent}%`, ...dmgFill(d.type) }} />)
-            ) : (
-              <span className="block h-full w-full bg-accent" />
-            )}
+        <span aria-hidden className="etrough mt-2" data-size="sm">
+          <span className="ewell">
+            <span className="egrow flex h-full gap-px" style={{ width: `${top > 0 ? Math.max(1, (s.totalDps / top) * 100) : 0}%` }}>
+              {split.length ? (
+                split.map((d) => <span key={d.type} className="efill" data-dmg={d.type} style={{ width: `${d.percent}%` }} />)
+              ) : (
+                <span className="efill w-full" data-dmg="accent" />
+              )}
+            </span>
           </span>
         </span>
         {share !== null ? (
@@ -155,6 +163,7 @@ export function DpsMatrix({
   configApplies?: boolean
 }) {
   const [showAll, setShowAll] = useState(false)
+  const seen = useFirstView<HTMLDivElement>()
 
   if (dps.unresolved) {
     return (
@@ -177,7 +186,7 @@ export function DpsMatrix({
         <h3 className="h3">{primary ? `${primary.name} · ${fmt(primary.totalDps)} dps` : 'Damage'}</h3>
         <span className="eyebrow">Read from poe.ninja, not recalculated</span>
       </div>
-      <div className="mt-3">
+      <div ref={seen} className="mt-3">
         {rows.map((s) => (
           <SkillRow key={s.name} s={s} isPrimary={s.name === primary?.name} top={top} total={total} />
         ))}

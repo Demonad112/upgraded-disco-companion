@@ -1,6 +1,18 @@
 import { primerFacts, tierBreakpoints } from "@/data/mechanicsPrimer";
 import { Accordion } from "@/components/shared/Accordion";
 import { SourceFlag } from "@/components/shared/SourceFlag";
+import { MapIcon, type IconName } from "@/components/icons";
+
+/** Icon per primer fact (IMG-2 set); a fact without one renders without an icon. */
+const FACT_ICON: Record<string, IconName> = {
+  "primer-tiers": "waystone",
+  "primer-mods": "waystone",
+  "primer-boss-death": "map-boss",
+  "primer-tablet-slots": "tablet",
+  "primer-tablet-mods": "tablet",
+  "primer-powerful-boss": "map-boss",
+  "primer-atlas-points": "atlas-node",
+};
 
 export function MechanicsPrimer() {
   return (
@@ -14,6 +26,11 @@ export function MechanicsPrimer() {
           {primerFacts.map((fact) => (
             <div key={fact.id} id={fact.id} className="scroll-mt-24">
               <dt className="flex flex-wrap items-center gap-1.5 text-sm font-medium text-ink">
+                {FACT_ICON[fact.id] ? (
+                  <span className="text-accent">
+                    <MapIcon name={FACT_ICON[fact.id]} size={16} />
+                  </span>
+                ) : null}
                 {fact.topic}
                 <SourceFlag source={fact.source} />
               </dt>

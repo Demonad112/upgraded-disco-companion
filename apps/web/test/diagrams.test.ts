@@ -26,4 +26,10 @@ describe("V1 step diagrams", () => {
     expect(labels.length).toBeGreaterThan(3);
     for (const l of labels) expect(l).toBe(l.toUpperCase());
   });
+
+  it.each(Object.entries(svgs))("%s draws its boxes as engraved plates (IMG-2)", (_, Svg) => {
+    const html = renderToStaticMarkup(createElement(Svg));
+    expect(html).toContain("var(--metal-hi)");
+    expect(html).toContain("var(--well)");
+  });
 });

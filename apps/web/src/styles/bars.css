@@ -1,0 +1,132 @@
+/*
+ * Engraved bars (IMG-2): the owner's pick, docs/ui/img/img1-bars-b.html. A bevelled metal trough holds a deep well
+ * with engraved ticks every 10%; fills are glossy and hatched in the damage colour with a bright leading edge; a gold
+ * pin marks a cap; values sit on a sunken plate. Imported by the components that draw bars, so `/` doesn't carry it.
+ * Fills grow once on first view (useFirstView sets data-seen); with reduced motion they are simply there.
+ */
+.etrough {
+  --pad: 3px;
+  position: relative;
+  display: block;
+  height: 20px;
+  padding: var(--pad);
+  background: linear-gradient(180deg, var(--metal-hi), var(--metal-lo));
+  border: 1px solid black;
+  box-shadow: 0 1px 0 color-mix(in srgb, var(--accent) 12%, transparent), inset 0 1px 0 rgb(255 255 255 / 0.1);
+}
+.etrough[data-size="sm"] {
+  --pad: 2px;
+  height: 12px;
+}
+.ewell {
+  position: relative;
+  display: flex;
+  height: 100%;
+  overflow: hidden;
+  background: linear-gradient(180deg, black, var(--well) 40%, var(--sunken));
+  box-shadow: inset 0 2px 4px black, inset 0 0 0 1px rgb(0 0 0 / 0.8);
+}
+.ewell::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: repeating-linear-gradient(90deg, transparent 0 calc(10% - 1px), rgb(0 0 0 / 0.7) calc(10% - 1px) 10%);
+}
+.efill {
+  --c: var(--ink-dim);
+  position: relative;
+  display: block;
+  flex: none;
+  height: 100%;
+  background:
+    linear-gradient(180deg, rgb(255 255 255 / 0.38) 0, rgb(255 255 255 / 0.08) 42%, transparent 50%, rgb(0 0 0 / 0.35) 100%),
+    repeating-linear-gradient(135deg, rgb(0 0 0 / 0.28) 0 2px, transparent 2px 5px),
+    var(--base, var(--c));
+  box-shadow:
+    0 0 10px color-mix(in srgb, var(--c) 45%, transparent),
+    inset 0 1px 0 rgb(255 255 255 / 0.35),
+    inset -1px 0 0 rgb(0 0 0 / 0.5);
+}
+.efill[data-abs] {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+}
+.efill::after {
+  content: "";
+  position: absolute;
+  inset: 0 0 0 auto;
+  width: 2px;
+  background: rgb(255 255 255 / 0.4);
+}
+.efill[data-dmg="physical"] { --c: var(--dmg-physical); }
+.efill[data-dmg="fire"] { --c: var(--dmg-fire); }
+.efill[data-dmg="cold"] { --c: var(--dmg-cold); }
+.efill[data-dmg="lightning"] {
+  --c: var(--dmg-lightning);
+  --base: linear-gradient(var(--dmg-lightning) 0 35%, var(--dmg-lightning-core) 35% 65%, var(--dmg-lightning) 65%);
+}
+.efill[data-dmg="chaos"] {
+  --c: var(--dmg-chaos);
+  box-shadow:
+    0 0 10px color-mix(in srgb, var(--c) 55%, transparent),
+    inset 0 0 0 1px var(--dmg-chaos-edge),
+    inset 0 1px 0 rgb(255 255 255 / 0.3);
+}
+.efill[data-dmg="accent"] { --c: var(--accent); }
+
+/* Gold cap pin and dashed marker, placed on the well's scale: --at is a 0–1 fraction. */
+.ecap,
+.emark {
+  position: absolute;
+  z-index: 2;
+  top: -5px;
+  bottom: -5px;
+  left: calc(var(--pad) + (100% - 2 * var(--pad)) * var(--at, 0));
+  margin-left: -1px;
+  pointer-events: none;
+}
+.ecap {
+  width: 2px;
+  background: linear-gradient(180deg, var(--accent), var(--gold-bot));
+  box-shadow: 0 0 4px color-mix(in srgb, var(--accent) 60%, transparent);
+}
+.ecap::before {
+  content: "";
+  position: absolute;
+  top: -1px;
+  left: -2px;
+  width: 6px;
+  height: 3px;
+  background: var(--accent);
+}
+.emark {
+  border-left: 1px dashed var(--accent);
+}
+
+/* Sunken value plate. */
+.eplate {
+  display: inline-block;
+  min-width: 3.75rem;
+  padding: 2px 6px;
+  text-align: center;
+  font-family: var(--font-mono);
+  background: linear-gradient(180deg, black, var(--well));
+  border: 1px solid var(--plate-line);
+  box-shadow: inset 0 2px 3px black, 0 1px 0 color-mix(in srgb, var(--accent) 10%, transparent);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .egrow {
+    transform-origin: left center;
+    animation: egrow 0.9s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  }
+  [data-io]:not([data-seen]) .egrow {
+    animation-play-state: paused;
+  }
+  @keyframes egrow {
+    from { transform: scaleX(0); }
+  }
+}

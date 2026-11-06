@@ -21,6 +21,7 @@ export const CHANGELOG: ChangelogEntry[] = [
       { kind: 'app', text: 'Farm planner: build-aware danger now also counts mana (Mind Over Matter) and leech on gear.' },
       { kind: 'app', text: 'Farm tiles with a saved loadout say whether its Waystone danger fits your imported build.' },
       { kind: 'app', text: 'Atlas page: survivability by waystone tier from your level alone, no import needed.' },
+      { kind: 'app', text: 'New look for character bars, the grade stamp, checklist diagrams and Atlas mechanic icons.' },
       { kind: 'caveat', text: 'The “fits your build” comparison is this app’s own rule; danger weights are still uncalibrated.' },
     ],
   },

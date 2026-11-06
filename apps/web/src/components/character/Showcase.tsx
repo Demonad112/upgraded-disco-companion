@@ -53,7 +53,10 @@ const STAMP = {
   height: 'clamp(104px,11vw,120px)',
   borderWidth: 3,
   transform: 'rotate(-6deg)',
-  boxShadow: 'inset 0 0 0 3px var(--page), inset 0 0 0 4px var(--accent-line)',
+  // Engraved plate (IMG-2): a bevelled metal rim outside, a sunken well and an inner gold hairline inside.
+  background: 'linear-gradient(180deg, var(--accent-soft), transparent 60%), var(--well)',
+  boxShadow:
+    '0 0 0 1px black, 0 0 0 4px var(--metal-hi), 0 0 0 5px black, inset 0 2px 6px black, inset 0 0 0 3px var(--well), inset 0 0 0 4px var(--accent-line)',
 } as const
 
 /**
@@ -80,7 +83,7 @@ function GradeStamp({ letter }: { letter: string }) {
     <div
       ref={ref}
       data-grade-stamp
-      className="grid shrink-0 place-items-center border-accent bg-accent-soft"
+      className="grid shrink-0 place-items-center border-accent"
       style={STAMP}
     >
       <span className="font-display leading-none font-bold text-gradient-gold" style={{ fontSize: long ? 'clamp(34px,4vw,40px)' : 'clamp(68px,8vw,80px)' }}>
