@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { MAPPED_STATS } from '@poe2/core'
+import { MAPPED_STATS, URL_MAX_LENGTH } from '@poe2/core'
 import { improvable, resistGaps, weightedTradeLink } from '../src/components/character/gearTargets'
 
 const map = Object.fromEntries(MAPPED_STATS.map((m, i) => [m.internalId, `explicit.stat_${i}`]))
@@ -26,6 +26,12 @@ describe('gear targets', () => {
     expect(weight.type).toBe('weight')
     expect(weight.value).toEqual({ min: 15 })
     expect(weight.filters).toHaveLength(2)
+  })
+
+  it('has no link when the URL would pass URL_MAX_LENGTH (the row shows Open /trade instead)', () => {
+    const row = { baseType: 'Jungle Tiara', removalCost: { cold: 20 } }
+    expect(weightedTradeLink(row, { fire: 15 }, map, 'Standard')).not.toBeNull()
+    expect(weightedTradeLink(row, { fire: 15 }, map, 'x'.repeat(URL_MAX_LENGTH))).toBeNull()
   })
 
   it('has no link when there is no resistance reason, and rows need a reason', () => {

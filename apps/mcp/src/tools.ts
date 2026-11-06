@@ -1583,6 +1583,16 @@ const list = z.array(z.unknown()).optional()
 const text = z.string().nullable().optional()
 const bool = z.boolean().optional()
 const count = z.number().optional()
+const num = z.number().nullable().optional()
+const loose = z.looseObject
+
+// Row schemas for tools whose array shapes are stable (R31). Rows stay loose so new fields never break a client;
+// only the keys a caller relies on are typed. Null-able where the core type allows null (unknown is not zero).
+const keystoneRow = loose({ id: z.number(), name: z.string(), stats: z.array(z.string()) })
+const maxHitRow = loose({ type: z.string(), value: z.number(), isLowest: z.boolean() })
+const resistanceRow = loose({ type: z.string(), value: z.number().nullable(), max: z.number() })
+const modGroupRow = loose({ group: z.string(), kind: z.string(), tiers: z.array(z.unknown()) })
+const skillSetupRow = loose({ skill: z.string(), supports: z.array(z.unknown()) })
 
 /** Result of a failed lookup: the suggestions, never an error. */
 const MISS = { found: bool, query: any, didYouMean: any, note: text } as const
@@ -1599,8 +1609,8 @@ const OUTPUTS: Record<string, z.ZodRawShape> = {
     findingCount: count, crossValidated: bool, warnings: any, source: text,
   },
   poe2_get_defenses: {
-    lowestMaximumHit: any, lowestMaximumHitType: any, effectiveHealthPool: any, ehpOverstatementRatio: any,
-    note: text, maxHits: any, resistances: any, pools: any, mitigation: any, ailments: any, missingFromPayload: any,
+    lowestMaximumHit: num, lowestMaximumHitType: text, effectiveHealthPool: num, ehpOverstatementRatio: num,
+    note: text, maxHits: z.array(maxHitRow).optional(), resistances: z.array(resistanceRow).optional(), pools: any, mitigation: any, ailments: any, missingFromPayload: any,
   },
   poe2_get_skill_damage: { primary: any, skills: list, provenance: any, unresolved: any, computedUnder: any },
   poe2_assess_build: { tier: any, score: any, keystones: any, suppressedFindings: any },
@@ -1621,7 +1631,7 @@ const OUTPUTS: Record<string, z.ZodRawShape> = {
   poe2_find_path_to_node: {
     ...MISS, target: any, reachable: bool, alreadyAllocated: bool, cost: count, path: list,
   },
-  poe2_get_skill_setups: { setups: list },
+  poe2_get_skill_setups: { setups: z.array(skillSetupRow).optional() },
   poe2_validate_support_gems: { ...MISS, setups: list, skill: text, unknownGems: any, unknownNote: text },
   poe2_import_pob: { playerStats: any, statCount: count, headline: any },
   poe2_get_pob_code: { code: text, note: text, playerStats: any, length: count },
@@ -1646,17 +1656,21 @@ const OUTPUTS: Record<string, z.ZodRawShape> = {
   poe2_pob_simulate_mods: { provenance: text, note: text },
   poe2_pob_rank_nodes: { provenance: text, note: text },
   poe2_explain_mechanic: { matches: list, didYouMean: any, note: text },
-  poe2_health_check: { toolCount: count, passiveTree: any, character: any, poeNinja: text, pathOfBuilding: text },
+  poe2_health_check: {
+    toolCount: count, passiveTree: loose({ nodes: count, edges: count, error: text }).optional(),
+    character: loose({ loaded: z.boolean() }).optional(), poeNinja: text, pathOfBuilding: text,
+  },
   poe2_get_available_mods: {
-    ...MISS, base: text, itemClass: text, itemLevel: count, prefixes: list, suffixes: list, totals: any,
+    ...MISS, base: text, itemClass: text, itemLevel: count, prefixes: z.array(modGroupRow).optional(), suffixes: z.array(modGroupRow).optional(),
+    totals: loose({ prefixGroups: count, suffixGroups: count, truncated: bool }).optional(),
   },
   poe2_validate_item_mods: {
     ...MISS, check: text, base: text, itemClass: text, baseKnown: bool, prefixes: any, suffixes: any, issues: list,
     unknown: any, valid: bool,
   },
   poe2_inspect_base_item: { ...MISS, name: text, base: any, itemClass: text, tags: any },
-  poe2_list_keystones: { total: count, truncated: bool, keystones: list },
-  poe2_inspect_keystone: { ...MISS, id: any, name: text, stats: any, ascendancy: any, hasRule: bool },
+  poe2_list_keystones: { total: count, truncated: bool, keystones: z.array(keystoneRow).optional() },
+  poe2_inspect_keystone: { ...MISS, id: any, name: text, stats: z.array(z.string()).optional(), ascendancy: any, hasRule: bool },
 }
 
 const SOURCES: Record<string, ToolSource> = {

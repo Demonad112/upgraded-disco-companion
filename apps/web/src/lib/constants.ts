@@ -11,6 +11,11 @@ export const DATA_MAY_BE_OUTDATED = false;
  */
 export const LEAGUES = ["Forbidden Rites", "Runes of Aldur"] as const;
 export const TRADE_LEAGUE: string = LEAGUES[0];
+/**
+ * Which listings a prefilled trade2 search shows. `online` is the value confirmed on the live site (2026-11-02);
+ * `tradeStatusOrDefault` falls back to it for anything else, so a bad value never reaches a link.
+ */
+export const TRADE_STATUS: string = "online";
 export const LEAGUE_LABEL = LEAGUES.join(" · ");
 
 export const MECHANIC_LABELS: Record<string, string> = {

@@ -9,6 +9,7 @@
 import { useMemo } from 'react'
 import { analyzeItem, rankReplacements, type AttributionReport, type DefenseSummary, type EquippedItem } from '@poe2/core'
 import { StatusChip } from '@/components/shared/Instruments'
+import { BASE_PATH } from '@/lib/basePath'
 import { TRADE_LEAGUE } from '@/lib/constants'
 import type { ModTiersState } from '@/lib/useModTiers'
 import { improvable, resistGaps, weightedTradeLink } from './gearTargets'
@@ -59,7 +60,11 @@ export function GearTargets({
               <a href={link} target="_blank" rel="noopener noreferrer" className="btn btn-secondary btn-sm" data-trade="weighted">
                 Find better gear
               </a>
-            ) : null}
+            ) : (
+              <a href={`${BASE_PATH}/trade/`} className="btn btn-secondary btn-sm" data-trade="page">
+                Open /trade
+              </a>
+            )}
           </li>
         )
       })}

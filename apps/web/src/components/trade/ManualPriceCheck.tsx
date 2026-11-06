@@ -9,7 +9,8 @@ import {
   type Trade2StatsSnapshot,
 } from '@poe2/core'
 import { dataUrl } from '@/lib/basePath'
-import { TRADE_LEAGUE } from '@/lib/constants'
+import { TRADE_LEAGUE, TRADE_STATUS } from '@/lib/constants'
+import { tradeStatusOrDefault } from '@/lib/tradeStatus'
 import { ProvenanceBadge } from '@/components/shared/ProvenanceBadge'
 import { Button, Input } from '@/components/shared/controls'
 
@@ -91,7 +92,7 @@ export function ManualPriceCheck() {
   const result = useMemo(() => {
     const built = buildSearchQuery({
       type: base || undefined,
-      status: 'online',
+      status: tradeStatusOrDefault(TRADE_STATUS),
       stats: chips.map((c) => {
         const n = c.min.trim() === '' ? NaN : Number(c.min)
         return { id: c.id, ...(Number.isFinite(n) ? { min: n } : {}) }

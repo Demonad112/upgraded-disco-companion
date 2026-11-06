@@ -36,8 +36,8 @@ can do, **R** = standing rule (no work), **W** = waiting on an external event.
 |---|---|---|---|
 | R40 | 50-map run log for danger calibration (feeds R10) | FP1-1 | open |
 | R41 | Deploy ninja-proxy: `cd services/ninja-proxy && vercel --prod` (CORS allowlist T20; cache/coalesce/503 L1) | L1-1 / A8 | done: proxy deployed 2026-11-06, root returns 200 |
-| R42 | Open one "Find better gear" link on live trade2; confirm weighted group prefills (403 from cloud sandbox) | CH6-1 | open |
-| R43 | TT1 live trade2 checks: filter shapes (`/api/trade2/data/filters`), link length 6k/8k/9k chars (`URL_MAX_LENGTH`), `TradeStatus` values via `?q=`, console realm | TT1 #2–#5 | open (owner skipped 2026-11-02) |
+| R42 | Open one "Find better gear" link on live trade2; confirm weighted group prefills (403 from cloud sandbox) | CH6-1 | open: owner verify in B2 PR checklist |
+| R43 | TT1 live trade2 checks: filter shapes (`/api/trade2/data/filters`), link length 6k/8k/9k chars (`URL_MAX_LENGTH`), `TradeStatus` values via `?q=`, console realm | TT1 #2–#5 | open: owner verify in B2 PR checklist (owner skipped 2026-11-02) |
 | R44 | Real-device pass: keyboard hides tab bar (iOS Safari, Android Chrome), Install / Add to Home Screen, Safari 17, rotation, VoiceOver | U13b-1 | open |
 | R45 | Android share-target test (install PWA, share a poe.ninja link) | L1-3 | open |
 | R46 | Eyeball on real display + Safari: sky 30 s, hover pulse, hero draw-in, lantern, foil, route transitions, ignite/flare/label/rune glyph | A5-4, W15-pulse-1, MP1-4, LS1-4 | open |
@@ -51,10 +51,10 @@ Verify with (checked inside that batch, owner ticks the PR checklist): R42, R43 
 | ID | Item | Size | Origin | Notes | Status |
 |---|---|---|---|---|---|
 | R30 | Use `--dmg-lightning-core` and `--dmg-chaos-edge` (defined, unused) in showcase ring/damage glyphs | S | W0-1, C1-1, V1-3 | Fold into R03 | done |
-| R31 | Tighten MCP output schemas one tool at a time (loose objects now); one `verify-mcp` assertion each | M | M2-2 | Must not break SDK output validation | open: B2 |
+| R31 | Tighten MCP output schemas one tool at a time (loose objects now); one `verify-mcp` assertion each | M | M2-2 | Must not break SDK output validation | partial 2026-11-06 (B2): 6 tools typed (list_keystones, health_check, get_defenses, get_available_mods, inspect_keystone, get_skill_setups), each asserted in verify-mcp; rest stay loose until a shape is stable |
 | R32 | Dead-export sweep (core/web/mcp) | S | CH7 | | done |
 | R33 | Provenance footer on MCP text block | S | M2-4 | Only if a client needs it; breaks JSON-parsing clients. Default: skip | parked: scope rule 2026-11-06 |
-| R34 | Stamp tree/skills/mods builders into `version.json` | S | M1-3 / M2-3 | Only when those builders move to the PoB export. Default: park | open: B2 (only if builders use the PoB export) |
+| R34 | Stamp tree/skills/mods builders into `version.json` | S | M1-3 / M2-3 | Only when those builders move to the PoB export. Default: park | parked 2026-11-06 (B2): tree/skills/mods builders (`build-tree`, `build-skills`, `build-mods`) do not read the PoB export; only `build-mod-tiers-pob`, `build-pob-skills`, `build-monster-stats` do |
 | R35 | Before/after screenshots for Damage bars (390@2x, 1440) | S | CH7 | Keep out of git | done |
 | R36 | "Fits your build" tile badge | M | FP1-2 | Needs a data rule first (R11) | open: B3(b) |
 | R37 | Mana and leech layers detectable from snapshot | M | FP1-3 | New core field; touches `packages/*` → owner OK | open: B3(d), owner OK for packages/core |
@@ -63,7 +63,7 @@ Verify with (checked inside that batch, owner ticks the PR checklist): R42, R43 
 | R50 | Load core analysis on demand in `handleResult` | M | U13a-4 | Only if `/character/` > 250 KB (now 230,037) | done: B1 2026-11-06, `/character/` 229,962 B br, under cap, no change |
 | R51 | Drop `backdrop-blur-sm` on CommandPalette/SearchDialog | S | U13a-6 | Recommended: keep | done: B1 2026-11-06, kept (dialog-only, no measured cost) |
 | R52 | Checks tab count chip | S | U10-3 | Recommended: leave out | parked |
-| R53 | Deterministic test for 280 px first-paint overflow | S | OD1-4 | Add only if CI flakes again | open: B2 (only if CI flakes) |
+| R53 | Deterministic test for 280 px first-paint overflow | S | OD1-4 | Add only if CI flakes again | parked 2026-11-06 (B2): no 280 px flake in recent main CI runs (all success; cancelled ones were superseded merges) |
 | R54 | Lighthouse `NO_NAVSTART` on `/character/` | S | U13b-4 | Watch; retry; trace with `--save-assets` if persistent | open: B1 ran clean (0 NO_NAVSTART in 3 local + 5 CI runs); owner confirms on own machine |
 | R55 | Stale tracker rows in `docs/ui/UI-PROGRESS.md` (MP1-2, MP1-3, LS1-x, OD1-1, OD1-3 show `todo`; later carry files show resolved) | S | this audit | Reconcile against carry files; also refresh the wave table for the remaining waves | done |
 
