@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>IMG-1 variations</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=EB+Garamond:wght@500;600&family=Inter:wght@400;500&family=Geist+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#08080a; --surface:#0d0d10; --line:#24211a; --gold:#e3b341; --gold-dim:#8f7430; --text:#e8e4da; --muted:#8d887c;
+  --phys:#c4beb4; --fire:#cf4524; --cold:#86ccf7; --light:#ffe23d; --chaos:#7a2fb0; --chaos-lite:#a56ad6;
+  --serif:"EB Garamond",Georgia,serif; --sans:Inter,system-ui,sans-serif; --mono:"Geist Mono",ui-monospace,monospace;
+}
+*{box-sizing:border-box;border-radius:0}
+body{margin:0;background:var(--bg);color:var(--text);font:400 15px/1.5 var(--sans);padding:24px 16px 64px}
+main{max-width:1040px;margin:0 auto}
+h1,h2,h3,.lbl{font-family:var(--serif);text-transform:uppercase;letter-spacing:.12em;font-weight:600}
+h1{font-size:22px;color:var(--gold);margin:0 0 4px}
+h2{font-size:15px;color:var(--gold);margin:40px 0 12px;border-bottom:1px solid var(--line);padding-bottom:6px}
+p.note{color:var(--muted);margin:0 0 8px;max-width:64ch}
+.row{display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));gap:16px}
+.cell{background:var(--surface);border:1px solid var(--line);padding:16px}
+.cell h3{font-size:12px;color:var(--muted);margin:0 0 14px}
+.cell h3 b{color:var(--gold)}
+.num{font-family:var(--mono)}
+.grp{font-family:var(--serif);text-transform:uppercase;letter-spacing:.12em;font-size:11px;color:var(--muted);margin:14px 0 8px}
+.grp:first-of-type{margin-top:0}
+.e-phys{--c:var(--phys);--cl:var(--phys)} .e-fire{--c:var(--fire);--cl:#ef7a52} .e-cold{--c:var(--cold);--cl:var(--cold)}
+.e-light{--c:var(--light);--cl:var(--light)} .e-chaos{--c:var(--chaos);--cl:var(--chaos-lite)}
+
+/* A: star chart */
+.a .b{display:grid;grid-template-columns:70px 1fr 56px;align-items:center;gap:10px;margin:10px 0}
+.a .lbl{font-size:11px;color:var(--gold-dim)}
+.a .t{position:relative;height:18px;background:
+  repeating-linear-gradient(90deg,var(--line) 0 1px,transparent 1px 10%) bottom/100% 5px no-repeat;
+  border-bottom:1px solid var(--gold-dim)}
+.a .f{position:absolute;left:0;bottom:-1px;height:2px;background:var(--cl);width:var(--p)}
+.a .f::after{content:"";position:absolute;right:-3px;bottom:-3px;width:7px;height:7px;background:var(--bg);border:1.5px solid var(--cl)}
+.a .cap{position:absolute;left:75%;top:0;bottom:-1px;border-left:1px dashed var(--gold)}
+.a .v{font:500 13px var(--mono);text-align:right}
+
+/* B: engraved plate */
+.b-s .b{display:grid;grid-template-columns:70px 1fr 54px;align-items:center;gap:10px;margin:10px 0}
+.b-s .lbl{font-size:11px;color:var(--muted)}
+.b-s .t{position:relative;height:16px;background:#050506;border:1px solid #3a3322;box-shadow:inset 0 2px 3px #000}
+.b-s .f{position:absolute;inset:1px auto 1px 1px;width:calc(var(--p) - 2px);
+  background:repeating-linear-gradient(135deg,rgba(0,0,0,.35) 0 2px,transparent 2px 5px),var(--c);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.22)}
+.b-s .cap{position:absolute;left:75%;top:-3px;bottom:-3px;width:2px;background:var(--gold)}
+.b-s .v{font:500 12px var(--mono);text-align:center;border:1px solid #3a3322;background:#050506;padding:1px 0}
+
+/* C: bold flat segments */
+.c .b{display:grid;grid-template-columns:52px 1fr;align-items:center;gap:12px;margin:12px 0}
+.c .v{font:500 20px var(--mono);color:var(--cl)}
+.c .seg{display:grid;grid-template-columns:repeat(10,1fr);gap:4px;height:12px;position:relative}
+.c .seg i{background:#1b1a17}
+.c .seg i.on{background:var(--c)}
+.c .seg i.half{background:linear-gradient(90deg,var(--c) 50%,#1b1a17 50%)}
+.c .sub{grid-column:2;margin-top:-6px;font-family:var(--serif);text-transform:uppercase;letter-spacing:.12em;font-size:10px;color:var(--muted)}
+
+/* share cards */
+.card{aspect-ratio:1200/630;position:relative;overflow:hidden;background:var(--bg);border:1px solid var(--line);container-type:inline-size}
+.card svg{position:absolute;inset:0;width:100%;height:100%}
+.card .in{position:absolute;inset:0;padding:6cqw 6cqw}
+.card .nm{font-family:var(--serif);text-transform:uppercase;letter-spacing:.14em;font-weight:600;font-size:5.6cqw;line-height:1;margin:0}
+.card .cls{font-family:var(--serif);text-transform:uppercase;letter-spacing:.2em;font-size:2.1cqw;color:var(--gold)}
+.card .st{font-family:var(--mono);font-size:2.2cqw;color:var(--text)}
+.card .st small{display:block;font:500 1.5cqw var(--serif);text-transform:uppercase;letter-spacing:.14em;color:var(--muted)}
+.card .st-row{display:flex;gap:4cqw}
+.ca .in{display:flex;flex-direction:column;justify-content:space-between}
+.ca .ring{position:absolute;right:5cqw;top:50%;transform:translateY(-50%);width:34cqw;text-align:center}
+.ca .ring b{display:block;font:500 6cqw var(--mono);color:var(--gold)}
+.ca .ring span{font:500 1.6cqw var(--serif);text-transform:uppercase;letter-spacing:.2em;color:var(--muted)}
+.cb{border:1px solid #3a3322}
+.cb::before{content:"";position:absolute;inset:2.2cqw;border:1px solid #3a3322;z-index:1;pointer-events:none}
+.cb .in{display:flex;flex-direction:column;justify-content:space-between;padding:7cqw}
+.cb .hatch{height:2.4cqw;display:grid;grid-template-columns:repeat(5,1fr);gap:.6cqw}
+.cb .hatch i{background:repeating-linear-gradient(135deg,rgba(0,0,0,.35) 0 .3cqw,transparent .3cqw .8cqw),var(--c)}
+.cb .plate{display:inline-block;border:1px solid #3a3322;background:#050506;padding:1.2cqw 2cqw;box-shadow:inset 0 .3cqw .5cqw #000}
+.cc .bar{position:absolute;left:0;right:0;top:0;height:2.2cqw;display:grid;grid-template-columns:repeat(5,1fr)}
+.cc .in{display:flex;flex-direction:column;justify-content:flex-end;gap:2.4cqw}
+.cc .big{font:500 15cqw/0.9 var(--mono);color:var(--gold);letter-spacing:-.02em}
+.cc .big small{font:500 2cqw var(--serif);text-transform:uppercase;letter-spacing:.2em;color:var(--muted);display:block;margin-bottom:1cqw;letter-spacing:.2em}
+.cc .nm{font-size:3.4cqw}
+</style>
+</head>
+<body>
+<main>
+<h1>IMG-1 variations</h1>
+<p class="note">Bars and the character header / share card, in three directions each. A star-chart linework, B engraved plate, C bold flat. All square-cornered, tokens only, CSS/SVG. Mock data.</p>
+
+<h2>Damage and defence bars</h2>
+<div class="row" id="bars"></div>
+
+<h2>Character header and share card</h2>
+<p class="note">Shown at 1200 by 630 proportions. The same layout becomes the header block at phone width.</p>
+<div class="row" style="grid-template-columns:repeat(auto-fit,minmax(420px,1fr))">
+  <div><div class="lbl" style="font-size:12px;color:var(--muted);margin-bottom:8px">A star chart</div>
+    <div class="card ca">
+      <svg viewBox="0 0 1200 630" aria-hidden="true">
+        <g fill="none" stroke="#e3b341" stroke-opacity=".5">
+          <circle cx="920" cy="315" r="150"/><circle cx="920" cy="315" r="205" stroke-opacity=".25"/><circle cx="920" cy="315" r="260" stroke-opacity=".12"/>
+          <g id="ticks" stroke-opacity=".6"></g>
+          <path d="M920 315 m-150 0 a150 150 0 1 1 106 143" stroke="#e3b341" stroke-opacity="1" stroke-width="3"/>
+        </g>
+        <g fill="#e3b341"><rect x="42" y="34" width="5" height="5" fill-opacity=".6"/><rect x="190" y="560" width="4" height="4" fill-opacity=".4"/><rect x="520" y="70" width="4" height="4" fill-opacity=".4"/><rect x="640" y="520" width="5" height="5" fill-opacity=".5"/></g>
+      </svg>
+      <div class="in">
+        <div><div class="cls">Witchhunter, level 94</div><p class="nm" style="margin-top:1.6cqw">Aurelian</p></div>
+        <div class="st-row"><div class="st">1.84M<small>Hit DPS</small></div><div class="st">4,210<small>Life + ES</small></div><div class="st">75 / 75 / 75<small>Resistances</small></div></div>
+      </div>
+      <div class="ring"><b>B+</b><span>Build grade</span></div>
+    </div>
+  </div>
+  <div><div class="lbl" style="font-size:12px;color:var(--muted);margin-bottom:8px">B engraved plate</div>
+    <div class="card cb">
+      <div class="in">
+        <div><div class="cls">Witchhunter, level 94</div><p class="nm" style="margin-top:1.6cqw">Aurelian</p></div>
+        <div class="st-row">
+          <div class="plate st">1.84M<small>Hit DPS</small></div><div class="plate st">4,210<small>Life + ES</small></div><div class="plate st">B+<small>Build grade</small></div>
+        </div>
+        <div class="hatch"><i class="e-phys" style="--c:var(--phys)"></i><i style="--c:var(--fire)"></i><i style="--c:var(--cold)"></i><i style="--c:var(--light)"></i><i style="--c:var(--chaos)"></i></div>
+      </div>
+    </div>
+  </div>
+  <div><div class="lbl" style="font-size:12px;color:var(--muted);margin-bottom:8px">C bold flat</div>
+    <div class="card cc">
+      <div class="bar"><i style="background:var(--phys)"></i><i style="background:var(--fire)"></i><i style="background:var(--cold)"></i><i style="background:var(--light)"></i><i style="background:var(--chaos)"></i></div>
+      <div class="in">
+        <div class="cls">Witchhunter, level 94</div>
+        <p class="nm">Aurelian</p>
+        <div class="big"><small>Hit DPS</small>1.84M</div>
+        <div class="st-row"><div class="st">4,210<small>Life + ES</small></div><div class="st">B+<small>Build grade</small></div><div class="st">75 / 75 / 75<small>Resistances</small></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+</main>
+<script>
+const dmg=[["Physical","phys",34,"34%"],["Fire","fire",18,"18%"],["Cold","cold",9,"9%"],["Lightning","light",31,"31%"],["Chaos","chaos",8,"8%"]];
+const def=[["Fire","fire",75,"75"],["Cold","cold",75,"75"],["Lightning","light",68,"68"],["Chaos","chaos",20,"20"]];
+const mk={
+ a:(n,k,p,v,cap)=>`<div class="b e-${k}"><span class="lbl">${n}</span><div class="t">${cap?'<i class="cap"></i>':''}<i class="f" style="--p:${p}%"></i></div><span class="v">${v}</span></div>`,
+ b:(n,k,p,v,cap)=>`<div class="b e-${k}"><span class="lbl">${n}</span><div class="t">${cap?'<i class="cap"></i>':''}<i class="f" style="--p:${p}%"></i></div><span class="v">${v}</span></div>`,
+ c:(n,k,p,v)=>{const s=p/10;let h='';for(let i=0;i<10;i++){h+=`<i class="${i+1<=Math.floor(s)?'on':(i<s?'half':'')}"></i>`}
+   return `<div class="b e-${k}"><span class="v">${v}</span><div class="seg">${h}</div><span class="sub">${n}</span></div>`}
+};
+const sty=[["a","a","A <b>Star chart</b>"],["b-s","b","B <b>Engraved plate</b>"],["c","c","C <b>Bold flat</b>"]];
+document.getElementById("bars").innerHTML=sty.map(([cls,f,t])=>`<div class="cell ${cls}"><h3>${t}</h3>
+ <div class="grp">Damage share</div>${dmg.map(d=>mk[f](d[0],d[1],d[2]*2,d[3],false)).join("")}
+ <div class="grp">Resistances, cap 75</div>${def.map(d=>mk[f](d[0],d[1],d[2]/90*100,d[3],true)).join("")}</div>`).join("");
+let t="";for(let i=0;i<60;i++){const a=i/60*Math.PI*2,r1=i%5?150:144,r2=156,x=Math.cos(a),y=Math.sin(a);t+=`<line x1="${920+x*r1}" y1="${315+y*r1}" x2="${920+x*r2}" y2="${315+y*r2}"/>`}
+document.getElementById("ticks").innerHTML=t;
+</script>
+</body>
+</html>
