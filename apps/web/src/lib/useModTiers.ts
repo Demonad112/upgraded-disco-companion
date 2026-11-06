@@ -66,6 +66,8 @@ export function useModTiers(enabled: boolean, needsDisplay = false): ModTiersSta
     let cancelled = false
     // eslint-disable-next-line react-hooks/set-state-in-effect -- kicking off a fetch against an external system
     setState({ status: 'loading' })
+    // A reload swaps in a lean ModTiers, so the display text must be fetched again.
+    setDisplayDone(false)
 
     fetch(DATA_URL)
       .then(async (res) => {
