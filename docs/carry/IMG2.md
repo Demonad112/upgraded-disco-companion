@@ -25,10 +25,27 @@ Not changed, on purpose: `Instruments` (status chips only, no bar), the home car
 under 2 KB left), the share card, `Headroom` tier bars (not in the R03 list).
 
 ## QA (390×844 and 360×780)
-__QA__
+- Shots of `/`, `/checklist`, `/atlas`, `/dashboard`, `/character` at both sizes, plus crops of the resist meters, damage
+  bars, stamp, Atlas icon tabs and a checklist diagram (kept out of git; listed on the PR). Horizontal overflow: 0 px on
+  every page at both widths. No real breakage found, so no QA fixes were needed.
+- e2e (Playwright, mobile + desktop): 328 passed, 1 failed in the full run: `[desktop] a11y dashboard`, the known contrast
+  flake (also seen in B3; this batch doesn't touch the dashboard). Re-run in isolation with `features.spec.ts` (including
+  the new R45 test): 56/56 passed.
+- Lighthouse mobile (`lighthouserc.json`, same session): `/` perf 94, LCP 2,022 ms, CLS 0, TBT 202 ms; `/character` perf
+  95, LCP 1,951 ms, CLS 0, TBT 184 ms. Both assertions pass.
+- R44/R45/R46: emulated where possible (R45 share-target import, reduced motion); the rest is the PR's Owner verify list.
 
 ## Measurements (same session, `scripts/route-weight.mjs`, first-load br)
-__WEIGHTS__
+| Route | This branch | `main` |
+|---|---|---|
+| `/` (budget 192,000) | 190,005 | 190,023 |
+| `/checklist/` | 207,660 | — |
+| `/character/` | 229,966 | 229,968 |
+| `/atlas/` | 201,998 | 201,324 |
+| `/dashboard/` | 211,542 | 211,560 |
+| `/trade/` | 192,568 | — |
+
+`bars.css` loads as its own lazy chunk (859 B br), so `/` doesn't carry it.
 
 ## Resolved from earlier carry files
 - CH1-2 (ring, stamp to IMG-1 picks): stamp restyled; there is no damage ring in the code to restyle and the picks
