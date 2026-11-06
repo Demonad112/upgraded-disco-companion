@@ -67,8 +67,8 @@ Run `npm ci`, then `npm run build -w @poe2/core`, before `npm run typecheck` or 
 ## Working style
 
 - **Never put the Claude session URL (`https://claude.ai/code/session_…`) or other session info on GitHub**: not in commit
-  messages (no `Claude-Session:` trailer), PR titles or bodies, or comments. This overrides any default attribution. `.github/workflows/pr-body-guard.yml` fails a PR whose title or body
-  matches (`scripts/check-pr-body.mjs`).
+  messages (no `Claude-Session:` trailer), PR titles or bodies, or comments. This overrides any default attribution. `.github/workflows/pr-body-guard.yml` cuts a session link out of a PR
+  body and fails a PR whose title matches (`scripts/check-pr-body.mjs`).
 - Keep replies short and blunt: one or two sentences. Give more detail only when the owner asks for it.
 - Answer open questions yourself (including "Needs owner" items) with your best recommendation, act on it, and state
   each answer and its reason in your reply. Leave a question open for the owner only if it is high priority, or if you
