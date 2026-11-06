@@ -71,11 +71,18 @@ function Delta({ before, after, format = fmt }: { before: number | null; after: 
 }
 
 export function WhatIfPanel({ analysis, options }: { analysis: Analysis; options: AnalyzeOptions }) {
+  // Keyed by value, not by `analysis` identity: the analysis is recomputed when the mod text finishes loading,
+  // and that must not wipe the sliders the reader has already moved.
+  const baseKey = JSON.stringify([
+    analysis.model.name,
+    ...TYPES.map((t) => analysis.defense.resistances.find((r) => r.type === t)?.value ?? null),
+  ])
   const base = useMemo(() => {
+    const [, ...values] = JSON.parse(baseKey) as [string, ...(number | null)[]]
     const map = {} as Record<ResType, number | null>
-    for (const t of TYPES) map[t] = analysis.defense.resistances.find((r) => r.type === t)?.value ?? null
+    TYPES.forEach((t, i) => (map[t] = values[i] ?? null))
     return map
-  }, [analysis])
+  }, [baseKey])
 
   const [vals, setVals] = useState(base)
   const [ticked, setTicked] = useState<ReadonlySet<string>>(new Set())
