@@ -70,8 +70,8 @@ export function Progress({ history, bare = false }: { history: CharacterHistory;
       {!diff ? (
         <p className="max-w-prose text-xs leading-relaxed text-ink-mute">
           {snapshots.length === 0
-            ? 'This character has just been recorded for the first time. Import it again after making a change and the difference will be shown here.'
-            : 'Only one snapshot so far. A single point is not a trend, so nothing is compared yet — import again after making a change.'}
+            ? 'First import of this character. Import it again after a change to see the difference.'
+            : 'Only one snapshot so far. Import again after a change to see the difference.'}
         </p>
       ) : (
         <>

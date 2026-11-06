@@ -33,7 +33,7 @@ export const patchDeltas: PatchDelta[] = [
     id: "delta-boss-resists",
     system: "Pinnacle boss resistances",
     before: "Arbiter of Ash, Arbiter of Divinity, Omniphobia and Raven Trickster all had +75% All Elemental Resistances.",
-    now: "Ash: Fire Resistance and Cold Vulnerability. Divinity: 45% Lightning Resistance and Fire Vulnerability (0% Cold). Omniphobia and Raven Trickster: no All Elemental Resistance.",
+    now: "Ash resists fire and is weak to cold. Divinity has 45% Lightning Resistance and is weak to fire (0% Cold); Omniphobia and Raven Trickster lost All Elemental Resistance.",
     source: patchSource(),
   },
   {
@@ -54,7 +54,7 @@ export const patchDeltas: PatchDelta[] = [
     id: "delta-expedition",
     system: "Runes of Aldur and Expedition",
     before: "League-only mechanic with no Expedition Tablets; needed Aldur's Saga, which stays Runes of Aldur-only.",
-    now: "Core from Act 4. Expedition Tablets stack 1 to 4 per map. Expedition Tablets do not drop in Runes of Aldur.",
+    now: "Core from Act 4, and 1 to 4 Expedition Tablets stack per map. They don't drop in Runes of Aldur.",
     source: patchSource(),
   },
   {
@@ -68,7 +68,7 @@ export const patchDeltas: PatchDelta[] = [
     id: "delta-delirium",
     system: "Delirium scaling and fog",
     before: "Pack count scaled to 200% Deliriousness; Grand Mirror spread fog to 8 to 16 maps.",
-    now: "Pack count caps at 100% Deliriousness (Monster Effectiveness and Rarity still scale to 200%). Grand Mirror spreads fog to exactly 10 maps. Recurring Nightmares gives +30% Deliriousness.",
+    now: "Pack count caps at 100% Deliriousness, but Monster Effectiveness and Rarity still scale to 200%. Grand Mirror spreads fog to exactly 10 maps, and Recurring Nightmares adds +30% Deliriousness.",
     source: patchSource({
       verified: "unverified",
       note: "The pack-count cap and 10-map fog spread match the 0.5.5 patch notes already used in this guide. The Recurring Nightmares +30% figure is only in the endgame update spec.",

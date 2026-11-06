@@ -160,7 +160,7 @@ export function analyzeContent(defense: DefenseSummary, data: MonsterStatData): 
     highestComfortableTier === null
       ? `A ${type} hit of ${lowest.toLocaleString()} kills this character, which is thin against a base monster even at tier 1. Survivability is the constraint, not the content.`
       : top && highestComfortableTier >= top.tier
-        ? `Against BASE monsters this character has ${top.headroom}x headroom at tier ${top.tier}, the highest waystone. Base monsters are not what kills characters at this level — rares, uniques and map modifiers are, and those multipliers are not modelled here.`
+        ? `Against BASE monsters this character has ${top.headroom}x headroom at tier ${top.tier}, the highest waystone. Rares, uniques and map mods hit harder and are not modelled here.`
         : `Against BASE monsters this character is comfortable to tier ${highestComfortableTier}` +
           (firstDangerousTier !== null ? `, and thin from tier ${firstDangerousTier}` : '') +
           `. That is against a normal monster; rares, uniques and map modifiers hit considerably harder.`
@@ -174,7 +174,7 @@ export function analyzeContent(defense: DefenseSummary, data: MonsterStatData): 
     firstDangerousTier,
     summary,
     caveats: [
-      'Measured against a BASE monster of that area level. Rare and unique monsters and map modifiers scale damage well past this, and those multipliers are not modelled here — so these figures are an upper bound, not a safety verdict.',
+      'Measured against a BASE monster of that area level. Rares, uniques and map mods hit much harder and are not modelled, so treat this as an upper bound, not a safety verdict.',
       `Headroom is against ${type} damage, the type that kills this character soonest. Other damage types have more room.`,
       'Base monster damage is physical. A character whose weakest defence is elemental or chaos has less real headroom than the physical figure suggests.',
       `Comfortable means surviving ${COMFORT_THRESHOLDS.comfortable} base hits or more; dangerous means fewer than ${COMFORT_THRESHOLDS.dangerous}. Those thresholds are this project's judgement, not a game constant.`,

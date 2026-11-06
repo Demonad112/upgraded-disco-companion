@@ -30,7 +30,7 @@ export default function ErrorPage({ error, reset }: { error: Error & { digest?: 
       <p className="eyebrow">Something broke</p>
       <h1 className="h3 mt-1">This page fell over</h1>
       <p className="mt-2 text-sm text-ink-dim">
-        Part of the page threw an error while drawing. Your saved progress and characters are kept in this browser and are not affected.
+        Part of the page failed to draw. Your saved progress and characters are safe.
       </p>
       <p className="mt-3 font-mono text-sm break-words text-danger">{error.message || error.name}</p>
       <div className="mt-4 flex flex-wrap gap-3" aria-live="polite">

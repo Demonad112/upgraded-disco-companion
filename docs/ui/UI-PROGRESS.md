@@ -43,6 +43,7 @@ session's row in its last commit. Audit rows are tracked in `docs/audit/08-PROGR
 | 24 | IMG-2 visual build + QA sweep | Cloud | Opus 5.5 · high | done (draft PR) | variant/20261106-visuals | | | B4b: bars style B, icons, diagram plates; QA folded in (`docs/carry/IMG2.md`) |
 | 25 | S1 reconcile + dead exports | Cloud | Sonnet 5.5 · medium | done | chore/20261106-reconcile | | | |
 | 26 | S2 QA sweep on main | Cloud | Sonnet 5.5 · medium | done | fix/20261106-qa | | | Showcase card no longer overflows at ≤ 415 px; Atlas loading placeholder gets a role; `docs/carry/S2.md` |
+| 27 | PW1 plain-words copy pass + IMG2-4 icons | Cloud | Opus 5.5 · high | in review | copy/20261106-plain-words | | | Default copy cut to 1-2 sentences; Pro detail keeps the full text |
 
 ## Backlog
 | Item | Batch | Status | PR | Notes |

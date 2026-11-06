@@ -59,7 +59,7 @@ const basePath = process.env.NEXT_PUBLIC_BASE_PATH ?? ''
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://upgraded-disco-companion.pages.dev'
 const title = 'PoE2 Endgame Companion'
 const description =
-  'Path of Exile 2 character analysis grounded in poe.ninja’s own computed data — ranked, quantified, evidence-backed findings — plus an endgame progression checklist, Atlas planner and farming dashboard.'
+  'Path of Exile 2 character analysis from poe.ninja data, plus an endgame checklist, Atlas planner and farming dashboard.'
 const ogImage = { url: `${basePath}/images/og-cover.jpg`, width: 1200, height: 630, alt: title }
 
 export const metadata: Metadata = {

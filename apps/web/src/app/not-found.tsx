@@ -12,7 +12,7 @@ export default function NotFound() {
         eyebrow="404"
         title="Off the"
         accent="Atlas"
-        description="There is no page at this address. It may have moved when the site was reorganised; one of these is probably what you were after."
+        description="There&apos;s no page at this address. It may have moved, so try one of these."
       />
       <LostLinks />
     </>

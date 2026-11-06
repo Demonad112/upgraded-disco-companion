@@ -209,8 +209,7 @@ export function AuditPanel({
                 />
               </div>
               <p className="mt-1.5 text-[10px] leading-relaxed text-ink-mute">
-                {fmt(report.spirit.unreserved)} spirit is unreserved. Whether that is worth spending depends on
-                whether a buff you want fits in it — this is a number, not a verdict.
+                {fmt(report.spirit.unreserved)} spirit is unused. It&apos;s only worth spending if a buff you want fits.
               </p>
             </div>
           </section>

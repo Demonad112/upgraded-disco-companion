@@ -113,8 +113,7 @@ export function AtlasGuideTabs() {
         {tab === "forks" ? (
           <>
             <Intro>
-              Unlocked after the first Arbiter of Divinity kill. Three parallel branches — take whichever fits your
-              farming loop first.
+              Unlocked after the first Arbiter of Divinity kill. Take whichever of the three branches fits your farm first.
             </Intro>
             <div className="flex flex-col gap-2.5 md:flex-row">
               {memoryForks.map((fork) => (

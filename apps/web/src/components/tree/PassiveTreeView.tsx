@@ -341,8 +341,7 @@ export function PassiveTreeView({ tree, allocation, className = '' }: PassiveTre
       {resolved.unresolvedIds.length ? (
         <p className="mt-2 text-[11px] leading-relaxed text-warn">
           {resolved.unresolvedIds.length} allocated node
-          {resolved.unresolvedIds.length === 1 ? '' : 's'} are not present in this tree data set and cannot be drawn.
-          This is a gap in the data, not a problem with the build — the game does not allow an invalid tree.
+          {resolved.unresolvedIds.length === 1 ? '' : 's'} are missing from this tree data, so they can&apos;t be drawn. The gap is in the data, not your build.
         </p>
       ) : null}
 

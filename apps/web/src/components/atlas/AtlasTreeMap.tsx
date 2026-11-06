@@ -429,8 +429,7 @@ function AtlasMapCanvas({ atlas }: { atlas: AtlasTree }) {
       </div>
 
       <p className="text-[10px] leading-relaxed text-ink-mute">
-        Node positions and effects come from the game&apos;s Atlas tree data, via poe2db. Green marks what you&apos;ve
-        ticked on this page — it isn&apos;t read from your account.
+        Node positions and effects come from the game&apos;s data, via poe2db. Green marks what you&apos;ve ticked here, not what&apos;s on your account.
       </p>
     </div>
   )

@@ -172,8 +172,7 @@ export function Recommendations({ report }: { report: RecommendationReport }) {
         <div data-surface="data" className="card mt-4 p-4">
           <h3 className="text-xs font-medium tracking-wide text-ink-dim uppercase">Ruled out by a keystone</h3>
           <p className="mt-1 text-[11px] text-ink-mute">
-            Findings the engine did spot and then withdrew. Shown rather than dropped — a finding that vanishes
-            silently is indistinguishable from one that was never noticed.
+            Findings the tool spotted and then dropped, listed so you can see they were checked.
           </p>
           <ul className="mt-3 space-y-3">
             {report.suppressed.map((s) => (

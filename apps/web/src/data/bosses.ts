@@ -34,7 +34,7 @@ export const pinnacleBosses: PinnacleBoss[] = [
     gatingRequirements: [
       "Arbiter of Ash killed first",
       "Combine Origin Cradle + Origin Spark at Doryani / the Engine Room into an Origin Core, then carry it to the top of the Origin Tower",
-      "Kill #2 needs a non-quest Core: one Matriarch + one Patriarch Hall found outside the Fortress (orange beam, usually paired) — or buy the Core/Cradle/Spark on the exchange",
+      "Kill #2 needs a non-quest Core: one Matriarch and one Patriarch Hall outside the Fortress (orange beam), or buy the Core, Cradle or Spark on the exchange",
       "5,000+ life and 80%+ relevant resistances recommended; be comfortable in T15 before kill #2",
     ],
     notes:

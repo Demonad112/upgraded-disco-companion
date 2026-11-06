@@ -10,7 +10,7 @@ export const glossary: GlossaryTerm[] = [
     id: "g-waystone",
     term: "Waystone",
     definition:
-      "The key that opens a map. Its tier sets the area level (T1 = 65 … T15 = 79). Its prefixes and suffixes only make the map harder; the implicit is what raises rewards.",
+      "The key that opens a map. Its tier sets the area level (T1 = 65, T15 = 79); its rolled mods only make the map harder, while its built-in stat raises rewards.",
     seeStepId: "step-waystone-engine",
   },
   {
@@ -34,13 +34,13 @@ export const glossary: GlossaryTerm[] = [
     matches: ["Precursor Tablet", "Tablet"],
     term: "Tablet (Precursor Tablet)",
     definition:
-      "Socketed into a Waystone to add a mechanic or bonus to that map. Slots: magic Waystone 1, rare with 3+ mods 2, six mods 3. Tablet mods are pure upside, unlike Waystone mods.",
+      "Slots into a Waystone to add a mechanic or bonus to that map, with no downside. Magic Waystones hold 1, rares with 3+ mods hold 2, and six-mod Waystones hold 3.",
   },
   {
     id: "g-overseer-tablet",
     term: "Overseer Tablet",
     definition:
-      "Unlocked by Eons of Domination. Slotted into a node without a powerful boss, it makes that map's boss Powerful — so it can drop a higher-tier Waystone.",
+      "Unlocked by Eons of Domination. Put it on a map without a powerful boss to make that map's boss Powerful, so it can drop a higher-tier Waystone.",
     seeStepId: "step-sustain-cluster",
   },
   {
@@ -48,7 +48,7 @@ export const glossary: GlossaryTerm[] = [
     matches: ["Atlas passive point", "Atlas point"],
     term: "Atlas passive points",
     definition:
-      "Spent on the Atlas tree to buff maps. They can't be refunded. Fortress maps, wall towers and mechanic quest lines give them; in 0.5.5 the second Arbiter of Divinity kill unlocks the rest at once.",
+      "Spent on the Atlas tree to improve your maps, and they can't be refunded. Fortress maps, wall towers and mechanic quests give them; the second Arbiter of Divinity kill unlocks the rest.",
     seeStepId: "step-atlas-rules",
   },
   {
@@ -64,7 +64,7 @@ export const glossary: GlossaryTerm[] = [
     matches: ["Crisis Fragment"],
     term: "Crisis Fragments",
     definition:
-      "Ancient, Faded and Weathered — the three keys for the Arbiter of Ash. The quest gives you two from the Enigma Chambers; the non-quest fight needs all three from Citadels or the exchange.",
+      "Ancient, Faded and Weathered: the three keys for the Arbiter of Ash. The quest gives you two; the non-quest fight needs all three from Citadels or the exchange.",
     seeStepId: "step-enigma-chambers",
   },
   {
@@ -78,7 +78,7 @@ export const glossary: GlossaryTerm[] = [
     matches: ["Origin Core"],
     term: "Origin Core (Cradle + Spark)",
     definition:
-      "The key for the Arbiter of Divinity: an Origin Cradle from a Matriarch Hall plus an Origin Spark from a Patriarch Hall. A non-quest Core (Halls outside the Fortress) is what unlocks the full Atlas.",
+      "The key for the Arbiter of Divinity, made from an Origin Cradle (Matriarch Hall) and an Origin Spark (Patriarch Hall). A Core built from Halls outside the Fortress unlocks the full Atlas.",
     seeStepId: "step-repeat-divinity-loop",
   },
   {
@@ -86,7 +86,7 @@ export const glossary: GlossaryTerm[] = [
     matches: [],
     term: "Masters (Doryani, Hilda, Jado)",
     definition:
-      "Three NPCs with their own point trees. You pick one Master per map setup: Hilda for boss rushes and Omen Abyss, Jado for unique and Lineage hunts, Doryani for safety and biome control.",
+      "Three NPCs with their own point trees; you pick one per map setup. Hilda suits boss rushes and Omen Abyss, Jado unique and Lineage hunts, Doryani safety and biome control.",
     seeStepId: "step-chain-doryani",
   },
   {
@@ -138,7 +138,7 @@ export const glossary: GlossaryTerm[] = [
     matches: ["Deliriousness", "Grand Mirror"],
     term: "Deliriousness / Grand Mirror",
     definition:
-      "Delirium fog raises a map's Deliriousness; at 100% maps count toward the Simulacrum. A Grand Mirror (kill the boss and its mirrored copy) spreads fog to 10 nearby maps in 0.5.5.",
+      "Delirium fog raises a map's Deliriousness, and at 100% the map counts toward the Simulacrum. A Grand Mirror (kill the boss and its mirrored copy) spreads fog to 10 nearby maps.",
     seeStepId: "step-chain-delirium",
   },
   {

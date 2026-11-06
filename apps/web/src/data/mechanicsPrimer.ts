@@ -7,14 +7,14 @@ export const primerFacts: PrimerFact[] = [
     id: "primer-tiers",
     topic: "Tiers and area level",
     detail:
-      "T1 = area level 65, +1 per tier, T15 = 79. T16 (area 80) only comes from Vaal-corrupting a T15 — which can also drop it to T14. T1–5 are white, T6–10 yellow, T11–15 red.",
+      "T1 is area level 65 and each tier adds 1, up to T15 at 79; T1–5 are white, T6–10 yellow, T11–15 red. T16 (area 80) only comes from Vaal-corrupting a T15, which can also drop it to T14.",
     source: video05Source(["jOU2zNgLxJ0@08:22", "5Vp_3gUFbwI@00:45"]),
   },
   {
     id: "primer-mods",
     topic: "Waystone modifiers",
     detail:
-      "Prefixes and suffixes only make the map harder; the Waystone's implicit is what scales rewards. Each modifier removes one of your 6 portals (revives) — a 6-mod map is one attempt.",
+      "Mods only make the map harder; the Waystone's built-in stat is what raises rewards. Each mod also removes one of your 6 revives, so a 6-mod map gives one attempt.",
     source: video05Source(["zMFBAr1a6SA@02:04", "yHLuC_pnFco@05:24"]),
   },
   {
@@ -28,28 +28,28 @@ export const primerFacts: PrimerFact[] = [
     id: "primer-tablet-slots",
     topic: "Tablet slots",
     detail:
-      "Magic Waystone = 1 tablet. Rare with 3+ mods (Transmute + Augment + Regal, or Alchemy) = 2. Six mods (Alchemy + 2 Exalts) = 3.",
+      "A magic Waystone holds 1 tablet. A rare with 3+ mods (Alchemy, or Transmute + Augment + Regal) holds 2, and six mods (Alchemy + 2 Exalts) holds 3.",
     source: video05Source(["yHLuC_pnFco@09:14"]),
   },
   {
     id: "primer-tablet-mods",
     topic: "Tablet modifier cap",
     detail:
-      "Tablets start at magic rarity (2 mods). Killing Arbiter of Ash unlocks 3 (Regal); the top of the tree after Arbiter of Divinity (Partial Translation) unlocks 4. Unlike Waystones, every tablet mod is pure upside.",
+      "Tablets start with 2 mods, rise to 3 after Arbiter of Ash and to 4 with Partial Translation after Arbiter of Divinity. Every tablet mod is a pure bonus, unlike Waystone mods.",
     source: video05Source(["lsu7-ITJe_M@12:07", "lsu7-ITJe_M@13:08"]),
   },
   {
     id: "primer-powerful-boss",
     topic: "Climbing tiers",
     detail:
-      "Only Powerful Map Boss nodes (red demon icon) drop a Waystone one tier higher; the 3→1 reforge bench is the only other way up. Doryani sells one tier below your best completed map and restocks on every level-up.",
+      "Only Powerful Map Boss nodes (red demon icon) drop a Waystone one tier higher, and the 3-for-1 reforge bench is the only other way up. Doryani sells one tier below your best map and restocks each level-up.",
     source: videoSource(["uMHfOL8sT6I@03:03", "uMHfOL8sT6I@01:32"]),
   },
   {
     id: "primer-atlas-points",
     topic: "Where Atlas points come from",
     detail:
-      "Fortress maps give points once you're past the Ancient Gateway; wall towers give a few extra. In 0.5.5 the second (non-quest) Arbiter of Divinity kill unlocks everything. League mechanics and Masters have their own point trees from their quest chains.",
+      "Fortress maps give points once you're past the Ancient Gateway, and the second Arbiter of Divinity kill unlocks the rest. League mechanics and Masters have their own point trees from their quests.",
     source: videoSource(["5Vp_3gUFbwI@03:49", "uMHfOL8sT6I@05:20"], {
       note: "Wall-tower point counts differ between sources (+3 vs +4), as does the total tree size (311 vs 335).",
     }),

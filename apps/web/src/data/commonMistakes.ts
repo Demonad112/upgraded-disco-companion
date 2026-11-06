@@ -36,7 +36,7 @@ export const commonMistakes: CommonMistake[] = [
     id: "m-rush-t15",
     title: "Rushing T15 when T11 already gives ~95% of loot value",
     description:
-      "T15 rarely improves on T11 (item level 75) rolls, which are already high-weight — the extra risk isn't worth it until you're geared. Run the highest tier you clear at a decent pace, not the highest you survive; if a map takes 50–80% longer, drop down.",
+      "T15 rarely beats T11 drops, so the extra risk isn't worth it until you're geared. Run the highest tier you clear at a good pace; if a map takes 50–80% longer, drop down.",
     appliesToStage: ["roadmap"],
     source: video05Source(["VSeDfybR3Cc@09:07", "uMHfOL8sT6I@03:03"]),
   },
@@ -101,7 +101,7 @@ export const commonMistakes: CommonMistake[] = [
     id: "m-atlas-trap-nodes",
     title: "Taking Atlas trap nodes (no respec)",
     description:
-      "Atlas points can't be refunded. Group 1, never take: Reactive Hiveseeding (blocks Unstable Breaches), Survival of the Fittest (merges rares, so fewer Omens and Grand Expedition drops), The Lost Architect and Escalating Rivalry (Rogue Exiles flee with your loot). Group 2, bugged or situational: Man Trap, Mysterious Transference, Living Metal, Armaments of Evil and the childhood-fears Delirium node. The three small gold-found nodes are optional to path around. Full list on the Atlas page.",
+      "Atlas points can't be refunded, so skip the traps: Reactive Hiveseeding, Survival of the Fittest, The Lost Architect and Escalating Rivalry. The Atlas page lists every bugged or situational node.",
     appliesToStage: ["atlas", "roadmap"],
     relatedMechanics: ["abyss", "breach"],
     source: videoSource(["uMHfOL8sT6I@07:37", "uMHfOL8sT6I@08:23", "5Vp_3gUFbwI@09:12"]),

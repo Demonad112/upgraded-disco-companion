@@ -23,6 +23,7 @@ import {
   typeName,
 } from "@/lib/farm/quickPicks";
 import type { Loadout } from "@/lib/farm/types";
+import { MapIcon } from "@/components/icons";
 import { ModSheet } from "./ModSheet";
 import "@/styles/quick-picks.css";
 
@@ -200,7 +201,8 @@ export default function QuickSetup({ farmKey, onChangeFarm, onOpenFull }: { farm
           <div className="qp-cards">
             {loadout.tablets.map((t, i) => (
               <article key={i} className="qp-card" aria-label={`Tablet ${i + 1}`}>
-                <p className="label-metric">
+                <p className="label-metric flex items-center gap-1.5">
+                  <MapIcon name="tablet" size={16} />
                   Tablet {i + 1} · {typeName(d, t.type)} · {t.rarity === "rare" ? "Rare" : "Magic"}
                 </p>
                 {chips(i)}
@@ -212,7 +214,8 @@ export default function QuickSetup({ farmKey, onChangeFarm, onOpenFull }: { farm
         <section aria-labelledby="qp-way-h" className="flex flex-col gap-3">
           <h4 id="qp-way-h" className="section-title !mb-0">Waystone</h4>
           <article className="qp-card" aria-label="Waystone">
-            <p className="label-metric">
+            <p className="label-metric flex items-center gap-1.5">
+              <MapIcon name="waystone" size={16} />
               Waystone · tier {way.tier} · {way.rarity === "rare" ? "Rare" : "Magic"}{way.corrupted ? " · corrupted" : ""}
             </p>
             {chips(wayIndex)}
@@ -249,8 +252,7 @@ export default function QuickSetup({ farmKey, onChangeFarm, onOpenFull }: { farm
           All three are estimates from this farm&rsquo;s scoring weights, not predicted drops.
         </p>
         <p className="text-sm text-ink-dim" data-testid="qp-danger-note">
-          Farm risk on the farm tile is how dangerous this kind of farm is to run. Map danger here counts only the danger mods
-          on this Waystone and these tablets, so it can be 0 on a farm that still hurts.
+          Farm risk is how dangerous this kind of farm is. Map danger only counts the mods on this Waystone and these tablets, so it can be 0 on a farm that still hurts.
         </p>
         {errors.length > 0 ? (
           <ul className="farm-errors" role="alert">

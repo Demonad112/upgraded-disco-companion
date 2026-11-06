@@ -122,7 +122,7 @@ export function Chat({ analysis, pob }: { analysis?: Analysis; pob?: PobAnalysis
   return (
     <Panel
       title="Ask about this build"
-      subtitle="Optional. The model is given the figures above and told to answer only from them — it is not the analysis, and it can still be wrong."
+      subtitle="Optional. The AI only sees the figures above and can still be wrong."
       action={
         <button
           type="button"
@@ -137,9 +137,7 @@ export function Chat({ analysis, pob }: { analysis?: Analysis; pob?: PobAnalysis
       {showSettings ? (
         <div className="mb-3 border border-line bg-surface-sunken p-3">
           <p className="text-[11px] leading-relaxed text-ink-dim">
-            Your key is stored <strong className="text-ink">in this browser only</strong> and sent straight to the
-            provider. This site is a static page with no server, so it holds no key of its own — and one committed to
-            the repository would end up readable in the published bundle.
+            Your key is stored <strong className="text-ink">in this browser only</strong> and sent straight to the provider. This site has no server, so it can&apos;t hold a key for you.
           </p>
 
           <Segmented

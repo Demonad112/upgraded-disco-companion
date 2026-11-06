@@ -88,7 +88,7 @@ export function DashboardTabs() {
               {TIER_LIST_PATCH !== CURRENT_PATCH
                 ? ` Not yet re-checked for ${CURRENT_PATCH}, so treat the ranks as a starting point.`
                 : ""}{" "}
-              Tap a strategy for its expected return, Atlas setup and source clips.
+              Tap a strategy for its expected return and how to run it.
             </Intro>
             <StrategyTable strategies={farmingStrategies} />
           </>

@@ -18,9 +18,8 @@ export function RegexPanel() {
       <div className="flex flex-col gap-3">
         <p className="text-sm text-ink-dim">
           On the Atlas tree press <kbd className="border border-line px-1 font-mono text-xs">Ctrl+F</kbd>, paste
-          the string with its quotes, then press Enter to cycle through the matches. Save favourites in Social Status
-          (<kbd className="border border-line px-1 font-mono text-xs">J</kbd>) or Exiled Exchange 2. In-game
-          search bars take {REGEX_MAX_LENGTH} characters at most, quotes included.
+          the string with its quotes, then press Enter to step through matches. Search bars take{" "}
+          {REGEX_MAX_LENGTH} characters at most, quotes included.
         </p>
         <ul className="grid gap-2">
           {regexStrings.map((r) => (

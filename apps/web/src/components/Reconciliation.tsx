@@ -22,7 +22,7 @@ export function Reconciliation({ report, bare = false }: { report: Reconciliatio
   return (
     <Panel
       title="Cross-validation"
-      subtitle="poe.ninja’s numbers checked against Path of Building’s own engine and against poe.ninja’s own breakdown arithmetic."
+      subtitle="poe.ninja’s numbers checked against Path of Building and against poe.ninja’s own totals."
       action={
         <div className="flex flex-wrap gap-1.5">
           <Tag tone="good">{report.matches} agree</Tag>
@@ -72,7 +72,7 @@ export function Reconciliation({ report, bare = false }: { report: Reconciliatio
       {unmapped.length ? (
         <div className="mt-3">
           <p className="text-[11px] leading-relaxed text-ink-mute">
-            Stat ids with no known name. Shown, not judged: how poe.ninja derives them is unknown, so a difference here is not a disagreement.
+            Stats with no known name. They’re shown but not judged, since how poe.ninja works them out isn’t known.
           </p>
           <ul className="mt-2 space-y-2">
             {unmapped.map((c) => (

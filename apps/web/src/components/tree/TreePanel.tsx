@@ -28,7 +28,7 @@ export function TreePanel({
   return (
     <Panel
       title="Passive tree"
-      subtitle="Allocated path highlit; the rest dimmed. Drag to pan, scroll or pinch to zoom, hover or tap a node for its stats."
+      subtitle="Your path is lit and the rest is dimmed. Drag to pan, scroll or pinch to zoom, and hover or tap a node for its stats."
       bare={bare}
     >
       {error ? (

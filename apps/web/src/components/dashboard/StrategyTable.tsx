@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import type { FarmingStrategy } from "@/lib/types";
 import { Tag } from "@/components/shared/Tag";
 import { ProOnly } from "@/components/shared/ProToggle";
+import { usePrefs } from "@/hooks/usePrefs";
 import { SourceFlag } from "@/components/shared/SourceFlag";
 import { TIER_LIST_PATCH } from "@/data/strategies";
 import { Segmented } from "@/components/shared/controls";
@@ -45,6 +46,7 @@ export function StrategyTierBadge({ tier }: { tier?: string }) {
  */
 export function StrategyTable({ strategies }: { strategies: FarmingStrategy[] }) {
   const [sortKey, setSortKey] = useState<SortKey>("rank");
+  const { proDetail } = usePrefs();
 
   const sorted = useMemo(() => {
     return [...strategies].sort((a, b) => {
@@ -113,8 +115,8 @@ export function StrategyTable({ strategies }: { strategies: FarmingStrategy[] })
                     {strategy.expectedReturn}
                   </p>
                   <p className="text-sm leading-relaxed text-ink-dim">
-                    <span className="text-ink-mute">Atlas setup: </span>
-                    {strategy.atlasSetup}
+                    <span className="text-ink-mute">How to run it: </span>
+                    {proDetail ? strategy.atlasSetup : (strategy.summary ?? strategy.atlasSetup)}
                   </p>
                   <div className="flex flex-wrap items-center gap-1.5 empty:hidden">
                     <ProOnly><SourceFlag source={strategy.source} /></ProOnly>
