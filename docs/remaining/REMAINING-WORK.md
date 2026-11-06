@@ -43,7 +43,7 @@ can do, **R** = standing rule (no work), **W** = waiting on an external event.
 | R46 | Eyeball on real display + Safari: sky 30 s, hover pulse, hero draw-in, lantern, foil, route transitions, ignite/flare/label/rune glyph | A5-4, W15-pulse-1, MP1-4, LS1-4 | open |
 | R47 | Phone/Xbox sizing for quick-pick sheet and sticky strip; reduced-motion fade; home picker states; diagram label overlap | QP1-1, FP1-5, H1-2, V1-1 | open (QA sweep R04 can cover the emulated part) |
 | R48 | Delete logs of failed guard runs (41174630514 and two on #58); they still hold the session URL | SB4-1 | done: logs of all 26 failed guard runs deleted 2026-11-06 |
-| R49 | Flip Lighthouse CI job from warn to error after a few stable runs (check job log first) | L1-2 | open |
+| R49 | Flip Lighthouse CI job from warn to error after a few stable runs (check job log first) | L1-2 | open: B1 flipped to error 2026-11-06 (5/5 main runs clean); owner confirms the first main run is green |
 
 Verify with (checked inside that batch, owner ticks the PR checklist): R42, R43 -> B2 | R44 -> B3 + B4b | R45, R46 -> B4b | R47 -> B3 | R49 -> B1 | R40 owner-only.
 
@@ -59,12 +59,12 @@ Verify with (checked inside that batch, owner ticks the PR checklist): R42, R43 
 | R36 | "Fits your build" tile badge | M | FP1-2 | Needs a data rule first (R11) | open: B3(b) |
 | R37 | Mana and leech layers detectable from snapshot | M | FP1-3 | New core field; touches `packages/*` → owner OK | open: B3(d), owner OK for packages/core |
 | R38 | Level-only entry point for survivability reference mode (no import) | M | CH4-3 | Add to `/atlas/` or farm planner only if owner wants | open: B3(c) |
-| R39 | Generate id/phase index at build time to shrink lazy sky chunk (15.6 KB br for ~74 ids) | S | LS1 open 1 | Measure first | open: B1 (measure first) |
-| R50 | Load core analysis on demand in `handleResult` | M | U13a-4 | Only if `/character/` > 250 KB (now 230,037) | open: B1 (only if /character/ > 250 KB) |
-| R51 | Drop `backdrop-blur-sm` on CommandPalette/SearchDialog | S | U13a-6 | Recommended: keep | open: B1 (keep unless review wants zero) |
+| R39 | Generate id/phase index at build time to shrink lazy sky chunk (15.6 KB br for ~74 ids) | S | LS1 open 1 | Measure first | parked: B1 measured 2026-11-06, ~15 KB br saved on an idle cached chunk, not worth a generated index + staleness check |
+| R50 | Load core analysis on demand in `handleResult` | M | U13a-4 | Only if `/character/` > 250 KB (now 230,037) | done: B1 2026-11-06, `/character/` 229,962 B br, under cap, no change |
+| R51 | Drop `backdrop-blur-sm` on CommandPalette/SearchDialog | S | U13a-6 | Recommended: keep | done: B1 2026-11-06, kept (dialog-only, no measured cost) |
 | R52 | Checks tab count chip | S | U10-3 | Recommended: leave out | parked |
 | R53 | Deterministic test for 280 px first-paint overflow | S | OD1-4 | Add only if CI flakes again | open: B2 (only if CI flakes) |
-| R54 | Lighthouse `NO_NAVSTART` on `/character/` | S | U13b-4 | Watch; retry; trace with `--save-assets` if persistent | open: B1 (with R49) |
+| R54 | Lighthouse `NO_NAVSTART` on `/character/` | S | U13b-4 | Watch; retry; trace with `--save-assets` if persistent | open: B1 ran clean (0 NO_NAVSTART in 3 local + 5 CI runs); owner confirms on own machine |
 | R55 | Stale tracker rows in `docs/ui/UI-PROGRESS.md` (MP1-2, MP1-3, LS1-x, OD1-1, OD1-3 show `todo`; later carry files show resolved) | S | this audit | Reconcile against carry files; also refresh the wave table for the remaining waves | done |
 
 ## 5. Standing rules (R, no work)

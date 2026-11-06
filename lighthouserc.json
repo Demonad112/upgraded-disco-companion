@@ -8,8 +8,8 @@
     },
     "assert": {
       "assertions": {
-        "largest-contentful-paint": ["warn", { "maxNumericValue": 2500 }],
-        "cumulative-layout-shift": ["warn", { "maxNumericValue": 0.1 }]
+        "largest-contentful-paint": ["error", { "maxNumericValue": 2500 }],
+        "cumulative-layout-shift": ["error", { "maxNumericValue": 0.1 }]
       }
     },
     "upload": { "target": "filesystem", "outputDir": ".lighthouseci" }

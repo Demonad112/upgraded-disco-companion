@@ -115,11 +115,10 @@ jobs:
             || (echo "TOOLS.md is stale — run 'npm run tools -w @poe2/mcp' and commit the result." && exit 1)
 
   lighthouse:
-    # Mobile Lighthouse on the built static site. Warn-only for now: it reports LCP (2.5 s) and CLS (0.1) but never
-    # fails the run. Tighten to "error" once a few runs show the numbers are stable.
+    # Mobile Lighthouse on the built static site. Fails the job when LCP > 2.5 s or CLS > 0.1 (R49: flipped from warn
+    # after five clean main runs, 2026-11-06). If it flakes, set `continue-on-error: true` and the assertions back to "warn".
     runs-on: ubuntu-latest
     timeout-minutes: 20
-    continue-on-error: true
     steps:
       - uses: actions/checkout@v5
         with:
