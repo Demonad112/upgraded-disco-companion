@@ -1,5 +1,5 @@
 # PW1 carry-over · 2026-11-06
-PR: #PRNUM · Branch: copy/20261106-plain-words-msss83 · Preview: https://copy-20261106-plain-words-ms.upgraded-disco-companion.pages.dev (expected alias; confirm from the Cloudflare check)
+PR: #111 · Branch: copy/20261106-plain-words-msss83 · Preview: https://copy-20261106-plain-words-ms.upgraded-disco-companion.pages.dev (expected alias; confirm from the Cloudflare check)
 
 Plain-words pass for newcomers, plus IMG2-4. B4b itself was already merged as #110.
 
