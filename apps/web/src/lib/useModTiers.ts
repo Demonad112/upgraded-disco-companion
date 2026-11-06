@@ -18,6 +18,7 @@ import { dataUrl } from '@/lib/basePath'
 
 const DATA_URL = dataUrl('mod-tiers.json')
 const DISPLAY_URL = dataUrl('mod-display.json')
+const DISPLAY_RETRY_MS = 1500
 
 export type ModTiersState =
   | { status: 'idle' }
@@ -42,17 +43,20 @@ export function useModTiers(enabled: boolean, needsDisplay = false): ModTiersSta
   useEffect(() => {
     if (!displayAsked || state.status !== 'ready' || displayDone) return
     let cancelled = false
-    fetch(DISPLAY_URL)
-      .then(async (res) => {
+    const load = () =>
+      fetch(DISPLAY_URL).then(async (res) => {
         if (!res.ok) throw new Error(`the mod text returned ${res.status}`)
         return (await res.json()) as { displayOnly: Record<string, DisplayOnlyMod> }
       })
+    // One retry: a transient failure otherwise leaves raw mod ids on screen until the page is reloaded.
+    load()
+      .catch(() => new Promise((r) => setTimeout(r, DISPLAY_RETRY_MS)).then(load))
       .then((d) => {
         if (cancelled) return
         setState((s) => (s.status === 'ready' ? { status: 'ready', tiers: s.tiers.withDisplay(d.displayOnly) } : s))
         setDisplayDone(true)
       })
-      // Without the text, those mods keep their raw-id fallback; the ladders still work.
+      // Still failing: those mods keep their raw-id fallback; the ladders still work.
       .catch(() => {
         if (!cancelled) setDisplayDone(true)
       })
