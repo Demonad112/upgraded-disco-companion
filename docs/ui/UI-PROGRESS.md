@@ -43,7 +43,7 @@ session's row in its last commit. Audit rows are tracked in `docs/audit/08-PROGR
 | 23 | PD patch-day data | Cloud | Opus 5.5 · high | todo | | | | when the December patch notes land; R01+R12; owner starts it when patch notes land |
 | 24 | IMG-2 visual build + QA sweep | Cloud | Opus 5.5 · high / Sonnet 5.5 · medium | parked | | | | needs IMG-1 picks |
 | 25 | S1 reconcile + dead exports | Cloud | Sonnet 5.5 · medium | done | chore/20261106-reconcile | | | |
-| 26 | S2 QA sweep on main | Cloud | Sonnet 5.5 · medium | todo | fix/20261106-qa | | | |
+| 26 | S2 QA sweep on main | Cloud | Sonnet 5.5 · medium | done | fix/20261106-qa | | | Showcase card no longer overflows at ≤ 415 px; Atlas loading placeholder gets a role; `docs/carry/S2.md` |
 
 ## Backlog
 | Item | Batch | Status | PR | Notes |

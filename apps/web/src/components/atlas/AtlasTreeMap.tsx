@@ -53,7 +53,7 @@ const subtreeLabel = (t: string | undefined) =>
 export function AtlasTreeMap() {
   const state = useAtlasTree()
   if (state.status === 'loading') {
-    return <div className="skeleton h-[22rem] sm:h-[29rem] lg:h-[calc(100dvh-12rem)] lg:min-h-[24rem]" aria-label="Loading the Atlas tree" />
+    return <div className="skeleton h-[22rem] sm:h-[29rem] lg:h-[calc(100dvh-12rem)] lg:min-h-[24rem]" role="status" aria-label="Loading the Atlas tree" />
   }
   if (state.status === 'error') {
     return (

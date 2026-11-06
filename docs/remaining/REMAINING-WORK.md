@@ -12,7 +12,7 @@ can do, **R** = standing rule (no work), **W** = waiting on an external event.
 | R01 | PD patch-day data (wave 23): set `DATA_MAY_BE_OUTDATED = true` (`apps/web/src/lib/constants.ts`, now `false`), re-run `docs/ui/FARM-FACTCHECK-RERUN-PROMPT.md`, update tablets, Atlas, tiers, bosses and `why` lines with a source per change, flip back | W | LAUNCH-PLAN PD | Starts when December patch notes are public. Changes in `packages/data` follow `PROVENANCE.md` | open |
 | R02 | IMG-1 design brief (owner, Claude chat, no repo); picks saved to `docs/ui/img/` (doesn't exist yet) | A | LAUNCH-PLAN | Brief text is in LAUNCH-PLAN. Blocks R03 | parked: scope rule 2026-11-06 |
 | R03 | IMG-2 visual build: chosen bar style in `DpsMatrix`, `DefensePanel`, `Instruments`, `Showcase`; 12-icon set in `components/icons/*` (doesn't exist); share-card art; diagram/ring/stamp restyle (CH1-2, V1-2); use `--dmg-lightning-core` and `--dmg-chaos-edge` (R30) | C | LAUNCH-PLAN | Needs R02 picks | parked: scope rule 2026-11-06 |
-| R04 | QA sweep after R03's PR: 390×844 and 360×780 shots of `/`, `/checklist`, `/atlas`, `/dashboard`, `/character`, share card both sizes; e2e; Lighthouse mobile; report as one PR comment | C | LAUNCH-PLAN | Also covers H1-2 and V1-1 (R25) | open |
+| R04 | QA sweep after R03's PR: 390×844 and 360×780 shots of `/`, `/checklist`, `/atlas`, `/dashboard`, `/character`, share card both sizes; e2e; Lighthouse mobile; report as one PR comment | C | LAUNCH-PLAN | Also covers H1-2 and V1-1 (R25) | done |
 
 ## 2. Decisions (class D: answer with the recommendation unless it is high impact)
 | ID | Question | Recommended | Origin | Status |
@@ -55,7 +55,7 @@ can do, **R** = standing rule (no work), **W** = waiting on an external event.
 | R32 | Dead-export sweep (core/web/mcp) | S | CH7 | | done |
 | R33 | Provenance footer on MCP text block | S | M2-4 | Only if a client needs it; breaks JSON-parsing clients. Default: skip | parked: scope rule 2026-11-06 |
 | R34 | Stamp tree/skills/mods builders into `version.json` | S | M1-3 / M2-3 | Only when those builders move to the PoB export. Default: park | parked: scope rule 2026-11-06 |
-| R35 | Before/after screenshots for Damage bars (390@2x, 1440) | S | CH7 | Keep out of git | open |
+| R35 | Before/after screenshots for Damage bars (390@2x, 1440) | S | CH7 | Keep out of git | done |
 | R36 | "Fits your build" tile badge | M | FP1-2 | Needs a data rule first (R11) | parked: scope rule 2026-11-06 |
 | R37 | Mana and leech layers detectable from snapshot | M | FP1-3 | New core field; touches `packages/*` → owner OK | parked: scope rule 2026-11-06 |
 | R38 | Level-only entry point for survivability reference mode (no import) | M | CH4-3 | Add to `/atlas/` or farm planner only if owner wants | parked: scope rule 2026-11-06 |
