@@ -245,9 +245,16 @@ export default function MethodologyPage() {
             Weights and danger ratings (0 to 3 per defence layer) come from a fact-check of patch 0.5.5 and are relative
             judgements, each shown with its source and confidence in the data file. The footnote counts how many are
             labelled unverified. The Item Rarity weight for Expedition is one of them. With “Danger for my build” on, the
-            danger rating is the mean over the layers your last imported character relies on (energy shield, armour,
-            evasion, from its latest snapshot); mana and leech are not in a snapshot, so they are not detected. The
-            threshold for “relies on” is this app’s own heuristic and is labelled unverified.
+            danger rating is the mean over the layers your last imported character relies on, from its latest snapshot:
+            energy shield, armour and evasion; mana when Mind Over Matter is allocated; leech when an equipped item
+            leeches as life or energy shield (leech from passives or gems is not read). The threshold for “relies on” is
+            this app’s own heuristic and is labelled unverified.
+          </p>
+          <p>
+            A farm tile reads “Fits your build” or “Harder for your build” only when that farm has a saved loadout with
+            danger mods and a character is imported: the saved loadout’s danger, rated for your layers, is compared with
+            the same loadout’s generic danger. The data holds no hazards per farm, so a farm without a saved loadout gets
+            no badge rather than a guessed one. The comparison is this app’s rule and is labelled unverified.
           </p>
           <p>
             Rules read from the data, never hard-coded: tablets socket into Precursor Towers (up to 3 tablets per map, 4

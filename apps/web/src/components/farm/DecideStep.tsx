@@ -4,6 +4,9 @@ import { useEffect, useState } from "react";
 import { farmingStrategies } from "@/data/strategies";
 import { farmData } from "@/data/farm";
 import { presetFor } from "@/lib/farm/score";
+import { buildFit, type FitVerdict } from "@/lib/farm/fit";
+import { useBuildLayers } from "@/hooks/useBuildLayers";
+import { useFarm } from "@/hooks/useFarm";
 import { LevelPill } from "@/components/shared/Pill";
 import { Tag } from "@/components/shared/Tag";
 import { Button } from "@/components/shared/controls";
@@ -28,6 +31,13 @@ export function DecideStep({ onPick, onQuick }: { onPick: (id: string) => void; 
   const suggested = useSuggestedStrategies();
   const { pinnedStrategyId } = useStrategySelection();
   const sorted = [...farmingStrategies].sort((a, b) => a.rank - b.rank);
+  const build = useBuildLayers();
+  const { farm } = useFarm();
+  const fitFor = (id: string): FitVerdict | null => {
+    const saved = farm.loadouts[id];
+    if (!build || !saved) return null;
+    return buildFit(farmData, saved.loadout, farm.presets?.[id] ?? presetFor(farmData, id).id, build.layers).verdict;
+  };
 
   return (
     <div className="flex flex-col gap-8">
@@ -51,6 +61,7 @@ export function DecideStep({ onPick, onQuick }: { onPick: (id: string) => void; 
       <ul className="farm-tiles">
         {sorted.map((s) => {
           const preset = presetFor(farmData, s.id);
+          const fit = fitFor(s.id);
           return (
             <li key={s.id}>
               <button type="button" className="farm-tile" data-suggested={suggested.has(s.id) || undefined} onClick={() => onPick(s.id)}>
@@ -58,6 +69,11 @@ export function DecideStep({ onPick, onQuick }: { onPick: (id: string) => void; 
                 <span className="flex flex-wrap items-center gap-1.5">
                   {suggested.has(s.id) ? <span className="farm-mark">Suggested</span> : null}
                   {pinnedStrategyId === s.id ? <span className="farm-mark">★ Pinned</span> : null}
+                  {fit === "fits" || fit === "harder" ? (
+                    <span className="farm-mark" data-fit={fit} title={`Your saved Waystone's danger mods, rated for ${build!.name}'s defence layers against the average build`}>
+                      {fit === "fits" ? "Fits your build" : "Harder for your build"}
+                    </span>
+                  ) : null}
                   {s.mechanics.map((m) => (
                     <Tag key={m} mechanic={m} />
                   ))}

@@ -6,6 +6,7 @@ import { farmData as d, countByConfidence, dataSourcesLabel, findMod, unverified
 import { farmingStrategies } from "@/data/strategies";
 import { Button, Input, Segmented, Select } from "@/components/shared/controls";
 import { useBuildLayers } from "@/hooks/useBuildLayers";
+import { LAYER_LABEL } from "@/lib/farm/danger";
 import { isLoadout, useFarm } from "@/hooks/useFarm";
 import { removePick, setMapContext, setTabletRarity, setTabletType, setWaystone } from "@/lib/farm/edit";
 import { isCorrupted, maxTablets, roomOn, validate, waystoneLimits } from "@/lib/farm/rules";
@@ -265,7 +266,7 @@ export default function SetupStep({ strategyId, onChangeFarm, onQuickView }: { s
               <span>Danger for my build</span>
             </label>
             <span className="text-xs text-ink-mute">
-              {build ? `Uses ${build.name}: ${build.layers.map((l) => (l === "es" ? "ES" : l)).join(", ")}.` : "Import a character on the Character page to turn this on."}
+              {build ? `Uses ${build.name}: ${build.layers.map((l) => LAYER_LABEL[l]).join(", ")}.` : "Import a character on the Character page to turn this on."}
             </span>
           </div>
         </div>

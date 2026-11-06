@@ -147,6 +147,10 @@ describe('score', () => {
     expect(layersFromSnapshot(d, { energyShield: null, armour: 4000, evasion: 3000 })).toEqual(['armour', 'evasion'])
     expect(layersFromSnapshot(d, { energyShield: null, armour: 0, evasion: 0 })).toBeNull()
     expect(layersFromSnapshot(d, null)).toBeNull()
+    // R37: mana (Mind Over Matter) and recovery (gear leech) from the snapshot flags; older rows lack them.
+    expect(layersFromSnapshot(d, { energyShield: 6000, armour: 200, evasion: 100, manaBeforeLife: true, gearLeech: true })).toEqual(['es', 'mana', 'recovery'])
+    expect(layersFromSnapshot(d, { energyShield: null, armour: 0, evasion: 0, gearLeech: true })).toEqual(['recovery'])
+    expect(layersFromSnapshot(d, { energyShield: 6000, armour: 0, evasion: 0, manaBeforeLife: false })).toEqual(['es'])
   })
 })
 

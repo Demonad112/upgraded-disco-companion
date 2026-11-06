@@ -96,4 +96,31 @@ test.describe('farm planner', () => {
     r = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa']).analyze()
     expect(r.violations.map((v) => v.id)).toEqual([])
   })
+
+  test('R36: a saved loadout with danger mods badges its tile for the imported build', async ({ page }) => {
+    await page.goto('dashboard/')
+    await page.evaluate(() => {
+      const key = 'poe2-endgame-companion:v1'
+      const state = JSON.parse(localStorage.getItem(key) ?? '{}')
+      const snap = { schema: 2, at: '2026-11-01T00:00:00Z', updatedUtc: null, key: 'A/Tank', level: 90, life: 5000,
+        energyShield: 0, ward: 0, armour: 20000, evasion: 0, pool: 5000, ehp: null, fire: 75, cold: 75, lightning: 75,
+        chaos: 0, dps: null, weakestHit: null, passives: 100, manaBeforeLife: false, gearLeech: false }
+      const ws = (mod: string) => ({ strategyId: '', tablets: [], options: { mapContext: 'standard', keystones: false, effects: [] },
+        waystone: { tier: 15, rarity: 'rare', corrupted: false, prefixes: [], suffixes: [{ modId: mod, tier: 1, value: 20 }] } })
+      state.character = { ...(state.character ?? {}), snapshots: [snap] }
+      state.farm = { loadouts: {
+        'breach-rares': { loadout: { ...ws('w-extra-chaos'), strategyId: 'breach-rares' }, baseline: null },
+        'abyss-amanamu': { loadout: { ...ws('w-extra-fire'), strategyId: 'abyss-amanamu' }, baseline: null },
+      } }
+      localStorage.setItem(key, JSON.stringify(state))
+      localStorage.setItem('poe2-endgame-companion:recent-characters:v1', JSON.stringify([
+        { url: 'https://poe.ninja/poe2/profile/A/x/character/Tank', key: 'A/Tank', name: 'Tank', className: null, level: 90, at: '2026-11-01T00:00:00Z' },
+      ]))
+    })
+    await page.reload()
+    // Armour-only build: extra chaos rates 2 for armour vs 2.2 generic (fits); extra fire 3 vs 2 (harder).
+    await expect(page.locator('.farm-tile', { hasText: 'Breach' }).filter({ hasText: 'Fits your build' }).first()).toBeVisible()
+    await expect(page.locator('.farm-mark[data-fit="harder"]')).toHaveCount(1)
+    await expect(page.locator('.farm-mark[data-fit="fits"]')).toHaveCount(1)
+  })
 })

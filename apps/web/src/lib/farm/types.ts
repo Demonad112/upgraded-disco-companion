@@ -102,6 +102,8 @@ export interface FarmData {
       per_stat: Record<string, DangerRating & { sources: string[]; confidence: Confidence; why: string }>
       build_multipliers: Record<Layer, number>
       layerDetect: { relativeToLargest: number; why: string; sources: string[]; confidence: Confidence }
+      /** R36 "Fits your build": build-aware danger / generic danger of the farm's starter loadout must be below this. */
+      fitsBuild: { maxRatio: number; why: string; sources: string[]; confidence: Confidence }
     }
     risk: Record<RiskKey, number>
   }

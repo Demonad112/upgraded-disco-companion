@@ -150,3 +150,12 @@ test('compact dashboard and atlas do not scroll sideways at 280 and 390px', asyn
     }
   }
 })
+
+test('R38: /atlas/ carries the level-only tier planner (no import needed)', async ({ page }) => {
+  await page.goto('atlas/')
+  const panel = page.getByRole('region', { name: 'Survivability by waystone tier' })
+  await expect(panel).toContainText('General estimate from level only', { timeout: 15_000 })
+  await panel.getByLabel('Your level').fill('70')
+  await expect(panel).toContainText(/Run T\d+/)
+})
+
