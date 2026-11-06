@@ -30,6 +30,16 @@ test('a narrow window does not scroll sideways in compact mode', async ({ page }
   expect(await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)).toBeLessThanOrEqual(1)
 })
 
+test('the character showcase card fits a 360 px window after import', async ({ page }) => {
+  await page.setViewportSize({ width: 360, height: 780 })
+  await page.goto(importUrl)
+  const card = page.locator('[data-showcase] section').first()
+  await expect(card).toBeVisible({ timeout: 30_000 })
+  // innerWidth grows with overflowing content under mobile emulation, so compare against the set width.
+  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(360)
+  expect(await card.evaluate((el) => el.scrollWidth - el.clientWidth)).toBeLessThanOrEqual(1)
+})
+
 test('what-if sliders and re-craft toggles recompute the largest hit', async ({ page }) => {
   await page.goto(importUrl)
   await expect(page.locator('#what-if')).toBeVisible({ timeout: 30_000 })
