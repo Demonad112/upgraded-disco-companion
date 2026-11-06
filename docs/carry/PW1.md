@@ -1,5 +1,5 @@
 # PW1 carry-over · 2026-11-06
-PR: not opened yet · Branch: copy/20261106-plain-words · Preview: Cloudflare Pages preview once the PR exists
+PR: #PRNUM · Branch: copy/20261106-plain-words-msss83 · Preview: https://copy-20261106-plain-words-ms.upgraded-disco-companion.pages.dev (expected alias; confirm from the Cloudflare check)
 
 Plain-words pass for newcomers, plus IMG2-4. B4b itself was already merged as #110.
 
@@ -18,9 +18,11 @@ Plain-words pass for newcomers, plus IMG2-4. B4b itself was already merged as #1
 Left long on purpose: Pro detail text (step `description`, `atlasSetup`, boss `notes`, source notes). It is opt-in and holds the game detail that a two-sentence summary can't carry.
 
 ## Gate
-- Local: lint clean; unit tests pass (765 core, 44, 290 web).
-- `npm run typecheck` fails in `apps/web` on Windows only: `./GearTargets` and `./TopFixes` resolve to the lowercase `.ts` twins on a case-insensitive disk. Those import lines are unchanged here; CI on Linux is the check.
-- Left to the cloud session: `npm run build`, `node scripts/route-weight.mjs`, `npm run e2e -w @poe2/web`.
+- Cloud (Linux): `npm run typecheck` pass (the Windows-only case clash does not occur here); `npm run lint` clean; `npm test` pass (765 core, 44, 290 web); `npm run build` pass.
+- `node scripts/route-weight.mjs`: `/` 190,237 B br (limit 192,000; 1,763 B headroom); largest other route `/character/` 230,329 (limit 250,000).
+- `npm run e2e -w @poe2/web`: 339 passed, 3 skipped, 2 failed on first run. Both were `quick-picks.spec.ts` pinning the old danger-note wording ("Farm risk on the farm tile"); match updated to the new sentence, intent unchanged (the note still separates farm risk from map danger). Re-run of that spec: 28 passed.
+- Icons at 390 and 360 px: Tablet and Waystone icons on Quick setup cards sit inline, no horizontal overflow. `.btn` is already `inline-flex` with `gap: 0.5rem`, so "Find better gear" needed no change.
+- Leftover sweep: no default-visible string over 2 sentences remains. Atlas cluster text over 120 characters is already clamped to 2 lines with an expand button; the diagram `aria-label`s are screen-reader descriptions and stay complete.
 
 ## Resolved from earlier carry files
 - IMG2-4: done as above.
