@@ -16,6 +16,7 @@
  */
 
 import type { Analysis } from '../analyze.js'
+import { stripModMarkup } from '../gear/analyze.js'
 import { effectivePool, NO_KEYSTONE_EFFECTS, type KeystoneEffects } from '../keystones/index.js'
 import { isHealthy } from '../thresholds.js'
 import { SNAPSHOT_SCHEMA } from './migrate.js'
@@ -56,7 +57,37 @@ export interface CharacterSnapshot {
   weakestHit: number | null
   /** Allocated passives, as poe.ninja counts them. */
   passives: number
+  /**
+   * Mind Over Matter is allocated (and corroborated), so mana is a defence layer. Absent on rows written before the flag
+   * existed. Not trended and not part of the unchanged check.
+   */
+  manaBeforeLife?: boolean
+  /**
+   * An active equipped item leeches damage as life or energy shield. Gear only: leech from passives or gems is not read,
+   * so false means "none on gear", not "no leech". Absent on older rows; not part of the unchanged check.
+   */
+  gearLeech?: boolean
 }
+
+/** A mod line that leeches damage as life or energy shield (mana leech is a resource, not a defence). */
+const LEECH_AS_POOL = /\bleech(?:es)?\b[^.]*\bas (?:life|energy shield)\b/i
+
+/** Whether any active equipped item carries a life or energy shield leech mod. */
+export function hasGearLeech(items: ReadonlyArray<{ active: boolean; mods: string[] }>): boolean {
+  return items.some((it) => it.active && it.mods.some((m) => LEECH_AS_POOL.test(stripModMarkup(m))))
+}
+
+const LAYER_FLAGS = ['manaBeforeLife', 'gearLeech'] as const
+
+/** Derived flags kept out of the unchanged check: they are not trended, and older rows lack them. */
+const NOT_COMPARED: ReadonlySet<keyof CharacterSnapshot> = new Set<keyof CharacterSnapshot>([
+  'at',
+  'updatedUtc',
+  'schema',
+  'gameVersion',
+  'manaBeforeLife',
+  'gearLeech',
+])
 
 /** How many snapshots to keep per character before dropping the oldest. */
 export const MAX_SNAPSHOTS = 20
@@ -66,7 +97,7 @@ export function snapshotKey(identity: Pick<Analysis['identity'], 'account' | 'na
 }
 
 export function toSnapshot(
-  analysis: Pick<Analysis, 'identity' | 'defense' | 'dps' | 'passives'>,
+  analysis: Pick<Analysis, 'identity' | 'defense' | 'dps' | 'passives'> & Partial<Pick<Analysis, 'items'>>,
   at: string,
   keystones: KeystoneEffects = NO_KEYSTONE_EFFECTS,
   gameVersion: string | null = null,
@@ -96,6 +127,8 @@ export function toSnapshot(
     dps: dps.primary ? Math.round(dps.primary.totalDps) : null,
     weakestHit: hits.length ? Math.min(...hits) : null,
     passives: passives.counts.passives ?? passives.mainSelectionLength,
+    manaBeforeLife: keystones.notes.some((n) => n.keystone === 'Mind Over Matter'),
+    gearLeech: hasGearLeech(analysis.items ?? []),
   }
 }
 
@@ -243,7 +276,7 @@ export function appendSnapshot(history: CharacterSnapshot[], next: CharacterSnap
   const unchanged =
     last !== undefined &&
     (Object.keys(next) as Array<keyof CharacterSnapshot>)
-      .filter((k) => k !== 'at' && k !== 'updatedUtc' && k !== 'schema' && k !== 'gameVersion')
+      .filter((k) => !NOT_COMPARED.has(k))
       .every((k) => last[k] === next[k])
 
   // Return the ORIGINAL array when nothing was recorded, so a caller can detect
@@ -251,7 +284,15 @@ export function appendSnapshot(history: CharacterSnapshot[], next: CharacterSnap
   // like a change: one import re-runs the analysis several times as the affix
   // data, tree and ladder land, and each pass rewrote the whole persisted state
   // to localStorage and woke every subscriber for a history that had not moved.
-  if (unchanged) return history
+  if (unchanged) {
+    // Same figures. Refresh the derived layer flags on the last row when they moved (or the row predates them), so a
+    // re-import still updates them without adding a row; otherwise this is a no-op.
+    const stale = LAYER_FLAGS.some((k) => k in next && last[k] !== next[k])
+    if (!stale) return history
+    const refreshed = { ...last }
+    for (const k of LAYER_FLAGS) if (k in next) refreshed[k] = next[k]
+    return history.map((s) => (s === last ? refreshed : s))
+  }
 
   // Trim THIS character's history only — `others` belong to other characters
   // and must survive untouched.
