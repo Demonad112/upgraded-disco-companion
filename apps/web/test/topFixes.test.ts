@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { Recommendation, RecommendationReport } from '@poe2/core'
+import { URL_MAX_LENGTH } from '@poe2/core'
 import { fixAnchor, splitAction, topFixes, tradeLinkFor, tradeStatFor } from '@/components/character/topFixes'
 
 const rec = (over: Partial<Recommendation>): Recommendation =>
@@ -46,5 +47,12 @@ describe('top fixes', () => {
     // No trade id for the stat, or not a resistance: no search, the button falls back to /trade.
     expect(tradeLinkFor(chaos, {}, 'L')).toBeNull()
     expect(tradeLinkFor(rec({ impact: { stat: 'armour', label: 'Armour', from: 1, to: 2, delta: 1, unit: 'flat', significance: 1 } }), {}, 'L')).toBeNull()
+  })
+
+  it('returns null (button falls back to /trade) when the link would pass URL_MAX_LENGTH', () => {
+    const chaos = rec({ impact: { stat: 'chaosResistance', label: 'Chaos', from: 18, to: 75, delta: 57, unit: 'percent', significance: 1 } })
+    const map = { 'base_chaos_damage_resistance_%': 'explicit.stat_1' }
+    expect(tradeLinkFor(chaos, map, 'L')).not.toBeNull()
+    expect(tradeLinkFor(chaos, map, 'x'.repeat(URL_MAX_LENGTH))).toBeNull()
   })
 })

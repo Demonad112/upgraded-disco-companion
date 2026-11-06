@@ -605,6 +605,57 @@ if (!(plan.result?.messages?.[0]?.content?.text ?? '').includes('poe2_validate_i
 }
 console.log(`resources: ${resources.length}, prompts: ${prompts.map((p) => p.name).join(', ')}`)
 
+// --- R31: tightened output schemas, one assertion per tool -------------------
+// Each check reads the schema the server publishes in tools/list (so a regression to a loose type fails) and a live
+// structuredContent sample (the SDK also validates it server-side, so a too-strict schema surfaces as an error here).
+const outProps = (name) => tools.find((t) => t.name === name)?.outputSchema?.properties ?? {}
+const itemProps = (name, key) => outProps(name)[key]?.items?.properties ?? {}
+const structuredOf = async (name, args = {}) => {
+  const r = await send('tools/call', { name, arguments: args })
+  return r.result?.isError ? null : r.result?.structuredContent
+}
+const r31 = (name, ok, detail) => {
+  if (!ok) failures.push(`R31 ${name} output schema: ${detail}`)
+}
+
+{
+  const t = 'poe2_list_keystones'
+  const sc = await structuredOf(t)
+  r31(t, itemProps(t, 'keystones').name?.type === 'string' && itemProps(t, 'keystones').id?.type === 'number', 'keystone rows are not typed')
+  r31(t, sc?.keystones?.every((k) => typeof k.name === 'string' && Array.isArray(k.stats)), 'sample rows do not match')
+}
+{
+  const t = 'poe2_health_check'
+  const sc = await structuredOf(t)
+  r31(t, outProps(t).passiveTree?.properties?.nodes?.type === 'number' && outProps(t).character?.properties?.loaded?.type === 'boolean', 'passiveTree/character are not typed')
+  r31(t, typeof sc?.character?.loaded === 'boolean' && typeof sc?.passiveTree?.nodes === 'number', 'sample does not match')
+}
+{
+  const t = 'poe2_get_defenses'
+  const sc = await structuredOf(t)
+  r31(t, itemProps(t, 'maxHits').value?.type === 'number' && itemProps(t, 'resistances').type?.type === 'string', 'maxHits/resistances rows are not typed')
+  r31(t, sc?.maxHits?.length > 0 && sc?.resistances?.every((r) => r.value === null || typeof r.value === 'number'), 'sample does not match')
+}
+{
+  const t = 'poe2_get_available_mods'
+  const sc = await structuredOf(t, { baseType: 'Militant Bow', itemLevel: 76 })
+  r31(t, itemProps(t, 'prefixes').group?.type === 'string' && outProps(t).totals?.properties?.prefixGroups?.type === 'number', 'prefix rows/totals are not typed')
+  r31(t, sc?.prefixes?.every((p) => typeof p.group === 'string' && Array.isArray(p.tiers)), 'sample does not match')
+}
+{
+  const t = 'poe2_inspect_keystone'
+  const sc = await structuredOf(t, { name: 'Chaos Inoculation' })
+  r31(t, outProps(t).stats?.items?.type === 'string', 'stats is not a string array')
+  r31(t, sc?.found === true && sc.stats.every((x) => typeof x === 'string'), 'sample does not match')
+}
+{
+  const t = 'poe2_get_skill_setups'
+  const sc = await structuredOf(t)
+  r31(t, itemProps(t, 'setups').skill?.type === 'string', 'setup rows are not typed')
+  r31(t, sc?.setups?.length > 0 && sc.setups.every((x) => typeof x.skill === 'string' && Array.isArray(x.supports)), 'sample does not match')
+}
+console.log('R31: 6 tool output schemas typed and asserted')
+
 child.kill()
 
 if (failures.length) {
