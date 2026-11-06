@@ -23,6 +23,7 @@ apps/web/public/pob-skills.json
 apps/web/public/bases.json
 apps/web/public/atlas-tree.json
 apps/web/public/trade2-stats.json
+apps/web/public/trade-map.json
 
 # Downloaded source data for the build scripts. Regenerate with:
 #   node packages/data/scripts/build-mod-tiers.mjs
@@ -32,3 +33,6 @@ packages/data/generated/.cache/
 apps/web/test-results/
 apps/web/playwright-report/
 .claude/settings.local.json
+
+.vercel
+.env*

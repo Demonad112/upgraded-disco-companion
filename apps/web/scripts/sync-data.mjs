@@ -8,9 +8,10 @@
  * The copies in public/ are generated and gitignored.
  */
 
-import { copyFileSync, mkdirSync, statSync } from 'node:fs'
+import { copyFileSync, mkdirSync, readFileSync, statSync, writeFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { resolveTradeStatMapFromSnapshot } from '@poe2/core'
 
 const here = dirname(fileURLToPath(import.meta.url))
 const from = join(here, '..', '..', '..', 'packages', 'data', 'generated')
@@ -24,6 +25,14 @@ const TRADE_STATS = join(here, '..', '..', '..', 'packages', 'data', 'trade2-sta
 mkdirSync(to, { recursive: true })
 copyFileSync(TRADE_STATS, join(to, 'trade2-stats.json'))
 process.stdout.write('  trade2-stats.json\n')
+
+// Trimmed map for Top fixes / Gear targets: internal stat id -> trade id, resolved from the snapshot at build time so
+// the browser needn't fetch the 1.4 MB listing for a handful of ids. Same resolver the client used; empty without a snapshot.
+const snapshot = JSON.parse(readFileSync(TRADE_STATS, 'utf8'))
+const tradeMap = {}
+for (const s of resolveTradeStatMapFromSnapshot(snapshot)) if (s.tradeId) tradeMap[s.internalId] = s.tradeId
+writeFileSync(join(to, 'trade-map.json'), JSON.stringify({ patch: snapshot.patch, fetchedAt: snapshot.fetchedAt, map: tradeMap }) + '\n')
+process.stdout.write(`  trade-map.json (${Object.keys(tradeMap).length} ids)\n`)
 for (const file of FILES) {
   const source = join(from, file)
   copyFileSync(source, join(to, file))

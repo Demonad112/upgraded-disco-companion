@@ -43,6 +43,7 @@ const DATA_FILES = [
   '/pob-skills.json',
   '/bases.json',
   '/trade2-stats.json',
+  '/trade-map.json',
   '/atlas-tree.json',
 ]
 

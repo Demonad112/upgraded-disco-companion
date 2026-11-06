@@ -80,7 +80,7 @@ decides or acts; sessions don't implement it.
 | SB3-1: make `PR body guard / guard` a required check | owner | done | #66 | Ruleset 26262955 "main: required checks" requires `guard`, `test`, `secrets` (repo-admin bypass, PRs only); `ci.yml` runs on every PR so .md-only PRs can merge |
 | SB3-2: add "remove any session link the tooling appended to the PR body" to `SESSION-PROTOCOL.md` Finish step 4 | owner | done | #68 | Accepted (D11); line added to `SESSION-PROTOCOL.md` Finish step 4 |
 | SB3 Open 1: deliberate `Claude-Session:` trailer test of the guard on GitHub | owner | done | #68 | Skipped (D15); a deliberate trailer would itself put a session link on GitHub |
-| SB4-1: delete logs of guard runs that failed on a session link (run 41174630514 and two on #58) | owner | todo · S | | Actions > run > ⋯ > Delete all logs; the logs still hold the URL |
+| SB4-1: delete logs of guard runs that failed on a session link (run 41174630514 and two on #58) | owner | done · S | | Actions > run > ⋯ > Delete all logs; the logs still hold the URL |
 | W15-2: cursor spotlight | owner | done | #71 | Un-deferred 2026-11-01 as the desktop lantern (MP1); `CLAUDE.md` Design updated |
 | SB3-W15-1: state perf budgets as "≤ +25 % over same-session main" | owner | done | #68 | Accepted (D12); rule under Budgets in `docs/audit/04-PERFORMANCE-BASELINE.md` |
 | Branch clean-up: merged `variant/*` and `claude/*` on origin | owner | done | | Owner deleted them (last: `variant/20261030-sky-wow`); origin holds `main` and this PR's branch. Local `variant/20261101-qa` and `variant/20261029-surfaces` deleted 2026-11-01 (both merged; surfaces via the #46 squash) |
