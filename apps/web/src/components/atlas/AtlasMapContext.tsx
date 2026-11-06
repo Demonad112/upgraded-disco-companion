@@ -8,7 +8,7 @@
 import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from 'react'
 import { Button } from '@/components/shared/controls'
 
-export interface FocusRequest {
+interface FocusRequest {
   names: string[]
   /** Label shown on the map while focused ("Man Trap"). */
   label: string

@@ -1,7 +1,7 @@
 import { migrateSnapshots } from "@poe2/core";
 import type { HomeStart, PersistedState, Prefs } from "./types";
 
-export const STORAGE_KEY = "poe2-endgame-companion:v1";
+const STORAGE_KEY = "poe2-endgame-companion:v1";
 export const STORAGE_VERSION = 1;
 
 const DEFAULT_STATE: PersistedState = {
@@ -77,7 +77,7 @@ function readPrefs(raw: Record<string, unknown>): Partial<Prefs> {
   };
 }
 
-export const DEFAULT_PREFS: Prefs = { homeStart: null, proDetail: false };
+const DEFAULT_PREFS: Prefs = { homeStart: null, proDetail: false };
 
 /** Preferences with defaults filled in; tolerates payloads written before they existed. */
 export function getPrefs(state: PersistedState): Prefs {

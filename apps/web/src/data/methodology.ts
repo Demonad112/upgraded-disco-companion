@@ -2,7 +2,7 @@
  * The Methodology page's sections, in index and DOM order. `summary` is the
  * search-result subtitle; the page body carries the full text and its sources.
  */
-export interface MethodologySection {
+interface MethodologySection {
   id: string
   label: string
   title: string

@@ -7,10 +7,10 @@
  * with T16 (area 80) only from Vaal-corrupting a T15.
  */
 
-export const MAX_NATURAL_TIER = 15;
+const MAX_NATURAL_TIER = 15;
 export const MAX_TIER = 16;
 
-export interface WaystoneGate {
+interface WaystoneGate {
   tier: number;
   label: string;
   stepId: string;

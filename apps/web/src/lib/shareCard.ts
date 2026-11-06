@@ -1,9 +1,9 @@
 import type { Analysis, SkillDamage, SnapshotDiff } from '@poe2/core'
 
 /** Damage types in the order the ring and the split bar draw them. */
-export const RING_ORDER = ['physical', 'fire', 'cold', 'lightning', 'chaos'] as const
+const RING_ORDER = ['physical', 'fire', 'cold', 'lightning', 'chaos'] as const
 
-export interface RingSlice {
+interface RingSlice {
   type: string
   percent: number
 }
@@ -18,7 +18,7 @@ export function ringSplit(skill: Pick<SkillDamage, 'damageSplit' | 'dotSplit'> |
     .sort((a, b) => RING_ORDER.indexOf(a.type as never) - RING_ORDER.indexOf(b.type as never))
 }
 
-export interface ShareDelta {
+interface ShareDelta {
   label: string
   /** Signed, with its unit: "+400", "-12%". */
   text: string

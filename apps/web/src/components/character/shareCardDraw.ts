@@ -10,7 +10,7 @@ import { cutAtWord, type ShareCardData } from '@/lib/shareCard'
 
 export type CardSize = 'landscape' | 'portrait'
 
-export const SIZES: Record<CardSize, { w: number; h: number; label: string }> = {
+const SIZES: Record<CardSize, { w: number; h: number; label: string }> = {
   landscape: { w: 1200, h: 630, label: '1200×630' },
   portrait: { w: 1080, h: 1350, label: '1080×1350' },
 }

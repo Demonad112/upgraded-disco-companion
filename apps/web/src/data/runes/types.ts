@@ -1,5 +1,5 @@
 /** A point on a rune, in a -1..1 box, y down. */
-export type RunePoint = readonly [number, number]
+type RunePoint = readonly [number, number]
 
 /** One sigil: strokes of straight segments through its points, traced in order. Each point is drawn as a star. */
 export type Rune = { name: string; strokes: readonly (readonly RunePoint[])[] }

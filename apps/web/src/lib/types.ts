@@ -1,6 +1,6 @@
 import type { CharacterSnapshot } from "@poe2/core";
 
-export type SourceDoc =
+type SourceDoc =
   | "atlas-tree-fundamentals"
   | "strategy-guide"
   | "patch-0.5.5"
@@ -55,7 +55,7 @@ export interface RoadmapStep {
   source: SourceRef;
 }
 
-export type BenchmarkSeverity = "soft-guideline" | "hard-gate";
+type BenchmarkSeverity = "soft-guideline" | "hard-gate";
 
 export interface BenchmarkGate {
   id: string;
@@ -105,7 +105,7 @@ export interface AtlasCluster {
   source: SourceRef;
 }
 
-export type MemoryForkBranchId = "top-left" | "top-right" | "top";
+type MemoryForkBranchId = "top-left" | "top-right" | "top";
 
 export interface MemoryFork {
   id: string;
@@ -121,7 +121,7 @@ export interface MemoryFork {
 export type RiskTier = "low" | "medium" | "high";
 export type InvestmentTier = "low" | "medium" | "high";
 
-export type StrategyTier = "S" | "A" | "B" | "C";
+type StrategyTier = "S" | "A" | "B" | "C";
 
 export interface FarmingStrategy {
   id: string;
@@ -139,7 +139,7 @@ export interface FarmingStrategy {
   source: SourceRef;
 }
 
-export interface FragmentCost {
+interface FragmentCost {
   itemName: string;
   quantity: number;
 }
@@ -155,7 +155,7 @@ export interface PinnacleBoss {
   source: SourceRef;
 }
 
-export type BudgetTier = "league-start" | "mid" | "high";
+type BudgetTier = "league-start" | "mid" | "high";
 
 export interface MetaBuild {
   id: string;

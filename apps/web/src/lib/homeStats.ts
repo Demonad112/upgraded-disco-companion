@@ -9,7 +9,7 @@ import { progressTotals } from "@/lib/stepSummary";
  * guide data at build time, never typed in, so the strip cannot drift from
  * the pages it describes.
  */
-export interface GuideCount {
+interface GuideCount {
   value: number;
   label: string;
 }

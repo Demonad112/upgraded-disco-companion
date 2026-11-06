@@ -4,7 +4,7 @@ import { BASE_PATH } from './basePath'
 import { createLocalStore } from './localStore'
 
 /** A character imported from a poe.ninja URL, so it can be re-imported in one tap. */
-export interface RecentCharacter {
+interface RecentCharacter {
   url: string
   /** `snapshotKey(identity)`, to find this character's history snapshots. */
   key: string

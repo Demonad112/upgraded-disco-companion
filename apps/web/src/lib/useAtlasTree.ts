@@ -13,7 +13,7 @@ import { dataUrl } from '@/lib/basePath'
 
 const DATA_URL = dataUrl('atlas-tree.json')
 
-export interface AtlasTreeData extends PassiveTreeData {
+interface AtlasTreeData extends PassiveTreeData {
   generatedFrom: string
   byName: Record<string, number[]>
 }
@@ -27,7 +27,7 @@ export interface AtlasTree {
   source: string
 }
 
-export type AtlasTreeState =
+type AtlasTreeState =
   | { status: 'loading' }
   | { status: 'ready'; atlas: AtlasTree }
   | { status: 'error'; message: string }

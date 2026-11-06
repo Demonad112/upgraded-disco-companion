@@ -10,7 +10,7 @@ export type RiskKey = 'safe' | 'balanced' | 'greedy'
 export interface FarmSource { id: string; title: string; url: string; date: string }
 export interface Tier { tier: number; min: number; max: number; ilvl: number }
 
-export interface FarmStat {
+interface FarmStat {
   id: string
   name: string
   unit: string
@@ -39,9 +39,9 @@ interface ModBase {
 export type TabletMod = ModBase
 export interface WaystoneMod extends ModBase { danger: DangerRating }
 
-export interface TabletType { id: string; name: string; mechanic: string | null; sources: string[] }
+interface TabletType { id: string; name: string; mechanic: string | null; sources: string[] }
 
-export interface EffectModifier {
+interface EffectModifier {
   id: string
   text: string
   /** tablet_mods, tablet_mods_per_tablet or waystone_mods_per_tablet. */
@@ -52,7 +52,7 @@ export interface EffectModifier {
   sources: string[]
 }
 
-export interface FarmRules {
+interface FarmRules {
   maxTabletsPerMap: number
   maxTabletsPerCityMap: number
   maxTabletsPerTower: number
@@ -72,9 +72,9 @@ export interface FarmRules {
   notes: { text: string; sources: string[]; confidence: Confidence }[]
 }
 
-export interface WeightEntry { value: number; why: string; sources: string[]; confidence: Confidence }
+interface WeightEntry { value: number; why: string; sources: string[]; confidence: Confidence }
 export interface Preset { name: string; weights: Record<string, WeightEntry> }
-export interface FarmFixture {
+interface FarmFixture {
   /** Preset the fact-check scored the fixture under. */
   preset: string
   name: string
@@ -122,7 +122,7 @@ export interface QuickPick {
   why: string
   recommended: Loadout
 }
-export interface QuickPicksData {
+interface QuickPicksData {
   patchNote: string
   excluded: { farm: string; why: string }[]
   /** `appliesTo`: "waystone" or a tablet type id. */
@@ -135,9 +135,9 @@ export interface QuickPicksData {
 export interface ModPick { modId: string; tier: number; value: number }
 export interface Tablet { type: string; rarity: 'magic' | 'rare'; prefixes: ModPick[]; suffixes: ModPick[] }
 export interface WaystoneBuild { tier: number; rarity: 'magic' | 'rare'; corrupted: boolean; prefixes: ModPick[]; suffixes: ModPick[] }
-export interface LoadoutOptions { mapContext: MapContext; keystones: boolean; effects: string[] }
+interface LoadoutOptions { mapContext: MapContext; keystones: boolean; effects: string[] }
 export interface Loadout { strategyId: string; tablets: Tablet[]; waystone: WaystoneBuild; options: LoadoutOptions }
 
-export interface StatTotal { total: number; sources: { from: string; value: number }[] }
+interface StatTotal { total: number; sources: { from: string; value: number }[] }
 export type Totals = Record<string, StatTotal>
 export interface Score { reward: number; danger: number; net: number }

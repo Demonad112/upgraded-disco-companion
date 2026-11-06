@@ -1,4 +1,4 @@
-import { farmData, findMod } from '@/data/farm'
+import { findMod } from '@/data/farm'
 import type { FarmData, Loadout, MapContext, ModPick, Side, Tablet, TabletMod, WaystoneBuild, WaystoneMod } from './types'
 
 export interface Limits { prefix: number; suffix: number; total: number }
@@ -6,7 +6,7 @@ export type Subject = { kind: 'tablet'; tablet: Tablet } | { kind: 'waystone'; w
 
 export const maxTablets = (d: FarmData, ctx: MapContext) => (ctx === 'standard' ? d.rules.maxTabletsPerMap : d.rules.maxTabletsPerCityMap)
 
-export function tabletLimits(d: FarmData, t: Pick<Tablet, 'rarity'>, keystones: boolean): Limits {
+function tabletLimits(d: FarmData, t: Pick<Tablet, 'rarity'>, keystones: boolean): Limits {
   const r = d.rules.rarity
   if (t.rarity === 'magic') return { prefix: r.magic.prefix, suffix: r.magic.suffix, total: r.magic.prefix + r.magic.suffix }
   return { prefix: r.rare.prefix, suffix: r.rare.suffix, total: keystones ? r.rare.totalWithKeystones : r.rare.totalBase }
@@ -102,5 +102,3 @@ export function validate(d: FarmData, l: Loadout): string[] {
   }
   return errs
 }
-
-export const defaultRules = () => farmData.rules

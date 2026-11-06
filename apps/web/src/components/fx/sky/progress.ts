@@ -7,7 +7,7 @@ import { BAND } from './field'
 
 export type ProgressGroup<P extends string = string> = { phase: P; ids: readonly string[] }
 
-export type ProgressStar = {
+type ProgressStar = {
   id: string
   /** Index of its phase in the layout. */
   phase: number
@@ -16,7 +16,7 @@ export type ProgressStar = {
   y: number
 }
 
-export type ProgressPhase<P extends string = string> = {
+type ProgressPhase<P extends string = string> = {
   phase: P
   /** Into `stars`: this phase's stars, in step order. */
   from: number
@@ -26,7 +26,7 @@ export type ProgressPhase<P extends string = string> = {
   cy: number
 }
 
-export type ProgressLayout<P extends string = string> = { stars: ProgressStar[]; phases: ProgressPhase<P>[] }
+type ProgressLayout<P extends string = string> = { stars: ProgressStar[]; phases: ProgressPhase<P>[] }
 
 /** FNV-1a, 32-bit: a stable number from an id, so a star never moves between loads or releases. */
 export function hashId(id: string): number {

@@ -73,7 +73,7 @@ export function tabPanelProps(idBase: string, value: string) {
   } as const
 }
 
-export type SegmentedOption<T extends string> = {
+type SegmentedOption<T extends string> = {
   value: T
   label: ReactNode
   /** A small figure after the label (tab counts). */

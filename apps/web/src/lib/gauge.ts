@@ -5,10 +5,10 @@
  * the gauge never shows full before the total is reached.
  */
 
-export const MAX_UNIT_SEGMENTS = 40;
-export const PROPORTIONAL_SEGMENTS = 20;
+const MAX_UNIT_SEGMENTS = 40;
+const PROPORTIONAL_SEGMENTS = 20;
 
-export type GaugeModel = {
+type GaugeModel = {
   done: number;
   total: number;
   percent: number;

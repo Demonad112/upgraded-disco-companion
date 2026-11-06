@@ -33,7 +33,7 @@ export type PassiveTreeState =
 let cached: PassiveTree | null = null
 let inFlight: Promise<PassiveTree> | null = null
 
-export function loadPassiveTree(): Promise<PassiveTree> {
+function loadPassiveTree(): Promise<PassiveTree> {
   if (cached) return Promise.resolve(cached)
   if (inFlight) return inFlight
   inFlight = fetch(DATA_URL)

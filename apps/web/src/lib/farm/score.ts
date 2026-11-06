@@ -23,7 +23,7 @@ export function dangerWeight(rating: DangerRating | undefined, layers: Layer[] |
   return sum / layers.length
 }
 
-export function scoreTotals(d: FarmData, totals: Totals, o: ScoreOptions): Score {
+function scoreTotals(d: FarmData, totals: Totals, o: ScoreOptions): Score {
   const weights = d.weights.presets[o.presetId]?.weights ?? {}
   let reward = 0
   let danger = 0

@@ -3,12 +3,12 @@
 import { createLocalStore, useLocalStore } from './localStore'
 
 /** "Dim sky behind blocks": on by default; stored under its own key. */
-export const SKY_DIM_KEY = 'poe2-sky-dim'
+const SKY_DIM_KEY = 'poe2-sky-dim'
 
-export const skyDimStore = createLocalStore<boolean>(SKY_DIM_KEY, true, (v) => typeof v === 'boolean')
+const skyDimStore = createLocalStore<boolean>(SKY_DIM_KEY, true, (v) => typeof v === 'boolean')
 
 /** Reflects the setting onto <html>, where the CSS dim keys on `data-sky-dim-off`. */
-export function applySkyDim(on: boolean): void {
+function applySkyDim(on: boolean): void {
   document.documentElement.toggleAttribute('data-sky-dim-off', !on)
 }
 

@@ -21,13 +21,13 @@ export function modLabel(d: FarmData, modId: string, value: number | string): st
 }
 
 /** The tier's range as "min-max" (or one number), for the shopping list. */
-export function rangeOf(p: ModPick): string {
+function rangeOf(p: ModPick): string {
   const t = findMod(p.modId)?.tiers.find((x) => x.tier === p.tier)
   if (!t) return String(p.value)
   return t.min === t.max ? String(t.min) : `${t.min}-${t.max}`
 }
 
-export interface ChipSlot { target: SwapTarget; pick: ModPick }
+interface ChipSlot { target: SwapTarget; pick: ModPick }
 
 /**
  * The picks on a tablet or the Waystone, reward first: a tablet's mechanic suffixes before its prefixes; the Waystone's
@@ -62,7 +62,7 @@ export function alternatives(d: FarmData, l: Loadout, o: ScoreOptions, t: SwapTa
     .slice(0, n)
 }
 
-export interface NetWords { sign: 1 | 0 | -1; marker: '▲' | '▼' | ''; text: string }
+interface NetWords { sign: 1 | 0 | -1; marker: '▲' | '▼' | ''; text: string }
 
 /** "Better by 6%" / "Worse by 4%" in words, rounded exactly as formatChange() rounds. */
 export function netWords(c: Change): NetWords {
@@ -73,10 +73,10 @@ export function netWords(c: Change): NetWords {
   return changeSign(c) > 0 ? { sign: 1, marker: '▲', text: `Better by ${r}%` } : { sign: -1, marker: '▼', text: `Worse by ${r}%` }
 }
 
-export interface StatLine { id: string; name: string; danger: boolean; text: string }
+interface StatLine { id: string; name: string; danger: boolean; text: string }
 
 /** A stat total as "+18%", "+3" or "12 s". */
-export function formatTotal(d: FarmData, statId: string, total: number): string {
+function formatTotal(d: FarmData, statId: string, total: number): string {
   const st = d.stats.find((s) => s.id === statId)
   const n = Number(total.toFixed(2))
   if (!st) return String(n)

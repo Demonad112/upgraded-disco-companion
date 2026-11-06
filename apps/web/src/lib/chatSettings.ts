@@ -9,12 +9,12 @@
  * Callers wrap these in try/catch: storage can be disabled or full.
  */
 
-export type KeyValueStore = Pick<Storage, 'getItem' | 'setItem' | 'removeItem'>
+type KeyValueStore = Pick<Storage, 'getItem' | 'setItem' | 'removeItem'>
 
 export const CHAT_KEY_STORAGE = 'poe2-chat-key'
 export const CHAT_PROVIDER_STORAGE = 'poe2-chat-provider'
 
-export interface ChatSettings {
+interface ChatSettings {
   apiKey: string
   provider: string | null
 }

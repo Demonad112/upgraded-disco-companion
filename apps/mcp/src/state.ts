@@ -42,7 +42,7 @@ const here = dirname(fileURLToPath(import.meta.url))
 /** dist/ sits one level under apps/mcp, so data is four levels up. */
 const dataDir = join(here, '..', '..', '..', 'packages', 'data', 'generated')
 
-export class NoCharacterLoadedError extends Error {
+class NoCharacterLoadedError extends Error {
   constructor() {
     super(
       'No character is loaded. Call poe2_load_character first with a poe.ninja profile URL, ' +
@@ -52,7 +52,7 @@ export class NoCharacterLoadedError extends Error {
   }
 }
 
-export interface LoadedCharacter {
+interface LoadedCharacter {
   model: CharModel
   analysis: Analysis
   setups: SkillSetup[]

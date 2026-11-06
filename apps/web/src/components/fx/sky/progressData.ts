@@ -8,7 +8,7 @@ import type { ProgressGroup } from './progress'
  * Early-progression is the pre-Ash sustain block (Precursor Fortress); the memory forks open after the first
  * Arbiter of Divinity; mechanic subtrees are the masters phase; the rest is the full-tree close-out.
  */
-export const ATLAS_PHASE: Record<AtlasClusterGroup, RoadmapPhase> = {
+const ATLAS_PHASE: Record<AtlasClusterGroup, RoadmapPhase> = {
   'early-progression': 'precursor-fortress',
   'memory-fork': 'arbiter-of-divinity-loop',
   'mechanic-subtree': 'masters-and-mechanics',

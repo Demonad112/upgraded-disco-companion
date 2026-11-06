@@ -3,7 +3,7 @@ import type { Field } from './field'
 import type { Palette } from './palette'
 
 /** Lantern (MP1): field stars within this many px of a fine pointer brighten and join their nearest neighbour. */
-export const LANTERN_R = 160
+const LANTERN_R = 160
 /** At most this many stars take part, so the neighbour search stays small (LS1 low power: k² ≈ 1.6k distance checks, was 4k). */
 const LANTERN_MAX = 40
 /** Neighbours further apart than this stay unjoined, so the lines read as close pairs, not a web. */

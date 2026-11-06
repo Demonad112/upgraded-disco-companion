@@ -107,7 +107,7 @@ export function LastCharacterCard() {
   );
 }
 
-export type CardFigure = { label: string; value: number; before?: number; show: boolean };
+type CardFigure = { label: string; value: number; before?: number; show: boolean };
 
 /** The card itself, shared by home (last snapshot) and the character page (live analysis). */
 export function CharacterCard({

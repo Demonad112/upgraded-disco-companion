@@ -9,7 +9,7 @@ import { ailmentImmunities, type Analysis } from '@poe2/core'
 
 export type CheckStatus = 'pass' | 'warn' | 'fail' | 'unknown'
 
-export interface DefenceCheck {
+interface DefenceCheck {
   id: string
   label: string
   status: CheckStatus

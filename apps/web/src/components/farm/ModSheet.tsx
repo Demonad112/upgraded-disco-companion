@@ -6,7 +6,7 @@ import { allSame, netWords } from "@/lib/farm/quickPicks";
 import type { Change } from "@/lib/farm/score";
 import type { Confidence } from "@/lib/farm/types";
 
-export interface SheetAlt { label: string; net: Change; moreDanger: boolean; flag?: Confidence }
+interface SheetAlt { label: string; net: Change; moreDanger: boolean; flag?: Confidence }
 
 const FOCUSABLE = 'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])';
 const flagText = (f?: Confidence) => (f === "single" ? " (single source)" : f === "unverified" ? " (unverified)" : "");

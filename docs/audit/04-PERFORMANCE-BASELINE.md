@@ -110,7 +110,7 @@ CLS risk is low (size-adjust fallbacks, fixed canvases); measured 0. TBT is driv
 | Any route JS+CSS brotli | ≤ 250 KB | 263 KB (`/character/`) |
 | `/` HTML brotli | ≤ 16 KB | 13.5 KB |
 | Decorative canvas pixels per canvas (phone) | ≤ 3 MP | 6.1 MP |
-| Sky fill/stroke calls per frame | ≤ 60 | ~1,000+ |
+| Sky fill/stroke calls per frame | ≤ 75 (restated from 60, R15: ~73 measured, frame < 1 ms) | ~73 (LS1) |
 | Idle Script share (desktop, headless) | ≤ 2% | 2.2% |
 
 Timing budgets (frame time, TBT, LCP, long tasks) are relative: **≤ +25 % over unmodified `main` measured in the same
