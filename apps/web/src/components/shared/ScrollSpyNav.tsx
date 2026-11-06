@@ -5,7 +5,7 @@ import { createPortal } from 'react-dom'
 import { useScrollSpy } from '@/hooks/useScrollSpy'
 import { sectionAngles } from '@/lib/astrolabe'
 
-export interface SpyItem {
+interface SpyItem {
   id: string
   label: string
   /** A small figure after the label (Findings 7). Left out where there is no cheap, honest count. */

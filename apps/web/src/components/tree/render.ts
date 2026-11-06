@@ -27,7 +27,7 @@ export interface TreePalette {
   text: string
 }
 
-export interface RenderOptions {
+interface RenderOptions {
   tree: PassiveTree
   viewport: Viewport
   width: number

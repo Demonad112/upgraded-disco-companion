@@ -5,7 +5,7 @@ import { rgba, type Palette, type Rgb } from './palette'
  * so every drawImage is a 1:1 copy rather than a filtered rescale. Sizes are
  * whole device pixels; the cache is emptied when the pixel ratio changes.
  */
-export type Sprite = {
+type Sprite = {
   /** Draws the sprite centred on (x, y) at about `d` CSS pixels across. */
   draw: (ctx: CanvasRenderingContext2D, x: number, y: number, d: number) => void
   /** Renders the size ahead of the first frame that needs it. */

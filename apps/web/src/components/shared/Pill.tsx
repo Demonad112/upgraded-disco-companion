@@ -1,7 +1,7 @@
-export type PillTone = "good" | "warn" | "danger" | "neutral";
+type PillTone = "good" | "warn" | "danger" | "neutral";
 
 /** low / medium / high, as a tone and a 1–3 notch level. */
-export const LEVEL_PILL: Record<string, { tone: PillTone; level: 1 | 2 | 3 }> = {
+const LEVEL_PILL: Record<string, { tone: PillTone; level: 1 | 2 | 3 }> = {
   low: { tone: "good", level: 1 },
   medium: { tone: "warn", level: 2 },
   high: { tone: "danger", level: 3 },

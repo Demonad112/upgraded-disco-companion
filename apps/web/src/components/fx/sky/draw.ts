@@ -3,7 +3,7 @@ import { COLOURS, GOLD, PALE, WHITE, type Palette } from './palette'
 import type { Sprites } from './sprites'
 
 /** One turn per six minutes. */
-export const TURN_RATE = (2 * Math.PI) / 360
+const TURN_RATE = (2 * Math.PI) / 360
 const RING_TICKS = [96, 144, 200]
 /** Twinkle is drawn in this many alpha steps, so each colour fills once per step (D3, A5-4). */
 const LEVELS = 16

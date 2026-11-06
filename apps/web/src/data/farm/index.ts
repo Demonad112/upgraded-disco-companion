@@ -1,5 +1,5 @@
 import raw from './tablets-0.5.5.json'
-import type { Confidence, FarmData, FarmSource, TabletMod, WaystoneMod } from '@/lib/farm/types'
+import type { Confidence, FarmData, TabletMod, WaystoneMod } from '@/lib/farm/types'
 
 /** The fact-check output for patch 0.5.5, typed. Converting the JSON import is one cast; `validateFarmData` checks the shape. */
 export const farmData = raw as unknown as FarmData
@@ -8,7 +8,6 @@ const modsById = new Map<string, TabletMod | WaystoneMod>()
 for (const m of [...farmData.tabletMods, ...farmData.waystoneMods]) modsById.set(m.id, m)
 export const findMod = (id: string) => modsById.get(id)
 
-export const sourceById = (id: string): FarmSource | undefined => farmData.sources.find((s) => s.id === id)
 
 /** Every confidence label in the file, counted for the footnote. */
 export function countByConfidence(data: FarmData = farmData): Record<Confidence, number> {

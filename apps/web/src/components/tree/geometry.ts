@@ -15,10 +15,10 @@ export interface Viewport {
   scale: number
 }
 
-export const MIN_SCALE = 0.004
-export const MAX_SCALE = 0.35
+const MIN_SCALE = 0.004
+const MAX_SCALE = 0.35
 
-export function clampScale(scale: number): number {
+function clampScale(scale: number): number {
   return Math.min(MAX_SCALE, Math.max(MIN_SCALE, scale))
 }
 
@@ -57,7 +57,7 @@ export function treeToScreen(x: number, y: number, vp: Viewport, width: number, 
   }
 }
 
-export function screenToTree(sx: number, sy: number, vp: Viewport, width: number, height: number) {
+function screenToTree(sx: number, sy: number, vp: Viewport, width: number, height: number) {
   return {
     x: (sx - width / 2) / vp.scale + vp.cx,
     y: (sy - height / 2) / vp.scale + vp.cy,

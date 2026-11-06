@@ -27,7 +27,7 @@ const PATTERN = new RegExp(
   'gi',
 )
 
-export type GlossSegment = string | { text: string; term: GlossaryTerm }
+type GlossSegment = string | { text: string; term: GlossaryTerm }
 
 /**
  * Split text into plain runs and glossary hits. Each term is marked once per text, at its first mention; pass a shared
@@ -70,7 +70,7 @@ export function Glossed({ children }: { children: ReactNode }) {
 const GAP = 6
 const EDGE = 16
 
-export function Term({ term, children }: { term: GlossaryTerm; children: ReactNode }) {
+function Term({ term, children }: { term: GlossaryTerm; children: ReactNode }) {
   const id = useId()
   const button = useRef<HTMLButtonElement>(null)
   const tip = useRef<HTMLSpanElement>(null)

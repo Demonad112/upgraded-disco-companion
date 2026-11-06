@@ -9,7 +9,7 @@ const PULSE_TRAIL = 46
 /** How far (px along the chain) a star flares before and after the pulse passes it. */
 const FLARE_IN = 8
 const FLARE_OUT = 34
-export const flareSize = (f: number) => 22 + 4 * Math.round(f * 5)
+const flareSize = (f: number) => 22 + 4 * Math.round(f * 5)
 
 /**
  * The link pulse: a comet running each constellation's chain, its trail bending round the corners behind it, and

@@ -17,7 +17,7 @@ const SORTS = [
 ] as const satisfies readonly { value: SortKey; label: string }[];
 const TIER_ORDINAL: Record<string, number> = { low: 0, medium: 1, high: 2 };
 
-export const STRATEGY_TIER_STYLES: Record<string, string> = {
+const STRATEGY_TIER_STYLES: Record<string, string> = {
   S: "gold-surface border-[var(--accent)]",
   A: "border-good/40 bg-good/10 text-[var(--good)]",
   B: "border-line bg-surface-sunken text-ink-dim",

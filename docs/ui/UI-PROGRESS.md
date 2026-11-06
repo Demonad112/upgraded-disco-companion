@@ -40,8 +40,10 @@ session's row in its last commit. Audit rows are tracked in `docs/audit/08-PROGR
 | 21 | L1 launch hardening (proxy, share target, paste, patch switch, Lighthouse CI) | Cloud | Sonnet 5.5 · medium | done | feat/20261103-launch-hardening | | | runs with C1, H1; owner deploys the proxy |
 | 22 | CH1 character showcase + share card v2 + fix→trade | Cloud | Opus 5.5 · high | done | variant/20261103-showcase | #87 | | Showcase, Top 3 fixes with trade2 links, share card 1200×630 + 1080×1350, Advanced fold; `docs/carry/CH1.md`; runs with V1 |
 | 22 | V1 SVG diagrams | Local | Opus 5.5 · high | done | variant/20261103-diagrams | #86 | | waystone ladder, Atlas path, boss order (lazy SVG chunks); `/checklist/` 208,394 → 209,062 B br; `docs/carry/V1.md`; runs with CH1 |
-| 23 | PD patch-day data | Cloud | Opus 5.5 · high | todo | | | | when the December patch notes land |
-| 24 | IMG-2 visual build + QA sweep | Cloud | Opus 5.5 · high / Sonnet 5.5 · medium | todo | | | | needs IMG-1 picks |
+| 23 | PD patch-day data | Cloud | Opus 5.5 · high | todo | | | | when the December patch notes land; R01+R12; owner starts it when patch notes land |
+| 24 | IMG-2 visual build + QA sweep | Cloud | Opus 5.5 · high / Sonnet 5.5 · medium | parked | | | | needs IMG-1 picks |
+| 25 | S1 reconcile + dead exports | Cloud | Sonnet 5.5 · medium | done | chore/20261106-reconcile | | | |
+| 26 | S2 QA sweep on main | Cloud | Sonnet 5.5 · medium | todo | fix/20261106-qa | | | |
 
 ## Backlog
 | Item | Batch | Status | PR | Notes |
@@ -59,10 +61,10 @@ decides or acts; sessions don't implement it.
 
 | Item | Batch | Status | PR | Notes |
 |---|---|---|---|---|
-| U13a-4: load `@poe2/core`'s analysis on demand (`await import` in `handleResult`) | next-U | todo · M | | `/character/` is already 226,768 B br (under 250 KB). Recommended: do it only if a later change pushes the route over budget; measure with `route-weight.mjs` first |
+| U13a-4: load `@poe2/core`'s analysis on demand (`await import` in `handleResult`) | next-U | parked | | `/character/` is already 226,768 B br (under 250 KB). Recommended: do it only if a later change pushes the route over budget; measure with `route-weight.mjs` first. See R50. |
 | U13a-5: `/` sits at +8.4 KB of its +10 KB budget (187,507 B br) | next-U | rule · S | | Any change that touches home JS measures `route-weight.mjs` before and after, in the PR |
-| U13a-6: `CommandPalette` and `SearchDialog` overlays keep `backdrop-blur-sm` | next-U | todo · S | | Recommended: keep; transient modals, the compositor cost lasts only while they're open. Drop only if review wants zero backdrop-filter |
-| U10-3: Checks tab has no count chip | next-U | todo · S | | Recommended: leave out until a batch defines one honest figure for four mixed panels |
+| U13a-6: `CommandPalette` and `SearchDialog` overlays keep `backdrop-blur-sm` | next-U | parked | | Recommended: keep; transient modals, the compositor cost lasts only while they're open. Drop only if review wants zero backdrop-filter. See R51. |
+| U10-3: Checks tab has no count chip | next-U | parked | | Recommended: leave out until a batch defines one honest figure for four mixed panels. See R52. |
 | U2-1: a bare `.card` outside home needs `data-surface="data"` | next-U | rule · S | | Standing rule; `Panel`, `Accordion`, `WarningPanel` set it themselves |
 | A7-1 / A7-3: new tokens go in `tokens.css`; canvas code reads only colours from tokens | next-U | rule · S | | Standing rules (the minifier rewrites colours inside custom properties) |
 | SB1-1: proxy lockfile, `npm ci` and audit if `services/ninja-proxy` ever gains runtime deps | next-A | rule · S | | Nothing to do today (no deps) |
@@ -83,16 +85,16 @@ decides or acts; sessions don't implement it.
 | SB3-W15-1: state perf budgets as "≤ +25 % over same-session main" | owner | done | #68 | Accepted (D12); rule under Budgets in `docs/audit/04-PERFORMANCE-BASELINE.md` |
 | Branch clean-up: merged `variant/*` and `claude/*` on origin | owner | done | | Owner deleted them (last: `variant/20261030-sky-wow`); origin holds `main` and this PR's branch. Local `variant/20261101-qa` and `variant/20261029-surfaces` deleted 2026-11-01 (both merged; surfaces via the #46 squash) |
 | Owner decisions D11–D15 (SB3-2, SB3-W15-1, U13a-1, A3-2, SB3 Open 1) | OD1 | done | #68 | `docs/audit/09-OWNER-DECISIONS.md`; `docs/carry/OD1.md` |
-| OD1-1: `pob-bridge.test.ts` "gives up once the per-call budget is spent" runs on real timers (HANDOFF Open 2) | next-A | todo · S | | Timing-flaky on a slow machine: if the budget is spent after one port, `timeouts[1]` is undefined. Recommended: vitest fake timers; test-only, but it is in `packages/core`, so the owner OKs it in the prompt |
-| OD1-2: `DESIGN.md` and `DATA-REFRESH.md`, lost in the transfer (HANDOFF Open 1) | owner | decide · S | | Recommended: close, not restore. `CLAUDE.md` "Design" holds the decided design and `packages/data/PROVENANCE.md` covers the data rebuild |
+| OD1-1: `pob-bridge.test.ts` "gives up once the per-call budget is spent" runs on real timers (HANDOFF Open 2) | next-A | done | | Timing-flaky on a slow machine: if the budget is spent after one port, `timeouts[1]` is undefined. Recommended: vitest fake timers; test-only, but it is in `packages/core`, so the owner OKs it in the prompt. Done: fake timers, `pob-bridge.test.ts:222`. |
+| OD1-2: `DESIGN.md` and `DATA-REFRESH.md`, lost in the transfer (HANDOFF Open 1) | owner | done | | Recommended: close, not restore. `CLAUDE.md` "Design" holds the decided design and `packages/data/PROVENANCE.md` covers the data rebuild. Done: closed (R20). |
 | OD1-3: `/` has ~2.5 KB left under its 190 KB budget (187,527 B br after #67) | next-U | done · S | | The next feature that adds home JS will go over. Recommended: before one, measure what `CommandPalette` / `SearchDialog` add to `/` and load them on first open if it's more than ~2 KB. Already the case: `CommandPalette` lazy-loads `SearchDialog` (`React.lazy`, preloaded on hover/focus), so the dialog is not in `/`'s first load |
-| OD1-4: no deterministic test for the 280 px first-paint overflow (U13b-5) | next-U | optional · S | | The fix is checked by a local CPU-throttled probe, not in CI. Recommended: add only if the 280 px tests flake in CI again (an overflow check polled every frame under CDP 4× CPU) |
+| OD1-4: no deterministic test for the 280 px first-paint overflow (U13b-5) | next-U | parked | | The fix is checked by a local CPU-throttled probe, not in CI. Recommended: add only if the 280 px tests flake in CI again (an overflow check polled every frame under CDP 4× CPU). See R53. |
 | MP1-1: sky fill/stroke calls per frame are 74–80 on `main` (budget 60); the lantern adds +6 while lit | B3 | done | LS1 | Rings now 3 strokes (were 12): 79.2 → 73.2 avg, 85 → 80 max with the lantern lit and the progress layer on (`docs/carry/LS1.md`). Still above 60; LS1-3 |
-| MP1-2: `/` has 635 B left of 190 KB after MP1 | next-U | todo · S | | OD1-3 first: load `CommandPalette` / `SearchDialog` on first open before any other home change |
-| MP1-3: astrolabe is a new fixed SVG top right behind the header (no DOM ring existed) | owner | decide · S | | Recommended: keep; B3 decides whether the canvas rings stay |
-| MP1-4: eyeball lantern, foil and route transitions on a real display and in Safari | owner | todo · S | | Headless Chromium only so far |
-| LS1-1: approve the eight phase names (`apps/web/src/data/phaseNames.ts`) | owner | decide · S | | Proposed list in `docs/carry/LS1.md` and the LS1 PR |
-| LS1-2: rune set keyed to Forbidden Rites (`LEAGUES[0]`), not Runes of Aldur | owner | decide · S | | Recommended: keep; LEAGUES[0] is the newest live league, and a new league swaps one file |
-| LS1-3: sky still averages ~73 fill+stroke calls (budget 60) | owner | decide · S | | The 16 alpha levels × 5 colours of field stars are ~55 of them; restate the budget at 75 or allow fewer levels |
-| LS1-4: eyeball ignite, flare, label and a rune glyph on a real display | owner | todo · S | | Headless Chromium only |
+| MP1-2: `/` has 635 B left of 190 KB after MP1 | next-U | done | | OD1-3 first: load `CommandPalette` / `SearchDialog` on first open before any other home change. Done: superseded, `/` budget 192,000 since CH5. |
+| MP1-3: astrolabe is a new fixed SVG top right behind the header (no DOM ring existed) | owner | done | | Recommended: keep; B3 decides whether the canvas rings stay. Done: kept (R16). |
+| MP1-4: eyeball lantern, foil and route transitions on a real display and in Safari | owner | todo | | Headless Chromium only so far. Owner, R46. |
+| LS1-1: approve the eight phase names (`apps/web/src/data/phaseNames.ts`) | owner | done | | Proposed list in `docs/carry/LS1.md` and the LS1 PR. Done (R13). |
+| LS1-2: rune set keyed to Forbidden Rites (`LEAGUES[0]`), not Runes of Aldur | owner | done | | Recommended: keep; LEAGUES[0] is the newest live league, and a new league swaps one file. Done (R14). |
+| LS1-3: sky still averages ~73 fill+stroke calls (budget 60) | owner | done | | The 16 alpha levels × 5 colours of field stars are ~55 of them; restate the budget at 75 or allow fewer levels. Done (R15). |
+| LS1-4: eyeball ignite, flare, label and a rune glyph on a real display | owner | todo | | Headless Chromium only. Owner, R46. |
 | TT1: trade stat snapshot, search builder, `/trade` Manual price check (palette only) | next-U | done | | `docs/carry/TT1.md`; links unverified on trade2; follow-up chore/20261102-tt1-followup: route weight accepted, live checks still open |

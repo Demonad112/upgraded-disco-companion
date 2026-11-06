@@ -22,7 +22,7 @@ export type ImportResult =
   | { ok: false; error: string; canPaste: boolean; cancelled?: boolean }
 
 /** Shown while the proxy reports poe.ninja as busy (429/503): `seconds` left before retry `step` of `of`. */
-export type BusyInfo = { seconds: number; step: number; of: number }
+type BusyInfo = { seconds: number; step: number; of: number }
 
 /** Waits between retries when the proxy sends no `Retry-After`. Three steps, then the error shows. */
 export const BACKOFF_SECONDS = [3, 6, 12] as const
@@ -63,7 +63,7 @@ function waitSeconds(seconds: number, signal: AbortSignal | undefined, tick: (le
 }
 
 /** Why `target` can't be imported, or null when it looks like a full profile URL. */
-export function checkProfileUrl(target: string): string | null {
+function checkProfileUrl(target: string): string | null {
   const ref = parseProfileUrl(target)
   if (!ref) return 'That does not look like a poe.ninja PoE2 character URL. Expected something like the example below.'
   if (!ref.leagueSlug) return 'That URL has no league in it. Use the full profile URL, which includes the league.'

@@ -1,7 +1,7 @@
 import { AMBER, GOLD, PALE, SILVER, WHITE } from './palette'
 
-export const PIVOT_X = 0.5
-export const PIVOT_Y = 0.46
+const PIVOT_X = 0.5
+const PIVOT_Y = 0.46
 export const RING_RADII = [0.34, 0.62, 0.92]
 const RING_DIAMONDS = [2, 3, 2]
 /** Turn rate of the far, mid and near star layers relative to the rings (parallax). */
@@ -24,9 +24,9 @@ const STAR = 1.8
 /** Faint background stars per field star: desktop, phone (lighter). */
 const FAINT = [2, 1]
 /** Most stars (field + faint) drawn per frame; lite mode halves it. */
-export const STAR_CAP = 1800
+const STAR_CAP = 1800
 
-export function mulberry32(seed: number) {
+function mulberry32(seed: number) {
   return () => {
     seed |= 0
     seed = (seed + 0x6d2b79f5) | 0

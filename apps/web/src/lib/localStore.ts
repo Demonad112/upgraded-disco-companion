@@ -11,7 +11,7 @@ import { useSyncExternalStore } from 'react'
  * Reads are lazy and cached; every read and write is best-effort, because
  * storage can be missing or throw (private mode, blocked site data).
  */
-export interface LocalStore<T> {
+interface LocalStore<T> {
   get: () => T
   set: (update: (prev: T) => T) => void
   subscribe: (listener: () => void) => () => void

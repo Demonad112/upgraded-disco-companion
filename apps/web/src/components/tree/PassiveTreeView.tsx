@@ -25,7 +25,7 @@ function readPalette(el: HTMLElement): TreePalette {
   }
 }
 
-export interface PassiveTreeViewProps {
+interface PassiveTreeViewProps {
   tree: PassiveTree
   allocation: PassiveAllocation
   className?: string

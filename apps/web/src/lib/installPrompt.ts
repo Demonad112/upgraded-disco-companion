@@ -12,7 +12,7 @@ interface BeforeInstallPromptEvent extends Event {
   userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>
 }
 
-export type InstallMode = 'prompt' | 'ios' | 'none'
+type InstallMode = 'prompt' | 'ios' | 'none'
 
 let deferred: BeforeInstallPromptEvent | null = null
 let installed = false
@@ -46,7 +46,7 @@ export function startInstallCapture() {
   })
 }
 
-export function installMode(): InstallMode {
+function installMode(): InstallMode {
   if (installed) return 'none'
   if (deferred) return 'prompt'
   return isIosSafari() ? 'ios' : 'none'

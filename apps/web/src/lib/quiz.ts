@@ -1,6 +1,6 @@
 import type { FarmingStrategy, InvestmentTier, RiskTier } from "./types";
 
-export type QuizStageAnswer = "league-start" | "late-game";
+type QuizStageAnswer = "league-start" | "late-game";
 
 export interface QuizAnswers {
   budget?: InvestmentTier;

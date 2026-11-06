@@ -7,7 +7,7 @@ import { createLocalStore } from './localStore'
  * the saved-progress blob is untouched. `data-compact` on <html> is what the
  * CSS keys on; the bootstrap below sets it before paint.
  */
-export const COMPACT_KEY = 'poe2-endgame-companion:compact:v1'
+const COMPACT_KEY = 'poe2-endgame-companion:compact:v1'
 
 export const compactMode = createLocalStore<{ on: boolean }>(
   COMPACT_KEY,

@@ -9,7 +9,7 @@ const LEVEL_WORD: Record<1 | 2 | 3, string> = { 1: "Low", 2: "Medium", 3: "High"
 const INVEST_WORD: Record<string, string> = { low: "Low investment", medium: "Medium investment", high: "High investment" };
 
 /** Farm risk 1–3 (the strategy's own rating, not the loadout's Map danger) as a word plus three square pips (the word carries the meaning; the pips are decoration). */
-export function DangerPips({ level }: { level: 1 | 2 | 3 }) {
+function DangerPips({ level }: { level: 1 | 2 | 3 }) {
   return (
     <span className="qp-danger">
       <span className="qp-pips" aria-hidden="true">

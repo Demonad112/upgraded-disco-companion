@@ -44,7 +44,7 @@ function grade(a: BuildAssessment): string {
 }
 
 /** Suggested re-crafts that move a single resistance, with the size of the move. */
-export function resistanceRecrafts(recs: Recommendation[]): { rec: Recommendation; type: ResType; delta: number }[] {
+function resistanceRecrafts(recs: Recommendation[]): { rec: Recommendation; type: ResType; delta: number }[] {
   const out: { rec: Recommendation; type: ResType; delta: number }[] = []
   for (const rec of recs) {
     const m = rec.impact ? RES_STAT.exec(rec.impact.stat) : null

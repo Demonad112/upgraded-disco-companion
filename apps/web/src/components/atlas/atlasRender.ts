@@ -29,7 +29,7 @@ export interface AtlasPalette {
   font: string
 }
 
-export interface AtlasRenderOptions {
+interface AtlasRenderOptions {
   tree: PassiveTree
   viewport: Viewport
   width: number
@@ -49,7 +49,7 @@ function zoomFactor(scale: number): number {
   return Math.min(2.4, Math.max(0.75, scale / 0.055))
 }
 
-export function nodeRadius(node: TreeNode, scale: number): number {
+function nodeRadius(node: TreeNode, scale: number): number {
   const base =
     node.kind === NODE_KIND.keystone ? 6.5 : node.kind === NODE_KIND.start ? 6 : node.kind === NODE_KIND.notable ? 4 : 2.3
   return base * zoomFactor(scale)

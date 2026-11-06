@@ -3,7 +3,7 @@
  * says what was regenerated and — just as important — what was not checked
  * against the current patch. Dates come from packages/data/PROVENANCE.md.
  */
-export interface ChangelogEntry {
+interface ChangelogEntry {
   /** Game patch the entry applies to, or the app release it shipped under. */
   patch: string
   date: string

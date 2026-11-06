@@ -84,11 +84,11 @@ import {
 } from './state.js'
 
 /** Where a tool's numbers come from, which decides the provenance tier in `_meta`. */
-export type ToolSource = SiteSource | 'pob'
+type ToolSource = SiteSource | 'pob'
 
 type ToolDefInput = Omit<ToolDef, 'outputSchema' | 'source'>
 
-export interface ToolDef {
+interface ToolDef {
   name: string
   title: string
   description: string
@@ -1706,7 +1706,7 @@ export const TOOLS: ToolDef[] = DEFINITIONS.map((def) => {
 })
 
 /** The provenance stamp for one tool's answer, dated as of `now`. */
-export function toolProvenance(tool: ToolDef, now = new Date()): ProvenanceStamp {
+function toolProvenance(tool: ToolDef, now = new Date()): ProvenanceStamp {
   if (tool.source === 'pob') return provenanceFor('ninja', null, 'live Path of Building engine')
   if (tool.source === 'ninja') {
     const loaded = loadedCharacter()
