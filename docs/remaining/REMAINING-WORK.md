@@ -37,14 +37,14 @@ can do, **R** = standing rule (no work), **W** = waiting on an external event.
 | ID | Action | Origin | Status |
 |---|---|---|---|
 | R40 | 50-map run log for danger calibration (feeds R10) | FP1-1 | open |
-| R41 | Deploy ninja-proxy: `cd services/ninja-proxy && vercel --prod` (CORS allowlist T20; cache/coalesce/503 L1) | L1-1 / A8 | open |
+| R41 | Deploy ninja-proxy: `cd services/ninja-proxy && vercel --prod` (CORS allowlist T20; cache/coalesce/503 L1) | L1-1 / A8 | done: proxy deployed 2026-11-06, root returns 200 |
 | R42 | Open one "Find better gear" link on live trade2; confirm weighted group prefills (403 from cloud sandbox) | CH6-1 | open |
 | R43 | TT1 live trade2 checks: filter shapes (`/api/trade2/data/filters`), link length 6k/8k/9k chars (`URL_MAX_LENGTH`), `TradeStatus` values via `?q=`, console realm | TT1 #2–#5 | open (owner skipped 2026-11-02) |
 | R44 | Real-device pass: keyboard hides tab bar (iOS Safari, Android Chrome), Install / Add to Home Screen, Safari 17, rotation, VoiceOver | U13b-1 | open |
 | R45 | Android share-target test (install PWA, share a poe.ninja link) | L1-3 | open |
 | R46 | Eyeball on real display + Safari: sky 30 s, hover pulse, hero draw-in, lantern, foil, route transitions, ignite/flare/label/rune glyph | A5-4, W15-pulse-1, MP1-4, LS1-4 | open |
 | R47 | Phone/Xbox sizing for quick-pick sheet and sticky strip; reduced-motion fade; home picker states; diagram label overlap | QP1-1, FP1-5, H1-2, V1-1 | open (QA sweep R04 can cover the emulated part) |
-| R48 | Delete logs of failed guard runs (41174630514 and two on #58); they still hold the session URL | SB4-1 | open |
+| R48 | Delete logs of failed guard runs (41174630514 and two on #58); they still hold the session URL | SB4-1 | done: logs of all 26 failed guard runs deleted 2026-11-06 |
 | R49 | Flip Lighthouse CI job from warn to error after a few stable runs (check job log first) | L1-2 | open |
 
 ## 4. Code and data follow-ups (class C)
