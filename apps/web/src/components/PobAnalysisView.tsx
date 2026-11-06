@@ -102,7 +102,7 @@ export function PobAnalysisView({ analysis }: { analysis: PobAnalysis }) {
 
       <Panel
         title="What a code cannot tell you"
-        subtitle="Listed rather than left as empty panels, so a gap in the source is never mistaken for a gap in the build."
+        subtitle="Listed so a gap in the data isn&apos;t mistaken for a gap in your build."
       >
         <ul className="space-y-2">
           {analysis.gaps.map((gap) => (

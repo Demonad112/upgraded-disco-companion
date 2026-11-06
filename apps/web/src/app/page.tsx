@@ -120,9 +120,7 @@ export default function Home() {
             ))}
           </ul>
           <p className="hero-more max-w-2xl text-base text-ink-dim sm:text-lg">
-            A second-monitor guide for the {CURRENT_PATCH} endgame, built on what
-            top creators teach: what to do next, which Waystones to run, which
-            Atlas nodes to skip, and which farm to commit to.
+            A second-monitor guide for the {CURRENT_PATCH} endgame: what to do next, which Waystones to run, which Atlas nodes to skip and which farm to pick.
           </p>
           {updated ? (
             <p className="hero-more label-metric -mt-2">

@@ -144,7 +144,7 @@ function ConfigCaveat({ config, applies }: { config: PobConfig | null; applies: 
       <p className="text-[11px] leading-relaxed text-ink-dim">{describePobConfig(config)}</p>
       {!config.versusBoss ? (
         <p className="mt-1 text-[11px] leading-relaxed text-warn">
-          Not a single-target number. Judging pinnacle-boss readiness against it would overstate this build.
+          Not a single-target number, so don&apos;t judge boss readiness on it.
         </p>
       ) : null}
     </div>
@@ -207,8 +207,7 @@ export function DpsMatrix({
       <ConfigCaveat config={pobConfig} applies={configApplies} />
 
       <p className="mt-3 text-xs leading-relaxed text-ink-mute">
-        Charge-up skills report a hit rate below 1 — only that fraction of uses land, so their effective rate is lower than the raw
-        figure. Buff and herald skills report 0 hit DPS by design.
+        Charge-up skills show a hit rate below 1, so only that share of uses land. Buff and herald skills show 0 hit DPS by design.
       </p>
     </section>
   )

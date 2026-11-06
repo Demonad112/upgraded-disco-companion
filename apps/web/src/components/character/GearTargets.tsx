@@ -14,6 +14,7 @@ import { TRADE_LEAGUE } from '@/lib/constants'
 import type { ModTiersState } from '@/lib/useModTiers'
 import { improvable, resistGaps, weightedTradeLink } from './gearTargets'
 import { useTradeMap } from './TopFixes'
+import { MapIcon } from '@/components/icons'
 
 export function GearTargets({
   items,
@@ -58,6 +59,7 @@ export function GearTargets({
             {r.corrupted ? <StatusChip tone="warn">Corrupted</StatusChip> : null}
             {link ? (
               <a href={link} target="_blank" rel="noopener noreferrer" className="btn btn-secondary btn-sm" data-trade="weighted">
+                <MapIcon name="trade" size={16} />
                 Find better gear
               </a>
             ) : (

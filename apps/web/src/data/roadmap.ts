@@ -36,7 +36,7 @@ export const roadmapSteps: RoadmapStep[] = [
     description:
       "Until your Atlas is fully unlocked, maps are for pathing, not loot: mechanics are weak without Atlas points, so every hour spent juicing now is an hour your full tree is delayed.",
     tips: [
-      "Boss-rush every map. Only click Essences and Shrines — they're fast. Skip Ritual, Breach, Abyss and the rest.",
+      "Boss-rush every map and only click Essences and Shrines, since they're fast. Skip Ritual, Breach, Abyss and the rest.",
       "The whole goal is Arbiter of Ash ×1 and Arbiter of Divinity ×2. In 0.5.5 the second Divinity kill unlocks every Atlas point at once.",
       "Atlas points can't be refunded. Check the trap-node list on the Atlas page before you allocate anything you don't recognise.",
       "Hold each league mechanic's Tablets until its sub-tree is unlocked, and never run a mechanic's Tablet while you are doing its questline.",
@@ -191,7 +191,7 @@ export const roadmapSteps: RoadmapStep[] = [
       "Bring the two Enigma fragments to the Burning Monolith. The quest fight is ~1.2M HP with two phases, unlimited attempts and no XP loss — it's mechanic-heavy, so learn it rather than face-tank it. Since 0.5.5 it has Fire Resistance and Cold Vulnerability instead of All Elemental Resistances. Upgrade gear before you try, or you'll be here a while.",
     tips: [
       "The kill unlocks the Atlas lock that lets tablets roll 3 modifiers (Regal) — a big sustain spike, so beat Ash as fast as possible.",
-      "Too weak? Don't grind Fortress nodes. Pivot to one league mechanic to gear up, then come back.",
+      "Too weak? Skip the Fortress grind, gear up on one league mechanic, then come back.",
       "The non-quest (uber) version needs all three Crisis Fragments — Ancient, Faded and Weathered — from Citadels or the Currency Exchange. Older guide figures put it at ~5M HP standard / 22M+ uber with a hard 55% phase transition.",
     ],
     source: videoSource(
@@ -214,7 +214,7 @@ export const roadmapSteps: RoadmapStep[] = [
       "Track A (Fubgun, Lazy Exile): optionally clear the Withered Willow (5 Delirium-fog map bosses) for a cheap early amulet anoint, and finish your 4th Ascendancy (about 30 to 40% more damage) before the Arbiter of Divinity.",
       "Track B (Asmodeus, CyclonDefinitiv): T11 is area level 75, so item level 75 drops already cover tier-1 flat damage, +3 amulets, tier-1/2 life, tier-2 defences and level-18 gems. Take 1 Corrupted Nexus for a Doryani point and Stitch the Flesh (+1 revival in maps).",
       "Track B also: farm an item level 75 four-trial Djinn Barya in T11 maps for the 4th Ascendancy at level 85+, then run the Abyss (Well of Souls → Kulemak) and Breach (Monastery of the Keepers → Xesht) questlines for currency and early Genesis Tree belts and rings.",
-      "Not sure? Track B costs only time. Track A on a build that can't clear T14 costs revives and gear.",
+      "Not sure? Pick Track B: it only costs time, while Track A on a build that can't clear T14 costs revives and gear.",
     ],
     benchmarkGateIds: ["b-t11-gear-floor"],
     relatedMistakeIds: ["m-rush-t15"],

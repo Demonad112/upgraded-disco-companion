@@ -67,8 +67,8 @@ export function NavMenu() {
         >
           {/* The full patch note; on phones the banner shows only a short line. */}
           <p className="mb-3 border-b border-line pb-3 text-xs leading-relaxed text-ink-dim">
-            Data current as of patch <strong className="font-semibold text-ink">{CURRENT_PATCH}</strong> ({LEAGUE_LABEL})
-            — community-derived, may drift from future patches. Key:{' '}
+            Data current as of patch <strong className="font-semibold text-ink">{CURRENT_PATCH}</strong> ({LEAGUE_LABEL}),
+            from the community.{' '}
             <span className="font-medium text-warn">⚠ unverified/conflicting</span> means double-check it in-game.
           </p>
           <label className="flex min-h-11 cursor-pointer items-center gap-3">

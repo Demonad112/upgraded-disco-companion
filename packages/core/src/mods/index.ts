@@ -154,7 +154,7 @@ export class ModDatabase {
   constructor(data: ModData, baseData?: ModBaseData) {
     this.baseData = baseData ?? null
     this.limitation = baseData
-      ? 'Compatibility covers which item class a modifier can appear on. Absence from the table means it is not listed, not that it is illegal — those report as unknown. Item level, influence and crafting restrictions beyond the class pool are not modelled.'
+      ? 'Shows which item classes a modifier can appear on; one that is not listed reports as unknown, not illegal. Item level, influence and other crafting limits are not modelled.'
       : data.limitation
     this.size = data.mods.length
     for (const mod of data.mods) {

@@ -85,7 +85,7 @@ export async function importProfile(
     return {
       ok: false,
       error:
-        'You are offline. Importing from poe.ninja needs a connection. Pasting a character model JSON or a Path of Building code still works.',
+        "You're offline, so poe.ninja import won't work. Pasting character JSON or a Path of Building code still does.",
       canPaste: true,
     }
   }
@@ -332,11 +332,10 @@ export function ImportBar({
                 {EXAMPLE}
               </button>
               {' '}
-              — fetched through a small proxy, because poe.ninja blocks direct browser requests. If it is unavailable,
-              paste the data instead.
+              — fetched through a small proxy. If that&apos;s down, paste the data instead.
             </>
           ) : (
-            'Works entirely in your browser with no server. Everything below is computed locally from what you paste.'
+            'Runs entirely in your browser, on what you paste here.'
           )}
         </p>
       </div>

@@ -283,8 +283,7 @@ export function ManualPriceCheck() {
           <ProvenanceBadge label="observed" />
         </p>
         <p>
-          The ?q= link format is confirmed for PoE1 and on trade2 (prefills filters, checked 2026-11-02); realm behaviour on console is
-          unverified.
+          The ?q= link prefills filters on trade2 (checked 2026-11-02). Console realms are unverified.
         </p>
       </div>
     </div>

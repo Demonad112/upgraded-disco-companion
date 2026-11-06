@@ -58,9 +58,7 @@ export function MechanicSubTreeList({ clusters, initial }: { clusters: AtlasClus
         ))}
       </ScrollFade>
       <p className="mb-3 text-xs leading-relaxed text-ink-mute">
-        Priority order for {MECHANIC_LABELS[active]}. Guide-wide rule: don&apos;t
-        run this mechanic&apos;s own tablets while questing it — it slows down
-        finishing the quest.
+        Priority order for {MECHANIC_LABELS[active]}. Don&apos;t run this mechanic&apos;s own tablets while doing its quest; they slow it down.
       </p>
       <ul className="grid grid-cols-[minmax(0,1fr)] gap-2">
         {activeNodes.map((cluster) => (

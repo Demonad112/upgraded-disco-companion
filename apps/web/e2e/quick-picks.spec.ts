@@ -25,7 +25,7 @@ test.describe('quick picks', () => {
     // Two different dangers, two names: the tile's farm risk and the setup's map danger.
     await expect(page.getByTestId('qp-result').getByText('Map danger', { exact: true })).toBeVisible()
     await expect(page.getByTestId('qp-result').getByText('Danger', { exact: true })).toHaveCount(0)
-    await expect(page.getByTestId('qp-danger-note')).toContainText('Farm risk on the farm tile')
+    await expect(page.getByTestId('qp-danger-note')).toContainText('Farm risk is how dangerous this kind of farm is')
     await expect(setup).toContainText('+35% or +70% density')
     await expect(page.getByTestId('qp-footnote')).toContainText('Patch 0.5.5, checked against 0.5.5e')
     await expect(page.getByTestId('qp-footnote')).toContainText(/\d+ unverified/)

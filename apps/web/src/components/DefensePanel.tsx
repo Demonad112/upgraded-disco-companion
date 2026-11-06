@@ -231,9 +231,7 @@ export function DefensePanel({ d }: { d: DefenseSummary }) {
             .filter((r) => r.status === 'implied' && r.implied)
             .map((r) => `${cap(r.type)} ${r.implied!.min === r.implied!.max ? r.implied!.min : `${r.implied!.min}–${r.implied!.max}`}% against ${r.displayed ?? '?'}% shown`)
             .join(', ')}
-          . Assumes the hit pool is life + energy shield with no other mitigation (true here: the physical maximum hit equals it). The cause is
-          not established; it may be a resistance penalty poe.ninja applies and the sheet omits. Treat it as a check on how much margin you
-          really have, not a correction.
+          . This assumes nothing else reduces the hit. The cause isn’t known, so use it to gauge your real margin, not as a correction.
         </p>
       ) : null}
       <div className="grid-cards desk:grid-cols-2">

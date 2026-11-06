@@ -18,6 +18,7 @@ export const CHANGELOG: ChangelogEntry[] = [
     patch: '0.5.5',
     date: '2026-11-06',
     items: [
+      { kind: 'app', text: 'Plainer words: default text is now one or two short sentences; Pro detail keeps the full game detail.' },
       { kind: 'app', text: 'Farm planner: build-aware danger now also counts mana (Mind Over Matter) and leech on gear.' },
       { kind: 'app', text: 'Farm tiles with a saved loadout say whether its Waystone danger fits your imported build.' },
       { kind: 'app', text: 'Atlas page: survivability by waystone tier from your level alone, no import needed.' },

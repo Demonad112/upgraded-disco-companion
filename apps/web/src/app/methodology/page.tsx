@@ -8,7 +8,7 @@ import { METHODOLOGY_SECTIONS } from '@/data/methodology'
 export const metadata: Metadata = {
   title: 'Methodology — PoE2 Endgame Companion',
   description:
-    'How the Character page grades a build, ranks its findings and labels every number — and what it deliberately does not guess.',
+    'How the Character page grades a build, ranks findings and labels numbers, and what it refuses to guess.',
 }
 
 /*
@@ -55,7 +55,7 @@ export default function MethodologyPage() {
         title="How the analysis"
         accent="works"
         // Wording from the Character page header (app/character/page.tsx).
-        description="The Character page reads poe.ninja’s own computed character data and turns it into ranked, quantified findings. This page sets out how — what is read as given, what is computed here, and what is deliberately left unguessed."
+        description="The Character page reads poe.ninja’s data and ranks what to fix. This page explains what is read as given, what is worked out here and what is left unguessed."
       />
 
       <div>
@@ -64,9 +64,7 @@ export default function MethodologyPage() {
         <Section id="grade">
           {/* packages/core/src/score/index.ts (assessBuild), packages/core/src/thresholds.ts */}
           <p>
-            The grade has two halves of equal weight, each worth up to 0.5: defence and damage. Allocated keystones are
-            applied first, because they can invalidate a verdict — a Chaos Inoculation build is not “short on chaos
-            resistance”.
+            The grade has two equal halves, defence and damage, each worth up to 0.5. Keystones are applied first because they can change a verdict: a Chaos Inoculation build is not “short on chaos resistance”.
           </p>
           <p>The defensive half adds up:</p>
           <Rows
@@ -77,9 +75,7 @@ export default function MethodologyPage() {
             ]}
           />
           <p>
-            The damage half grades the best skill that actually hits against the ladder sample for the league and
-            ascendancy: 0.50 in the upper quarter of the sample, 0.40 from the median up, 0.28 in the lower quarter
-            and 0.15 below it.
+            Damage compares your best hitting skill with the ladder for your league and ascendancy. It scores 0.50 in the upper quarter, 0.40 from the median up, 0.28 in the lower quarter and 0.15 below it.
           </p>
           <Rows
             rows={[
@@ -90,14 +86,11 @@ export default function MethodologyPage() {
             ]}
           />
           <p>
-            When damage cannot be graded — no ladder sample, or no skill that deals hit damage — the score is the
-            interval from the defensive half alone to that plus 0.5, and the grade is shown as a range such as{' '}
-            <span className="font-mono text-ink">D–B</span>. Scaling the measured half up would invent a damage
-            score; reporting the floor would punish the build for evidence nobody could collect.
+            When damage can’t be graded (no ladder sample or no hitting skill), the score runs from the defence half alone to that plus 0.5, and the grade shows as a range such as{' '}
+            <span className="font-mono text-ink">D–B</span>. Guessing would invent a damage score, and scoring zero would punish the build for missing data.
           </p>
           <p>
-            The pool and resistance bands are judgement calls, not game constants, and are declared in one place so
-            one number cannot draw different verdicts on one screen.
+            The pool and resistance bands are this project’s judgement, not game constants.
           </p>
         </Section>
 
@@ -105,21 +98,14 @@ export default function MethodologyPage() {
           {/* packages/core/src/defense/index.ts (analyzeDefense), packages/core/src/thresholds.ts (ONE_SHOT_RATIO),
               packages/core/src/defense/implied.ts, packages/core/src/defense/whatif.ts */}
           <p>
-            Survivability is led by the smallest hit that kills. poe.ninja reports the maximum hit a character
-            survives for each damage type — physical, fire, cold, lightning and chaos — and the lowest of them is the
-            headline.
+            Survival is led by the smallest hit that kills you. poe.ninja reports the biggest hit you survive for each damage type, and the lowest one is the headline.
           </p>
           <p>
-            Every type whose maximum hit is below 40 % of the character’s best is named as a one-shot risk, not only
-            the lowest: physical can sit under the line alongside chaos, and physical hits are far more common in
-            maps.
+            Any type below 40 % of your best maximum hit is named as a one-shot risk, not just the lowest.
           </p>
           <p>
             For a hit mitigated only by resistance, the largest survivable hit is{' '}
-            <span className="font-mono text-ink">pool / (1 − resistance)</span>. The app uses that relation in two
-            places, both labelled as derived: to show the resistance poe.ninja’s elemental maximum hits imply, and
-            only when the physical maximum hit equals the life and energy shield pool (so nothing else mitigated it);
-            and in the What-if resistance sliders, which rescale the reported maximum hit as{' '}
+            <span className="font-mono text-ink">pool / (1 − resistance)</span>. The app uses this in two labelled places: to show the resistance poe.ninja’s maximum hits imply, when the physical maximum hit equals your life and energy shield pool; and in the What-if resistance sliders, which rescale the maximum hit as{' '}
             <span className="font-mono text-ink">maxHit × (1 − effective) / (1 − effective′)</span>, with resistance
             clamped to its cap.
           </p>
@@ -133,9 +119,7 @@ export default function MethodologyPage() {
             dashed line, but never led with.
           </p>
           <p>
-            An average hides the damage type a build has no answer to. On the reference character EHP reads 13,569
-            while a 3,808 chaos hit kills — EHP overstates survivability there by about 3.5 times. Where EHP
-            overstates the smallest killing hit by more than 1.5 times, the Character verdict states the ratio.
+            An average hides the damage type you have no answer to: the reference character reads 13,569 EHP, yet a 3,808 chaos hit kills it. When EHP overstates the smallest killing hit by more than 1.5×, the verdict says so.
           </p>
         </Section>
 
@@ -143,8 +127,7 @@ export default function MethodologyPage() {
           {/* packages/core/src/recommend/index.ts (COST_WEIGHT, score), packages/core/src/recommend/focus.ts,
               packages/core/src/thresholds.ts (FOCUS_CATEGORY_WEIGHTS), components/Recommendations.tsx */}
           <p>
-            Findings are ranked by gain per unit of cost: the size of the measured impact divided by a cost weight,
-            so a free fix always outranks an equal-sized fix that costs currency.
+            Findings are ranked by gain for cost, so a free fix beats an equal-sized fix that costs currency.
           </p>
           <Rows
             rows={[
@@ -156,18 +139,13 @@ export default function MethodologyPage() {
             ]}
           />
           <p>
-            The weight is multiplied by the amount when a cost has one. A finding whose impact cannot be quantified
-            ranks last among actionable items: it is real, but a measured gain outranks an unmeasured one.
+            A cost with an amount multiplies the weight. A finding with no measured gain ranks last among actionable ones.
           </p>
           <p>
-            Every number a finding shows is grounded in the payload. Where one cannot be established, it is listed
-            under “Could not be determined” with exactly what is missing. Findings an allocated keystone rules out are
-            listed separately, with the reason.
+            Every number comes from the imported data. Anything that can’t be confirmed is listed under “Could not be determined”, and findings a keystone rules out are listed separately.
           </p>
           <p>
-            The optional Mapping and Bossing views re-order the same list by category — Mapping weights damage and
-            efficiency × 1.25 and survivability × 0.85; Bossing weights survivability × 1.25, damage × 1.1 and
-            efficiency × 0.85. Nothing is added or dropped, and the default view applies no weighting.
+            The optional Mapping and Bossing views reorder the same list: Mapping weights damage and efficiency × 1.25 and survivability × 0.85; Bossing weights survivability × 1.25, damage × 1.1 and efficiency × 0.85. The default view applies no weighting.
           </p>
         </Section>
 
@@ -185,9 +163,7 @@ export default function MethodologyPage() {
             ]}
           />
           <p>
-            Where Path of Building’s exported stats, or the app’s own formulas, disagree with poe.ninja, the
-            disagreement is flagged rather than silently resolved: within 0.5 % is a match, within 5 % (or one unit of
-            rounding) is minor, and anything larger is major.
+            Where Path of Building or the app’s formulas disagree with poe.ninja, it is flagged: within 0.5 % is a match, within 5 % (or one unit of rounding) is minor, and anything larger is major.
           </p>
           <p>
             Reference content on the Checklist and Atlas pages is flagged{' '}
@@ -201,32 +177,23 @@ export default function MethodologyPage() {
               packages/core/src/ninja/ladder.ts (header), packages/core/src/dataage/index.ts,
               packages/core/src/thresholds.ts (DATA_AGE_STALE_HOURS), apps/web/src/lib/proxy.ts */}
           <p>
-            <strong className="text-ink">Read from poe.ninja:</strong> defences — maximum hits, resistances, pool,
-            effective health pool — and per-skill damage. The damage module computes nothing; it reads, labels and
-            shapes poe.ninja’s figures.
+            <strong className="text-ink">Read from poe.ninja:</strong> defences (maximum hits, resistances, pool, effective health pool) and per-skill damage. The damage module only reads and labels these figures.
           </p>
           <p>
-            <strong className="text-ink">Computed here:</strong> the grade, the ranking of findings, implied
-            resistances, What-if projections and the comparison against the ladder. The app’s own game formulas are
-            used only for projection and to cross-check poe.ninja.
+            <strong className="text-ink">Computed here:</strong> the grade, the finding order, implied resistances, What-if projections and the ladder comparison. The app’s own formulas are only used to project and to cross-check poe.ninja.
           </p>
           <p>
-            <strong className="text-ink">Ladder sample:</strong> poe.ninja’s builds search returns one page of the
-            top 100 rows, essentially all level 100. It supports “the best builds of your class run X”; it does not
-            support “you are in the Nth percentile of players”, and the app never phrases it that way.
+            <strong className="text-ink">Ladder sample:</strong> poe.ninja’s builds search gives the top 100 rows, nearly all level 100. It can say “the best builds of your class run X”, but never “you are in the Nth percentile”.
           </p>
           <p>
-            Character data more than 24 hours old is called out of date: gear changes since then are invisible to the
-            analysis. The browser cannot call poe.ninja directly, so every read goes through this project’s own
-            proxy.
+            Character data over 24 hours old is marked out of date, since newer gear changes won’t show. The browser can’t call poe.ninja directly, so reads go through this project’s proxy.
           </p>
         </Section>
 
         <Section id="farm-planner">
           {/* data/farm/tablets-0.5.5.json (rules, weights, sources), lib/farm/* (totals, score, swaps, danger) */}
           <p>
-            The Dashboard’s farm planner scores a map, not a drop. It adds up what the tablets and the Waystone give the
-            map, weights each stat for the farm you chose, subtracts the danger, and reports three plain figures:
+            The Dashboard’s farm planner scores a map, not a drop. It adds what the tablets and Waystone give, weights each stat for your farm, subtracts the danger and reports three figures:
           </p>
           <Rows
             rows={[
@@ -236,32 +203,16 @@ export default function MethodologyPage() {
             ]}
           />
           <p>
-            Totals add by default. A “less” stat multiplies as Π(1 + v/100) − 1, and a flag counts occurrences. Rolls are
-            scaled by the Atlas passives you tick, which are off until you tick them: tablet effect applies to tablet
-            rolls, the Enigmatic Intensification passive to Waystone rolls, and the City Biome passive on City maps only.
-            A change is shown as a signed percentage of the starting figure; from a starting figure of 0 it reads “new”.
+            Totals add by default, “less” stats multiply and flags count. Rolls scale with the Atlas passives you tick, and changes show as a percentage of the starting figure (“new” when that is 0).
           </p>
           <p>
-            Weights and danger ratings (0 to 3 per defence layer) come from a fact-check of patch 0.5.5 and are relative
-            judgements, each shown with its source and confidence in the data file. The footnote counts how many are
-            labelled unverified. The Item Rarity weight for Expedition is one of them. With “Danger for my build” on, the
-            danger rating is the mean over the layers your last imported character relies on, from its latest snapshot:
-            energy shield, armour and evasion; mana when Mind Over Matter is allocated; leech when an equipped item
-            leeches as life or energy shield (leech from passives or gems is not read). The threshold for “relies on” is
-            this app’s own heuristic and is labelled unverified.
+            Weights and danger ratings (0 to 3 per defence layer) come from a fact-check of patch 0.5.5 and are relative judgements; the footnote counts the unverified ones. With “Danger for my build” on, the rating averages the layers your last imported character relies on.
           </p>
           <p>
-            A farm tile reads “Fits your build” or “Harder for your build” only when that farm has a saved loadout with
-            danger mods and a character is imported: the saved loadout’s danger, rated for your layers, is compared with
-            the same loadout’s generic danger. The data holds no hazards per farm, so a farm without a saved loadout gets
-            no badge rather than a guessed one. The comparison is this app’s rule and is labelled unverified.
+            A farm tile reads “Fits your build” or “Harder for your build” only when that farm has a saved loadout with danger mods and a character is imported. The rule is this app’s own and is labelled unverified.
           </p>
           <p>
-            Rules read from the data, never hard-coded: tablets socket into Precursor Towers (up to 3 tablets per map, 4
-            with overlapping towers or a City map), magic tablets take 1 prefix and 1 suffix, rare tablets take 3 mods
-            (4 with both keystones), and a Waystone takes 6 mods (10 once corrupted). Tablet spawn weights are server-side
-            and not available, so no roll probabilities are modelled. A swap keeps the old roll’s relative position in the
-            new mod’s range.
+            Rules come from the data: up to 3 tablets per map (4 with overlapping towers or a City map), and a Waystone takes 6 mods (10 once corrupted). Spawn weights aren’t available, so roll odds aren’t modelled.
           </p>
           <p>
             It is a ranking aid. The danger scale is not calibrated against run logs yet, so treat a large Net swing from a
@@ -274,13 +225,10 @@ export default function MethodologyPage() {
               packages/core/src/defense/index.ts (ResistanceState), packages/core/src/dataage/index.ts,
               components/BuildScore.tsx, components/Recommendations.tsx */}
           <p>
-            <strong className="text-ink">No DPS thresholds.</strong> Damage is graded only against figures observed on
-            the ladder — never against invented thresholds. Without a sample, the damage half is left unscored.
+            <strong className="text-ink">No DPS thresholds.</strong> Damage is only compared with figures seen on the ladder, never made-up targets. Without a sample, the damage half stays unscored.
           </p>
           <p>
-            <strong className="text-ink">Missing is not zero.</strong> A resistance the payload did not report is
-            unknown: it is neither credited nor listed as a shortfall. An incomplete pool is not graded. An absent
-            update time is “unknown”, never fresh and never stale.
+            <strong className="text-ink">Missing is not zero.</strong> A resistance that wasn’t reported is unknown, neither credited nor listed as short. Incomplete pools aren’t graded, and a missing update time reads “unknown”.
           </p>
           <p>
             <strong className="text-ink">Unconfirmed keystones are not applied.</strong> A keystone that is allocated

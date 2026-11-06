@@ -19,7 +19,7 @@ export default function DashboardPage() {
         title="Farming"
         accent="Dashboard"
         source="community data"
-        description="Ranked strategies, a quick picker, pinnacle boss requirements, and current meta builds — numbers are community-derived and will drift across patches."
+        description="Ranked farms, a quick picker, boss requirements and meta builds. Numbers come from the community and will drift between patches."
       />
 
       <section>

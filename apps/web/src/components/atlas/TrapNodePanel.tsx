@@ -28,8 +28,7 @@ export function TrapNodePanel() {
   return (
     <div id="atlas-trap-nodes" className="scroll-mt-40">
       <p className="mb-2.5 border border-danger/40 bg-danger/10 px-3 py-2 text-sm text-ink-dim">
-        <span className="font-semibold text-danger">Do not allocate.</span> The Atlas tree can&apos;t be respecced
-        (only Multi-Choice nodes toggle), so a wrong point is permanent. {hardAvoid} to always avoid,{" "}
+        <span className="font-semibold text-danger">Do not allocate.</span> You can&apos;t respec the Atlas tree (only Multi-Choice nodes toggle), so a wrong point is permanent. {hardAvoid} to always avoid,{" "}
         {atlasTrapNodes.length} in total — tap one for why. To find them in-game, paste a search string from{" "}
         <a href="#atlas-regex" className="text-accent underline-offset-2 hover:underline">
           Search strings

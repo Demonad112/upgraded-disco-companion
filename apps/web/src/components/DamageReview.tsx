@@ -141,7 +141,7 @@ export function DamageReview({
   return (
     <Panel
       title="Damage review"
-      subtitle="Gem values are each support's own figures from Path of Building 2, weighed against this skill's damage split — unconditional effects only. They're a guide to what to try, not a DPS simulation."
+      subtitle="These are each support&apos;s own Path of Building figures, matched to this skill&apos;s damage types. Use them as a guide to what to try, not exact DPS."
       bare={bare}
     >
       <div className="space-y-4">
@@ -246,7 +246,7 @@ export function DamageReview({
             </div>
           ) : (
             <p className="text-[11px] text-good">
-              No support is inapplicable, and none is named as weakest: these figures are nominal, not measured on this build.
+              No support is ruled out or called weakest, because these figures aren&apos;t measured on your build.
             </p>
           )}
 

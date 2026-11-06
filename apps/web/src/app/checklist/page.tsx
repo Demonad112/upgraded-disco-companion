@@ -27,7 +27,7 @@ export default function ChecklistPage() {
         eyebrow="Endgame roadmap"
         title="Progression"
         accent="Checklist"
-        description="Campaign end through the full Atlas tree, the Master quest chains and your farming loop. Check off steps as you complete them — progress is saved in this browser."
+        description="From campaign end to the full Atlas tree and your farming loop. Tick steps as you go; progress saves in this browser."
       />
 
       {/* The checklist flow: overall bar, Up next, planner, reference blocks.

@@ -183,7 +183,7 @@ export default function Home() {
         title="Character"
         accent="Analysis"
         source="poe.ninja"
-        description="Reads poe.ninja’s own computed character data and turns it into ranked, quantified findings. Nothing here is re-derived from scratch, and nothing is invented — where a number can’t be established, it says so."
+        description="Imports your poe.ninja character and ranks what to fix first. If a number can’t be confirmed, it says so."
       />
 
       {/* Once an import starts the box steps aside, so the verdict sits near the top. One element either way: the bar
@@ -227,8 +227,7 @@ export default function Home() {
           <div className="border border-dashed border-line-strong bg-surface-raised/40 px-6 py-16 text-center">
             <p className="text-sm text-ink-dim">Import a character to see its analysis.</p>
             <p className="mx-auto mt-2 max-w-md text-xs leading-relaxed text-ink-mute">
-              Survivability is led by the smallest hit that kills, not by an averaged effective health pool — which on
-              a typical character overstates safety by three times or more.
+              Survival is judged by the smallest hit that kills you, because average health figures often overstate safety by 3× or more.
             </p>
           </div>
         ) : null}

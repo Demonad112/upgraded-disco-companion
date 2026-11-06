@@ -51,7 +51,7 @@ export function BuildScore({ assessment, keystones }: { assessment: BuildAssessm
       <div className="dbody border-t border-line">
       <p className="max-w-prose text-sm leading-relaxed text-balance text-ink">{assessment.note}</p>
       <p className="mt-2 max-w-prose text-xs leading-relaxed text-ink-mute">
-        Damage is graded only against figures observed on the ladder — never against invented thresholds.
+        Damage is only compared with figures seen on the ladder, never made-up targets.
       </p>
 
       <div className="mt-4 grid gap-4 sm:grid-cols-2">
@@ -154,8 +154,7 @@ export function BuildScore({ assessment, keystones }: { assessment: BuildAssessm
         <div className="mt-4 border border-warn/40 p-4">
           <h3 className="text-[11px] font-medium tracking-wide text-warn uppercase">Allocated but not in effect</h3>
           <p className="mt-1 text-[11px] leading-relaxed text-ink-mute">
-            These keystones are on the tree, but this character&rsquo;s own stats contradict them, so none of their
-            corrections were applied. poe.ninja may not have reindexed since the tree changed.
+            These keystones are on the tree, but this character&rsquo;s stats contradict them, so they were ignored. poe.ninja may not have caught up with a tree change.
           </p>
           <ul className="mt-2 space-y-1.5">
             {keystones.unverified.map((u) => (

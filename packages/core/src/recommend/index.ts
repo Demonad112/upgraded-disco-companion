@@ -240,7 +240,7 @@ function oneShotRule(ctx: Context): Recommendation[] {
       kind: 'stat',
       stat: 'lowestMaximumHitTaken',
       value: lowest.value,
-      note: `A single ${lowest.type} hit of ${lowest.value.toLocaleString()} kills. The safest vector (${highest.type}) survives ${highest.value.toLocaleString()} — ${ratio.toFixed(1)}x more.`,
+      note: `A single ${lowest.type} hit of ${lowest.value.toLocaleString()} kills. Your toughest type (${highest.type}) survives ${highest.value.toLocaleString()} — ${ratio.toFixed(1)}x more.`,
     },
   ]
 
@@ -256,7 +256,7 @@ function oneShotRule(ctx: Context): Recommendation[] {
   const res = d.resistances.find((r) => r.type === lowest.type)
   const cost: Cost =
     res && (res.underCap ?? 0) > 0
-      ? { kind: 'gear', amount: 1, currencyTier: 'low', detail: `Close the ${res.underCap}% ${lowest.type} resistance gap first — it is the cheapest lever on this vector.` }
+      ? { kind: 'gear', amount: 1, currencyTier: 'low', detail: `Close the ${res.underCap}% ${lowest.type} resistance gap first — it is the cheapest way to survive this damage type.` }
       : {
           kind: 'gear',
           amount: 1,
@@ -287,7 +287,7 @@ function oneShotRule(ctx: Context): Recommendation[] {
         `that can kill this character, ${ratio.toFixed(1)}x below the strongest. The figure opposite is the CEILING — what this vector ` +
         `would reach if it matched the safest one` +
         (lowest.type === 'chaos'
-          ? ', which chaos cannot fully do here: it drains energy shield at twice the rate, so a capped resistance still leaves it the thinnest vector.'
+          ? ', which chaos cannot fully do here: it drains energy shield at twice the rate, so a capped resistance still leaves it your weakest type.'
           : '.'),
       impact: {
         stat: 'lowestMaximumHitTaken',
@@ -555,7 +555,7 @@ function idleWeaponSetRule(ctx: Context): Recommendation[] {
       id: 'weapon-set-idle',
       category: 'question',
       action: `Confirm whether weapon set ${inactiveSet} is still in use — ${idle.length} passive points are committed to it.`,
-      rationale: `Weapon set ${ctx.passives.activeSet} is active, but set ${inactiveSet} holds ${idle.length} allocated passives${inactiveItems.length ? ` and ${inactiveItems.length} equipped item${inactiveItems.length === 1 ? '' : 's'}` : ''}. A swap set can be entirely deliberate, so this is a question rather than a finding.`,
+      rationale: `Weapon set ${ctx.passives.activeSet} is active, but set ${inactiveSet} holds ${idle.length} allocated passives${inactiveItems.length ? ` and ${inactiveItems.length} equipped item${inactiveItems.length === 1 ? '' : 's'}` : ''}. This may be on purpose, so it's a question, not a finding.`,
       impact: null,
       cost: { kind: 'free', amount: 0, detail: 'Costs nothing to check.' },
       tradeoff:
@@ -581,7 +581,7 @@ function collectUnresolved(ctx: Context): Unresolved[] {
       id: 'armour-hit-size',
       question: 'How much physical damage does armour actually stop?',
       missing:
-        'poe.ninja did not report the hit size its damage-reduction figure was computed against. Armour mitigation is hit-size dependent, so a single percentage cannot be projected to other hit sizes without it.',
+        'poe.ninja did not report the hit size behind its armour figure. Armour depends on hit size, so that percentage cannot be applied to other hits.',
     })
   }
 
@@ -654,7 +654,7 @@ export function recommend(
     suppressed: ctx.suppressed,
     buildIsSound,
     summary: buildIsSound
-      ? 'No actionable weaknesses found. Resistances are capped, no damage type stands out as a one-shot vector, and gear is consistent. This build is in good shape.'
+      ? 'No clear weaknesses found: resistances are capped, no damage type is a one-shot risk and gear is consistent. This build is in good shape.'
       : `${actionable.length} actionable ${actionable.length === 1 ? 'improvement' : 'improvements'} found, ranked by gain per unit of cost.`,
   }
 }

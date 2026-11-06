@@ -109,7 +109,7 @@ export function Attribution({ report, bare = false }: { report: AttributionRepor
   return (
     <Panel
       title="What each item is holding up"
-      subtitle="Read from poe.ninja's own per-stat attribution. “Without it” is what the character sheet would show, cap applied — so a modifier covered by overcap correctly costs nothing."
+      subtitle="“Without it” is what your character sheet would show, cap included. A stat above the cap costs nothing to lose."
       bare={bare}
     >
       {report.items.length ? (
@@ -126,7 +126,7 @@ export function Attribution({ report, bare = false }: { report: AttributionRepor
         <div className="mt-4 border border-line bg-surface-sunken p-4">
           <h3 className="text-[11px] font-medium tracking-wide text-ink-dim uppercase">Not attributed</h3>
           <p className="mt-1 text-[11px] text-ink-mute">
-            An attribution that disagrees with the number on screen is worse than none, so these were left out.
+            These are left out because they don&apos;t match the number on screen.
           </p>
           <ul className="mt-2 space-y-2">
             {report.excluded.map((e) => (

@@ -1,6 +1,6 @@
 # Remaining work register
 
-Snapshot 2026-11-06. Plan: batches B1-B4 in `docs/remaining/BATCHES-2026-11-06.md` (S1, S2 done). Source of truth for what is unfinished.
+Snapshot 2026-11-06. B1-B4 done; next batches C1-C2 below. Owner-only steps: `docs/remaining/OWNER-STEPS.md`. Source of truth for what is unfinished.
 Update a row's Status when it lands (`open` · `answered` · `asked` · `parked` · `done`). IDs are stable; never renumber.
 Origin column points at the carry file or plan that raised the item. Class: **A** = needs the owner's hardware or accounts
 (sessions can't do it), **D** = decision (a session may answer with the recommendation), **C** = code/data work a session
@@ -51,7 +51,7 @@ Verify with (checked inside that batch, owner ticks the PR checklist): R42, R43 
 | ID | Item | Size | Origin | Notes | Status |
 |---|---|---|---|---|---|
 | R30 | Use `--dmg-lightning-core` and `--dmg-chaos-edge` (defined, unused) in showcase ring/damage glyphs | S | W0-1, C1-1, V1-3 | Fold into R03 | done |
-| R31 | Tighten MCP output schemas one tool at a time (loose objects now); one `verify-mcp` assertion each | M | M2-2 | Must not break SDK output validation | partial 2026-11-06 (B2): 6 tools typed (list_keystones, health_check, get_defenses, get_available_mods, inspect_keystone, get_skill_setups), each asserted in verify-mcp; rest stay loose until a shape is stable |
+| R31 | Tighten MCP output schemas one tool at a time (loose objects now); one `verify-mcp` assertion each | M | M2-2 | Must not break SDK output validation | parked 2026-11-06 (owner: keep MCP working, no more schema work). Was partial (B2): 6 tools typed (list_keystones, health_check, get_defenses, get_available_mods, inspect_keystone, get_skill_setups), each asserted in verify-mcp; rest stay loose until a shape is stable |
 | R32 | Dead-export sweep (core/web/mcp) | S | CH7 | | done |
 | R33 | Provenance footer on MCP text block | S | M2-4 | Only if a client needs it; breaks JSON-parsing clients. Default: skip | parked: scope rule 2026-11-06 |
 | R34 | Stamp tree/skills/mods builders into `version.json` | S | M1-3 / M2-3 | Only when those builders move to the PoB export. Default: park | parked 2026-11-06 (B2): tree/skills/mods builders (`build-tree`, `build-skills`, `build-mods`) do not read the PoB export; only `build-mod-tiers-pob`, `build-pob-skills`, `build-monster-stats` do |
@@ -74,3 +74,40 @@ Verify with (checked inside that batch, owner ticks the PR checklist): R42, R43 
 - SB1-1: proxy lockfile + `npm ci` + audit only if `services/ninja-proxy` gains runtime deps.
 - Never put session URLs on GitHub (commits, PRs, comments).
 
+
+## 6. Next batches (2026-11-06)
+Patch day / 1.0 is out of scope: the owner updates the site for it. MCP: keep it working (build, `npm run tools`,
+`node scripts/verify-mcp.mjs` at the end of each batch), no schema work. End each code batch with `/simplify`, then
+`/code-review medium`, before the PR. C1 and C2 can run in parallel.
+
+### C1 Cleanup (Sonnet 5.5 medium, cloud, `chore/<date>-cleanup`)
+- `git rm` `docs/constellation-sky/*.png` and `docs/design/*.png` (~28 MB); keep the `.md` files, replace image links
+  with "screenshot in PR #n"; add `docs/**/*.png` to `.gitignore`. No history rewrite.
+- `docs/carry/README.md` index (one line per ID: status, PR); move carry files with no open rows to `docs/carry/archive/`.
+- `docs/remaining/`: delete `PLAN-2026-11-06.md`, `BATCHES-2026-11-06.md`, `OPUS-PLAN-PROMPT.md` after folding anything
+  live into this register.
+- Rename `components/character/gearTargets.ts` -> `gearTargetsData.ts` and `topFixes.ts` -> `topFixesData.ts` (Windows
+  case clash with the `.tsx` files); update imports and tests.
+- Give a reason to the unexplained `eslint-disable`s: `atlas/AtlasTreeMap.tsx:142`, `farm/SetupStep.tsx:150`,
+  `farm/QuickSetup.tsx:64`, `app/character/page.tsx:163`.
+- Add `.github/dependabot.yml`: npm for `/` and `/services/ninja-proxy`, github-actions; weekly, grouped.
+- README: 8 routes, `npm ci`, no hard-coded test counts or "301-point" claim, short offline/service-worker note.
+
+### C2 Payload diet (Opus 5.5 high, cloud, `perf/<date>-payload`)
+Measure br before/after for each JSON and `node scripts/route-weight.mjs`.
+- `mod-tiers.json` (2.2 MB raw, 205 KB br, fetched by `/character`): trace which `ModTiers` methods the web calls
+  (`packages/core/src/gear/tiers.ts`); in `apps/web/scripts/sync-data` write a trimmed web copy without unused fields,
+  and split `displayOnly` (1.0 MB raw) into `mod-display.json` fetched only when `analyze.ts` falls back to it. MCP keeps
+  the full file. Pattern: the trade-map split already in `sync-data`.
+- `trade2-stats.json` (1.36 MB raw, unminified; `/trade` only): minify and trim to what `ManualPriceCheck.tsx` reads.
+- `/` headroom (1,763 B): load `CommandPalette` / `SearchDialog` on first open if still eager; try a lighter
+  `app/error.tsx` fallback.
+- Check the service-worker update path still works (e2e offline test); Lighthouse mobile on `/character` before/after.
+
+New-chat prompt (swap the ID):
+```
+Run batch C<n> from docs/remaining/REMAINING-WORK.md section 6. Follow docs/SESSION-PROTOCOL.md. Cloud: npm ci, npm run
+build -w @poe2/core first. Measure before/after where the batch says so. End with /simplify then /code-review medium on
+the diff. Gate as separate commands plus the MCP smoke check, carry file docs/carry/C<n>.md, tick register rows, one
+draft PR, no session links on GitHub, don't merge.
+```

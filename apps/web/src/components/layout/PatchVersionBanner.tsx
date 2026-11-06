@@ -29,7 +29,7 @@ export function PatchVersionBanner() {
           <span className={DATA_MAY_BE_OUTDATED ? "hidden" : "hidden sm:inline"}>
             Data current as of patch{" "}
             <strong className="font-semibold text-ink">{CURRENT_PATCH}</strong>{" "}
-            ({LEAGUE_LABEL}) — community-derived, may drift from future patches. Key:{" "}
+            ({LEAGUE_LABEL}), from the community.{" "}
             <span className="font-medium text-warn">⚠ unverified/conflicting</span>{" "}
             means double-check it in-game.
           </span>

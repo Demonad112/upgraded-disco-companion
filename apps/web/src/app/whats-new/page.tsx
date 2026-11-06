@@ -19,7 +19,7 @@ export default function WhatsNewPage() {
         eyebrow="Changelog"
         title="What’s"
         accent="new"
-        description="App changes and data regenerations, newest first. Community-derived data drifts, so each release also says what was not checked against the current patch."
+        description="App changes and data updates, newest first. Each release says what wasn&apos;t checked against the current patch."
       />
 
       <ol aria-label="Changes, newest first" className="flex flex-col gap-5 border-l border-line pl-5 sm:pl-7">

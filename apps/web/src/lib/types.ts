@@ -129,6 +129,8 @@ export interface FarmingStrategy {
   /** Creator tier placement for the current patch; absent = not ranked by any current-patch source. */
   tier?: StrategyTier;
   mechanics: Mechanic[];
+  /** Plain one or two sentences shown by default; `atlasSetup` is the full detail, shown with Pro detail on. Falls back to `atlasSetup`. */
+  summary?: string;
   atlasSetup: string;
   investment: InvestmentTier;
   expectedReturn: string;
