@@ -1,5 +1,5 @@
 # IMG2 carry-over · 2026-11-06
-PR: #__PR__ · Branch: variant/20261106-visuals · Preview: Cloudflare Pages preview for the branch (link on the PR)
+PR: #110 · Branch: variant/20261106-visuals · Preview: Cloudflare Pages preview for the branch (link on the PR)
 
 B4b: IMG-2 visual build + QA, per `BATCHES-2026-11-06.md` and R03. Input: `docs/ui/img/img1-bars-b.html` (bars style B,
 engraved plate). Share card untouched (owner: done). Branched from `main` (8141553), separate from B3 (#109), which is
