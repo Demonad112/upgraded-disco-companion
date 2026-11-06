@@ -1,8 +1,8 @@
-# Launch plan (December public release)
+# Launch plan
 
 Goal: phone-first and simpler for new players, element-true visuals, a show-off character page that doubles as the
 share card, and day-1 resilience. Decided with the owner on 2026-11-03 (12-question interview). Run order is the wave
-table in `docs/ui/UI-PROGRESS.md` (waves 20–25).
+table in `docs/ui/UI-PROGRESS.md` (waves 20–24).
 
 ## Waves
 
@@ -14,7 +14,6 @@ table in `docs/ui/UI-PROGRESS.md` (waves 20–25).
 | 21 | L1 Launch hardening | Cloud · Sonnet 5.5 · medium | C1, H1 | `feat/<date>-launch-hardening` |
 | 22 | CH1 Character showcase | Cloud · Opus 5.5 · high | V1 | `variant/<date>-showcase` |
 | 22 | V1 SVG diagrams | Local · Opus 5.5 · high | CH1 | `variant/<date>-diagrams` |
-| 23 | PD Patch-day data | Cloud · Opus 5.5 · high | none (starts when the patch notes land) | `feat/<date>-patch-data` |
 | 24 | IMG-2 Visual build | Cloud · Opus 5.5 · high | QA (after IMG-2's PR opens) | `variant/<date>-visuals` |
 | 24 | QA sweep | Cloud · Sonnet 5.5 · medium | IMG-2 | none (report only) |
 
@@ -140,13 +139,6 @@ Files: new `components/diagrams/*`, plus the three steps' render path in `compon
   relevant. Each diagram must read on its own in under 5 seconds at 360 px wide.
 - Lazy-mount below the fold; `aria-label` text carries the same meaning as the picture.
 
-## PD Patch-day data · wave 23 · Cloud · Opus
-
-Start when the December patch notes are public. Set `DATA_MAY_BE_OUTDATED = true` first (a one-line PR, merged at
-once). Then re-run `docs/ui/FARM-FACTCHECK-RERUN-PROMPT.md` for the new patch: update the tablets, Atlas, tier list,
-bosses and the `why` lines that changed, cite a source for every changed fact, and flip the switch back to `false` when
-done. Changes in `packages/data` follow `PROVENANCE.md`.
-
 ## IMG-1 Design brief · owner · Claude chat or Claude Design (no repo)
 
 Paste this into a new Claude chat (or Claude Design), iterate there, and bring the picks back to IMG-2:
@@ -184,3 +176,5 @@ After IMG-2's PR opens, check out its branch. Take screenshots at 390×844 and 3
 `/dashboard`, `/character` (fixture import) and the share card in both sizes. Then run e2e and Lighthouse mobile.
 Report findings to the IMG-2 PR as one comment (no session links); don't open a PR. Owner real-device pass:
 Backlog U13b-1.
+
+

@@ -40,7 +40,6 @@ session's row in its last commit. Audit rows are tracked in `docs/audit/08-PROGR
 | 21 | L1 launch hardening (proxy, share target, paste, patch switch, Lighthouse CI) | Cloud | Sonnet 5.5 · medium | done | feat/20261103-launch-hardening | | | runs with C1, H1; owner deploys the proxy |
 | 22 | CH1 character showcase + share card v2 + fix→trade | Cloud | Opus 5.5 · high | done | variant/20261103-showcase | #87 | | Showcase, Top 3 fixes with trade2 links, share card 1200×630 + 1080×1350, Advanced fold; `docs/carry/CH1.md`; runs with V1 |
 | 22 | V1 SVG diagrams | Local | Opus 5.5 · high | done | variant/20261103-diagrams | #86 | | waystone ladder, Atlas path, boss order (lazy SVG chunks); `/checklist/` 208,394 → 209,062 B br; `docs/carry/V1.md`; runs with CH1 |
-| 23 | PD patch-day data | Cloud | Opus 5.5 · high | todo | | | | when the December patch notes land; R01+R12; owner starts it when patch notes land |
 | 24 | IMG-2 visual build + QA sweep | Cloud | Opus 5.5 · high / Sonnet 5.5 · medium | parked | | | | needs IMG-1 picks |
 | 25 | S1 reconcile + dead exports | Cloud | Sonnet 5.5 · medium | done | chore/20261106-reconcile | | | |
 | 26 | S2 QA sweep on main | Cloud | Sonnet 5.5 · medium | done | fix/20261106-qa | | | Showcase card no longer overflows at ≤ 415 px; Atlas loading placeholder gets a role; `docs/carry/S2.md` |

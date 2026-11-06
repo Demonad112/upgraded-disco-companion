@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>IMG-1 bars B (polished)</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=EB+Garamond:wght@500;600&family=Geist+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#08080a; --surface:#0d0d10; --line:#24211a; --gold:#e3b341; --gold-dim:#8f7430; --text:#e8e4da; --muted:#8d887c;
+  --phys:#c4beb4; --fire:#cf4524; --cold:#86ccf7; --light:#ffe23d; --chaos:#7a2fb0;
+  --serif:"EB Garamond",Georgia,serif; --mono:"Geist Mono",ui-monospace,monospace;
+  --metal-hi:#4a4332; --metal-lo:#1a170f; --well:#050506;
+}
+*{box-sizing:border-box;border-radius:0}
+body{margin:0;background:var(--bg);color:var(--text);padding:24px 16px 64px;font:400 15px/1.5 system-ui,sans-serif}
+main{max-width:520px;margin:0 auto}
+h1{font:600 20px var(--serif);letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin:0 0 16px}
+.panel{background:var(--surface);border:1px solid var(--line);padding:18px 16px 12px;
+  box-shadow:inset 0 1px 0 rgba(227,179,65,.08)}
+.grp{font:600 11px var(--serif);letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin:16px 0 10px}
+.grp:first-child{margin-top:0}
+
+.bar{--c:var(--phys);--glow:rgba(196,190,180,.35);display:grid;grid-template-columns:78px 1fr 60px;align-items:center;gap:12px;margin:12px 0}
+.bar.fire{--c:var(--fire);--glow:rgba(207,69,36,.45)}
+.bar.cold{--c:var(--cold);--glow:rgba(134,204,247,.4)}
+.bar.light{--c:var(--light);--glow:rgba(255,226,61,.4)}
+.bar.chaos{--c:var(--chaos);--glow:rgba(122,47,176,.55)}
+.lbl{font:600 12px var(--serif);letter-spacing:.14em;text-transform:uppercase;color:var(--text)}
+.lbl i{display:inline-block;width:6px;height:6px;background:var(--c);margin-right:6px;vertical-align:1px;box-shadow:0 0 6px var(--glow)}
+
+/* the trough: beveled frame + deep well */
+.trough{position:relative;height:20px;padding:3px;
+  background:linear-gradient(180deg,var(--metal-hi),var(--metal-lo));
+  border:1px solid #000;
+  box-shadow:0 1px 0 rgba(227,179,65,.12),inset 0 1px 0 rgba(255,255,255,.1)}
+.well{position:relative;height:100%;background:linear-gradient(180deg,#000,var(--well) 40%,#0a0a0c);
+  box-shadow:inset 0 2px 4px #000,inset 0 0 0 1px rgba(0,0,0,.8);overflow:hidden}
+/* engraved ticks every 10% */
+.well::after{content:"";position:absolute;inset:0;pointer-events:none;
+  background:repeating-linear-gradient(90deg,transparent 0 calc(10% - 1px),rgba(0,0,0,.7) calc(10% - 1px) 10%);
+  box-shadow:inset 0 0 0 0 transparent}
+.fill{position:absolute;left:0;top:0;bottom:0;width:var(--p);
+  background:
+    linear-gradient(180deg,rgba(255,255,255,.38) 0,rgba(255,255,255,.08) 42%,rgba(0,0,0,0) 50%,rgba(0,0,0,.35) 100%),
+    repeating-linear-gradient(135deg,rgba(0,0,0,.28) 0 2px,transparent 2px 5px),
+    var(--c);
+  box-shadow:0 0 10px var(--glow),inset 0 1px 0 rgba(255,255,255,.35),inset -1px 0 0 rgba(0,0,0,.5)}
+/* bright leading edge */
+.fill::after{content:"";position:absolute;right:0;top:0;bottom:0;width:2px;background:rgba(255,255,255,.7);opacity:.55}
+/* resist cap pin at 75 */
+.cap{position:absolute;left:calc(75% / 1);top:-5px;bottom:-5px;width:2px;background:linear-gradient(180deg,var(--gold),#7a5f1a);
+  box-shadow:0 0 4px rgba(227,179,65,.6);z-index:2}
+.cap::before{content:"";position:absolute;left:-2px;top:-1px;width:6px;height:3px;background:var(--gold)}
+
+/* value plate */
+.val{font:500 13px var(--mono);text-align:center;color:var(--text);padding:3px 0;
+  background:linear-gradient(180deg,#000,var(--well));border:1px solid #3a3322;
+  box-shadow:inset 0 2px 3px #000,0 1px 0 rgba(227,179,65,.1)}
+.val.over{color:var(--gold)}
+.val.low{color:#ef7a52}
+@media (prefers-reduced-motion:no-preference){
+  .fill{animation:grow .9s cubic-bezier(.2,.7,.2,1) both}
+  @keyframes grow{from{width:0}}
+}
+</style>
+</head>
+<body>
+<main>
+<h1>Bars, engraved</h1>
+<div class="panel" id="p"></div>
+</main>
+<script>
+const dmg=[["Physical","",34],["Fire","fire",18],["Cold","cold",9],["Lightning","light",31],["Chaos","chaos",8]];
+const res=[["Fire","fire",75],["Cold","cold",75],["Lightning","light",68],["Chaos","chaos",20]];
+const row=(n,k,pct,txt,cap,cls)=>`<div class="bar ${k}"><span class="lbl"><i></i>${n}</span><div class="trough"><div class="well"><div class="fill" style="--p:${pct}%"></div></div>${cap?'<i class="cap"></i>':''}</div><span class="val ${cls||''}">${txt}</span></div>`;
+document.getElementById("p").innerHTML=
+ `<div class="grp">Damage share</div>`+dmg.map(d=>row(d[0],d[1],d[2]*2,d[2]+"%",0)).join("")+
+ `<div class="grp">Resistances, cap 75</div>`+res.map(d=>row(d[0],d[1],d[2]/90*100,d[2],1,d[2]>=75?"over":(d[2]<50?"low":""))).join("");
+document.querySelectorAll(".cap").forEach(c=>c.style.left=(75/90*100)+"%");
+</script>
+</body>
+</html>
