@@ -36,3 +36,4 @@ apps/web/playwright-report/
 
 .vercel
 .env*
+.lighthouseci/
