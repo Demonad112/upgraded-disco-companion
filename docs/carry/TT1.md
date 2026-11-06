@@ -34,7 +34,7 @@ Live checks run in Claude in Chrome on the live trade2 site, 2026-11-02, logged 
 - Items 2-4 of the follow-up brief (query.ts wording vs live filters API, link lengths 6,000/8,000/9,000, status values via `?q=`) were not run: the owner said to skip Claude in Chrome tests this session. Nothing in `query.ts`, `URL_MAX_LENGTH` or `TradeStatus` was changed, since nothing live contradicts them yet.
 
 ## Design review · 2026-11-02 (cloud session, local build served from `apps/web/out`, reduced motion)
-Old Open 1 resolved. Screenshots (full page) in `docs/design/trade-{1440,390}-{empty,populated}.png`. Populated = base Sapphire Ring, 3 common-mod chips plus "+# total maximum Energy Shield", mins 30-60, a "mana" search open, link built (Open/Copy shown). In the 390 full-page captures the fixed tab bar appears mid-page; that is a full-page-screenshot artifact, not an overlap (checked scrolled to the end).
+Old Open 1 resolved. Screenshots (full page, trade 1440/390 empty/populated): screenshot in the TT1 PR (not in git). Populated = base Sapphire Ring, 3 common-mod chips plus "+# total maximum Energy Shield", mins 30-60, a "mana" search open, link built (Open/Copy shown). In the 390 full-page captures the fixed tab bar appears mid-page; that is a full-page-screenshot artifact, not an overlap (checked scrolled to the end).
 
 | Viewport | State | Finding | Fix |
 |---|---|---|---|

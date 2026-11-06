@@ -11,7 +11,7 @@ import type { RecommendationReport, TradeStatMap } from '@poe2/core'
 import { fmt } from '@/components/ui'
 import { BASE_PATH, dataUrl } from '@/lib/basePath'
 import { TRADE_LEAGUE } from '@/lib/constants'
-import { fixAnchor, splitAction, topFixes, tradeLinkFor, tradeStatFor } from './topFixes'
+import { fixAnchor, splitAction, topFixes, tradeLinkFor, tradeStatFor } from './topFixesData'
 
 /** Internal stat id → trade id, resolved from the trade2 snapshot at build (`trade-map.json`, about 1 KB). Fetched only when a fix can use it. */
 export function useTradeMap(wanted: boolean): TradeStatMap | null {

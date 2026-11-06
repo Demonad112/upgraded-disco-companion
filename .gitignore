@@ -37,3 +37,6 @@ apps/web/playwright-report/
 .vercel
 .env*
 .lighthouseci/
+
+# Screenshots live in PRs, not git
+docs/**/*.png
