@@ -123,6 +123,11 @@ export class ModTiers {
     return this.data.mods[modId] ?? null
   }
 
+  /** A new `ModTiers` over the same data plus display-only text loaded separately (the web splits it out for size). */
+  withDisplay(displayOnly: Record<string, DisplayOnlyMod>): ModTiers {
+    return new ModTiers({ ...this.data, displayOnly })
+  }
+
   /**
    * Renderable text for a mod that has no craftable ladder — a base implicit, a
    * corrupted mod, a unique's own line. Returning null makes the caller fall

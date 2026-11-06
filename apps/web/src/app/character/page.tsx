@@ -16,7 +16,7 @@ import { recordRecent } from '@/lib/recentCharacters'
 import { gradeText } from '@/lib/grade'
 import { useLadder } from '@/lib/useLadder'
 import { PageHeader } from '@/components/layout/PageHeader'
-import { useModTiers } from '@/lib/useModTiers'
+import { analysisNeedsDisplay, useModTiers } from '@/lib/useModTiers'
 import { useSupportCatalog } from '@/lib/useSupportCatalog'
 import { usePassiveTree } from '@/lib/usePassiveTree'
 
@@ -57,7 +57,14 @@ export default function Home() {
   // must agree about what is wasted and what would fix it; the tree drawing and
   // the keystone corrections must agree about what is allocated. Two fetches of
   // the same artifact into two components is how both of those drift.
-  const tiersState = useModTiers(raw !== null)
+  const [tiersBase, setTiersBase] = useState(false)
+  const tiersState = useModTiers(raw !== null, tiersBase)
+  // Implicit/corrupted/unique mod text is a separate file, fetched only if this character has such a mod.
+  const wantsDisplay = useMemo(() => analysisNeedsDisplay(analysis, tiersState), [analysis, tiersState])
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- one-way latch for the hook
+    if (wantsDisplay) setTiersBase(true)
+  }, [wantsDisplay])
   const treeState = usePassiveTree(raw !== null)
   const catalogState = useSupportCatalog(raw !== null)
   // Needs the character's league and ascendancy, so it can only start once
