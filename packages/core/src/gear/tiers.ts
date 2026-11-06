@@ -128,6 +128,11 @@ export class ModTiers {
    * corrupted mod, a unique's own line. Returning null makes the caller fall
    * back to the raw mod id, which reads as a bug to anyone looking at it.
    */
+  /** A new `ModTiers` over the same data plus display-only text loaded separately (the web splits it out for size). */
+  withDisplay(displayOnly: Record<string, DisplayOnlyMod>): ModTiers {
+    return new ModTiers({ ...this.data, displayOnly })
+  }
+
   display(modId: string): DisplayOnlyMod | null {
     return this.data.displayOnly?.[modId] ?? null
   }

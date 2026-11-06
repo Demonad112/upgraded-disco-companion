@@ -39,6 +39,7 @@ const DATA_CACHE = `poe2-data-${VERSION}`
 const DATA_FILES = [
   '/passive-tree.json',
   '/mod-tiers.json',
+  '/mod-display.json',
   '/monster-stats.json',
   '/pob-skills.json',
   '/bases.json',
