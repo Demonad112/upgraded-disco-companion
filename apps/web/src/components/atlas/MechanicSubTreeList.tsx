@@ -7,6 +7,7 @@ import { MECHANIC_LABELS } from "@/lib/constants";
 import { Tag } from "@/components/shared/Tag";
 import { ScrollFade } from "@/components/shared/ScrollFade";
 import { ClusterNode } from "./ClusterNode";
+import { IconPlate } from "@/components/icons";
 
 const MECHANICS: Mechanic[] = ["abyss", "breach", "expedition", "ritual", "delirium"];
 
@@ -44,12 +45,14 @@ export function MechanicSubTreeList({ clusters, initial }: { clusters: AtlasClus
           <button
             key={mechanic}
             onClick={() => setActive(mechanic)}
-            className={`hit-area shrink-0 px-1 py-1 transition-all ${
+            aria-pressed={active === mechanic}
+            className={`hit-area flex shrink-0 items-center gap-1.5 px-1 py-1 transition-all ${
               active === mechanic
                 ? "bg-surface-sunken ring-1 ring-line"
                 : "opacity-50 hover:opacity-80"
             }`}
           >
+            <IconPlate name={mechanic} size={24} />
             <Tag mechanic={mechanic} />
           </button>
         ))}

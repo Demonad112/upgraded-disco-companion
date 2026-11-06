@@ -1,5 +1,6 @@
 /**
- * Shared SVG pieces for the step diagrams (V1): gold hairlines, square nodes and uppercase EB Garamond labels.
+ * Shared SVG pieces for the step diagrams (V1, restyled in IMG-2 to the engraved-plate look): gold hairlines, square
+ * plates and uppercase EB Garamond labels.
  * Colours are :root tokens set as inline `var()` styles, never hex. Inline rather than Tailwind fill-/stroke- utilities
  * on purpose: utilities land in the global stylesheet every route loads, inline styles stay in the lazy SVG chunks.
  * Drawn for a 300-unit-wide viewBox, so at a 360 px phone one unit is about one pixel and 9–10-unit text stays legible.
@@ -18,6 +19,8 @@ export const ink = {
   surface: "var(--surface)",
   cold: "var(--dmg-cold)",
   fire: "var(--dmg-fire)",
+  well: "var(--well)",
+  metal: "var(--metal-hi)",
 } as const;
 
 /** Uppercase heading-face label. Strings are written in capitals so the meaning doesn't depend on CSS. */
@@ -63,8 +66,18 @@ export function Box({
   h: number;
   tone?: "accent" | "line" | "danger";
 }) {
+  // Engraved plate (IMG-2): a 2-unit metal rim around a sunken well, a gold (or tone) hairline set inside it, and a
+  // faint top highlight, the same build as the bars' trough. Square throughout. Pins under 12 units are too small for
+  // the inset, so they are a solid tone square with a metal rim.
+  if (w < 12 || h < 12) {
+    return <rect x={x} y={y} width={w} height={h} strokeWidth={1} style={{ fill: ink[tone], stroke: ink.metal }} />;
+  }
   return (
-    <rect x={x} y={y} width={w} height={h} strokeWidth={1} style={{ fill: ink.surface, stroke: ink[tone] }} />
+    <g>
+      <rect x={x} y={y} width={w} height={h} strokeWidth={2} style={{ fill: ink.well, stroke: ink.metal }} />
+      <rect x={x + 2} y={y + 2} width={w - 4} height={h - 4} strokeWidth={0.75} style={{ fill: "none", stroke: ink[tone] }} />
+      <path d={`M${x + 1} ${y + 1.5}H${x + w - 1}`} strokeWidth={0.5} style={{ stroke: ink.accentLine }} />
+    </g>
   );
 }
 

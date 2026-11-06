@@ -72,3 +72,37 @@ test('nav links and buttons are at least 44px tall', async ({ page }) => {
     if (box) expect(box.height).toBeGreaterThanOrEqual(43.5)
   }
 })
+
+test('IMG-2 bars: engraved troughs with a cap pin fill once scrolled into view', async ({ page }) => {
+  await page.goto(importUrl)
+  const meters = page.locator('section[aria-label="Resistances"]')
+  await expect(meters).toBeAttached({ timeout: 30_000 })
+  const troughs = meters.locator('.etrough')
+  await expect(troughs.first()).toBeAttached()
+  await expect(meters.locator('.ecap')).toHaveCount(await troughs.count())
+  await meters.scrollIntoViewIfNeeded()
+  await expect(meters.locator('ul').first()).toHaveAttribute('data-seen', '')
+  await meters.evaluate((el) => Promise.all(el.getAnimations({ subtree: true }).map((a) => a.finished)))
+  const fill = meters.locator('.efill').first()
+  expect(await fill.evaluate((el) => el.getBoundingClientRect().width)).toBeGreaterThan(0)
+  // The damage split uses the same trough and colours its segments by type.
+  const split = page.locator('section[aria-label="Damage per skill"] .etrough').first()
+  await expect(split).toBeAttached()
+  expect(await split.locator('.efill[data-dmg]').count()).toBeGreaterThan(0)
+})
+
+test('IMG-2 bars: with reduced motion the fills are simply there', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' })
+  await page.goto(importUrl)
+  const fill = page.locator('section[aria-label="Resistances"] .efill').first()
+  await expect(fill).toBeAttached({ timeout: 30_000 })
+  expect(await fill.evaluate((el) => [el.getAnimations().length, getComputedStyle(el).transform])).toEqual([0, 'none'])
+})
+
+test('R45 (emulated): an Android share of a poe.ninja link imports the character', async ({ page, request }) => {
+  // The manifest's share_target sends title/text/url as GET params to ./character/; Android often puts the link in text.
+  const manifest = await (await request.get('manifest.webmanifest')).json()
+  expect(manifest.share_target).toMatchObject({ action: './character/', method: 'GET', params: { text: 'text', url: 'url' } })
+  await page.goto(`character/?title=Athrynas&text=${encodeURIComponent(`Look at this build ${PROFILE_URL}`)}`)
+  await expect(page.locator('[data-showcase] section').first()).toBeVisible({ timeout: 30_000 })
+})
