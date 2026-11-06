@@ -12,7 +12,7 @@ import { StatusChip } from '@/components/shared/Instruments'
 import { BASE_PATH } from '@/lib/basePath'
 import { TRADE_LEAGUE } from '@/lib/constants'
 import type { ModTiersState } from '@/lib/useModTiers'
-import { improvable, resistGaps, weightedTradeLink } from './gearTargets'
+import { improvable, resistGaps, weightedTradeLink } from './gearTargetsData'
 import { useTradeMap } from './TopFixes'
 import { MapIcon } from '@/components/icons'
 

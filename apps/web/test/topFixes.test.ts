@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import type { Recommendation, RecommendationReport } from '@poe2/core'
 import { URL_MAX_LENGTH } from '@poe2/core'
-import { fixAnchor, splitAction, topFixes, tradeLinkFor, tradeStatFor } from '@/components/character/topFixes'
+import { fixAnchor, splitAction, topFixes, tradeLinkFor, tradeStatFor } from '@/components/character/topFixesData'
 
 const rec = (over: Partial<Recommendation>): Recommendation =>
   ({ id: 'x', category: 'gear', action: 'Do it', impact: null, ...over }) as Recommendation

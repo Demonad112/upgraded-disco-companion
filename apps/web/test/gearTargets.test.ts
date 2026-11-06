@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { MAPPED_STATS, URL_MAX_LENGTH } from '@poe2/core'
-import { improvable, resistGaps, weightedTradeLink } from '../src/components/character/gearTargets'
+import { improvable, resistGaps, weightedTradeLink } from '../src/components/character/gearTargetsData'
 
 const map = Object.fromEntries(MAPPED_STATS.map((m, i) => [m.internalId, `explicit.stat_${i}`]))
 

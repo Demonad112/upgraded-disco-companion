@@ -75,39 +75,40 @@ Verify with (checked inside that batch, owner ticks the PR checklist): R42, R43 
 - Never put session URLs on GitHub (commits, PRs, comments).
 
 
-## 6. Next batches (2026-11-06)
-Patch day / 1.0 is out of scope: the owner updates the site for it. MCP: keep it working (build, `npm run tools`,
-`node scripts/verify-mcp.mjs` at the end of each batch), no schema work. End each code batch with `/simplify`, then
-`/code-review medium`, before the PR. C1 and C2 can run in parallel.
+## 6. Next batches: bloat and load speed (2026-11-06)
 
-### C1 Cleanup (Sonnet 5.5 medium, cloud, `chore/<date>-cleanup`)
-- `git rm` `docs/constellation-sky/*.png` and `docs/design/*.png` (~28 MB); keep the `.md` files, replace image links
-  with "screenshot in PR #n"; add `docs/**/*.png` to `.gitignore`. No history rewrite.
-- `docs/carry/README.md` index (one line per ID: status, PR); move carry files with no open rows to `docs/carry/archive/`.
-- `docs/remaining/`: delete `PLAN-2026-11-06.md`, `BATCHES-2026-11-06.md`, `OPUS-PLAN-PROMPT.md` after folding anything
-  live into this register.
-- Rename `components/character/gearTargets.ts` -> `gearTargetsData.ts` and `topFixes.ts` -> `topFixesData.ts` (Windows
-  case clash with the `.tsx` files); update imports and tests.
-- Give a reason to the unexplained `eslint-disable`s: `atlas/AtlasTreeMap.tsx:142`, `farm/SetupStep.tsx:150`,
-  `farm/QuickSetup.tsx:64`, `app/character/page.tsx:163`.
-- Add `.github/dependabot.yml`: npm for `/` and `/services/ninja-proxy`, github-actions; weekly, grouped.
-- README: 8 routes, `npm ci`, no hard-coded test counts or "301-point" claim, short offline/service-worker note.
+### Rules
+- Goal: smaller downloads and faster loads. Skip anything that doesn't help with that, unless it is a one-line fix.
+- Keep token use low: grep first, read only what you edit, cap output, run independent calls in parallel.
+- Don't run `/simplify` or `/code-review` inside the work sessions. Review happens once, at the end (see L3).
+- Out of scope: patch day / 1.0 (the owner handles it); MCP beyond "still builds and `node scripts/verify-mcp.mjs` passes".
+- Gate before the PR, as separate commands: `typecheck`, `lint`, `test`, `build`, `node scripts/route-weight.mjs`,
+  `npm run e2e -w @poe2/web -- --trace off`. Report br before and after for anything you touch.
+- One draft PR per session, with no session links on GitHub. Don't merge.
 
-### C2 Payload diet (Opus 5.5 high, cloud, `perf/<date>-payload`)
-Measure br before/after for each JSON and `node scripts/route-weight.mjs`.
-- `mod-tiers.json` (2.2 MB raw, 205 KB br, fetched by `/character`): trace which `ModTiers` methods the web calls
-  (`packages/core/src/gear/tiers.ts`); in `apps/web/scripts/sync-data` write a trimmed web copy without unused fields,
-  and split `displayOnly` (1.0 MB raw) into `mod-display.json` fetched only when `analyze.ts` falls back to it. MCP keeps
-  the full file. Pattern: the trade-map split already in `sync-data`.
-- `trade2-stats.json` (1.36 MB raw, unminified; `/trade` only): minify and trim to what `ManualPriceCheck.tsx` reads.
-- `/` headroom (1,763 B): load `CommandPalette` / `SearchDialog` on first open if still eager; try a lighter
-  `app/error.tsx` fallback.
-- Check the service-worker update path still works (e2e offline test); Lighthouse mobile on `/character` before/after.
+### L1 Repo bloat (Sonnet 5.5 · low effort · cloud · `chore/<date>-bloat`)
+Mechanical work, no app logic.
+- `git rm` `docs/constellation-sky/*.png` and `docs/design/*.png` (~28 MB). In the `.md` files, change image links to
+  "screenshot in PR #n". Add `docs/**/*.png` to `.gitignore`. Don't rewrite history.
+- Move carry files with no open rows to `docs/carry/archive/`, and add a one-line-per-ID `docs/carry/README.md`.
+- Delete `docs/remaining/PLAN-2026-11-06.md`, `BATCHES-2026-11-06.md` and `OPUS-PLAN-PROMPT.md`. Their live rows are already in the register.
+- Rename `components/character/gearTargets.ts` to `gearTargetsData.ts` and `topFixes.ts` to `topFixesData.ts` (they clash with the `.tsx` files on Windows), and update the imports.
+- Gate: typecheck, lint, test. Docs-only parts skip build and e2e.
 
-New-chat prompt (swap the ID):
-```
-Run batch C<n> from docs/remaining/REMAINING-WORK.md section 6. Follow docs/SESSION-PROTOCOL.md. Cloud: npm ci, npm run
-build -w @poe2/core first. Measure before/after where the batch says so. End with /simplify then /code-review medium on
-the diff. Gate as separate commands plus the MCP smoke check, carry file docs/carry/C<n>.md, tick register rows, one
-draft PR, no session links on GitHub, don't merge.
-```
+### L2 Load-speed diet (Sonnet 5.5 · medium effort · cloud · `perf/<date>-payload`)
+Measure first and keep only changes that pay off (≥ 10 % br saved on that file or route).
+1. `mod-tiers.json`: 2.2 MB raw, 205 KB br, fetched on `/character`.
+   - List the `ModTiers` methods the web calls (`packages/core/src/gear/tiers.ts`; consumers `useModTiers.ts`,
+     `DamageReview`, `AuditPanel`, `GearTargets`, `CharacterResults`).
+   - In `apps/web/scripts/sync-data`, write a trimmed web copy without the fields the web never reads.
+   - Split out `displayOnly` (1.0 MB raw) into `mod-display.json`, loaded only when `analyze.ts` falls back to it.
+   - MCP keeps the full file. Copy the trade-map split already in `sync-data`.
+2. `trade2-stats.json`: 1.36 MB raw, not minified, `/trade` only. Minify it in `sync-data` and trim it to what `ManualPriceCheck.tsx` reads.
+3. `/`: 1,763 B headroom under 192,000. Load `CommandPalette` / `SearchDialog` on first open if they are still eager, and try a lighter `app/error.tsx`.
+4. Check that the service-worker update still works (the e2e offline test), and run Lighthouse mobile on `/character` before and after.
+- Write the before/after table in `docs/carry/L2.md` and the PR body.
+
+### L3 Opus check (Opus 5.5 · short chat · only after L2's CI is green)
+One review pass instead of an Opus session. In a new chat on the L2 branch, run:
+`/code-review medium perf/<date>-payload`, and fix only confirmed findings. Skip this if L2 changed nothing in
+`packages/core` or the data loading path.
