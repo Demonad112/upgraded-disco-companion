@@ -6,7 +6,7 @@ on:
 
 permissions:
   contents: read
-  pull-requests: read
+  pull-requests: write # the guard cuts a session link out of the PR body
 
 jobs:
   guard:
@@ -20,6 +20,8 @@ jobs:
         # Reads the PR number from $GITHUB_EVENT_PATH and the current title and body from the API, so a re-run after
         # an edit checks the edited text. Only the (masked) token goes through `env:`; title and body never do (the
         # runner prints env values in the log), and there is no `${{ }}` in the script text (injection).
+        # PR_GUARD_FIX: a body hit is fixed through the API instead of failing; a title hit still fails.
         env:
           GITHUB_TOKEN: ${{ github.token }}
+          PR_GUARD_FIX: '1'
         run: node scripts/check-pr-body.mjs
