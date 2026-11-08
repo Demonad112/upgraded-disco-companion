@@ -75,7 +75,7 @@ export default function MethodologyPage() {
             ]}
           />
           <p>
-            Damage compares your best hitting skill with the ladder for your league and ascendancy. It scores 0.50 in the upper quarter, 0.40 from the median up, 0.28 in the lower quarter and 0.15 below it.
+            Damage compares your best hitting skill with the ladder for your league and ascendancy. It scores 0.50 at the 75th percentile or above, 0.40 from the median up, 0.28 from the 25th percentile up and 0.15 below that.
           </p>
           <Rows
             rows={[
