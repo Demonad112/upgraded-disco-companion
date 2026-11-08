@@ -30,17 +30,19 @@ function link(a: Box, b: Box): [number, number, number, number] | null {
   return null
 }
 
+const findLinksBlock = () => document.querySelector<HTMLElement>('main [data-links]')
+
 /**
  * "Threads": short solid 1px accent lines with small ringed nodes linking
  * neighbouring cards across the gaps, so the cards read as steps in one
  * sequence. Opt-in: only cards inside a [data-links] container link, so grid
  * cards that aren't a sequence stay unconnected; a page without one draws
- * nothing and reads no rects. Boxes are measured relative to #fx-root.
+ * nothing and reads no rects. The canvas covers only the first [data-links] block (sized and positioned to it), and boxes are measured relative to that block.
  */
 export function CardLinksCanvas() {
   const ref = useCanvas((ctx, _w, _h, root) => {
     const origin = root.getBoundingClientRect()
-    const boxes: Box[] = Array.from(root.querySelectorAll<HTMLElement>('main [data-links] .card'))
+    const boxes: Box[] = Array.from(root.querySelectorAll<HTMLElement>('.card'))
       .filter((el) => el.offsetParent !== null)
       .map((el) => {
         const r = el.getBoundingClientRect()
@@ -76,7 +78,7 @@ export function CardLinksCanvas() {
         ctx.stroke()
       }
     }
-  }, FX_LINKS_EVENT, undefined, 1)
+  }, FX_LINKS_EVENT, undefined, 1, findLinksBlock)
 
   // Cards load and resize after route paint (progress state hydrates); redraw
   // whenever main's content changes size or structure.

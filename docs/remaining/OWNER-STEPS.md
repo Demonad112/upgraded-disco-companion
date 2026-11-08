@@ -17,12 +17,12 @@ The rest are independent. The step numbers stay the same so old reports still ma
 
 ## Quick checks (2 min)
 
-- [ ] **2. Check the security header after deploy** (R59) (1 min)
+- [x] **2. Check the security header after deploy** (R59) (1 min)
   - Run this in a terminal:
     `curl -sI https://upgraded-disco-companion.pages.dev/ | grep -i content-security-policy`
   - Passes if the line contains `api.anthropic.com` and `generativelanguage.googleapis.com`.
 
-- [ ] **3. Confirm Lighthouse is green on main** (R49, R54) (1 min)
+- [x] **3. Confirm Lighthouse is green on main** (R49, R54) (1 min)
   - Where: GitHub → Actions → CI → latest run on `main` → `lighthouse` job.
   - Passes if it has a green tick and the log has no `NO_NAVSTART` line. If you see `NO_NAVSTART`, just note it; nothing breaks.
 
