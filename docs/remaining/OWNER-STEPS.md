@@ -61,7 +61,7 @@ The rest are independent. The step numbers stay the same so old reports still ma
   - Save them as `packages/core/test/fixtures/yykiuy-v<version>.json` and `athrynas-94-v<version>.json`, or attach
     them in a chat and ask a session to add them. The tests switch on by themselves once the files exist (batch F2).
 
-- [ ] **12. Say OK or no to core tests** (PL1-1) (1 min)
+- [x] **12. Say OK or no to core tests** (PL1-1) (OK, 2026-11-08)
   - Batches N3 and F2 add tests under `packages/core/test` only, with no source or data change. Recommended: OK.
 
 ## Optional
