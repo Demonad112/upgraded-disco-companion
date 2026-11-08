@@ -18,9 +18,7 @@ Branch `copy/20261108-caddy` (off CD1, `ccr-27b29754-obhjky`).
 - DefensePanel max-hit chart and Headroom: kept visible, already caddy-style verdicts.
 
 ## Open
-| # | Type | For | Item | Recommended answer / action |
-|---|---|---|---|---|
-| 1 | gate | next-A | Full e2e, route-weight and MCP verify/TOOLS.md not run before push (run stopped by owner) | Run them on this branch; fix pinned text matchers by updating, not deleting |
+- none. CD2-1 closed: build ok; route-weight `/` 190,285 br (cap 192,000), `/character` 232,777, `/dashboard` 219,082; e2e 347 passed (3.5m); MCP build/tools/verify ok, TOOLS.md unchanged; core coverage 92.0 % stmts / 81.0 % branches.
 
 ## Needs owner
 - none.
