@@ -7,10 +7,10 @@ PR: draft · Branch: Claude/chore-20261108-owner-checks-95e361 · Preview: n/a (
 | A. Security headers (OWNER-STEPS 2) | pass | `curl.exe -sI` on the live site: CSP `connect-src` has `api.anthropic.com` and `generativelanguage.googleapis.com`. Diff against `apps/web/public/_headers`: CSP string identical; HSTS, COOP, Permissions-Policy, Referrer-Policy, nosniff, X-Frame-Options DENY all present and equal. Nothing missing. |
 | B. Lighthouse on main (OWNER-STEPS 3) | pass (CI half) | Latest main run (PR #116): lighthouse, test, secrets jobs green; 0 `NO_NAVSTART`. Local Lighthouse: left to CI / cloud session. |
 | C1. trade2 data API vs `packages/core/src/trade/query.ts` | pass | Fetched `/api/trade2/data/{filters,stats,static,items}` same-origin from a visible Chrome (200 each). See table below. |
-| C2. Link builds 6k / 8k / 9k, weighted, 4-stat | needs owner | Cloudflare bot check (403, "Performing security verification") blocks automated navigation to trade2 pages. Links generated with the app's own builders; owner opens them (see Needs owner). Built-in browser navigation tools were not exposed to this session. |
-| C3. `TradeStatus` via `?q=` | needs owner | Same block. API side: all four values are valid status ids. |
-| C4. Weighted group prefill, resistances stay minimums | needs owner | Same block. |
-| C5. Console realm (TT1 #5) | needs owner | Observation only, needs the owner's account. |
+| C2. Link builds 6k / 8k / 9k, weighted, 4-stat | pass | Run 2026-11-08 in the owner's Chrome (Standard) via browser-use. Links rebuilt with `buildSearchQuery` and live stat ids. normal4 (933 chars): 4 stat filters prefilled (3 resistances min 30, mana min 1), 2 results. 6,030 and 8,018 chars: load, filters prefilled, 3 results. 9,010 chars (past `URL_MAX_LENGTH`, bypassed on purpose): loads, 140 filter rows, "No results found", no error. `URL_MAX_LENGTH` stays 8000; the site accepts at least 9,010. |
+| C3. `TradeStatus` via `?q=` | pass | online shows "In Person (Online)" (2 results); securable "Instant Buyout" (91); available "Instant Buyout and In Person" (93); any "Any" (100 shown, 2,673 matched). Filters unchanged. |
+| C4. Weighted group prefill, resistances stay minimums | pass | Weighted link (1,096 chars): "Weighted Sum" group prefilled with 3 stats, weight 1 each, minimum 10; the And group kept fire/cold/lightning total resistance at min 30. 3 results. |
+| C5. Console realm (TT1 #5) | not done | Needs a console-realm account. |
 | D. Fixtures (OWNER-STEPS 11) | not done | Character names not supplied. |
 | E. R40 CSV scaffold | pass | `docs/remaining/r40-run-log.csv` = header + one EXAMPLE row; header matches `R40-RUN-LOG.md` line 11. |
 | F. Phone prep | done (prep) | Tick-list below. LAN serving not started (needs a build and a firewall OK). |
@@ -34,12 +34,10 @@ PR: draft · Branch: Claude/chore-20261108-owner-checks-95e361 · Preview: n/a (
 ## Open
 | # | Type | For | Item | Recommended answer / action |
 |---|---|---|---|---|
-| 1 | follow-up | owner | C2-C4 link checks | Open the generated links (below), report loads / error / prefilled |
 | 2 | follow-up | next-cloud | Local-only Lighthouse medians, visualViewport and share-target specs | Run in CI or a cloud session |
 | 3 | question | owner | D: names/accounts for Yykiuy and Athrynas | Send them and a session fetches the fixtures |
 
 ## Needs owner
-- OC1-1: open `C:\Users\Addy7\AppData\Roaming\Claude\side-session-notes\local_9e971dd6-2347-4a60-9527-911ae981aba2\trade2-links.html` in your own browser (league Standard) and report per row: loads / error text / filters prefilled / status shown. Rows: normal4 (896 chars), weighted (721), status-online/securable/available/any (~896), long6000 (6,077), long8000 (8,071), long9000 (9,067).
 - OC1-2: character names for D.
 
 ## Phone tick-list (copied from OWNER-STEPS 7-10)
