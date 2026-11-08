@@ -309,8 +309,7 @@ code,
   details.card > summary {
     padding: 14px 18px;
   }
-  details.card > .dbody,
-  details.card > .dbody-pad {
+  details.card > .dbody {
     padding: var(--card-pad);
   }
   @media (min-width: 621px) {
@@ -390,11 +389,6 @@ code,
   /* The one-line patch notice stays one line (its dismiss target is hit-area). */
   .patch-banner button {
     min-height: 0;
-  }
-  .tap-pill {
-    display: inline-flex;
-    align-items: center;
-    min-height: var(--tap-min);
   }
 
   /* Header: a transparent bar, no border. */

@@ -16,7 +16,7 @@ export const cap = (s: string): string => s.charAt(0).toUpperCase() + s.slice(1)
  * Fill for a damage-type mark. Lightning gets its white-hot core and chaos its dark edge (W0 tokens), so the two read
  * as themselves and not as plain yellow and purple.
  */
-export function dmgFill(type: string): CSSProperties {
+function dmgFill(type: string): CSSProperties {
   const background = DMG_VAR[type] ?? 'var(--ink-dim)'
   if (type === 'lightning') {
     return {

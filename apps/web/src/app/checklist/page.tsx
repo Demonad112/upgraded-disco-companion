@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { benchmarkGates } from "@/data/benchmarks";
+import { commonMistakes } from "@/data/commonMistakes";
 import { ChecklistSection } from "@/components/checklist/ChecklistSection";
 import { ChecklistProgressHeader } from "@/components/checklist/ChecklistProgressHeader";
 import { ChecklistPhaseNav } from "@/components/checklist/ChecklistPhaseNav";
@@ -61,6 +62,7 @@ export default function ChecklistPage() {
             phase={phase}
             steps={steps}
             benchmarkGates={benchmarkGates}
+            mistakes={commonMistakes.filter((m) => steps.some((s) => s.relatedMistakeIds?.includes(m.id)))}
           />
         ))}
       </div>

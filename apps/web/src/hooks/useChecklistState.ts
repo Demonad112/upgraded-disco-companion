@@ -3,7 +3,7 @@
 import { useCallback, useMemo } from "react";
 import { usePersistedState } from "./usePersistedState";
 import { useChecklistActions } from "./useChecklistActions";
-import { roadmapSteps } from "@/data/roadmap";
+import { ROADMAP_STEP_IDS } from "@/data/roadmapIndex";
 import { countIn } from "@/lib/progressCount";
 
 export { actionItemKey } from "./useChecklistActions";
@@ -45,10 +45,10 @@ export function useChecklistState() {
   // Count only ids that still exist: a renamed or removed step must not keep
   // inflating the percentage from an old save.
   const completedCount = useMemo(
-    () => countIn(roadmapSteps.map((s) => s.id), completedStepIds),
+    () => countIn(ROADMAP_STEP_IDS, completedStepIds),
     [completedStepIds]
   );
-  const totalSteps = roadmapSteps.length;
+  const totalSteps = ROADMAP_STEP_IDS.length;
   const completionPercent = totalSteps === 0 ? 0 : Math.round((completedCount / totalSteps) * 100);
 
   return {

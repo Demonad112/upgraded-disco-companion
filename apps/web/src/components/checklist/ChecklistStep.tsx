@@ -10,12 +10,11 @@
  * unchanged: step id, and `${stepId}::${index}` per action item.
  */
 
-import type { BenchmarkGate as BenchmarkGateType, RoadmapStep } from "@/lib/types";
+import type { BenchmarkGate as BenchmarkGateType, CommonMistake, RoadmapStep } from "@/lib/types";
 import { CircleToggle } from "@/components/shared/CircleToggle";
 import { BenchmarkGate } from "@/components/shared/BenchmarkGate";
 import { SourceFlag } from "@/components/shared/SourceFlag";
 import { actionItemKey, useChecklistState } from "@/hooks/useChecklistState";
-import { commonMistakes } from "@/data/commonMistakes";
 import { usePrefs } from "@/hooks/usePrefs";
 import { GlossSegments, glossSegments } from "@/components/shared/Gloss";
 import { StepDiagram } from "@/components/diagrams/StepDiagram";
@@ -23,17 +22,19 @@ import { StepDiagram } from "@/components/diagrams/StepDiagram";
 export function ChecklistStep({
   step,
   gates,
+  avoid,
   isNext,
 }: {
   step: RoadmapStep;
   gates: BenchmarkGateType[];
+  /** Mistakes this step warns about. */
+  avoid: CommonMistake[];
   /** The first incomplete step of the checklist — opened by default. */
   isNext: boolean;
 }) {
   const { proDetail } = usePrefs();
   const { isStepComplete, toggleStep, isActionItemComplete, toggleActionItem, hideCompleted } = useChecklistState();
   const complete = isStepComplete(step.id);
-  const avoid = commonMistakes.filter((m) => step.relatedMistakeIds?.includes(m.id));
   const items = step.actionItems ?? [];
   const itemsDone = items.filter((_, i) => isActionItemComplete(actionItemKey(step.id, i))).length;
 

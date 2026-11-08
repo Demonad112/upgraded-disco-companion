@@ -13,9 +13,7 @@ export const PHASE_ORDER: RoadmapPhase[] = [
   "juiced-farming",
 ];
 
-export function phaseAnchor(phase: RoadmapPhase): string {
-  return `phase-${phase}`;
-}
+export { phaseAnchor } from "./phaseAnchor";
 
 /** Every step, in the order a player meets them. */
 export const orderedSteps: RoadmapStep[] = PHASE_ORDER.flatMap((phase) =>

@@ -17,7 +17,8 @@ import { atlasClusters, memoryForks } from '@/data/atlasTree'
 import { atlasTrapNodes } from '@/data/trapNodes'
 import { useAtlasProgress } from '@/hooks/useAtlasProgress'
 import { useAtlasTree, type AtlasTree } from '@/lib/useAtlasTree'
-import { extentOf, fitExtent, zoomAt, type Viewport } from '../tree/geometry'
+import { extentOf, fitExtent, type Viewport } from '../tree/geometry'
+import { sizeCanvas, usePanZoom } from '../tree/usePanZoom'
 import { hitTestAtlas, renderAtlas, type AtlasPalette } from './atlasRender'
 import { useAtlasMap } from './AtlasMapContext'
 import { Input } from '@/components/shared/controls'
@@ -76,7 +77,6 @@ function AtlasMapCanvas({ atlas }: { atlas: AtlasTree }) {
   const [viewport, setViewport] = useState<Viewport | null>(null)
   const [hovered, setHovered] = useState<TreeNode | null>(null)
   const [pointer, setPointer] = useState({ x: 0, y: 0 })
-  const [pulse, setPulse] = useState<number | null>(null)
   const [query, setQuery] = useState('')
 
   // --- what to mark ---------------------------------------------------------
@@ -116,6 +116,10 @@ function AtlasMapCanvas({ atlas }: { atlas: AtlasTree }) {
     if (viewport === null) fitAll()
   }, [viewport, fitAll])
 
+  // The canvas paint, kept in a ref so the focus pulse can repaint without a render.
+  const pulseRef = useRef<number | null>(null)
+  const paintRef = useRef<() => void>(() => {})
+
   // Frame a requested node, then pulse it for a moment.
   useEffect(() => {
     if (!request || !size.width || !size.height) return
@@ -125,123 +129,64 @@ function AtlasMapCanvas({ atlas }: { atlas: AtlasTree }) {
     if (extent) setViewport(fitExtent(extent, size.width, size.height, 0.1))
     setHovered(points[0] ?? null)
     setPointer({ x: size.width / 2, y: size.height / 2 })
+    // The pulse repaints the canvas directly through a ref: driving it through
+    // state would re-render the whole map every frame for ~2.7 s.
     const start = performance.now()
     let frame = 0
     const tick = (now: number) => {
       const t = (now - start) / 900
-      if (t >= 3) {
-        setPulse(null)
-        return
-      }
-      setPulse(t % 1)
-      frame = requestAnimationFrame(tick)
+      pulseRef.current = t >= 3 ? null : t % 1
+      paintRef.current()
+      if (t < 3) frame = requestAnimationFrame(tick)
     }
     frame = requestAnimationFrame(tick)
-    return () => cancelAnimationFrame(frame)
+    return () => {
+      cancelAnimationFrame(frame)
+      pulseRef.current = null
+    }
     // Re-run per request (nonce), not when the size settles mid-animation.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [request?.nonce])
 
   // --- painting -------------------------------------------------------------
+  // CSS colours change only with the size (breakpoint) or a reload; reading them
+  // on every hover or pan step was a getComputedStyle per frame.
+  const paletteRef = useRef<{ width: number; palette: AtlasPalette } | null>(null)
   useEffect(() => {
     const canvas = canvasRef.current
     const wrap = wrapRef.current
     if (!canvas || !wrap || !viewport || !size.width || !size.height) return
-    const dpr = Math.min(window.devicePixelRatio || 1, 2)
-    canvas.width = size.width * dpr
-    canvas.height = size.height * dpr
-    const ctx = canvas.getContext('2d')
-    if (!ctx) return
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
-    renderAtlas(ctx, {
-      tree,
-      viewport,
-      width: size.width,
-      height: size.height,
-      palette: readPalette(wrap),
-      guide,
-      trap,
-      allocated,
-      focused,
-      hovered: hovered?.id ?? null,
-      pulse,
-    })
-  }, [tree, viewport, size, guide, trap, allocated, focused, hovered, pulse])
+    paintRef.current = () => {
+      const ctx = canvas.getContext('2d')
+      if (!ctx) return
+      const dpr = sizeCanvas(canvas, size)
+      if (paletteRef.current?.width !== size.width) paletteRef.current = { width: size.width, palette: readPalette(wrap) }
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
+      ctx.clearRect(0, 0, size.width, size.height)
+      renderAtlas(ctx, {
+        tree,
+        viewport,
+        width: size.width,
+        height: size.height,
+        palette: paletteRef.current.palette,
+        guide,
+        trap,
+        allocated,
+        focused,
+        hovered: hovered?.id ?? null,
+        pulse: pulseRef.current,
+      })
+    }
+    paintRef.current()
+  }, [tree, viewport, size, guide, trap, allocated, focused, hovered])
 
   // --- interaction ----------------------------------------------------------
-  const dragRef = useRef<{ id: number; x: number; y: number; moved: boolean } | null>(null)
-  const pinchRef = useRef<globalThis.Map<number, { x: number; y: number }>>(new globalThis.Map())
-  const pinchDistance = useRef(0)
-
-  const pick = (e: React.PointerEvent<HTMLCanvasElement>) => {
+  const pick = (sx: number, sy: number) => {
     if (!viewport) return
-    const rect = e.currentTarget.getBoundingClientRect()
-    const sx = e.clientX - rect.left
-    const sy = e.clientY - rect.top
     setPointer({ x: sx, y: sy })
     setHovered(hitTestAtlas(tree, sx, sy, viewport, size.width, size.height))
   }
-
-  const onPointerDown = (e: React.PointerEvent<HTMLCanvasElement>) => {
-    e.currentTarget.setPointerCapture(e.pointerId)
-    pinchRef.current.set(e.pointerId, { x: e.clientX, y: e.clientY })
-    if (pinchRef.current.size === 2) {
-      const [a, b] = [...pinchRef.current.values()]
-      pinchDistance.current = Math.hypot(a!.x - b!.x, a!.y - b!.y)
-      dragRef.current = null
-      return
-    }
-    dragRef.current = { id: e.pointerId, x: e.clientX, y: e.clientY, moved: false }
-  }
-
-  const onPointerMove = (e: React.PointerEvent<HTMLCanvasElement>) => {
-    if (!viewport) return
-    const rect = e.currentTarget.getBoundingClientRect()
-    if (pinchRef.current.has(e.pointerId)) pinchRef.current.set(e.pointerId, { x: e.clientX, y: e.clientY })
-    if (pinchRef.current.size === 2) {
-      const [a, b] = [...pinchRef.current.values()]
-      const distance = Math.hypot(a!.x - b!.x, a!.y - b!.y)
-      if (pinchDistance.current > 0 && distance > 0) {
-        const midX = (a!.x + b!.x) / 2 - rect.left
-        const midY = (a!.y + b!.y) / 2 - rect.top
-        setViewport((vp) => (vp ? zoomAt(vp, distance / pinchDistance.current, midX, midY, size.width, size.height) : vp))
-      }
-      pinchDistance.current = distance
-      return
-    }
-    const drag = dragRef.current
-    if (drag && drag.id === e.pointerId) {
-      const dx = e.clientX - drag.x
-      const dy = e.clientY - drag.y
-      if (Math.abs(dx) > 2 || Math.abs(dy) > 2) drag.moved = true
-      drag.x = e.clientX
-      drag.y = e.clientY
-      setViewport((vp) => (vp ? { ...vp, cx: vp.cx - dx / vp.scale, cy: vp.cy - dy / vp.scale } : vp))
-      return
-    }
-    if (e.pointerType === 'mouse') pick(e)
-  }
-
-  const onPointerUp = (e: React.PointerEvent<HTMLCanvasElement>) => {
-    pinchRef.current.delete(e.pointerId)
-    if (pinchRef.current.size < 2) pinchDistance.current = 0
-    const drag = dragRef.current
-    dragRef.current = null
-    if (drag && drag.id === e.pointerId && !drag.moved && e.pointerType !== 'mouse') pick(e)
-  }
-
-  useEffect(() => {
-    const canvas = canvasRef.current
-    if (!canvas) return
-    const onWheel = (e: WheelEvent) => {
-      e.preventDefault()
-      const rect = canvas.getBoundingClientRect()
-      const factor = Math.exp(-e.deltaY * 0.0015)
-      setViewport((vp) => (vp ? zoomAt(vp, factor, e.clientX - rect.left, e.clientY - rect.top, rect.width, rect.height) : vp))
-    }
-    canvas.addEventListener('wheel', onWheel, { passive: false })
-    return () => canvas.removeEventListener('wheel', onWheel)
-  }, [])
+  const { onPointerDown, onPointerMove, onPointerUp, zoomBy } = usePanZoom(canvasRef, size, setViewport, pick)
 
   const showAll = () => {
     clear()
@@ -249,8 +194,6 @@ function AtlasMapCanvas({ atlas }: { atlas: AtlasTree }) {
     fitAll()
   }
 
-  const zoomBy = (factor: number) =>
-    setViewport((vp) => (vp ? zoomAt(vp, factor, size.width / 2, size.height / 2, size.width, size.height) : vp))
 
   // --- search ---------------------------------------------------------------
   const { results, total } = useMemo(() => {
