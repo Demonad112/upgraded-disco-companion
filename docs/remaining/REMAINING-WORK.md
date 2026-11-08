@@ -1,115 +1,145 @@
 # Remaining work register
 
-Snapshot 2026-11-06. B1-B4 done; next batches C1-C2 below. Owner-only steps: `docs/remaining/OWNER-STEPS.md`. Source of truth for what is unfinished.
-Update a row's Status when it lands (`open` · `answered` · `asked` · `parked` · `done`). IDs are stable; never renumber.
-Origin column points at the carry file or plan that raised the item. Class: **A** = needs the owner's hardware or accounts
-(sessions can't do it), **D** = decision (a session may answer with the recommendation), **C** = code/data work a session
-can do, **R** = standing rule (no work), **W** = waiting on an external event.
+Snapshot 2026-11-08: L1–L3 are done and PR #119 is merged. On main the gate passes, e2e passes (347 passed, 3 skipped) and coverage is 92.04 % statements / 81.01 % branches. Next batches are in §6.
+This file lists what is still unfinished. Closed rows (`done` · `answered` · `parked`) are in `archive/REGISTER-CLOSED.md`. Steps only the owner can do are in `OWNER-STEPS.md`.
+When a row lands, update its Status (`open` · `answered` · `asked` · `parked` · `done`) and move it to the archive. IDs are stable; never renumber them.
+Class codes:
 
-## 1. Unstarted planned work
-| ID | Item | Class | Origin | Recommended / notes | Status |
-|---|---|---|---|---|---|
-| R02 | IMG-1 design brief (owner, Claude chat, no repo); picks saved to `docs/ui/img/` (doesn't exist yet) | A | LAUNCH-PLAN | Brief text is in LAUNCH-PLAN. Blocks R03 | done: bars B picked (`docs/ui/img/img1-bars-b.html`); share card unchanged |
-| R03 | IMG-2 visual build: chosen bar style in `DpsMatrix`, `DefensePanel`, `Instruments`, `Showcase`; 12-icon set in `components/icons/*` (doesn't exist); share-card art; diagram/ring/stamp restyle (CH1-2, V1-2); use `--dmg-lightning-core` and `--dmg-chaos-edge` (R30) | C | LAUNCH-PLAN | Picks in `docs/ui/img/`; share-card art excluded (owner: done) | done (B4b, #110): engraved bars in `DefensePanel` (resists, largest hit) and `DpsMatrix` (split + per-skill), grade-stamp bevel, 12-icon set in `components/icons/` (checklist primer, Atlas mechanic tabs), diagram plates; `Instruments` has no bar (chips only); share card unchanged. R45/R46: emulated parts in `docs/carry/IMG2.md`, real devices owner |
-| R04 | QA sweep after R03's PR: 390×844 and 360×780 shots of `/`, `/checklist`, `/atlas`, `/dashboard`, `/character`, share card both sizes; e2e; Lighthouse mobile; report as one PR comment | C | LAUNCH-PLAN | Also covers H1-2 and V1-1 (R25) | done |
+| Class | Meaning |
+|---|---|
+| **A** | Needs the owner's hardware or accounts |
+| **D** | Decision; a session may answer it with the recommendation |
+| **C** | Code or data work a session can do |
+| **W** | Waiting on an external event |
+| **P** | Parked |
 
-## 2. Decisions (class D: answer with the recommendation unless it is high impact)
+## 1. Decisions
 | ID | Question | Recommended | Origin | Status |
 |---|---|---|---|---|
-| R10 | Farm-planner danger calibration: danger = total × severity, Quick Pick Waystones all show Danger 0, big totals outweigh reward stats | Don't invent weights. Collect the 50-map run log (R40), then add per-stat normalisers in data. Until then keep Net unranked | FP1-1 / QP1-5 | open: B3(e), only after R40. B3 (2026-11-06): still blocked; no run log. R36 avoids it by comparing two readings of the same loadout, never ranking by Net |
-| R11 | Preset mapping for farms without a preset (boss rush, Vaal Temple, Azmerian Wisps, hybrids, Trial of Chaos) | Boss Rush / Tablet Rush → "Unique hunting"; others stay on General, tile says so | FP1-2 | done: no change needed; Boss Rush already maps to unique-hunting, the rest show the General fallback note in Decide and Setup |
-| R13 | Approve the eight phase names (`apps/web/src/data/phaseNames.ts`): The Threshold, The Warden’s Spire, The Ashen Crown, The Iron Vigil, The Godless Wheel, The Rooted Sky, The Conclave, The Gilded Harvest | Approve | LS1-1 | answered: Approve the eight names - Already shipped; one-file change if disliked |
-| R14 | Rune set keyed to Forbidden Rites (`LEAGUES[0]`), not Runes of Aldur | Keep; new league swaps one file | LS1-2 | answered: Keep `LEAGUES[0]` - Newest live league; new league swaps one file |
-| R15 | Sky budget: ~73 fill+stroke calls vs 60 | Restate budget at 75 (cutting alpha levels was ruled out; frame < 1 ms). Update `04-PERFORMANCE-BASELINE.md` | LS1-3 / MP1-1 | answered: Restate sky budget at 75 - Frame < 1 ms; alpha cut ruled out |
-| R16 | Keep astrolabe SVG fixed top-right behind header; canvas rings stay | Keep | MP1-3 | answered: Keep astrolabe - Already shipped, no regression |
-| R17 | Keep decorative top stroke on Atlas memory-fork branches | Keep | MP1-5 | answered: Keep memory-fork stroke - Decorative, zero cost |
-| R18 | Lantern/link pulse start when idle chunk lands (not first frame) | Keep (keeps `/` from growing) | LS1-5 | answered: Keep idle-chunk start - Keeps `/` under 192,000 |
-| R19 | Trimmed 4-stat trade map in `packages/data` so Top fixes needn't fetch 1.36 MB `trade2-stats.json` | Yes; needs `packages/data` change (owner OK counts as given when the owner confirms) | CH1-3 | done: trade-map.json built by sync-data (no packages/data change); Top fixes and Gear targets fetch ~300 B instead of 1.36 MB |
-| R20 | `DESIGN.md` / `DATA-REFRESH.md` lost in transfer | Close, don't restore (CLAUDE.md Design + PROVENANCE.md cover them) | OD1-2 | answered: Close, don't restore - CLAUDE.md Design + PROVENANCE.md cover it |
-| R21 | Keep draft mod-validation flag in GearWorkbench | Moot: workbench deleted in CH6. Close | M2-1 | done |
-| R22 | Atlas clusters, strategies, bosses have no `why` field; Pro toggle only hides sources/atlas setup/boss notes | Leave; add `why` only if the owner asks | C1-4 | answered: Leave - Add `why` only on owner ask |
-| R23 | Core `workbench.ts` + MCP affix-candidates tool have no web consumer | Keep for MCP; revisit only if the MCP tool is dropped | CH6 #3 | answered: Keep - Used by MCP and `WhatIfPanel` |
-| R24 | Is the V1 diagram slot rendered in `ChecklistStep.tsx` for the 3 steps? (C1-2; V1 is marked done, unverified here) | Verify by grep/e2e; fix only if missing | C1-2 | done |
+| R10 | Farm-planner danger calibration. Danger is total × severity, every Quick Pick Waystone shows Danger 0, and big totals outweigh reward stats | Don't invent weights. Collect the R40 run log first, then add per-stat normalisers in the data. Until then, keep Net unranked | FP1-1 / QP1-5 | open (W): blocked on R40; batch F1 |
+| R57 | Patch-0.5.5e sources for the two `dev-notes` claims in `apps/web/src/data/farm/tablets-0.5.5.json` | Park until the patch-day data refresh. Both claims carry weight 0, so they feed no number | QP1-3 | parked (P) |
 
-## 3. Owner hardware / account actions (class A; sessions list them, can't do them)
-| ID | Action | Origin | Status |
-|---|---|---|---|
-| R40 | 50-map run log for danger calibration (feeds R10) | FP1-1 | open: owner-only. B3 added the log format and the calibration method: `docs/remaining/R40-RUN-LOG.md` |
-| R41 | Deploy ninja-proxy: `cd services/ninja-proxy && vercel --prod` (CORS allowlist T20; cache/coalesce/503 L1) | L1-1 / A8 | done: proxy deployed 2026-11-06, root returns 200 |
-| R42 | Open one "Find better gear" link on live trade2; confirm weighted group prefills (403 from cloud sandbox) | CH6-1 | open: owner verify in B2 PR checklist |
-| R43 | TT1 live trade2 checks: filter shapes (`/api/trade2/data/filters`), link length 6k/8k/9k chars (`URL_MAX_LENGTH`), `TradeStatus` values via `?q=`, console realm | TT1 #2–#5 | open: owner verify in B2 PR checklist (owner skipped 2026-11-02) |
-| R44 | Real-device pass: keyboard hides tab bar (iOS Safari, Android Chrome), Install / Add to Home Screen, Safari 17, rotation, VoiceOver | U13b-1 | open: B3 added an emulated e2e (stubbed visualViewport hides and restores the tab bar). Real devices: owner |
-| R45 | Android share-target test (install PWA, share a poe.ninja link) | L1-3 | emulated pass (B4b e2e: manifest share_target + import from shared text); real Android on the B4b PR Owner verify list |
-| R46 | Eyeball on real display + Safari: sky 30 s, hover pulse, hero draw-in, lantern, foil, route transitions, ignite/flare/label/rune glyph | A5-4, W15-pulse-1, MP1-4, LS1-4 | B4b: on the PR Owner verify list (needs a real display + Safari) |
-| R47 | Phone/Xbox sizing for quick-pick sheet and sticky strip; reduced-motion fade; home picker states; diagram label overlap | QP1-1, FP1-5, H1-2, V1-1 | open: emulated part done in B3 (sheet fits and Apply reachable, sticky strip ≤ 30 % height at 390×844 and 360×780; e2e). Real phone/Xbox: owner |
-| R48 | Delete logs of failed guard runs (41174630514 and two on #58); they still hold the session URL | SB4-1 | done: logs of all 26 failed guard runs deleted 2026-11-06 |
-| R49 | Flip Lighthouse CI job from warn to error after a few stable runs (check job log first) | L1-2 | open: B1 flipped to error 2026-11-06 (5/5 main runs clean); owner confirms the first main run is green |
+## 2. Owner hardware / account actions (class A)
+These rows run in the §6 owner-pass order.
 
-Verify with (checked inside that batch, owner ticks the PR checklist): R42, R43 -> B2 | R44 -> B3 + B4b | R45, R46 -> B4b | R47 -> B3 | R49 -> B1 | R40 owner-only.
+| ID | Action | Owner step | Origin | Status |
+|---|---|---|---|---|
+| R40 | 50-map run log for danger calibration; feeds R10. Format: `R40-RUN-LOG.md` | 6 | FP1-1 | open |
+| R59 | Check that the live CSP header has `api.anthropic.com` and `generativelanguage.googleapis.com` | 2 | PR #111 | open |
+| R49 | Confirm that the first Lighthouse run on main is green now that the job is set to error | 3 | L1-2 | open |
+| R54 | Lighthouse `NO_NAVSTART` on `/character/`: none in 3 local and 5 CI runs; the owner confirms | 3 | U13b-4 | open |
+| R42 | Open one "Find better gear" link on live trade2 and confirm the weighted group prefills. It returns 403 from the cloud sandbox | 4 | CH6-1 | open |
+| R44 | Real-device pass: keyboard hides the tab bar on iOS Safari and Android Chrome; Install / Add to Home Screen; Safari 17; rotation; VoiceOver. The emulated e2e passes | 7 | U13b-1 | open |
+| R45 | Android share target on a real device. The emulated e2e passes | 8 | L1-3 | open |
+| R46 | Real display and Safari: sky over 30 s, hover pulse, hero draw-in, lantern, foil, route transitions, glyphs | 9 | A5-4, W15-pulse-1, MP1-4, LS1-4 | open |
+| R47 | Phone and Xbox sizing for the quick-pick sheet and sticky strip; reduced-motion fade; picker states; diagram labels. The emulated part is done | 10 | QP1-1, FP1-5, H1-2, V1-1 | open |
+| R60 | Two character fixtures: `packages/core/test/fixtures/yykiuy-v<version>.json` and `athrynas-94-v<version>.json` | 11 | evidence-pack tests | open; batch F2 |
+| R43 | TT1 live trade2 checks: filter shapes, link length at 6k/8k/9k, `TradeStatus` via `?q=`, console realm. Optional | 5 | TT1 #2–#5 | open |
 
-## 4. Code and data follow-ups (class C)
+## 3. Code and CI follow-ups (class C)
 | ID | Item | Size | Origin | Notes | Status |
 |---|---|---|---|---|---|
-| R30 | Use `--dmg-lightning-core` and `--dmg-chaos-edge` (defined, unused) in showcase ring/damage glyphs | S | W0-1, C1-1, V1-3 | Fold into R03 | done |
-| R31 | Tighten MCP output schemas one tool at a time (loose objects now); one `verify-mcp` assertion each | M | M2-2 | Must not break SDK output validation | parked 2026-11-06 (owner: keep MCP working, no more schema work). Was partial (B2): 6 tools typed (list_keystones, health_check, get_defenses, get_available_mods, inspect_keystone, get_skill_setups), each asserted in verify-mcp; rest stay loose until a shape is stable |
-| R32 | Dead-export sweep (core/web/mcp) | S | CH7 | | done |
-| R33 | Provenance footer on MCP text block | S | M2-4 | Only if a client needs it; breaks JSON-parsing clients. Default: skip | parked: scope rule 2026-11-06 |
-| R34 | Stamp tree/skills/mods builders into `version.json` | S | M1-3 / M2-3 | Only when those builders move to the PoB export. Default: park | parked 2026-11-06 (B2): tree/skills/mods builders (`build-tree`, `build-skills`, `build-mods`) do not read the PoB export; only `build-mod-tiers-pob`, `build-pob-skills`, `build-monster-stats` do |
-| R35 | Before/after screenshots for Damage bars (390@2x, 1440) | S | CH7 | Keep out of git | done |
-| R36 | "Fits your build" tile badge | M | FP1-2 | Needs a data rule first (R11) | done 2026-11-06 (B3): rule `weights.danger.fitsBuild` (unverified) in the farm data; a tile badges only when its saved loadout has danger mods (the data has no per-farm hazards, and starter loadouts carry no danger). `lib/farm/fit.ts`, e2e |
-| R37 | Mana and leech layers detectable from snapshot | M | FP1-3 | New core field; touches `packages/*` → owner OK | done 2026-11-06 (B3): snapshot `manaBeforeLife` (Mind Over Matter) and `gearLeech` (life/ES leech on active gear; passives and gems not read). Derived, outside the unchanged check, refreshed in place on re-import |
-| R38 | Level-only entry point for survivability reference mode (no import) | M | CH4-3 | Add to `/atlas/` or farm planner only if owner wants | done 2026-11-06 (B3): `/atlas/` carries `Headroom` in reference mode (lazy chunk), level from the last import; tier rows fit at 280 px |
-| R39 | Generate id/phase index at build time to shrink lazy sky chunk (15.6 KB br for ~74 ids) | S | LS1 open 1 | Measure first | parked: B1 measured 2026-11-06, ~15 KB br saved on an idle cached chunk, not worth a generated index + staleness check |
-| R50 | Load core analysis on demand in `handleResult` | M | U13a-4 | Only if `/character/` > 250 KB (now 230,037) | done: B1 2026-11-06, `/character/` 229,962 B br, under cap, no change |
-| R51 | Drop `backdrop-blur-sm` on CommandPalette/SearchDialog | S | U13a-6 | Recommended: keep | done: B1 2026-11-06, kept (dialog-only, no measured cost) |
-| R52 | Checks tab count chip | S | U10-3 | Recommended: leave out | parked |
-| R53 | Deterministic test for 280 px first-paint overflow | S | OD1-4 | Add only if CI flakes again | parked 2026-11-06 (B2): no 280 px flake in recent main CI runs (all success; cancelled ones were superseded merges) |
-| R54 | Lighthouse `NO_NAVSTART` on `/character/` | S | U13b-4 | Watch; retry; trace with `--save-assets` if persistent | open: B1 ran clean (0 NO_NAVSTART in 3 local + 5 CI runs); owner confirms on own machine |
-| R55 | Stale tracker rows in `docs/ui/UI-PROGRESS.md` (MP1-2, MP1-3, LS1-x, OD1-1, OD1-3 show `todo`; later carry files show resolved) | S | this audit | Reconcile against carry files; also refresh the wave table for the remaining waves | done |
-| R56 | Card-links canvas is still full document height on `/checklist` (~5–6 MP on a phone at DPR 1); size it to the `[data-links]` block, `useCanvas` needs to accept a root element | S | CD1 Open 1 | Keep only if it saves real runtime work (perf bar) | open |
+| R56 | The card-links canvas on `/checklist` is the full document height. Size it to the `[data-links]` block; `useCanvas` has to accept a root element | S | CD1 Open 1 | Measured 2026-11-08: 390×4337 vs a 1941 px block (−55 %); at 1440 it is 2950 vs 1179 (−60 %). This removes real runtime work, so it meets the perf bar | open; batch N1 |
+| R58 | `SOURCE_DOCS` and `KNOWN_CONFLICTS` in `apps/web/src/data/sourceMeta.ts` have no importers. The "W23" gate cited for keeping them doesn't exist | S | S1-1 | Answered: delete them. Git keeps the history | answered; batch N1 |
+| R61 | Core test gaps: `ninja/ladder.ts` lines 119–142 at 61 %; branches at 65–68 % in `damage.ts`, `export.ts`, `replace.ts`, `catalog.ts` | M | coverage 2026-11-08 | Touches `packages/core/test` only; needs owner OK under the packages/* rule | open; batch N3 |
+| R62 | CI e2e records traces (`retain-on-failure`). Locally, `--trace off` runs in 240 s vs 304 s (−21 %). The coverage step re-runs the core suite that `npm test` already ran | S | CI run 42445987468 | Trace off in CI; on failure, re-run locally with `--trace on` | open; batch N2 |
 
-## 5. Standing rules (R, no work)
-- Route budgets: `/` ≤ 192,000 B br, others ≤ 250,000 (`node scripts/route-weight.mjs`); any home-JS change reports before/after.
-- New tokens go in `tokens.css`; canvas code reads only colours from tokens.
+## 4. Standing rules (no work)
+- Route budgets: `/` ≤ 192,000 B br; other routes ≤ 250,000 (`node scripts/route-weight.mjs`). Any change to home JS reports before and after.
+- Perf bar: keep a change only if it saves ≥ 5 % br on its file or route, or removes real runtime work.
+- New tokens go in `tokens.css`. Canvas code reads only colours from tokens.
 - A bare `.card` outside home needs `data-surface="data"`.
-- SB1-1: proxy lockfile + `npm ci` + audit only if `services/ninja-proxy` gains runtime deps.
+- SB1-1: add a proxy lockfile, `npm ci` and audit only if `services/ninja-proxy` gains runtime deps.
 - Never put session URLs on GitHub (commits, PRs, comments).
 
+## 5. Measured baseline (2026-11-08, main 763b2bb)
+| Route | br B |
+|---|---|
+| `/` | 190,285 (1,715 headroom) |
+| `/checklist` | 198,020 |
+| `/character` | 232,777 |
+| `/atlas` | 204,223 |
+| `/dashboard` | 219,082 |
+| `/trade` | 192,834 |
 
-## 6. Next batches: bloat and load speed (2026-11-06)
+- Lazy data, br B: mod-display 107,812 · mod-tiers 101,442 · passive-tree 95,718 · trade2-stats 76,137 · pob-skills 40,835 · bases 23,452.
+- CI test job: 7.5 min total. e2e is 4 m 38 s of it, `npm ci` 42 s, MCP verify 31 s. Lighthouse runs as a parallel 2 min job. Docs-only PRs skip build and tests (~10 s).
+
+## 6. Next batches (2026-11-08)
 
 ### Rules
-- Goal: smaller downloads and faster loads. Skip anything that doesn't help with that, unless it is a one-line fix.
-- Keep token use low: grep first, read only what you edit, cap output, run independent calls in parallel.
-- Don't run `/simplify` or `/code-review` inside the work sessions. Review happens once, at the end (see L3).
-- Out of scope: patch day / 1.0 (the owner handles it); MCP beyond "still builds and `node scripts/verify-mcp.mjs` passes".
-- Gate before the PR, as separate commands: `typecheck`, `lint`, `test`, `build`, `node scripts/route-weight.mjs`,
-  `npm run e2e -w @poe2/web -- --trace off`. Report br before and after for anything you touch.
-- One draft PR per session, with no session links on GitHub. Don't merge.
+- One draft PR per batch, with no session links on GitHub. Don't merge.
+- Token economy: grep first, read only what you edit, cap output, and run independent calls in parallel.
+- Out of scope: the patch day / 1.0 data refresh (the owner does it), design changes, and MCP beyond "builds, and `node scripts/verify-mcp.mjs` passes".
+- Code batches run the gate as separate commands:
+  - `npm run typecheck`
+  - `npm run lint`
+  - `npm test`
+  - `npm run build`
+  - `node scripts/route-weight.mjs`
+  - `npm run e2e -w @poe2/web -- --trace off`
 
-### L1 Repo bloat (Sonnet 5.5 · low effort · cloud · `chore/<date>-bloat`)
-Mechanical work, no app logic.
-- `git rm` `docs/constellation-sky/*.png` and `docs/design/*.png` (~28 MB). In the `.md` files, change image links to
-  "screenshot in PR #n". Add `docs/**/*.png` to `.gitignore`. Don't rewrite history.
-- Move carry files with no open rows to `docs/carry/archive/`, and add a one-line-per-ID `docs/carry/README.md`.
-- Delete `docs/remaining/PLAN-2026-11-06.md`, `BATCHES-2026-11-06.md` and `OPUS-PLAN-PROMPT.md`. Their live rows are already in the register.
-- Rename `components/character/gearTargets.ts` to `gearTargetsData.ts` and `topFixes.ts` to `topFixesData.ts` (they clash with the `.tsx` files on Windows), and update the imports.
-- Gate: typecheck, lint, test. Docs-only parts skip build and e2e.
+  Docs-only batches skip the gate.
 
-### L2 Load-speed diet (Sonnet 5.5 · medium effort · cloud · `perf/<date>-payload`)
-Measure first and keep only changes that pay off (≥ 5 % br saved on that file or route).
-1. `mod-tiers.json`: 2.2 MB raw, 205 KB br, fetched on `/character`.
-   - List the `ModTiers` methods the web calls (`packages/core/src/gear/tiers.ts`; consumers `useModTiers.ts`,
-     `DamageReview`, `AuditPanel`, `GearTargets`, `CharacterResults`).
-   - In `apps/web/scripts/sync-data`, write a trimmed web copy without the fields the web never reads.
-   - Split out `displayOnly` (1.0 MB raw) into `mod-display.json`, loaded only when `analyze.ts` falls back to it.
-   - MCP keeps the full file. Copy the trade-map split already in `sync-data`.
-2. `trade2-stats.json`: 1.36 MB raw, not minified, `/trade` only. Minify it in `sync-data` and trim it to what `ManualPriceCheck.tsx` reads.
-3. `/`: 1,763 B headroom under 192,000. Load `CommandPalette` / `SearchDialog` on first open if they are still eager, and try a lighter `app/error.tsx`.
-4. Check that the service-worker update still works (the e2e offline test), and run Lighthouse mobile on `/character` before and after.
-- Write the before/after table in `docs/carry/archive/L2.md` and the PR body.
+### Order
+N1, N2 and N3 are independent and can run in parallel. The owner pass (OP) runs alongside them. F1 waits for R40, F2 waits for R60, and F3 follows the owner report.
 
-### L3 Opus check (Opus 5.5 · short chat · only after L2's CI is green)
-One review pass instead of an Opus session. In a new chat on the L2 branch, run:
-`/code-review medium perf/<date>-payload`, and fix only confirmed findings. Skip this if L2 changed nothing in
-`packages/core` or the data loading path.
+| ID | Branch | Model · effort | Scope | Benefit | Risk | Depends on |
+|---|---|---|---|---|---|---|
+| N1 | `perf/<yyyymmdd>-links-canvas` | Sonnet 5.5 · medium | R56, R58 | Phone canvas 390×4337 → ~390×1941 (−55 % px; ~6.8 → ~3.0 MP at DPR 2). Desktop −60 % | Low: link geometry has to stay aligned. e2e plus a screenshot check | — |
+| N2 | `ci/<yyyymmdd>-e2e-trace` | Sonnet 5.5 · low | R62 | ~60 s off the 7.5 min test job, plus 7–11 s from the duplicate run | Low: no traces on CI failure, so re-run locally | — |
+| N3 | `test/<yyyymmdd>-core-gaps` | Sonnet 5.5 · medium | R61 | Live ladder decode gets tested; more coverage margin | Low: tests only | Owner OK (packages/*) |
+| OP | none | Owner | Owner pass below | Unblocks R10; closes R42–R47, R49, R54, R59, R60 | — | — |
+| F1 | `data/<yyyymmdd>-danger-calibration` | Sonnet 5.5 · medium | R10 | Calibrated danger; Net can be ranked | Medium: data weights. Follow `R40-RUN-LOG.md` exactly | R40 CSV |
+| F2 | `test/<yyyymmdd>-evidence-fixtures` | Sonnet 5.5 · medium | R60 | Two skipped evidence-pack suites go live; 3 `it.todo` filled | Low | R60 files (owner OK: packages/core/test) |
+| F3 | `docs/<yyyymmdd>-owner-report` | Sonnet 5.5 · low | Tick the register from the owner's report | Register current | — | OP |
+
+### N1 Links canvas + dead exports
+1. `apps/web/src/components/fx/useCanvas.ts`: add an optional root element or ref. Without one, it keeps today's `#fx-root` behaviour, so other callers don't change.
+2. `apps/web/src/components/fx/CardLinksCanvas.tsx`: size the canvas to the `main [data-links]` block's bounding box and position it at the block's offset. Draw coordinates become block-relative.
+3. `apps/web/src/data/sourceMeta.ts`: delete `SOURCE_DOCS` and `KNOWN_CONFLICTS`. Confirm first that `grep -rn "SOURCE_DOCS\|KNOWN_CONFLICTS" apps packages` finds only the definitions.
+- Gate: the full code gate above, plus the canvas height (Playwright `canvas.height` on `/checklist` at 390×844 and 1440×900), before and after.
+- Done when: the canvas height is about the `[data-links]` block height (±1 card), links render the same in screenshots, and e2e is green.
+- Review: one `/code-review low` on this branch. No other review session.
+
+### N2 CI e2e trace + duplicate test run
+1. `.github/workflows/ci.yml`: change the "Smoke-test the built site" step to `npm run e2e --workspace @poe2/web -- --trace off`.
+2. Remove the duplicate core run. "Test core and web" (`npm test`) and "Core coverage floor" both run the core suite, so run core once, under coverage. Keep the 90 % / 75 % floors enforced.
+- Gate: `npm run lint`, then the CI run on the PR.
+- Done when: the PR's CI is green, the test job is ≥ 60 s faster than run 42445987468, and the coverage floor is still enforced.
+
+### N3 Core test gaps
+1. Add tests in `packages/core/test/` only, with no `src` change: `ninja/ladder.ts` lines 119–142, and the uncovered branches in `damage.ts`, `export.ts`, `replace.ts`, `catalog.ts`.
+2. Don't loosen any assertion or threshold.
+- Gate: `npm test -w @poe2/core`, `npm run test:coverage -w @poe2/core`, `npm run typecheck`.
+- Done when: ladder.ts lines are ≥ 85 %, each named file's branches are ≥ 75 %, and the totals don't drop.
+
+### Owner pass (do in this order; details in `OWNER-STEPS.md`)
+- [ ] R40: start the 50-map log (longest lead time; unblocks R10 / F1)
+- [ ] R59: CSP curl (1 min)
+- [ ] R49 / R54: Lighthouse green on main, no `NO_NAVSTART` (1 min)
+- [ ] R42: one "Find better gear" link (5 min)
+- [ ] R44: phone check (10 min)
+- [ ] R45: Android share (3 min)
+- [ ] R46: real display + Safari (5 min)
+- [ ] R47: farm picker on phone and Xbox (5 min)
+- [ ] R60: two character fixtures (5 min)
+- [ ] R43: trade extras (optional, 10 min)
+- [ ] Say OK or no to N3 and F2 (tests under `packages/core/test`)
+
+### Do not do
+| Item | Why |
+|---|---|
+| R31 / R33 / R34: MCP schemas, footer, stamps | Owner: keep MCP as is |
+| R39: sky id index | ~15 KB on an idle cached chunk; not worth it |
+| R50: lazy core on `/character` | Only if the route goes over 250,000 B br (now 232,777) |
+| R51 / R52: blur drop, checks chip | Decided: keep / leave out |
+| R53: 280 px determinism test | Only if CI flakes |
+| Minify `trade2-stats.json` | 2.4 %, under the 5 % bar (L2) |
+| Lazy `CommandPalette` | Already lazy-loads `SearchDialog` |
+| Dedupe the Lighthouse job's build | Runs in parallel, so no wall-time win; basePath differs |
+| Re-add Dependabot | Removed on purpose |
+| Design, light theme, cursor effects | Decided; change only with the owner |
+| Patch-day / 1.0 data refresh | Owner |
+| Guessed danger weights, DPS thresholds | Against the data rules; wait for R40 |
+| Restore `DESIGN.md` / `DATA-REFRESH.md` | R20: closed |

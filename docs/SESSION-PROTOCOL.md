@@ -3,10 +3,11 @@
 ### Start (before changing anything)
 1. Run `git fetch origin` and branch off an up-to-date `origin/main`. Cloud sessions run `npm ci` and then
    `npm run build -w @poe2/core` first.
-2. **Check the previous wave.** For each session in the previous wave (wave table in `docs/ui/UI-PROGRESS.md`):
+2. **Check the previous batch.** For each batch that has run since the last check (the Active list in
+   `docs/carry/README.md` and register §6 in `docs/remaining/REMAINING-WORK.md`; the UI-PROGRESS wave table is finished):
    - its PR is merged into `main`;
-   - its row is ticked in `docs/ui/UI-PROGRESS.md` or `docs/audit/08-PROGRESS.md`;
-   - a spot-check of its "Done when / Accept" items holds on `main`. Spot-check only; don't redo the work.
+   - its register rows are updated;
+   - a spot-check of its "Done when" items holds on `main`. Spot-check only; don't redo the work.
 
    Run `npm run typecheck` and `npm test` on `main` before your own changes. Note any failure that was already there, so it
    isn't blamed on this batch.
@@ -30,7 +31,8 @@
    - `npm run lint`
    - `npm test`
    - `npm run build`
-   - `npm run e2e -w @poe2/web`
+   - `node scripts/route-weight.mjs` (report br before and after for any route you touched)
+   - `npm run e2e -w @poe2/web -- --trace off` (to debug a failure, re-run that test with `--trace on`)
 
    Docs-only batches skip the gate.
 2. Write `docs/carry/<ID>.md`:
@@ -54,7 +56,7 @@
    ```
    Use item IDs like `U1-3` so the owner can answer them in a later prompt's `Owner notes`. Only record things worth acting
    on, not every thought.
-3. Tick this session's row in `docs/ui/UI-PROGRESS.md` (UI) or `docs/audit/08-PROGRESS.md` (audit).
+3. Update this batch's rows in `docs/remaining/REMAINING-WORK.md`. Move closed rows to `docs/remaining/archive/REGISTER-CLOSED.md`, and add your carry file to `docs/carry/README.md`.
 4. Commit with `git commit -F <file>` and push. Open one PR with these sections: **Summary**, **Previous wave check**,
    **Carry-over handled**, **Gate**, **Screenshots** (list them; keep the images out of git), **Limits**, **Needs owner**.
    Put the Pages preview URL at the top. After creating the PR, remove any session link the tooling appended to the body;
