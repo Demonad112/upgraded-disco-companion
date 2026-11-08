@@ -189,6 +189,10 @@ function resistanceRules(ctx: Context): Recommendation[] {
         action: `Raise ${res.type} resistance by ${res.underCap}% to reach the ${res.max}% cap.`,
         rationale:
           cost.kind === 'free'
+            ? `You have spare ${partialDonor!.type} resistance to move here. It costs nothing.`
+            : `Uncapped ${res.type} resistance means every ${res.type} hit lands harder.`,
+        detail:
+          cost.kind === 'free'
             ? `${capitalised} resistance is ${res.underCap}% short of cap while ${partialDonor!.type} resistance is ${partialDonor!.overCap}% over it. The points are already on the character — they are in the wrong place.`
             : `${capitalised} resistance is ${res.underCap}% short of the ${res.max}% cap, so every ${res.type} hit lands harder than it needs to.`,
         impact,
@@ -282,7 +286,8 @@ function oneShotRule(ctx: Context): Recommendation[] {
       id: `one-shot-${lowest.type}`,
       category: 'survivability',
       action: `Toughen up against ${lowest.type} hits — a ${lowest.value.toLocaleString()} ${lowest.type} hit kills you first.`,
-      rationale:
+      rationale: `${lowest.type[0]!.toUpperCase()}${lowest.type.slice(1)} is your weakest defence, so it's what kills you first.`,
+      detail:
         `${lowest.type[0]!.toUpperCase()}${lowest.type.slice(1)} has the lowest maximum survivable hit of any damage type ` +
         `that can kill this character, ${ratio.toFixed(1)}x below the strongest. The figure opposite is the CEILING — what this vector ` +
         `would reach if it matched the safest one` +
@@ -368,7 +373,8 @@ function armourRule(ctx: Context): Recommendation[] {
       id: 'armour-negligible',
       category: 'survivability',
       action: `Your ${d.armour.toLocaleString()} armour barely helps — lean on ${fallbacks.join(', ')}, or invest in armour properly.`,
-      rationale: `${d.armour.toLocaleString()} armour reduces physical damage by only ${dr}%. Partial investment in armour is the worst of both worlds; the stat scales badly until it is large.`,
+      rationale: `It only blocks ${dr}% of physical damage. Go all-in on armour or lean on other defences.`,
+      detail: `${d.armour.toLocaleString()} armour reduces physical damage by only ${dr}%. Partial investment in armour is the worst of both worlds; the stat scales badly until it is large.`,
       // No impact figure: the honest target armour value cannot be derived from
       // this payload, and rendering the current 2% as a "gain" would read as
       // though the advice makes the build worse.
@@ -434,7 +440,8 @@ function anointRule(ctx: Context): Recommendation[] {
       id: 'anoint-unused',
       category: 'efficiency',
       action: 'Anoint the amulet — the slot is empty.',
-      rationale: `No anoint is allocated at level ${level}. An anoint grants a passive notable without spending a skill point, so an empty one is strictly wasted power.`,
+      rationale: 'An anoint is a free passive notable. Leaving it empty wastes power.',
+      detail: `No anoint is allocated at level ${level}. An anoint grants a passive notable without spending a skill point, so an empty one is strictly wasted power.`,
       impact,
       cost: {
         kind: 'currency',
@@ -472,7 +479,8 @@ function weaponTierRule(ctx: Context): Recommendation[] {
       id: 'weapon-ilvl-lag',
       category: 'damage',
       action: `Upgrade your weapon — ${weapon.name} is item level ${weapon.itemLevel}, ${gap} below your other gear.`,
-      rationale: `Weapon damage multiplies every skill that uses it, so the weapon is the highest-leverage slot on a martial build. At ilvl ${weapon.itemLevel} it cannot roll the top affix tiers the ilvl-${median} armour pieces already carry.`,
+      rationale: 'Your weapon powers every attack. This one is too low-level to roll the best stats.',
+      detail: `Weapon damage multiplies every skill that uses it, so the weapon is the highest-leverage slot on a martial build. At ilvl ${weapon.itemLevel} it cannot roll the top affix tiers the ilvl-${median} armour pieces already carry.`,
       impact: {
         stat: 'weaponItemLevel',
         label: 'Main Hand Item Level',
@@ -555,7 +563,8 @@ function idleWeaponSetRule(ctx: Context): Recommendation[] {
       id: 'weapon-set-idle',
       category: 'question',
       action: `Confirm whether weapon set ${inactiveSet} is still in use — ${idle.length} passive points are committed to it.`,
-      rationale: `Weapon set ${ctx.passives.activeSet} is active, but set ${inactiveSet} holds ${idle.length} allocated passives${inactiveItems.length ? ` and ${inactiveItems.length} equipped item${inactiveItems.length === 1 ? '' : 's'}` : ''}. This may be on purpose, so it's a question, not a finding.`,
+      rationale: `Points spent on weapon set ${inactiveSet} do nothing unless you swap to it.`,
+      detail: `Weapon set ${ctx.passives.activeSet} is active, but set ${inactiveSet} holds ${idle.length} allocated passives${inactiveItems.length ? ` and ${inactiveItems.length} equipped item${inactiveItems.length === 1 ? '' : 's'}` : ''}. This may be on purpose, so it's a question, not a finding.`,
       impact: null,
       cost: { kind: 'free', amount: 0, detail: 'Costs nothing to check.' },
       tradeoff:

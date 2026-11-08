@@ -14,7 +14,7 @@ export default function TradePage() {
         eyebrow="Trade"
         title="Manual price"
         accent="check"
-        description="Pick a base and mods, then open the search on the trade site. This page builds the link; it does not fetch or estimate prices."
+        description="Pick a base and mods, then open the search on the trade site. It doesn&apos;t price items."
       />
       <ManualPriceCheck />
     </div>

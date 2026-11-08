@@ -5,7 +5,7 @@ export const benchmarkGates: BenchmarkGate[] = [
   {
     id: "b-t11-gear-floor",
     label:
-      "Park at T11 (area level 75) to gear and resist-cap before pushing further — it gives ~95% of loot value with far less risk than jumping to T15.",
+      "Stop at T11 to gear up and cap resistances. It gives nearly all the loot of T15 for far less risk.",
     severity: "hard-gate",
     appliesBeforeStepId: "step-t11-park",
     source: strategySource(),
@@ -13,21 +13,21 @@ export const benchmarkGates: BenchmarkGate[] = [
   {
     id: "b-waystone-5mod",
     label:
-      "Sustain 5-mod Waystones (~80% same-tier replacement chance) before investing further into a mechanic sub-tree.",
+      "Keep 5-mod Waystones coming before you invest in a league mechanic.",
     severity: "soft-guideline",
     source: strategySource(),
   },
   {
     id: "b-pinnacle-readiness",
     label:
-      "5,000+ life and 80%+ relevant resistances before Olroth/Simulacrum/Arbiter-tier pinnacles.",
+      "Have 5,000+ life and 80%+ resistances before pinnacle bosses.",
     severity: "hard-gate",
     source: strategySource(),
   },
   {
     id: "b-level85-ascendancy",
     label:
-      "Reach level 85+ and finish your 4th Ascendancy (low-tier 4-trial Barya from T11) before the Arbiter of Divinity pinnacle push.",
+      "Reach level 85 and finish your 4th Ascendancy before the Arbiter of Divinity.",
     severity: "hard-gate",
     source: strategySource(),
   },
@@ -40,7 +40,7 @@ export const benchmarkGates: BenchmarkGate[] = [
   {
     id: "b-waystone-breakpoints",
     label:
-      "Waystone breakpoints gate progression at Tier 6, 11, and 14 — buy a backup stone one tier below your best from Doryani right after crossing each one.",
+      "Quests need T6, T11 and T14 Waystones. Buy a spare from Doryani after each one.",
     severity: "soft-guideline",
     source: atlasSource(),
   },
@@ -52,21 +52,21 @@ export const benchmarkGates: BenchmarkGate[] = [
   },
   {
     id: "b-ascendancy-3-at-70",
-    label: "Do your 3rd Ascendancy at ~level 70 — slightly over-levelled is the safe margin.",
+    label: "Do your 3rd Ascendancy at about level 70, a little over-levelled to be safe.",
     severity: "soft-guideline",
     source: video05Source(["VSeDfybR3Cc@06:03"]),
   },
   {
     id: "b-honour-75",
     label:
-      "Trial of the Sekhemas: bring relics for a full 75% Honour Resistance — Honour, not life, is what fails the run.",
+      "Bring relics for 75% Honour Resistance to the Ascendancy trial. Losing Honour fails it.",
     severity: "hard-gate",
     source: video05Source(["VSeDfybR3Cc@06:03"]),
   },
   {
     id: "b-divinity-t15",
     label:
-      "Be comfortable in T15 before the second (non-quest) Arbiter of Divinity — it's stronger than the quest version.",
+      "Clear T15 comfortably before the second Arbiter of Divinity. It's tougher than the first.",
     severity: "soft-guideline",
     source: videoSource(["5Vp_3gUFbwI@07:39"]),
   },

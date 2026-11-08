@@ -73,6 +73,7 @@ Run `npm ci`, then `npm run build -w @poe2/core`, before `npm run typecheck` or 
 - Answer open questions yourself (including "Needs owner" items) with your best recommendation, act on it, and state
   each answer and its reason in your reply. Leave a question open for the owner only if it is high priority, or if you
   are blocked on it 3 times; then stop and ask.
+- **Copy voice.** Follow `docs/COPY.md`: one or two sentences, action first, long text only behind Pro detail.
 - **Perf bar.** Keep a performance change only if it saves at least 5 % brotli on its file or route (`node scripts/route-weight.mjs`), or removes real runtime work. Replaces the old 10 % rule.
 - **Token economy.** Every request re-reads the whole context, so: send independent tool calls together in one
   message; grep first and read only the part you need (whole reads only for files you will edit), never `cat`

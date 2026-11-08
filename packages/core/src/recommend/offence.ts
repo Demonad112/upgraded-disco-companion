@@ -190,7 +190,8 @@ export function accuracyRule(ctx: OffenceContext): Recommendation[] {
       id: 'dps-accuracy',
       category: 'damage',
       action: `Raise accuracy to reach 100% hit chance — worth about ${gain.toFixed(1)}% more damage on ${skill.name}.`,
-      rationale:
+      rationale: `${missing.toFixed(1)}% of your attacks miss and deal nothing. More accuracy fixes that.`,
+      detail:
         `${skill.name} lands ${hitChance.toFixed(1)}% of its attacks, so ${missing.toFixed(1)}% of them deal nothing at all. ` +
         `Closing that is a ${gain.toFixed(1)}% gain on the skill's damage by arithmetic alone — no scaling, no conditions` +
         (alsoAffected.length ? `, and it applies to all ${alsoAffected.length + 1} of this build's hitting skills.` : '.'),
@@ -287,7 +288,8 @@ export function critInvestmentRule(ctx: OffenceContext): Recommendation[] {
       action: carryingMultiplier
         ? `Invest in crit chance or drop crit damage — at ${skill.critChance!.toFixed(1)}% chance, crits add only ${contribution.toFixed(1)}% to your damage.`
         : `Decide if this build crits — at ${skill.critChance!.toFixed(1)}% chance and ${skill.critMultiplier!.toFixed(2)}x, crits add only ${contribution.toFixed(1)}% to your damage.`,
-      rationale:
+      rationale: 'Crits only pay off when you invest in both chance and damage. Pick one direction.',
+      detail:
         `Critical strikes multiply damage only as often as they happen. ${skill.name} crits ${skill.critChance!.toFixed(1)}% of the time, ` +
         `so the ${skill.critMultiplier!.toFixed(2)}x multiplier applies to one hit in ${Math.round(100 / skill.critChance!)} and returns ` +
         `${contribution.toFixed(1)}% overall` +
@@ -330,7 +332,8 @@ export function dotArchetypeRule(ctx: OffenceContext): Recommendation[] {
       id: 'dps-dot-dominant',
       category: 'damage',
       action: `Scale damage over time — ${Math.round(share * 100)}% of ${skill.name}'s damage comes from it, not from hits.`,
-      rationale:
+      rationale: 'Your damage comes from damage over time, so hit and crit upgrades do little here.',
+      detail:
         `${Math.round(share * 100)}% of ${skill.name}'s ${Math.round(skill.totalDps).toLocaleString()} damage comes from damage over time. ` +
         `Hit damage, critical strikes and attack speed scale the other ${Math.round((1 - share) * 100)}%, so modifiers aimed at them do ` +
         `comparatively little here.`,

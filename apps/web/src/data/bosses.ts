@@ -13,8 +13,8 @@ export const pinnacleBosses: PinnacleBoss[] = [
       { itemName: "Weathered Crisis Fragment (Citadel / Enigma Chamber)", quantity: 1 },
     ],
     gatingRequirements: [
-      "Quest version: kill the Western and Eastern Enigma Chamber bosses (T10+) for the Ancient and Weathered fragments — the quest supplies the third",
-      "Non-quest version: all three Crisis Fragments from Citadels (orange beams) or the Currency Exchange",
+      "Quest: kill both Enigma Chamber bosses (T10+) for two fragments; the quest gives the third",
+      "Repeat fights: get all three fragments from Citadels or the Currency Exchange",
       "Place the fragments in the Burning Monolith",
     ],
     notes:
@@ -33,9 +33,9 @@ export const pinnacleBosses: PinnacleBoss[] = [
     ],
     gatingRequirements: [
       "Arbiter of Ash killed first",
-      "Combine Origin Cradle + Origin Spark at Doryani / the Engine Room into an Origin Core, then carry it to the top of the Origin Tower",
-      "Kill #2 needs a non-quest Core: one Matriarch and one Patriarch Hall outside the Fortress (orange beam), or buy the Core, Cradle or Spark on the exchange",
-      "5,000+ life and 80%+ relevant resistances recommended; be comfortable in T15 before kill #2",
+      "Combine an Origin Cradle and Spark into an Origin Core and take it up the Origin Tower",
+      "For kill #2, run a Matriarch and a Patriarch Hall outside the Fortress, or buy the Core",
+      "Bring 5,000+ life and 80%+ resistances; clear T15 comfortably first",
     ],
     notes:
       "0.5.5: kill it twice — the second, non-quest kill completes the entire Precursor Fortress and unlocks every Atlas point, replacing the old repeat-5-times Cardinal Device loop. 45% Lightning Resistance and Fire Vulnerability (0% Cold), so lightning builds bring exposure and a curse. Rakiata's Flow warning: unequip it on Fire or Tri-Elemental (Trinity) builds, because inverting Fire Vulnerability turns it into positive Fire Resistance. Two phases, unlimited attempts on the quest version. Phase 2 (web digest, unverified): around 40% it resets, spawns Aspect clones, and Divine Power orbs on the outer platforms grant the immunity you need to kill them. 0.5.4 added a Spear of Kitava drop.",
@@ -89,9 +89,9 @@ export const pinnacleBosses: PinnacleBoss[] = [
     mechanic: "ritual",
     fragmentCost: [{ itemName: "An Audience with the King (bought with Tribute)", quantity: 1 }],
     gatingRequirements: [
-      "Spend Tribute on 'An Audience with the King' and use it at the Cracks of Nothingness → King in the Mists",
-      "Return the body to the Ritual hub's effigy — it picks 5 maps; the last Ritual in each drops a body part",
-      "Complete the effigy to summon The Bodach (the true pinnacle; older guides say T14+)",
+      "Buy 'An Audience with the King' with Tribute and kill the King in the Mists",
+      "Bring the body to the effigy, then run the 5 maps it picks for body parts",
+      "Complete the effigy to summon The Bodach",
     ],
     notes:
       "Bodach grants extra Ritual Atlas points; the rest come from nearby point maps. Web digests advise not running Ritual tablets during the 5 body-part maps (unverified).",
@@ -104,8 +104,8 @@ export const pinnacleBosses: PinnacleBoss[] = [
     hpFloor: "~7M HP",
     fragmentCost: [{ itemName: "Simulacrum Splinter", quantity: 300 }],
     gatingRequirements: [
-      "Combine 300 Simulacrum Splinters into a Simulacrum (7 escalating waves — cut from 15 in patch 0.5.2)",
-      "Wave 7 grants 2 Delirium Atlas points plus the Raven's Reflection key needed to fight Tangmazu at the Withered Willow",
+      "Combine 300 Simulacrum Splinters and survive its 7 waves",
+      "Wave 7 gives 2 Atlas points and the key to fight Tangmazu",
     ],
     notes:
       "Omniphobia appears from ~wave 3, Kosis from ~wave 5. Tangmazu drops a unique amethyst ring and the Raven Staff (~25-30 Div). Since 0.5.5, Omniphobia and the Raven Trickster no longer have All Elemental Resistances.",
@@ -118,7 +118,7 @@ export const pinnacleBosses: PinnacleBoss[] = [
     fragmentCost: [],
     gatingRequirements: [
       "Run the Vaal city nodes, build a path to the top of the temple and kill the Architect",
-      "Connect the Atziri Chambers and the Royal Access Chamber at the same time (rooms can bridge to them)",
+      "Connect the Atziri Chambers and the Royal Access Chamber at the same time",
       "6 beacon charges to open the fight (stores up to 60)",
     ],
     notes:

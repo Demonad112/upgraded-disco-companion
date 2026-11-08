@@ -59,21 +59,21 @@ function toolCards(): { href: string; title: string; purpose: string; icon: Reac
     {
       href: "/atlas",
       title: "Atlas Tree Planner",
-      purpose: "Allocation order, trap nodes to skip and memory forks.",
+      purpose: "Which Atlas nodes to take next, and which to skip.",
       icon: ICONS.atlas,
       status: { tool: "atlas", atlasIds },
     },
     {
       href: "/dashboard",
       title: "Farming Dashboard",
-      purpose: `${TIER_LIST_PATCH} tier list, strategy quiz, pinnacle bosses and meta builds.`,
+      purpose: `What to farm in ${TIER_LIST_PATCH}, and what each boss needs.`,
       icon: ICONS.dashboard,
       status: { tool: "dashboard", strategyNames: strategyNames() },
     },
     {
       href: "/character",
       title: "Character Import",
-      purpose: "A poe.ninja profile's defences, skills and gear, read in your browser.",
+      purpose: "Your character's top fixes, from your poe.ninja profile.",
       icon: ICONS.character,
       status: { tool: "character" },
     },
@@ -120,7 +120,7 @@ export default function Home() {
             ))}
           </ul>
           <p className="hero-more max-w-2xl text-base text-ink-dim sm:text-lg">
-            A second-monitor guide for the {CURRENT_PATCH} endgame: what to do next, which Waystones to run, which Atlas nodes to skip and which farm to pick.
+            Your {CURRENT_PATCH} endgame guide: what to do next and why, in a line or two.
           </p>
           {updated ? (
             <p className="hero-more label-metric -mt-2">

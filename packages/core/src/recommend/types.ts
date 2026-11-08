@@ -72,8 +72,10 @@ export interface Recommendation {
   category: RecommendationCategory
   /** The concrete action, imperative and specific. */
   action: string
-  /** Why it matters, in one sentence, stating measured facts only. */
+  /** Why it matters: the caddy line, one short sentence a new player can act on. */
   rationale: string
+  /** The full reasoning with the measured numbers. Shown under Pro detail and passed to MCP clients. */
+  detail?: string
   /** The measured gain. Null only for `question` entries. */
   impact: Impact | null
   cost: Cost

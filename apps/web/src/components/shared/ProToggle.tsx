@@ -24,6 +24,12 @@ export function ProToggle({ className = "" }: { className?: string }) {
   );
 }
 
+/** The short caddy line by default, the full text under Pro detail. Takes strings, so server components can use it. */
+export function ProSwap({ short, long }: { short: string; long?: string }) {
+  const { proDetail } = usePrefs();
+  return <>{proDetail && long ? long : short}</>;
+}
+
 /** Renders its children only while Pro detail is on. */
 export function ProOnly({ children }: { children: ReactNode }) {
   const { proDetail } = usePrefs();

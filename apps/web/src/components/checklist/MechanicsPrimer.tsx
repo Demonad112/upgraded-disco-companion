@@ -1,6 +1,7 @@
 import { primerFacts, tierBreakpoints } from "@/data/mechanicsPrimer";
 import { Accordion } from "@/components/shared/Accordion";
 import { SourceFlag } from "@/components/shared/SourceFlag";
+import { ProOnly, ProSwap } from "@/components/shared/ProToggle";
 import { MapIcon, type IconName } from "@/components/icons";
 
 /** Icon per primer fact (IMG-2 set); a fact without one renders without an icon. */
@@ -32,9 +33,13 @@ export function MechanicsPrimer() {
                   </span>
                 ) : null}
                 {fact.topic}
-                <SourceFlag source={fact.source} />
+                <ProOnly>
+                  <SourceFlag source={fact.source} />
+                </ProOnly>
               </dt>
-              <dd className="mt-0.5 text-sm text-ink-mute">{fact.detail}</dd>
+              <dd className="mt-0.5 text-sm text-ink-mute">
+                <ProSwap short={fact.short} long={fact.detail} />
+              </dd>
             </div>
           ))}
         </dl>

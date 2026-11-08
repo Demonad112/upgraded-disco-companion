@@ -42,6 +42,8 @@ test('the character showcase card fits a 360 px window after import', async ({ p
 
 test('what-if sliders and re-craft toggles recompute the largest hit', async ({ page }) => {
   await page.goto(importUrl)
+  // What-if lives in the Advanced fold (CD2).
+  await page.locator('#advanced-fold > summary').click({ timeout: 30_000 })
   await expect(page.locator('#what-if')).toBeVisible({ timeout: 30_000 })
   const lowest = page.locator('#what-if').getByText('Largest hit').locator('..')
   const before = await lowest.textContent()
@@ -59,6 +61,8 @@ test('what-if sliders and re-craft toggles recompute the largest hit', async ({ 
 test('the section index highlights the section being read', async ({ page }) => {
   await page.setViewportSize({ width: 1280, height: 800 })
   await page.goto(importUrl)
+  // What-if lives in the Advanced fold (CD2).
+  await page.locator('#advanced-fold > summary').click({ timeout: 30_000 })
   await expect(page.locator('#what-if')).toBeVisible({ timeout: 30_000 })
   const nav = page.getByRole('navigation', { name: 'On this page' })
   await nav.getByRole('link', { name: 'Findings' }).click()

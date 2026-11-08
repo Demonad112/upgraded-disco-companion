@@ -22,6 +22,8 @@ test('the share card previews and downloads a PNG of the verdict', async ({ page
 
 test('what-if marks where a hit bar started', async ({ page }) => {
   await page.goto(importUrl)
+  // What-if lives in the Advanced fold (CD2).
+  await page.locator('#advanced-fold > summary').click({ timeout: 30_000 })
   const panel = page.locator('#what-if')
   await expect(panel).toBeVisible({ timeout: 30_000 })
   await expect(panel.locator('.whatif-ghost')).toHaveCount(0)

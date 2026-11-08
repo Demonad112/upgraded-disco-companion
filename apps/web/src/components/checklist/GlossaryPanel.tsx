@@ -1,5 +1,6 @@
 import { glossary } from "@/data/glossary";
 import { Accordion } from "@/components/shared/Accordion";
+import { ProSwap } from "@/components/shared/ProToggle";
 
 export function GlossaryPanel() {
   return (
@@ -18,7 +19,7 @@ export function GlossaryPanel() {
           <div key={g.id} id={g.id} className="scroll-mt-28">
             <dt className="text-sm font-medium text-ink">{g.term}</dt>
             <dd className="mt-0.5 text-sm text-ink-mute">
-              {g.definition}
+              <ProSwap short={g.short} long={g.definition} />
               {g.seeStepId && (
                 <>
                   {" "}

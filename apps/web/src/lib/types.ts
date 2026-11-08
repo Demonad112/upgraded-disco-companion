@@ -199,6 +199,9 @@ export interface Biome {
 export interface PrimerFact {
   id: string;
   topic: string;
+  /** The caddy line shown by default (at most 100 chars). */
+  short: string;
+  /** The full rule with numbers, shown under Pro detail. */
   detail: string;
   source: SourceRef;
 }
@@ -214,6 +217,9 @@ export interface TierBreakpoint {
 export interface GlossaryTerm {
   id: string;
   term: string;
+  /** The caddy line: tooltips, search and the default glossary view (at most 90 chars). */
+  short: string;
+  /** The full definition, shown under Pro detail. */
   definition: string;
   /** Where in the app it matters, e.g. a checklist step id. */
   seeStepId?: string;

@@ -144,7 +144,7 @@ export const searchIndex: SearchEntry[] = [
   ...glossary.map((g): SearchEntry => ({
     id: g.id,
     title: g.term,
-    subtitle: g.definition,
+    subtitle: g.short,
     category: "Glossary",
     href: "/checklist",
   })),

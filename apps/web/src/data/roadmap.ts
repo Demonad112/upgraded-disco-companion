@@ -72,13 +72,13 @@ export const roadmapSteps: RoadmapStep[] = [
     description:
       "Waystone starvation is the #1 early-endgame stall. Only Powerful Map Boss nodes (red demon icon) and the reforge bench move you up a tier, so route every map around them.",
     actionItems: [
-      "Reforge 3 same-tier Waystones into 1 of the next tier at the reforging bench (Act 3 quest) — go straight to T3+ at the start",
-      "Buy Waystones from Doryani after every level-up: he sells one tier below your highest completed, and his stock refreshes each time you level",
+      "Use the reforging bench (Act 3) to turn 3 Waystones into 1 of the next tier. Start at T3+",
+      "Buy Waystones from Doryani each time you level up; he sells one tier below your best",
       "Combine Doryani stones with the 3→1 bench to leapfrog tiers (e.g. buy T2/T3s, forge to T4/T5)",
-      "Path through as many Powerful Map Boss nodes as possible, and put your single best Waystone into them",
-      "Run Magic Waystones on normal nodes and Rare (Alchemy) on Powerful Map Boss nodes — alch red maps only when you're short on sustain",
-      "After Eons of Domination: Transmute an Overseer Tablet and slot it on nodes without a powerful boss to make them powerful",
-      "Buy backups at the quest gates: a few T6 after clearing T7, a few T11 after clearing T12 (gates need T6, T11 and T14)",
+      "Path through Powerful Map Boss nodes and put your best Waystone in them",
+      "Run Magic Waystones on normal nodes and Rare ones on Powerful Map Boss nodes",
+      "After Eons of Domination, slot a Transmuted Overseer Tablet to make a normal node powerful",
+      "After clearing T7 and T12, buy a few spare T6 and T11 Waystones; quest gates need them",
     ],
     tips: [
       "Example: holding 2× T9 and 1× T10, run the T9s to reach a Powerful node, then spend the T10 there for a guaranteed-ish T11.",
@@ -106,7 +106,7 @@ export const roadmapSteps: RoadmapStep[] = [
     description:
       "The nearest Precursor Tower (about 3 maps away) reveals the Fortress. Path straight to the Ancient Gateway — maps inside the Fortress area start giving Atlas points — then to the Burning Monolith, through as many Powerful Map Boss nodes as you can. Grab the guaranteed trial-key (Djinn Barya) nodes just off the middle path.",
     actionItems: [
-      "3rd Ascendancy at ~level 70 (slightly over-levelled) with a full 75% Honour Resistance relic set for the Trial of Sekhemas",
+      "Do your 3rd Ascendancy at about level 70 with a full 75% Honour Resistance relic set",
     ],
     tips: [
       "Since 0.5.5 the Trial of Sekhemas has inherent monster and reward bonuses from area level 65, because Atlas passives don't apply inside it.",
@@ -169,7 +169,7 @@ export const roadmapSteps: RoadmapStep[] = [
       "Archaeological Interest",
       "Expanding Hordes",
       "Atop the World",
-      "Optional variant (Spud): search \"waystone\" in the Atlas tree and take every Waystone-drop node first — some need area level 70+",
+      "Optional: search \"waystone\" in the Atlas tree and take every Waystone-drop node first",
     ],
     tips: [
       "Undergeared? Scorpius's safer opener: shrine cluster → magic-monster circle → Eons of Contamination (irradiated tablets, area 70+) → Valuable Paths → Chosen Path (Rogue Exiles) → Journey Ahead → Archaeological Interest.",
@@ -386,7 +386,7 @@ export const roadmapSteps: RoadmapStep[] = [
       "With every point unlocked, fill the tree toward your farm. Check the trap-node list first: points can't be refunded.",
     actionItems: [
       "Search \"rare\" and \"tablet\" in the Atlas tree and take them all",
-      "Skip the group 1 soft bricks (Reactive Hiveseeding, Survival of the Fittest, The Lost Architect, Escalating Rivalry) plus Man Trap and Mysterious Transference — paste the search strings from the Atlas page to find them",
+      "Skip the trap nodes; the Atlas page's Traps tab and search strings find them for you",
       "Doryani branch: Stitch the Flesh → Hidden Patterns → Remnants of the Greatness → Map Irradiation or Volatile Connection",
       "Leave the city/middle-region nodes for last if you farm outside cities",
       "Pick your biomes (Atlas page) to match your farm",

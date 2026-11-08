@@ -56,7 +56,7 @@ describe('reproduces the known findings', () => {
     expect(r!.impact).toBeNull()
     // The advice must still be grounded in the actual armour value.
     expect(r!.evidence.some((e) => e.kind === 'stat' && e.stat === 'armour' && e.value === 207)).toBe(true)
-    expect(r!.rationale).toContain('207')
+    expect(r!.detail).toContain('207')
   })
 
   it('flags the unused anoint at level 86', () => {
@@ -176,5 +176,14 @@ describe('honesty', () => {
     const clean = recommend(healthy)
     expect(clean.buildIsSound).toBe(true)
     expect(clean.summary).toMatch(/good shape/)
+  })
+})
+
+describe('caddy copy', () => {
+  it('keeps every rationale to one short line and the measured detail separate', () => {
+    for (const r of report.recommendations) {
+      expect(r.rationale.length, r.id).toBeLessThanOrEqual(110)
+      if (r.detail) expect(r.detail.length, r.id).toBeGreaterThan(r.rationale.length)
+    }
   })
 })
