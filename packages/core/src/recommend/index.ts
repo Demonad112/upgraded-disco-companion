@@ -143,7 +143,7 @@ function resistanceRules(ctx: Context): Recommendation[] {
         cost = {
           kind: 'free',
           amount: 0,
-          detail: `Reallocate ${covered}% from overcapped ${partialDonor.type} resistance. No new gear required.`,
+          detail: `Move ${covered}% from overcapped ${partialDonor.type} resistance with a gear or affix swap; no extra total resistance is needed.`,
         }
         tradeoff = `${partialDonor.overCap - covered}% of ${partialDonor.type} overcap remains as a buffer against resistance-reducing map modifiers.`
       } else {
@@ -189,7 +189,7 @@ function resistanceRules(ctx: Context): Recommendation[] {
         action: `Raise ${res.type} resistance by ${res.underCap}% to reach the ${res.max}% cap.`,
         rationale:
           cost.kind === 'free'
-            ? `You have spare ${partialDonor!.type} resistance to move here. It costs nothing.`
+            ? `You have spare ${partialDonor!.type} resistance to move here. It needs a gear swap, not extra resistance.`
             : `Uncapped ${res.type} resistance means every ${res.type} hit lands harder.`,
         detail:
           cost.kind === 'free'
