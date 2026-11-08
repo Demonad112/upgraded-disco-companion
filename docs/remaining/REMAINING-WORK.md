@@ -39,7 +39,6 @@ These rows run in the §6 owner-pass order.
 ## 3. Code and CI follow-ups (class C)
 | ID | Item | Size | Origin | Notes | Status |
 |---|---|---|---|---|---|
-| R61 | Core test gaps: `ninja/ladder.ts` lines 119–142 at 61 %; branches at 65–68 % in `damage.ts`, `export.ts`, `replace.ts`, `catalog.ts` | M | coverage 2026-11-08 | Touches `packages/core/test` only; owner OK given 2026-11-08 (PL1-1) | open; batch N3 |
 
 ## 4. Standing rules (no work)
 - Route budgets: `/` ≤ 192,000 B br; other routes ≤ 250,000 (`node scripts/route-weight.mjs`). Any change to home JS reports before and after.
