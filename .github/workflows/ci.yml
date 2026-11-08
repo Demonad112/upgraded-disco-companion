@@ -60,13 +60,14 @@ jobs:
       - name: Lint
         if: steps.scope.outputs.code == 'true'
         run: npm run lint
-      - name: Test core and web
+      - name: Test core (with coverage floor), mcp and web
         if: steps.scope.outputs.code == 'true'
-        run: npm test
-      - name: Core coverage floor
-        if: steps.scope.outputs.code == 'true'
-        # 90% statements / 75% branches, set in packages/core/vitest.config.ts.
-        run: npm run test:coverage --workspace @poe2/core
+        # Core runs once, under coverage: the 90% statements / 75% branches floors in packages/core/vitest.config.ts
+        # fail the step. Same suites as `npm test`, without running core twice.
+        run: |
+          npm run test:coverage --workspace @poe2/core
+          npm run test --workspace @poe2/mcp
+          npm run test --workspace @poe2/web
       - name: Test ninja-proxy
         if: steps.scope.outputs.code == 'true'
         # Not an npm workspace (it deploys separately), so the root test run
@@ -90,8 +91,9 @@ jobs:
       - name: Smoke-test the built site
         if: steps.scope.outputs.code == 'true'
         # Serves apps/web/out under the same base path this CI build used and drives
-        # it offline with the captured fixture character.
-        run: npm run e2e --workspace @poe2/web
+        # it offline with the captured fixture character. No traces on CI; to debug a failure, re-run that test
+        # locally with `--trace on`.
+        run: npm run e2e --workspace @poe2/web -- --trace off
       - name: Upload the smoke-test report
         if: failure() && steps.scope.outputs.code == 'true'
         uses: actions/upload-artifact@v6

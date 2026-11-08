@@ -53,7 +53,8 @@ export default defineConfig({
   reporter: isCI ? [['list'], ['html', { open: 'never' }]] : 'list',
   use: {
     baseURL: deployed ?? `http://localhost:${port}${basePath}/`,
-    trace: 'retain-on-failure',
+    // CI skips traces (about a fifth of the run); re-run a failing test locally to get one.
+    trace: isCI ? 'off' : 'retain-on-failure',
     ...(executablePath ? { launchOptions: { executablePath } } : {}),
   },
   projects: [

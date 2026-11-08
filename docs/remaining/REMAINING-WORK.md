@@ -40,7 +40,6 @@ These rows run in the §6 owner-pass order.
 | ID | Item | Size | Origin | Notes | Status |
 |---|---|---|---|---|---|
 | R61 | Core test gaps: `ninja/ladder.ts` lines 119–142 at 61 %; branches at 65–68 % in `damage.ts`, `export.ts`, `replace.ts`, `catalog.ts` | M | coverage 2026-11-08 | Touches `packages/core/test` only; owner OK given 2026-11-08 (PL1-1) | open; batch N3 |
-| R62 | CI e2e records traces (`retain-on-failure`). Locally, `--trace off` runs in 240 s vs 304 s (−21 %). The coverage step re-runs the core suite that `npm test` already ran | S | CI run 42445987468 | Trace off in CI; on failure, re-run locally with `--trace on` | open; batch N2 |
 
 ## 4. Standing rules (no work)
 - Route budgets: `/` ≤ 192,000 B br; other routes ≤ 250,000 (`node scripts/route-weight.mjs`). Any change to home JS reports before and after.
