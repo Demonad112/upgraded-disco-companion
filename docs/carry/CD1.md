@@ -26,7 +26,7 @@ Perf and code cleanup ahead of the caddy copy pass (CD2). No visible change exce
 - Dead CSS `.tap-pill`, `.dbody-pad`; `StrategyTierBadge` and `dmgFill` no longer exported.
 - A11y: the global canvas made axe skip contrast checks on every route (text over a canvas comes back "incomplete"). Without it, two real failures surfaced and are fixed: Breach chip text 3.3:1 → 4.9:1 (`MECHANIC_COLORS`, 90 % → 70 %), and the "Why this grade" inline link is underlined (`Showcase.tsx`).
 
-## Skipped (under the 10 % bar)
+## Skipped (under the 5 % bar)
 - Server-rendered tab panels for `DashboardTabs` / `AtlasGuideTabs`: strategies and atlasTree are also imported by the client farm planner and Atlas map, so only ~3 KB br would move.
 - Fetching `farm/tablets-0.5.5.json` instead of bundling: 8.6 KB br, 3.9 % of `/dashboard`.
 - Removing redundant `'use client'` from ten leaf components: no byte change, and it reorders CSS chunks.
