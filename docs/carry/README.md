@@ -5,17 +5,18 @@ Live rows are tracked in `docs/remaining/REMAINING-WORK.md`.
 
 ## Active
 Each has at least one open row. Owner-side rows are tracked in `../remaining/REMAINING-WORK.md`.
-- [CD1](CD1.md): active, PR #115 (open: checklist card-links canvas height, not yet in the register)
-- [CH7](CH7.md): active, PR #100 (R42 live trade check)
-- [L1](L1.md): active, PR #84 (R45 Android share, R49 Lighthouse confirm)
-- [M2](M2.md): active, PRs #88, #90, #91 (R31, R33, R34 parked)
-- [QP1](QP1.md): active, PRs #76, #77 (R10 danger calibration, R47 device sizing, unverified patch-0.5.5e facts)
-- [S1](S1.md): active, PR #103 (`sourceMeta.ts` unused exports kept)
-- [S2](S2.md): active, PR #104 (R44, R47 device pass)
-- [TT1](TT1.md): active, PRs #78, #79 (R43 live trade checks)
-- [U14](U14.md): active, PR #67 (R44; two local variant branches to delete)
+- [PL1](PL1.md): active, this branch (plan 2026-11-08; open rows are register batches N1–N3)
 
 ## Archive (`archive/`)
+- [CD1](archive/CD1.md): archived, PR #115 (rows → R56)
+- [CH7](archive/CH7.md): archived, PR #100 (rows → R31, R32, R35, R42)
+- [L1](archive/L1.md): archived, PR #84 (rows → R41, R45, R49)
+- [M2](archive/M2.md): archived, PRs #88, #90, #91 (rows → R21, R31, R33, R34)
+- [QP1](archive/QP1.md): archived, PRs #76, #77 (rows → R10, R47, R57)
+- [S1](archive/S1.md): archived, PR #103 (rows → R58)
+- [S2](archive/S2.md): archived, PR #104 (rows → R44, R47)
+- [TT1](archive/TT1.md): archived, PRs #78, #79 (rows → R43)
+- [U14](archive/U14.md): archived, PR #67 (rows → R44, R54; branches already deleted)
 - [CD2](archive/CD2.md): archived, PR #116
 - [L1-bloat](archive/L1-bloat.md): archived, PR #112
 - [L2](archive/L2.md): archived, PRs #113, #114
