@@ -14,7 +14,7 @@ export const farmingStrategies: FarmingStrategy[] = [
     name: "Omen Abyss — Omen of Light (Amanamu)",
     tier: "S",
     mechanics: ["abyss"],
-    summary: "Cheap day-one currency: run Abyss maps with 2 Abyss Tablets and 1 Overseer Tablet. Always clear Abyssal Depths, and never take Survival of the Fittest.",
+    summary: "Cheap day-one currency. Run 2 Abyss Tablets and 1 Overseer Tablet, and always clear Abyssal Depths.",
     atlasSetup:
       "Day 1 to 2 currency start (Fubgun; tablet and node detail from the endgame update spec, unverified): 2 Abyss Tablets (of Champions, buffed in 0.5.5 for 2 to 3 more rares) plus 1 Overseer Tablet, with high Item Rarity; Balance of Power: Ulaman for currency chests, Ghastly Relics (now covers all Large Abyssal Chests from Pits) and every Rogue Exile node, then swap to Amanamu once Omen of Light prices climb. Abyss sub-tree (Shadow of Undeath, Lightless Legions), Rogue Exile nodes for Abyss jewels, Monster Effectiveness focus. Fubgun prefers a Hilda Master setup (cheaper tablets). Always full-clear Abyssal Depths — buffed mid-0.5, they drop lots of echoes and often a Light. Do NOT take Survival of the Fittest (merges rares; one Omen per rare). Avoid the Desert biome.",
     investment: "low",
@@ -31,7 +31,7 @@ export const farmingStrategies: FarmingStrategy[] = [
     name: "Expedition",
     tier: "S",
     mechanics: ["expedition"],
-    summary: "The best farm in 0.5.5, but hard and it takes practice. Run Expedition Tablets on city maps with Jado as your Master.",
+    summary: "The best farm right now, but it takes practice. Run Expedition Tablets on city maps with Jado.",
     atlasSetup:
       "Fubgun's #1 farm in 0.5.5 — \"by far the best farm\", even without Aldur's Saga, but hard: your build must handle high-juice Expeditions, and it takes practice to learn. City maps + Expedition tablets; 200% Delirium on top is the digest-reported ceiling. 0.5.4 Expedition Atlas tree ('Feeling Lucky?' for Liquid Verisium), Grand Expeditions, Jado pairing. Since 0.5.5 Expedition is core in every league: Expedition Tablets (1-4 per map, each adding Expeditions, Verisium Remnants or density) drop in Standard and Forbidden Rites but not in Runes of Aldur. Aldur's Saga stays Runes of Aldur-only, though its modifiers can roll on Grand Expeditions elsewhere. Endgame update spec (unverified): run T14 to T15 8-mod Waystones with 3 Irradiated Tablets rolling 2 additional random map modifiers plus Monster Effectiveness or Increased Rare Monsters, Jado as Master (Unexpected Missions, Eastern Knowledge, Partial Translations, Keen Appraisal). Tablet stacking: 1 tablet = 1 Expedition, 2 = +1 Verisium Remnant and +35% density, 3 = +1 Expedition, 4 on city maps = +1 Remnant and +35% density. Runic Remnant tiers, never stack duplicate runes: SS Opulent (mandatory rush target); S Power, Death, Bond; A Time, Oath (reworked in 0.5.5: Ward and higher Rarity instead of damage immunity), Rebirth.",
     investment: "low",
@@ -50,7 +50,7 @@ export const farmingStrategies: FarmingStrategy[] = [
     name: "Breach Hiveblood (Genesis Tree)",
     tier: "S",
     mechanics: ["breach"],
-    summary: "Run 3-4 Breach tablets with Doryani or Jado and points in the Breach sub-tree. It needs strong clear speed, and works anywhere but better in cities.",
+    summary: "Run 3–4 Breach tablets with the Breach sub-tree. Needs fast clear speed.",
     atlasSetup:
       "Pack-size Atlas focus. Breach sub-tree (Lavish Wombgifts, catalysts/rings; Genesis Tree picks: Breeding Program: Banded Fruit, Imbue the Body, For the Price of One, Riches Beget Riches, Refuse Emptiness, Sole Purpose: Destruction — spec, unverified), 3-4 Breach tablets (Hive Blood), Doryani or Jado. Works on non-city maps (no city hunting), better in cities. Needs strong clear speed; crafting knowledge raises the ceiling.",
     investment: "medium",
@@ -67,6 +67,7 @@ export const farmingStrategies: FarmingStrategy[] = [
   {
     id: "breach-delirium-200",
     name: "Breach + 200% Delirium",
+    summary: "Breach density on top of heavy Delirium fog. A late, high-juice farm.",
     mechanics: ["breach", "delirium"],
     atlasSetup:
       "Stack Breach density with Grand Mirror 200% Delirium, Jado double-tablet.",
@@ -86,7 +87,7 @@ export const farmingStrategies: FarmingStrategy[] = [
     name: "Ritual (City)",
     tier: "A",
     mechanics: ["ritual"],
-    summary: "Run Ritual with pack-size and rarity Atlas points, deferring Tribute to fish for Omens. Ritual spawns in every map, so value swings with Omen prices.",
+    summary: "Ritual in every map, saving Tribute to fish for Omens. Profit follows Omen prices.",
     atlasSetup:
       "Pack-size (more favour) + rarity Atlas focus, Summoning Circle nodes, Ritual sub-tree, Tribute deferral to fish Omens/chase uniques (Royal Lenience, new in 0.5.5, lets you defer favours using Tribute already offered at 500% cost; Reborn in Shadow and From the Mists are the other picks — spec, unverified). Stacking 2+ Ritual Tablets adds an Altar and more Azmeri Wisps in Sacred Bloom Viridian Wildwood maps. Ritual is the league mechanic and spawns in every map, so Omens are cheap — value swings with Omen prices.",
     investment: "low",
@@ -101,6 +102,7 @@ export const farmingStrategies: FarmingStrategy[] = [
   {
     id: "abyss-delirium-ritual-hybrid",
     name: "Abyss + Delirium + Ritual (0.5.4)",
+    summary: "Stack three mechanics on a full Atlas tree. Expensive; for finished builds.",
     mechanics: ["abyss", "delirium", "ritual"],
     atlasSetup: "Full Atlas tree, 200% Delirium, +2 rare Abyss tablets.",
     investment: "high",
@@ -117,6 +119,7 @@ export const farmingStrategies: FarmingStrategy[] = [
   {
     id: "vaal-temple-atziri",
     name: "Vaal Temple → Atziri",
+    summary: "No setup needed. Pop the temple every few maps.",
     mechanics: [],
     atlasSetup: "Zero tablet/tower setup; pop the temple every few maps.",
     investment: "low",
@@ -131,6 +134,7 @@ export const farmingStrategies: FarmingStrategy[] = [
   {
     id: "boss-rush-tablet-rush",
     name: "Boss Rush / Tablet Rush",
+    summary: "Rush map bosses for fragments and tablets. Works with any build.",
     mechanics: [],
     atlasSetup: "Fragments/tablets, any build.",
     investment: "low",
@@ -144,6 +148,7 @@ export const farmingStrategies: FarmingStrategy[] = [
   {
     id: "azmerian-wisps",
     name: "Azmerian Wisps",
+    summary: "Built around the On the Wind keystone. Cheap to start.",
     mechanics: [],
     atlasSetup: "On the Wind keystone.",
     investment: "low",
@@ -161,7 +166,7 @@ export const farmingStrategies: FarmingStrategy[] = [
     id: "forbidden-rites-ritual",
     name: "Forbidden Rites campaign Ritual + Sacred Blooms",
     mechanics: ["ritual"],
-    summary: "Forbidden Rites league only: Rituals in the campaign, then Sacred Blooms in maps. Blooms add the Viridian Wildwood to nearby maps, where Wisp trails make monsters stronger and more rewarding.",
+    summary: "League only: Rituals while levelling, then Sacred Blooms in maps for tougher, richer monsters.",
     atlasSetup:
       "Forbidden Rites league only. Every campaign area has a levelling-focused Ritual; twice per Act (once per Interlude) a cluster of boss Ritual Effigies chains each defeated boss into the next area's waves, ending in a Tribute spend on Uniques. In maps, Sacred Blooms from Ritual rewards add the Viridian Wildwood to a map cluster — collect Wisp trails, and monsters in that map area become stronger and more rewarding.",
     investment: "low",
@@ -179,7 +184,7 @@ export const farmingStrategies: FarmingStrategy[] = [
     id: "trial-of-chaos-soul-cores",
     name: "Trial of Chaos (Soul Cores)",
     mechanics: [],
-    summary: "Run Inscribed Ultimatums for Currency and Soul Cores, with a reward chest after every room. You can leave and resume a run, and Atlas passives don't apply inside.",
+    summary: "Run Inscribed Ultimatums for Currency and Soul Cores. You can leave and resume a run.",
     atlasSetup:
       "Since 0.5.5: a run can be left and resumed from the same room, each room ends in a reward chest, and completion rewards are only Currency and Soul Cores (no Corrupted items). A 10-trial Inscribed Ultimatum can be continued twice without a new Ultimatum, each successful continuation awarding a different Trialmaster Fragment, with an optional double-or-nothing Currency wager. Area-level bonuses stand in for Atlas passives, which don't apply inside.",
     investment: "low",
@@ -198,7 +203,7 @@ export const farmingStrategies: FarmingStrategy[] = [
     name: "Delirium / Lineage rush",
     tier: "S",
     mechanics: ["delirium"],
-    summary: "Run 3 Delirium tablets while hunting cities, anomaly maps and Halls, with Jado and the Lineage Support nodes. Grand Mirrors spread fog for free Simulacra.",
+    summary: "Run 3 Delirium tablets with Jado while hunting cities and anomaly maps.",
     atlasSetup:
       "3× Delirium tablets while hunting cities, anomaly maps and Matriarch/Patriarch Halls. High Waystone-drop, max-mod (zero-portal) maps on the bosses for 2–3 fragments back. Grand Mirrors spread fog → free Simulacra. Pairs with Jado and the Lineage Support nodes.",
     investment: "medium",
@@ -215,7 +220,7 @@ export const farmingStrategies: FarmingStrategy[] = [
     name: "Breach rares",
     tier: "A",
     mechanics: ["breach"],
-    summary: "Run Breach tablets with extra-rare mods and Monster Effectiveness and rarity Atlas points. Nerfed in 0.5.5: fewer extra rares, and Unstable Breaches spawn them in waves of 5.",
+    summary: "Breach tablets with extra-rare mods for rare-monster loot. Weaker since the last patch.",
     atlasSetup:
       "Monster-effectiveness + rarity Atlas focus, Breach tablets with extra-rare mods. Nerfed in 0.5.5: the tablet's extra rares went from 3 to 2, and Unstable Breaches spawn their rares in waves of 5.",
     investment: "medium",
@@ -233,7 +238,7 @@ export const farmingStrategies: FarmingStrategy[] = [
     name: "Currency Abyss / Hardwell (Ulaman)",
     tier: "B",
     mechanics: ["abyss"],
-    summary: "Rarity Atlas points with Ulaman for currency. One-mod tablets are fine, so it suits day one of a league.",
+    summary: "Rarity Atlas points and Ulaman for currency. Cheap enough for day one.",
     atlasSetup:
       "Rarity Atlas focus (Ulaman currency). One-mod tablets are fine — no real tablet investment. Fubgun runs it on day one every league.",
     investment: "low",

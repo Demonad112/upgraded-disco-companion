@@ -23,7 +23,7 @@ export default function AtlasPage() {
           eyebrow="Atlas passive tree"
           title="Atlas Tree"
           accent="Planner"
-          description="The order to take Atlas nodes in, and where each one is. Tick nodes as you allocate them; tap Map on any node to find it on the tree."
+          description="Which Atlas nodes to take, in order. Tap Map to find one on the tree."
         />
 
         <AtlasSequenceTracker />

@@ -195,7 +195,8 @@ function openAffixRule(analysed: ItemAnalysis[]): Recommendation[] {
       action:
         `Fill the ${slots} empty affix slot${slots === 1 ? '' : 's'} on your gear — start with ${worst.analysis.name}, ` +
         `which has ${describeSlots(worst.prefixes, worst.suffixes)} unused.`,
-      rationale:
+      rationale: 'Empty affix slots give nothing. Filling them is a safe upgrade whatever your build.',
+      detail:
         `${counted} active item${counted === 1 ? '' : 's'} carry ${used} of a possible ${capacity} affixes, with ` +
         `${open.length} of them holding room. ` +
         `An empty slot grants nothing regardless of what this build is scaling, so unlike a low-tier modifier it is worth ` +
@@ -363,7 +364,8 @@ export function gearRecommendations({ items, defense, tiers }: GearRecommendatio
       action:
         `Swap a suffix on ${best.itemName} for "${candidate.affix ?? candidate.id}" — it replaces ${best.replace.text} ` +
         `(tier ${candidate.tier}, ${candidate.min}-${candidate.max}% ${shortfall.type} resistance).`,
-      rationale:
+      rationale: `A cheap way to close your ${shortfall.type} resistance gap.`,
+      detail:
         `${best.replace.reason} ` +
         (needed !== null
           ? `${needed} swap${needed === 1 ? '' : 's'} of this kind ${needed === 1 ? 'covers' : 'cover'} the ${shortfall.shortfall}% ${shortfall.type} shortfall; ${usable.length} are available.`

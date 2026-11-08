@@ -25,7 +25,7 @@ export const atlasTrapNodes: AtlasTrapNode[] = [
     node: "Survival of the Fittest",
     affects: "Desert rares / Abyss",
     problem:
-      "Desert rare packs that would get extra rares become one double-effectiveness rare instead. Abyss drops at most one Omen per rare, so fewer rares means fewer Omens, and Grand Expeditions lose rare loot too.",
+      "Merges rare packs into one tougher rare. Fewer rares means fewer Omens and less Expedition loot.",
     avoidIf: "Always on the Atlas rush; it also cuts Omen of Light and Grand Expedition rare loot",
     severity: "avoid",
     group: 1,
@@ -135,7 +135,7 @@ export const atlasTrapNodes: AtlasTrapNode[] = [
     node: "Mysterious Transference",
     affects: "Swamp Essences",
     problem:
-      "25% chance for a slain Essence monster's mods to transfer to a Unique boss. The transfer can carry corrupted Zarokh Temporal Orb and Hourglass mechanics onto Ritual bosses.",
+      "Essence monster mods can jump onto bosses, including nasty Ritual boss mechanics.",
     avoidIf: "Always on the Atlas rush; a map-brick risk",
     severity: "avoid",
     group: 2,
@@ -147,7 +147,7 @@ export const atlasTrapNodes: AtlasTrapNode[] = [
     node: "I know your childhood fears...",
     affects: "Delirium",
     problem:
-      "+25% Liquid Emotions with 20% converted to Ancient Liquid Emotions (fixed from a 50% bug in 0.5.5). It still dilutes the standard emotion pool for Simulacrum farmers.",
+      "More Liquid Emotions, but it dilutes the ones Simulacrum farmers want.",
     avoidIf: "You farm the Simulacrum",
     severity: "situational",
     group: 2,

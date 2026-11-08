@@ -157,7 +157,7 @@ function Term({ term, children }: { term: GlossaryTerm; children: ReactNode }) {
       </button>
       <span ref={tip} id={id} role="tooltip" popover="manual" className="gloss-tip">
         <span className="gloss-tip-term">{term.term}</span>
-        {term.definition}
+        {term.short}
       </span>
     </>
   )

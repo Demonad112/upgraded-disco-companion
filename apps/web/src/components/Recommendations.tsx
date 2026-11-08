@@ -6,6 +6,7 @@ import { axisOf, focusView, type Cost, type Evidence, type Recommendation, type 
 import { Tag, fmt } from './ui'
 import { Segmented } from './shared/controls'
 import { Glossed } from '@/components/shared/Gloss'
+import { usePrefs } from '@/hooks/usePrefs'
 
 const CATEGORY_TONE = {
   survivability: 'danger',
@@ -68,7 +69,10 @@ function ImpactBar({ r }: { r: Recommendation }) {
 }
 
 function Card({ r, rank }: { r: Recommendation; rank: number }) {
-  const [open, setOpen] = useState(false)
+  const { proDetail } = usePrefs()
+  // null follows the Pro detail switch until the player opens or closes this card themselves.
+  const [open, setOpen] = useState<boolean | null>(null)
+  const more = open ?? proDetail
   const isQuestion = r.category === 'question'
   const axis = axisOf(r)
 
@@ -94,36 +98,40 @@ function Card({ r, rank }: { r: Recommendation; rank: number }) {
       <h3 className="title-sentence mt-2.5 text-[17px] text-ink">{r.action}</h3>
       <p className="mt-1.5 text-[13px] leading-relaxed text-ink-dim"><Glossed>{r.rationale}</Glossed></p>
 
-      <div className="mt-3 grid gap-2 sm:grid-cols-2">
+      <div className="mt-3">
         <ImpactBar r={r} />
-        <div className="bg-surface-sunken px-3 py-2">
-          <div className="label-field">Cost</div>
-          <div className="mt-0.5 text-xs leading-relaxed text-ink-dim">{r.cost.detail}</div>
-        </div>
       </div>
 
-      {r.tradeoff ? (
-        <p className="mt-3 border-l-2 border-warn pl-2.5 text-[11px] leading-relaxed text-ink-mute">
-          <span className="label-field">Trade-off:</span> {r.tradeoff}
-        </p>
-      ) : null}
-
-      {/* Directly under the body, not pinned to the card's foot: in a two-column row the shorter card ends early. */}
+      {/* The caddy line above is the default. The measured reasoning, cost, trade-off and evidence sit behind
+          "Why?", and open by default with Pro detail on. Directly under the body, not pinned to the card's foot. */}
       <div className="mt-2">
         <button
           type="button"
-          onClick={() => setOpen((v) => !v)}
-          aria-expanded={open}
+          onClick={() => setOpen(!more)}
+          aria-expanded={more}
           className="hit-area text-[11px] text-accent transition-opacity hover:opacity-80"
         >
-          {open ? 'Hide evidence' : `Evidence (${r.evidence.length})`}
+          {more ? 'Hide details' : 'Why? Cost and evidence'}
         </button>
-        {open ? (
-          <ul className="mt-2 space-y-1.5 border-l border-line pl-3">
-            {r.evidence.map((e, i) => (
-              <EvidenceLine key={i} e={e} />
-            ))}
-          </ul>
+        {more ? (
+          <div className="mt-2 space-y-2 border-l border-line pl-3">
+            {r.detail ? <p className="text-xs leading-relaxed text-ink-dim">{r.detail}</p> : null}
+            <p className="text-xs leading-relaxed text-ink-dim">
+              <span className="label-field">Cost:</span> {r.cost.detail}
+            </p>
+            {r.tradeoff ? (
+              <p className="border-l-2 border-warn pl-2.5 text-[11px] leading-relaxed text-ink-mute">
+                <span className="label-field">Trade-off:</span> {r.tradeoff}
+              </p>
+            ) : null}
+            {r.evidence.length ? (
+              <ul className="space-y-1.5">
+                {r.evidence.map((e, i) => (
+                  <EvidenceLine key={i} e={e} />
+                ))}
+              </ul>
+            ) : null}
+          </div>
         ) : null}
       </div>
     </li>

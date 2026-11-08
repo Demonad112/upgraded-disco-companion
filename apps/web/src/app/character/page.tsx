@@ -190,7 +190,7 @@ export default function Home() {
         title="Character"
         accent="Analysis"
         source="poe.ninja"
-        description="Imports your poe.ninja character and ranks what to fix first. If a number can’t be confirmed, it says so."
+        description="Paste your poe.ninja character and see the top things to fix first."
       />
 
       {/* Once an import starts the box steps aside, so the verdict sits near the top. One element either way: the bar

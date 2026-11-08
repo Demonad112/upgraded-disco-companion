@@ -103,15 +103,15 @@ describe('not presenting a bound as an outcome', () => {
     // `to` is the strongest vector's max hit — what this one would reach if it
     // matched, not what closing the resistance gap actually delivers.
     expect(rec.impact!.label).toMatch(/ceiling/i)
-    expect(rec.rationale).toMatch(/CEILING/)
+    expect(rec.detail).toMatch(/CEILING/)
   })
 
   it('says why the ceiling is unreachable for chaos specifically', () => {
     const rec = enriched.recommendations.recommendations.find((r) => r.id === 'one-shot-chaos')!
     // Chaos drains energy shield at 2x, which this project already models —
     // so a capped chaos resistance still leaves it the thinnest vector.
-    expect(rec.rationale).toMatch(/twice the rate|2x/)
-    expect(rec.rationale).toMatch(/cannot fully/)
+    expect(rec.detail).toMatch(/twice the rate|2x/)
+    expect(rec.detail).toMatch(/cannot fully/)
   })
 })
 
@@ -166,7 +166,7 @@ describe('unused affix slots', () => {
     const rec = analysis.recommendations.recommendations.find((r) => r.id === 'gear-open-affixes')
     expect(rec).toBeDefined()
     expect(rec!.impact!.delta).toBe(1)
-    expect(rec!.rationale).toContain('59 of a possible 60')
+    expect(rec!.detail).toContain('59 of a possible 60')
     expect(rec!.action).toContain('Sorrow Twirl')
     expect(rec!.action).toContain('1 suffix unused')
   })
@@ -231,7 +231,7 @@ describe('when the affix data cannot classify a modifier', () => {
     const notes = rec.evidence.map((e) => e.note).join(' ')
     expect(notes).toContain('Hypnotic Halo')
     expect(notes).toMatch(/cannot classify/)
-    expect(rec.rationale).toContain('9 active items')
+    expect(rec.detail).toContain('9 active items')
   })
 })
 

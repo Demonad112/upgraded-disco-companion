@@ -2,6 +2,7 @@
 
 // The character page below the import box: every panel that needs an analysis. Loaded with next/dynamic from
 // app/character/page.tsx, so none of it is in the page's first load.
+import { ProToggle } from '@/components/shared/ProToggle'
 import type { ReactNode } from 'react'
 import { snapshotKey, type Analysis, type AnalyzeOptions, type PobAnalysis } from '@poe2/core'
 import { Accordion } from '@/components/shared/Accordion'
@@ -111,21 +112,19 @@ export function CharacterResults({
       </Section>
 
       <Section id="findings" title="Findings">
+        {/* Pro detail opens every finding's measured reasoning, cost and evidence by default. */}
+        <div className="flex justify-end">
+          <ProToggle />
+        </div>
         <Recommendations report={a.recommendations} />
       </Section>
 
       <Section id="defences" title="Defences">
         <DefensePanel d={a.defense} />
         <Headroom defense={a.defense} level={a.identity.level} />
-        <WhatIfPanel analysis={a} options={analysisOptions} />
       </Section>
 
       <Section id="damage" title="Damage">
-        <DpsMatrix
-          dps={a.dps}
-          pobConfig={a.pobConfig}
-          configApplies={a.reconciliation?.checks.find((c) => c.stat.startsWith('dps:'))?.severity === 'match'}
-        />
         <Accordion
           id="damage-review"
           title="Supports and gear changes for this skill"
@@ -197,9 +196,15 @@ export function CharacterResults({
             <h2 id="advanced-title" className="section-title !mb-0">
               Advanced
             </h2>
-            <span className="text-xs text-ink-mute">Checks, what each item holds up, cross-validation</span>
+            <span className="text-xs text-ink-mute">Damage table, what-if sliders, detail checks</span>
           </summary>
           <div className="mt-4 grid-cards">
+            <DpsMatrix
+              dps={a.dps}
+              pobConfig={a.pobConfig}
+              configApplies={a.reconciliation?.checks.find((c) => c.stat.startsWith('dps:'))?.severity === 'match'}
+            />
+            <WhatIfPanel analysis={a} options={analysisOptions} />
             <div className="flex items-center">
               <PanelControls targetId="checks-list" />
             </div>

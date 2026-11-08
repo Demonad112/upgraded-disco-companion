@@ -118,7 +118,7 @@ describe('the crit investment rule', () => {
 
   it('states what crit is currently returning, to one decimal', () => {
     expect(found[0]!.action).toContain('7.4%')
-    expect(found[0]!.rationale).toContain('one hit in 20')
+    expect(found[0]!.detail).toContain('one hit in 20')
   })
 
   it('prices the modifier the character is actually carrying', () => {
