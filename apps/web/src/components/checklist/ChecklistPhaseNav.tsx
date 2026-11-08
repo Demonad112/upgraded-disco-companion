@@ -1,7 +1,8 @@
 "use client";
 
 import { ROADMAP_PHASE_LABELS } from "@/lib/constants";
-import { phaseAnchor, stepsByPhase } from "@/lib/roadmapOrder";
+import { phaseAnchor } from "@/lib/phaseAnchor";
+import { ROADMAP_INDEX } from "@/data/roadmapIndex";
 import { useChecklistState } from "@/hooks/useChecklistState";
 import { ScrollFade } from "@/components/shared/ScrollFade";
 import { useScrollSpy } from "@/hooks/useScrollSpy";
@@ -11,8 +12,8 @@ import { Gauge } from "@/components/shared/Gauge";
 export function ChecklistPhaseNav() {
   const { completedStepIds, hideCompleted, setHideCompleted } = useChecklistState();
   const done = new Set(completedStepIds);
-  const firstOpen = stepsByPhase.find((g) => g.steps.some((s) => !done.has(s.id)))?.phase;
-  const [reading] = useScrollSpy(stepsByPhase.map((g) => phaseAnchor(g.phase)));
+  const firstOpen = ROADMAP_INDEX.find((g) => g.ids.some((id) => !done.has(id)))?.phase;
+  const [reading] = useScrollSpy(ROADMAP_INDEX.map((g) => phaseAnchor(g.phase)));
 
   return (
     <nav
@@ -21,9 +22,9 @@ export function ChecklistPhaseNav() {
       className="phase-rail sticky top-[var(--nav-h)] z-10 -mx-4 flex items-center gap-2 border-b border-line bg-surface/95 px-4 py-2 sm:mx-0 sm:border"
     >
       <ScrollFade className="phase-rail-scroll flex min-w-0 flex-1 items-center gap-1.5">
-      {stepsByPhase.map(({ phase, steps }, i) => {
-        const count = steps.filter((s) => done.has(s.id)).length;
-        const complete = count === steps.length;
+      {ROADMAP_INDEX.map(({ phase, ids }, i) => {
+        const count = ids.filter((id) => done.has(id)).length;
+        const complete = count === ids.length;
         const current = phase === firstOpen;
         const inView = reading === phaseAnchor(phase);
         return (
@@ -46,11 +47,11 @@ export function ChecklistPhaseNav() {
               {(ROADMAP_PHASE_LABELS[phase] ?? phase).split(" — ")[0]}
             </span>
             <span className="font-mono text-[10px]">
-              {count}/{steps.length}
+              {count}/{ids.length}
             </span>
             {/* Decorative: the chip text already says n/total. Segments come from lib/gauge via <Gauge>. */}
             <span aria-hidden className="phase-chip-gauge">
-              <Gauge done={count} total={steps.length} label={`${ROADMAP_PHASE_LABELS[phase] ?? phase} steps`} hideLabel size="sm" />
+              <Gauge done={count} total={ids.length} label={`${ROADMAP_PHASE_LABELS[phase] ?? phase} steps`} hideLabel size="sm" />
             </span>
           </a>
         );

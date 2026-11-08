@@ -41,9 +41,10 @@ export const MECHANIC_LABELS: Record<string, string> = {
  * The text is the hue mixed toward white: on its own /20 fill the plain
  * --dmg-* step fails AA at chip size. Each percentage is the least lightening
  * that keeps 4.6:1 on the row and on its hover overlay (audit A11Y-01).
+ * Breach was 90% (3.3:1) until CD1: a page-wide canvas had hidden it from axe.
  */
 export const MECHANIC_COLORS: Record<string, string> = {
-  breach: "bg-chaos/20 text-[color-mix(in_srgb,var(--dmg-chaos)_90%,white)] border-chaos/40",
+  breach: "bg-chaos/20 text-[color-mix(in_srgb,var(--dmg-chaos)_70%,white)] border-chaos/40",
   abyss: "bg-physical/20 text-[color-mix(in_srgb,var(--dmg-physical)_85%,white)] border-physical/40",
   delirium: "bg-cold/20 text-[color-mix(in_srgb,var(--dmg-cold)_85%,white)] border-cold/40",
   ritual: "bg-fire/20 text-[color-mix(in_srgb,var(--dmg-fire)_80%,white)] border-fire/40",

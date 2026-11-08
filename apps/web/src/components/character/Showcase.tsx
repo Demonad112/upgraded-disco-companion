@@ -141,7 +141,7 @@ export function Showcase({ analysis, children }: { analysis: Analysis; children?
         </div>
         <p className="mt-3 max-w-prose text-sm leading-relaxed text-ink-dim">
           {assessment.note}{' '}
-          <a href="#assessment" onClick={openAssessment} className="whitespace-nowrap text-accent">
+          <a href="#assessment" onClick={openAssessment} className="whitespace-nowrap text-accent underline underline-offset-2">
             Why this grade
           </a>
         </p>

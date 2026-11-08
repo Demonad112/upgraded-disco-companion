@@ -25,7 +25,7 @@ const STRATEGY_TIER_STYLES: Record<string, string> = {
   C: "border-line bg-surface-sunken text-ink-mute",
 };
 
-export function StrategyTierBadge({ tier }: { tier?: string }) {
+function StrategyTierBadge({ tier }: { tier?: string }) {
   return (
     <span
       title={tier ? `${tier} tier on the ${TIER_LIST_PATCH} creator tier list` : `Not ranked by a ${TIER_LIST_PATCH} source`}

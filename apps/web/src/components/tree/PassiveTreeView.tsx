@@ -4,7 +4,8 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { PassiveAllocation, PassiveTree, TreeNode } from '@poe2/core'
 import { resolveAllocation } from '@poe2/core'
 import { Tag } from '../ui'
-import { extentOf, fitExtent, zoomAt, type Viewport } from './geometry'
+import { extentOf, fitExtent, type Viewport } from './geometry'
+import { sizeCanvas, usePanZoom } from './usePanZoom'
 import { hitTest, renderTree, type TreePalette } from './render'
 
 function readPalette(el: HTMLElement): TreePalette {
@@ -77,27 +78,28 @@ export function PassiveTreeView({ tree, allocation, className = '' }: PassiveTre
   }, [viewport, fitToAllocation])
 
   // --- painting -------------------------------------------------------------
+  // CSS colours change only with the size (breakpoint) or a reload, so read them once per width.
+  const paletteRef = useRef<{ width: number; palette: TreePalette } | null>(null)
   useEffect(() => {
     const canvas = canvasRef.current
     const wrap = wrapRef.current
     if (!canvas || !wrap || !viewport || !size.width || !size.height) return
 
-    const dpr = Math.min(window.devicePixelRatio || 1, 2)
-    canvas.width = size.width * dpr
-    canvas.height = size.height * dpr
-    canvas.style.width = `${size.width}px`
-    canvas.style.height = `${size.height}px`
-
     const ctx = canvas.getContext('2d')
     if (!ctx) return
+    const dpr = sizeCanvas(canvas, size)
+    canvas.style.width = `${size.width}px`
+    canvas.style.height = `${size.height}px`
+    if (paletteRef.current?.width !== size.width) paletteRef.current = { width: size.width, palette: readPalette(wrap) }
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
+    ctx.clearRect(0, 0, size.width, size.height)
 
     renderTree(ctx, {
       tree,
       viewport,
       width: size.width,
       height: size.height,
-      palette: readPalette(wrap),
+      palette: paletteRef.current.palette,
       allocated: activeIds,
       inactive: showSwapSet ? swapIds : new Set(),
       hovered: hovered?.id ?? null,
@@ -117,110 +119,17 @@ export function PassiveTreeView({ tree, allocation, className = '' }: PassiveTre
   ])
 
   // --- interaction ----------------------------------------------------------
-  const dragRef = useRef<{ id: number; x: number; y: number; moved: boolean } | null>(null)
-  const pinchRef = useRef<Map<number, { x: number; y: number }>>(new Map())
-  const pinchDistance = useRef(0)
-
-  const onPointerDown = (e: React.PointerEvent<HTMLCanvasElement>) => {
-    e.currentTarget.setPointerCapture(e.pointerId)
-    pinchRef.current.set(e.pointerId, { x: e.clientX, y: e.clientY })
-    if (pinchRef.current.size === 2) {
-      const [a, b] = [...pinchRef.current.values()]
-      pinchDistance.current = Math.hypot(a!.x - b!.x, a!.y - b!.y)
-      dragRef.current = null
-      return
-    }
-    dragRef.current = { id: e.pointerId, x: e.clientX, y: e.clientY, moved: false }
-  }
-
-  const onPointerMove = (e: React.PointerEvent<HTMLCanvasElement>) => {
+  const pick = (sx: number, sy: number) => {
     if (!viewport) return
-    const rect = e.currentTarget.getBoundingClientRect()
-
-    if (pinchRef.current.has(e.pointerId)) pinchRef.current.set(e.pointerId, { x: e.clientX, y: e.clientY })
-
-    // Two fingers: pinch to zoom about the midpoint.
-    if (pinchRef.current.size === 2) {
-      const [a, b] = [...pinchRef.current.values()]
-      const distance = Math.hypot(a!.x - b!.x, a!.y - b!.y)
-      if (pinchDistance.current > 0 && distance > 0) {
-        const midX = (a!.x + b!.x) / 2 - rect.left
-        const midY = (a!.y + b!.y) / 2 - rect.top
-        setViewport((vp) =>
-          vp ? zoomAt(vp, distance / pinchDistance.current, midX, midY, size.width, size.height) : vp,
-        )
-      }
-      pinchDistance.current = distance
-      return
-    }
-
-    const drag = dragRef.current
-    if (drag && drag.id === e.pointerId) {
-      const dx = e.clientX - drag.x
-      const dy = e.clientY - drag.y
-      if (Math.abs(dx) > 2 || Math.abs(dy) > 2) drag.moved = true
-      drag.x = e.clientX
-      drag.y = e.clientY
-      setViewport((vp) => (vp ? { ...vp, cx: vp.cx - dx / vp.scale, cy: vp.cy - dy / vp.scale } : vp))
-      return
-    }
-
-    // Hover: mouse only. On touch the tooltip follows a tap instead.
-    if (e.pointerType === 'mouse') {
-      const sx = e.clientX - rect.left
-      const sy = e.clientY - rect.top
-      setPointer({ x: sx, y: sy })
-      setHovered(
-        hitTest(tree, sx, sy, viewport, size.width, size.height, {
-          visibleAscendancy: ownAscendancy,
-          showAllAscendancies,
-        }),
-      )
-    }
+    setPointer({ x: sx, y: sy })
+    setHovered(
+      hitTest(tree, sx, sy, viewport, size.width, size.height, {
+        visibleAscendancy: ownAscendancy,
+        showAllAscendancies,
+      }),
+    )
   }
-
-  const onPointerUp = (e: React.PointerEvent<HTMLCanvasElement>) => {
-    pinchRef.current.delete(e.pointerId)
-    if (pinchRef.current.size < 2) pinchDistance.current = 0
-
-    const drag = dragRef.current
-    dragRef.current = null
-    if (!viewport || !drag || drag.id !== e.pointerId) return
-
-    // A tap that didn't pan selects the node under the finger.
-    if (!drag.moved && e.pointerType !== 'mouse') {
-      const rect = e.currentTarget.getBoundingClientRect()
-      const sx = e.clientX - rect.left
-      const sy = e.clientY - rect.top
-      setPointer({ x: sx, y: sy })
-      setHovered(
-        hitTest(tree, sx, sy, viewport, size.width, size.height, {
-          visibleAscendancy: ownAscendancy,
-          showAllAscendancies,
-        }),
-      )
-    }
-  }
-
-  // Wheel zoom. Registered natively so it can be non-passive and preventDefault
-  // — React's synthetic onWheel is passive and cannot stop page scroll.
-  useEffect(() => {
-    const canvas = canvasRef.current
-    if (!canvas) return
-    const onWheel = (e: WheelEvent) => {
-      e.preventDefault()
-      const rect = canvas.getBoundingClientRect()
-      const factor = Math.exp(-e.deltaY * 0.0015)
-      setViewport((vp) =>
-        vp ? zoomAt(vp, factor, e.clientX - rect.left, e.clientY - rect.top, rect.width, rect.height) : vp,
-      )
-    }
-    canvas.addEventListener('wheel', onWheel, { passive: false })
-    return () => canvas.removeEventListener('wheel', onWheel)
-  }, [])
-
-  const zoomBy = (factor: number) =>
-    setViewport((vp) => (vp ? zoomAt(vp, factor, size.width / 2, size.height / 2, size.width, size.height) : vp))
+  const { onPointerDown, onPointerMove, onPointerUp, zoomBy } = usePanZoom(canvasRef, size, setViewport, pick)
 
   const stats = {
     allocated: resolved.live.length,

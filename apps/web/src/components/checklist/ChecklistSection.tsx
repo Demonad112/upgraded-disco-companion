@@ -7,9 +7,10 @@
  * open it (HashHighlight opens any <details> it targets).
  */
 
-import type { BenchmarkGate, RoadmapPhase, RoadmapStep } from "@/lib/types";
+import type { BenchmarkGate, CommonMistake, RoadmapPhase, RoadmapStep } from "@/lib/types";
 import { ROADMAP_PHASE_LABELS } from "@/lib/constants";
-import { nextIncompleteStep, phaseAnchor } from "@/lib/roadmapOrder";
+import { phaseAnchor } from "@/lib/phaseAnchor";
+import { nextIncompleteId } from "@/data/roadmapIndex";
 import { useChecklistState } from "@/hooks/useChecklistState";
 import { Gauge } from "@/components/shared/Gauge";
 import { ChecklistStep } from "./ChecklistStep";
@@ -18,17 +19,20 @@ export function ChecklistSection({
   phase,
   steps,
   benchmarkGates,
+  mistakes,
   index,
 }: {
   phase: RoadmapPhase;
   steps: RoadmapStep[];
   benchmarkGates: BenchmarkGate[];
+  /** Mistakes the steps link to, resolved on the server so the full list stays out of the bundle. */
+  mistakes: CommonMistake[];
   index: number;
 }) {
   const { completedStepIds } = useChecklistState();
   const done = steps.filter((s) => completedStepIds.includes(s.id)).length;
-  const next = nextIncompleteStep(completedStepIds);
-  const current = next?.phase === phase;
+  const nextId = nextIncompleteId(completedStepIds);
+  const current = steps.some((s) => s.id === nextId);
   const complete = done === steps.length;
   const label = ROADMAP_PHASE_LABELS[phase] ?? phase;
 
@@ -66,7 +70,8 @@ export function ChecklistSection({
           <ChecklistStep
             key={step.id}
             step={step}
-            isNext={next?.id === step.id}
+            isNext={nextId === step.id}
+            avoid={mistakes.filter((m) => step.relatedMistakeIds?.includes(m.id))}
             gates={benchmarkGates.filter((g) => step.benchmarkGateIds?.includes(g.id))}
           />
         ))}
