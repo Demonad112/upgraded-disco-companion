@@ -9,12 +9,12 @@ independent, so do them in any order. Rough time is in brackets.
   - Where: GitHub → Pull requests → #111 → once every check is green, click "Ready for review", then "Merge".
   - Worked if: the live site's farm cards show short summaries, and Pro detail still shows the long text.
 
-- [ ] **2. Check the security header after deploy** (1 min)
+- [x] **2. Check the security header after deploy** (1 min)
   - Run this in a terminal:
     `curl -sI https://upgraded-disco-companion.pages.dev/ | grep -i content-security-policy`
   - Worked if: the line contains `api.anthropic.com` and `generativelanguage.googleapis.com`.
 
-- [ ] **3. Confirm Lighthouse is green on main** (1 min)
+- [x] **3. Confirm Lighthouse is green on main** (1 min)
   - Where: GitHub → Actions → CI → latest run on `main` → `lighthouse` job.
   - Worked if: it shows a green tick, and the log has no `NO_NAVSTART` line. If you see `NO_NAVSTART`, just note it; nothing breaks.
 

@@ -34,16 +34,16 @@ can do, **R** = standing rule (no work), **W** = waiting on an external event.
 ## 3. Owner hardware / account actions (class A; sessions list them, can't do them)
 | ID | Action | Origin | Status |
 |---|---|---|---|
-| R40 | 50-map run log for danger calibration (feeds R10) | FP1-1 | open: owner-only. B3 added the log format and the calibration method: `docs/remaining/R40-RUN-LOG.md` |
+| R40 | 50-map run log for danger calibration (feeds R10) | FP1-1 | open: owner-only; CSV scaffold added (OC1). B3 added the log format and the calibration method: `docs/remaining/R40-RUN-LOG.md` |
 | R41 | Deploy ninja-proxy: `cd services/ninja-proxy && vercel --prod` (CORS allowlist T20; cache/coalesce/503 L1) | L1-1 / A8 | done: proxy deployed 2026-11-06, root returns 200 |
-| R42 | Open one "Find better gear" link on live trade2; confirm weighted group prefills (403 from cloud sandbox) | CH6-1 | open: owner verify in B2 PR checklist |
-| R43 | TT1 live trade2 checks: filter shapes (`/api/trade2/data/filters`), link length 6k/8k/9k chars (`URL_MAX_LENGTH`), `TradeStatus` values via `?q=`, console realm | TT1 #2–#5 | open: owner verify in B2 PR checklist (owner skipped 2026-11-02) |
+| R42 | Open one "Find better gear" link on live trade2; confirm weighted group prefills (403 from cloud sandbox) | CH6-1 | open: links generated (OC1), owner opens them; Cloudflare bot check blocks automation |
+| R43 | TT1 live trade2 checks: filter shapes (`/api/trade2/data/filters`), link length 6k/8k/9k chars (`URL_MAX_LENGTH`), `TradeStatus` values via `?q=`, console realm | TT1 #2–#5 | open: data API half observed 2026-11-08, query.ts consistent (OC1); link length, status, weight group still need owner |
 | R44 | Real-device pass: keyboard hides tab bar (iOS Safari, Android Chrome), Install / Add to Home Screen, Safari 17, rotation, VoiceOver | U13b-1 | open: B3 added an emulated e2e (stubbed visualViewport hides and restores the tab bar). Real devices: owner |
 | R45 | Android share-target test (install PWA, share a poe.ninja link) | L1-3 | emulated pass (B4b e2e: manifest share_target + import from shared text); real Android on the B4b PR Owner verify list |
 | R46 | Eyeball on real display + Safari: sky 30 s, hover pulse, hero draw-in, lantern, foil, route transitions, ignite/flare/label/rune glyph | A5-4, W15-pulse-1, MP1-4, LS1-4 | B4b: on the PR Owner verify list (needs a real display + Safari) |
 | R47 | Phone/Xbox sizing for quick-pick sheet and sticky strip; reduced-motion fade; home picker states; diagram label overlap | QP1-1, FP1-5, H1-2, V1-1 | open: emulated part done in B3 (sheet fits and Apply reachable, sticky strip ≤ 30 % height at 390×844 and 360×780; e2e). Real phone/Xbox: owner |
 | R48 | Delete logs of failed guard runs (41174630514 and two on #58); they still hold the session URL | SB4-1 | done: logs of all 26 failed guard runs deleted 2026-11-06 |
-| R49 | Flip Lighthouse CI job from warn to error after a few stable runs (check job log first) | L1-2 | open: B1 flipped to error 2026-11-06 (5/5 main runs clean); owner confirms the first main run is green |
+| R49 | Flip Lighthouse CI job from warn to error after a few stable runs (check job log first) | L1-2 | open: B1 flipped to error 2026-11-06 (5/5 main runs clean); latest main run (PR #116) green, confirmed 2026-11-08 (OC1) |
 
 Verify with (checked inside that batch, owner ticks the PR checklist): R42, R43 -> B2 | R44 -> B3 + B4b | R45, R46 -> B4b | R47 -> B3 | R49 -> B1 | R40 owner-only.
 
@@ -64,7 +64,7 @@ Verify with (checked inside that batch, owner ticks the PR checklist): R42, R43 
 | R51 | Drop `backdrop-blur-sm` on CommandPalette/SearchDialog | S | U13a-6 | Recommended: keep | done: B1 2026-11-06, kept (dialog-only, no measured cost) |
 | R52 | Checks tab count chip | S | U10-3 | Recommended: leave out | parked |
 | R53 | Deterministic test for 280 px first-paint overflow | S | OD1-4 | Add only if CI flakes again | parked 2026-11-06 (B2): no 280 px flake in recent main CI runs (all success; cancelled ones were superseded merges) |
-| R54 | Lighthouse `NO_NAVSTART` on `/character/` | S | U13b-4 | Watch; retry; trace with `--save-assets` if persistent | open: B1 ran clean (0 NO_NAVSTART in 3 local + 5 CI runs); owner confirms on own machine |
+| R54 | Lighthouse `NO_NAVSTART` on `/character/` | S | U13b-4 | Watch; retry; trace with `--save-assets` if persistent | open: B1 ran clean (0 NO_NAVSTART in 3 local + 5 CI runs); CI main run 2026-11-08 also 0 NO_NAVSTART (OC1); own-machine run left to CI |
 | R55 | Stale tracker rows in `docs/ui/UI-PROGRESS.md` (MP1-2, MP1-3, LS1-x, OD1-1, OD1-3 show `todo`; later carry files show resolved) | S | this audit | Reconcile against carry files; also refresh the wave table for the remaining waves | done |
 | R56 | Card-links canvas is still full document height on `/checklist` (~5–6 MP on a phone at DPR 1); size it to the `[data-links]` block, `useCanvas` needs to accept a root element | S | CD1 Open 1 | Keep only if it saves real runtime work (perf bar) | open |
 
