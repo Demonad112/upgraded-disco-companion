@@ -96,7 +96,7 @@ Mechanical work, no app logic.
 - Gate: typecheck, lint, test. Docs-only parts skip build and e2e.
 
 ### L2 Load-speed diet (Sonnet 5.5 · medium effort · cloud · `perf/<date>-payload`)
-Measure first and keep only changes that pay off (≥ 10 % br saved on that file or route).
+Measure first and keep only changes that pay off (≥ 5 % br saved on that file or route).
 1. `mod-tiers.json`: 2.2 MB raw, 205 KB br, fetched on `/character`.
    - List the `ModTiers` methods the web calls (`packages/core/src/gear/tiers.ts`; consumers `useModTiers.ts`,
      `DamageReview`, `AuditPanel`, `GearTargets`, `CharacterResults`).
