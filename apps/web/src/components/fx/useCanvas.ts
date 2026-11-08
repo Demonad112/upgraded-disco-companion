@@ -21,27 +21,48 @@ export function cssColor(name: string, fallback = ''): string {
  * are coalesced to one per frame. `maxHeight` caps the canvas for art that
  * only covers the top of the page. The backing store is only reassigned when
  * the size changes; assigning it, even to the same value, reallocates it.
+ *
+ * `getRoot` (optional) returns a different element to cover instead of the
+ * canvas's parent: the canvas is then sized to that element's box and moved to
+ * its offset inside the parent, and `draw` gets that element as `root`. With no
+ * `getRoot`, or when it returns null, the parent is used as before.
  */
 export function useCanvas(
   draw: (ctx: CanvasRenderingContext2D, w: number, h: number, root: HTMLElement) => void,
   extraEvent?: string,
   maxHeight?: number,
   maxDpr = 2,
+  getRoot?: () => HTMLElement | null,
 ) {
   const ref = useRef<HTMLCanvasElement>(null)
   const pathname = usePathname()
   const drawRef = useRef(draw)
+  const getRootRef = useRef(getRoot)
   useEffect(() => {
     drawRef.current = draw
+    getRootRef.current = getRoot
   })
 
   useEffect(() => {
     const canvas = ref.current
-    const root = canvas?.parentElement
-    if (!canvas || !root) return
+    const parent = canvas?.parentElement
+    if (!canvas || !parent) return
     let frame = 0
     const paint = () => {
       frame = 0
+      const target = getRootRef.current?.() ?? null
+      const root = target ?? parent
+      if (target) {
+        const a = target.getBoundingClientRect()
+        const b = parent.getBoundingClientRect()
+        const left = `${a.left - b.left}px`
+        const top = `${a.top - b.top}px`
+        if (canvas.style.left !== left) canvas.style.left = left
+        if (canvas.style.top !== top) canvas.style.top = top
+      } else {
+        if (canvas.style.left) canvas.style.left = ''
+        if (canvas.style.top) canvas.style.top = ''
+      }
       const w = root.clientWidth
       const h = Math.min(root.clientHeight, maxHeight ?? Infinity)
       const dpr = Math.min(window.devicePixelRatio || 1, maxDpr)
@@ -62,7 +83,9 @@ export function useCanvas(
     }
     schedule()
     const ro = new ResizeObserver(schedule)
-    ro.observe(root)
+    ro.observe(parent)
+    const target = getRootRef.current?.()
+    if (target) ro.observe(target)
     const mo = new MutationObserver(schedule)
     mo.observe(document.documentElement, { attributes: true, attributeFilter: ['data-compact'] })
     window.addEventListener('resize', schedule)
