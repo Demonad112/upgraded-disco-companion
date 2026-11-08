@@ -5,7 +5,7 @@ independent, so do them in any order. Rough time is in brackets.
 
 ## Now
 
-- [ ] **1. Merge PR #111 (plain words)** (2 min)
+- [x] **1. Merge PR #111 (plain words)** (merged) (2 min)
   - Where: GitHub → Pull requests → #111 → once every check is green, click "Ready for review", then "Merge".
   - Worked if: the live site's farm cards show short summaries, and Pro detail still shows the long text.
 

@@ -66,6 +66,7 @@ Verify with (checked inside that batch, owner ticks the PR checklist): R42, R43 
 | R53 | Deterministic test for 280 px first-paint overflow | S | OD1-4 | Add only if CI flakes again | parked 2026-11-06 (B2): no 280 px flake in recent main CI runs (all success; cancelled ones were superseded merges) |
 | R54 | Lighthouse `NO_NAVSTART` on `/character/` | S | U13b-4 | Watch; retry; trace with `--save-assets` if persistent | open: B1 ran clean (0 NO_NAVSTART in 3 local + 5 CI runs); owner confirms on own machine |
 | R55 | Stale tracker rows in `docs/ui/UI-PROGRESS.md` (MP1-2, MP1-3, LS1-x, OD1-1, OD1-3 show `todo`; later carry files show resolved) | S | this audit | Reconcile against carry files; also refresh the wave table for the remaining waves | done |
+| R56 | Card-links canvas is still full document height on `/checklist` (~5–6 MP on a phone at DPR 1); size it to the `[data-links]` block, `useCanvas` needs to accept a root element | S | CD1 Open 1 | Keep only if it saves real runtime work (perf bar) | open |
 
 ## 5. Standing rules (R, no work)
 - Route budgets: `/` ≤ 192,000 B br, others ≤ 250,000 (`node scripts/route-weight.mjs`); any home-JS change reports before/after.
@@ -106,7 +107,7 @@ Measure first and keep only changes that pay off (≥ 5 % br saved on that file 
 2. `trade2-stats.json`: 1.36 MB raw, not minified, `/trade` only. Minify it in `sync-data` and trim it to what `ManualPriceCheck.tsx` reads.
 3. `/`: 1,763 B headroom under 192,000. Load `CommandPalette` / `SearchDialog` on first open if they are still eager, and try a lighter `app/error.tsx`.
 4. Check that the service-worker update still works (the e2e offline test), and run Lighthouse mobile on `/character` before and after.
-- Write the before/after table in `docs/carry/L2.md` and the PR body.
+- Write the before/after table in `docs/carry/archive/L2.md` and the PR body.
 
 ### L3 Opus check (Opus 5.5 · short chat · only after L2's CI is green)
 One review pass instead of an Opus session. In a new chat on the L2 branch, run:
