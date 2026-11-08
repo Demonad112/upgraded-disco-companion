@@ -63,4 +63,4 @@ Every open row in the nine active carry files now maps to a register row, or is 
 | 3 | follow-up | N3 | R61: core test gaps | See register §6 N3 |
 
 ## Needs owner
-- PL1-1: N3 and F2 add tests under `packages/core/test`. Recommended: OK, because they are tests only and touch no `src` or data.
+- PL1-1: N3 and F2 add tests under `packages/core/test`. **Answered 2026-11-08: OK.**

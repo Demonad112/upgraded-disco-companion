@@ -41,7 +41,7 @@ These rows run in the §6 owner-pass order.
 |---|---|---|---|---|---|
 | R56 | The card-links canvas on `/checklist` is the full document height. Size it to the `[data-links]` block; `useCanvas` has to accept a root element | S | CD1 Open 1 | Measured 2026-11-08: 390×4337 vs a 1941 px block (−55 %); at 1440 it is 2950 vs 1179 (−60 %). This removes real runtime work, so it meets the perf bar | open; batch N1 |
 | R58 | `SOURCE_DOCS` and `KNOWN_CONFLICTS` in `apps/web/src/data/sourceMeta.ts` have no importers. The "W23" gate cited for keeping them doesn't exist | S | S1-1 | Answered: delete them. Git keeps the history | answered; batch N1 |
-| R61 | Core test gaps: `ninja/ladder.ts` lines 119–142 at 61 %; branches at 65–68 % in `damage.ts`, `export.ts`, `replace.ts`, `catalog.ts` | M | coverage 2026-11-08 | Touches `packages/core/test` only; needs owner OK under the packages/* rule | open; batch N3 |
+| R61 | Core test gaps: `ninja/ladder.ts` lines 119–142 at 61 %; branches at 65–68 % in `damage.ts`, `export.ts`, `replace.ts`, `catalog.ts` | M | coverage 2026-11-08 | Touches `packages/core/test` only; owner OK given 2026-11-08 (PL1-1) | open; batch N3 |
 | R62 | CI e2e records traces (`retain-on-failure`). Locally, `--trace off` runs in 240 s vs 304 s (−21 %). The coverage step re-runs the core suite that `npm test` already ran | S | CI run 42445987468 | Trace off in CI; on failure, re-run locally with `--trace on` | open; batch N2 |
 
 ## 4. Standing rules (no work)
@@ -88,10 +88,10 @@ N1, N2 and N3 are independent and can run in parallel. The owner pass (OP) runs 
 |---|---|---|---|---|---|---|
 | N1 | `perf/<yyyymmdd>-links-canvas` | Sonnet 5.5 · medium | R56, R58 | Phone canvas 390×4337 → ~390×1941 (−55 % px; ~6.8 → ~3.0 MP at DPR 2). Desktop −60 % | Low: link geometry has to stay aligned. e2e plus a screenshot check | — |
 | N2 | `ci/<yyyymmdd>-e2e-trace` | Sonnet 5.5 · low | R62 | ~60 s off the 7.5 min test job, plus 7–11 s from the duplicate run | Low: no traces on CI failure, so re-run locally | — |
-| N3 | `test/<yyyymmdd>-core-gaps` | Sonnet 5.5 · medium | R61 | Live ladder decode gets tested; more coverage margin | Low: tests only | Owner OK (packages/*) |
+| N3 | `test/<yyyymmdd>-core-gaps` | Sonnet 5.5 · medium | R61 | Live ladder decode gets tested; more coverage margin | Low: tests only | — |
 | OP | none | Owner | Owner pass below | Unblocks R10; closes R42–R47, R49, R54, R59, R60 | — | — |
 | F1 | `data/<yyyymmdd>-danger-calibration` | Sonnet 5.5 · medium | R10 | Calibrated danger; Net can be ranked | Medium: data weights. Follow `R40-RUN-LOG.md` exactly | R40 CSV |
-| F2 | `test/<yyyymmdd>-evidence-fixtures` | Sonnet 5.5 · medium | R60 | Two skipped evidence-pack suites go live; 3 `it.todo` filled | Low | R60 files (owner OK: packages/core/test) |
+| F2 | `test/<yyyymmdd>-evidence-fixtures` | Sonnet 5.5 · medium | R60 | Two skipped evidence-pack suites go live; 3 `it.todo` filled | Low | R60 files |
 | F3 | `docs/<yyyymmdd>-owner-report` | Sonnet 5.5 · low | Tick the register from the owner's report | Register current | — | OP |
 
 ### N1 Links canvas + dead exports
