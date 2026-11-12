@@ -8,11 +8,11 @@ changes here; only the packaging does: 16 batches in 6 waves become 6 sessions i
 
 | Session | State | Where | What is missing |
 |---|---|---|---|
-| PP1 performance plan | partial, draft PR open | PR 134, `claude/pp1-perf-plan`, `docs/plans/PERF-PLAN.md` | Items 4–8 not measured; PX10 and PX11 are drafts. PX9 is complete |
-| PP2 character spec | partial, draft PR open | PR 133, `claude/pp2-character-spec`, `docs/plans/CHARACTER-SPEC.md` | Athrynas easy-wins rows, e2e selector audit, bar heights, swipe threshold, 1440 px pass, done-when lines |
+| PP1 performance plan | partial, merged | PR 134, `claude/pp1-perf-plan`, `docs/plans/PERF-PLAN.md` | Items 4–8 not measured; PX10 and PX11 are drafts. PX9 is complete |
+| PP2 character spec | partial, merged | PR 133, `claude/pp2-character-spec`, `docs/plans/CHARACTER-SPEC.md` | Athrynas easy-wins rows, e2e selector audit, bar heights, swipe threshold, 1440 px pass, done-when lines |
 | PP3 design audit | partial, merged | PR 132, `docs/plans/DESIGN-AUDIT.md` | ux-audit, spacing, empty-states and verbs sections; File column for rows 2, 3, 8; the PX8 batch text |
 | PX-MASTER | this file | `claude/sleepy-lovelace-qdyh8h` | — |
-| PXA, PXB, PXC | not started | — | Start after PR 133 and PR 134 merge |
+| PXA, PXB, PXC | not started | — | Unblocked: PR 132, 133, 134 merged. PXC still waits for PXA and PXB |
 
 All three planning sessions were stopped early by the owner. Decision: **no continuation sessions**. The measured
 parts are enough to build from, and each gap is assigned below to the build session that owns the code, as

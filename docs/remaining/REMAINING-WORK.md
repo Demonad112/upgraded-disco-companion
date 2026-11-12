@@ -134,8 +134,8 @@ Plan, owner vision and batch sections: `docs/plans/PX-PROGRAMME.md`. Run order, 
 
 | ID | Scope | Depends on | Status |
 |---|---|---|---|
-| PP1 | Performance plan (writes PX9–PX11) | — | partial, PR #134 open; gaps go to PXC |
-| PP2 | Character page spec: build card, tabs, easy wins | — | partial, PR #133 open; gaps go to PXA |
+| PP1 | Performance plan (writes PX9–PX11) | — | partial, merged PR #134; gaps go to PXC |
+| PP2 | Character page spec: build card, tabs, easy wins | — | partial, merged PR #133; gaps go to PXA |
 | PP3 | Design and accessibility audit (writes PX8 rows) | — | partial, merged PR #132; gaps go to PXB, PXC |
 | PX0 | Screenshot baseline e2e | — | open (PXC) |
 | PX1 | Solid bars and data panels | — | open (PXB) |
