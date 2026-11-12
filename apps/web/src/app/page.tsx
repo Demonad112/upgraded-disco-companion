@@ -8,7 +8,6 @@ import { CompactAlerts } from "@/components/compact/CompactAlerts";
 import { Triad } from "@/components/layout/Triad";
 import { LastCharacterCard } from "@/components/home/LastCharacterCard";
 import { ToolStatus, type ToolStatusProps } from "@/components/home/ToolStatus";
-import { StartPicker, type StartTile } from "@/components/home/StartPicker";
 import { dataUpdated, guideCounts, strategyNames } from "@/lib/homeStats";
 import { progressTotals, stepSummaries } from "@/lib/stepSummary";
 
@@ -38,13 +37,6 @@ const ICONS = {
   ),
   farming: <path d="M12 3l7 9-7 9-7-9zM5 12h14" />,
 };
-
-// Farming falls back to the planner's farm list; StartPicker swaps in the last farm.
-const START_TILES: StartTile[] = [
-  { id: "dashboard", label: "Dashboard", href: "/dashboard", icon: ICONS.dashboard },
-  { id: "farming", label: "Farming", href: "/dashboard#farm-all-h", icon: ICONS.farming },
-  { id: "character", label: "Character", href: "/character", icon: ICONS.character },
-];
 
 function toolCards(): { href: string; title: string; purpose: string; icon: ReactNode; status: ToolStatusProps }[] {
   const { stepIds, atlasIds } = progressTotals();
@@ -95,7 +87,7 @@ export default function Home() {
     <div className="home-bento grid grid-cols-1 gap-5 sm:grid-cols-10">
       <section className="sm:col-span-10" data-compact-hide>
         <div data-draw-in className="hero-rule flex flex-col items-center gap-3 py-2 sm:py-6">
-          <span className="hero-pill border border-accent-line px-2.5 py-1.5 font-semibold tracking-wider text-accent uppercase">
+          <span className="hero-pill hero-extra border border-accent-line px-2.5 py-1.5 font-semibold tracking-wider text-accent uppercase">
             Patch {CURRENT_PATCH} · {LEAGUE_LABEL}
           </span>
           <h1 className="hero-title text-4xl text-balance sm:text-6xl">
@@ -103,15 +95,15 @@ export default function Home() {
             <br />
             Endgame Companion
           </h1>
-          <p className="hero-motto">Stay Sane Exile</p>
-          <span className="hero-gem flex items-center gap-2.5" aria-hidden>
+          <p className="hero-motto hero-extra">Stay Sane Exile</p>
+          <span className="hero-gem hero-extra flex items-center gap-2.5" aria-hidden>
             <i />
           </span>
           {/* Counted from the guide data at build time; never typed in. No
               separators: a wrapped line would start with one. */}
           <ul
             aria-label="What the guide covers"
-            className="hero-counts label-metric flex flex-wrap justify-center gap-x-4 gap-y-1.5"
+            className="hero-counts hero-extra label-metric flex flex-wrap justify-center gap-x-4 gap-y-1.5"
           >
             {heroCounts().map((c) => (
               <li key={c.label}>
@@ -119,27 +111,29 @@ export default function Home() {
               </li>
             ))}
           </ul>
-          <p className="hero-more max-w-2xl text-base text-ink-dim sm:text-lg">
+          <p className="hero-more hero-extra max-w-2xl text-base text-ink-dim sm:text-lg">
             Your {CURRENT_PATCH} endgame guide: what to do next and why, in a line or two.
           </p>
           {updated ? (
-            <p className="hero-more label-metric -mt-2">
+            <p className="hero-more hero-extra label-metric -mt-2">
               Data updated <time dateTime={updated} className="tabular text-ink-dim">{updated}</time>
             </p>
           ) : null}
-          <Triad />
+          <div className="hero-extra"><Triad /></div>
         </div>
       </section>
 
-      <div className="sm:col-span-10" data-compact-hide>
-        <StartPicker tiles={START_TILES} />
+      {/* First-time visitors: one primary action and one secondary. Hidden once a character is saved (home.css). */}
+      <div className="home-start hero-extra sm:col-span-10" data-compact-hide>
+        <Link href="/character" className="btn btn-primary">Analyse my character</Link>
+        <Link href="/checklist" className="btn btn-secondary">Open the checklist</Link>
       </div>
 
-      <div className="flex min-w-0 flex-col gap-5 sm:col-span-10 lg:col-span-6 [&>section]:flex-1" data-compact-keep>
-        <NextStepCard steps={stepSummaries()} />
-        <div data-compact-hide>
+      <div className="home-main flex min-w-0 flex-col gap-5 sm:col-span-10 lg:col-span-6 [&>section]:flex-1" data-compact-keep>
+        <div className="home-last" data-compact-hide>
           <LastCharacterCard />
         </div>
+        <NextStepCard steps={stepSummaries()} />
       </div>
       <div className="min-w-0 sm:col-span-10 lg:col-span-4" data-compact-keep>
         <ProgressSummary stepIds={totals.stepIds} atlasIds={totals.atlasIds} />

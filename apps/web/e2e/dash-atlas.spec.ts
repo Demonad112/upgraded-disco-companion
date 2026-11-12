@@ -1,10 +1,10 @@
 import { expect, test } from './fixtures'
 
-test('the phone tab bar says Dashboard and every label fits at 280px', async ({ page }) => {
+test('the phone tab bar says Farm and every label fits at 280px', async ({ page }) => {
   await page.setViewportSize({ width: 280, height: 640 })
   await page.goto('checklist/')
   const links = page.getByRole('navigation', { name: 'Tools' }).getByRole('link')
-  await expect(links).toHaveText(['Checklist', 'Atlas', 'Dashboard', 'Character'])
+  await expect(links).toHaveText(['Character', 'Farm', 'Atlas', 'Checklist'])
   // Nothing is cut with an ellipsis: each label's text is fully inside its tab.
   const clipped = await links.evaluateAll((els) =>
     els.map((a) => {
