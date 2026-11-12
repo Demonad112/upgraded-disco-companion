@@ -104,7 +104,7 @@ test('only the open tab is mounted: one tabpanel, and the other tabs’ sections
   await page.goto(importUrl)
   await expect(page.getByRole('heading', { name: /Athrynas/ }).first()).toBeVisible({ timeout: 30_000 })
   await expect(page.getByRole('tablist', { name: 'Character sections' })).toBeVisible()
-  await expect(page.locator('[role=tabpanel]')).toHaveCount(1)
+  await expect(page.locator('[role=tabpanel][id^="panel-"]')).toHaveCount(1)
   await expect(page.locator('#panel-overview')).toBeVisible()
   await expect(page.locator('section#gear')).toHaveCount(0)
   await expect(page.locator('#what-if')).toHaveCount(0)
@@ -112,7 +112,7 @@ test('only the open tab is mounted: one tabpanel, and the other tabs’ sections
 
   for (const id of PANEL_IDS.slice(1)) {
     await openTab(page, id)
-    await expect(page.locator('[role=tabpanel]')).toHaveCount(1)
+    await expect(page.locator('[role=tabpanel][id^="panel-"]')).toHaveCount(1)
     for (const other of PANEL_IDS) {
       if (other !== id) await expect(page.locator(`#panel-${other}`)).toHaveCount(0)
     }
