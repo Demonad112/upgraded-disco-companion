@@ -53,9 +53,15 @@ test.describe('strategy rows', () => {
   })
 })
 
+// Phones keep the map in a sheet that "Open map" opens (PX7); from 721px up it is on the page.
+async function openMap(page: import('@playwright/test').Page) {
+  await page.goto('atlas/')
+  if ((page.viewportSize()?.width ?? 1280) <= 720) await page.getByRole('button', { name: 'Open map' }).click()
+}
+
 test.describe('atlas map panel', () => {
   test('the legend sits in the panel with counts', async ({ page }) => {
-    await page.goto('atlas/')
+    await openMap(page)
     const legend = page.getByRole('list', { name: 'Map legend' })
     await expect(legend).toContainText(/Guide\s*\d+/)
     await expect(legend).toContainText(/Trap\s*\d+/)
@@ -64,7 +70,7 @@ test.describe('atlas map panel', () => {
   })
 
   test('search shows a result count and has a clear button', async ({ page }) => {
-    await page.goto('atlas/')
+    await openMap(page)
     const box = page.getByRole('searchbox', { name: 'Find an Atlas node' })
     await expect(page.getByRole('button', { name: 'Clear search' })).toHaveCount(0)
     await box.fill('trap')
@@ -77,7 +83,7 @@ test.describe('atlas map panel', () => {
   })
 
   test('map controls zoom and fit by button and by key', async ({ page }) => {
-    await page.goto('atlas/')
+    await openMap(page)
     const ctl = page.getByRole('group', { name: 'Map zoom' })
     await expect(ctl.getByRole('button')).toHaveCount(3)
     const canvas = page.locator('#atlas-map canvas')
@@ -153,6 +159,7 @@ test('compact dashboard and atlas do not scroll sideways at 280 and 390px', asyn
 
 test('R38: /atlas/ carries the level-only tier planner (no import needed)', async ({ page }) => {
   await page.goto('atlas/')
+  await page.getByText('Which tier to run').click()
   const panel = page.getByRole('region', { name: 'Survivability by waystone tier' })
   await expect(panel).toContainText('General estimate from level only', { timeout: 15_000 })
   await panel.getByLabel('Your level').fill('70')
