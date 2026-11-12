@@ -10,6 +10,7 @@ Each has at least one open row. Owner-side rows are tracked in `../remaining/REM
 - [N2](N2.md): done, PR open (row R62 closed; no open rows)
 - [PL1](PL1.md): active, this branch (plan 2026-11-08; open rows are register batches N1–N3)
 - [PV1](PV1.md): done, PR open (PoB2 MCP verify plan; open rows R63–R67 for PV2, PV3)
+- [PX](PX.md): active, this branch (plan 2026-11-12; open rows are register batches PP1–PP3, PX0–PX12)
 
 ## Archive (`archive/`)
 - [CD1](archive/CD1.md): archived, PR #115 (rows → R56)
