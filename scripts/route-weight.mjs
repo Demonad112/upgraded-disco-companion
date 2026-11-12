@@ -3,14 +3,17 @@
 import { existsSync, readFileSync } from 'node:fs'
 import { brotliCompressSync } from 'node:zlib'
 const out = 'apps/web/out'
-// Brotli budgets (bytes). `/` raised 190,000 -> 192,000 in CH5: shared classes land on `/`. Any other route <= 250,000.
-const BUDGET = { 'index.html': 192_000 }
-const DEFAULT_BUDGET = 250_000
+// Brotli budgets (bytes), counting only what a modern browser downloads: `<script noModule>` (Next's 35,158 B br
+// polyfill chunk) is skipped, and every budget was lowered by that amount so no headroom is gained (PERF-PLAN PX11).
+// `/` was 192,000 (raised from 190,000 in CH5: shared classes land on `/`); any other route was 250,000.
+const NOMODULE_BR = 35_158
+const BUDGET = { 'index.html': 192_000 - NOMODULE_BR }
+const DEFAULT_BUDGET = 250_000 - NOMODULE_BR
 let over = 0
-for (const p of ['index.html', 'checklist/index.html', 'character/index.html', 'atlas/index.html', 'dashboard/index.html', 'trade/index.html']) {
+for (const p of ['index.html', 'checklist/index.html', 'character/index.html', 'atlas/index.html', 'dashboard/index.html', 'trade/index.html', 'methodology/index.html', 'whats-new/index.html']) {
   if (!existsSync(`${out}/${p}`)) continue
   const html = readFileSync(`${out}/${p}`, 'utf8')
-  const files = new Set([...html.matchAll(/\/_next\/static\/chunks\/[^"']+\.(?:js|css)/g)].map((m) => m[0]))
+  const files = new Set([...html.replace(/<script\b[^>]*\bnoModule\b[^>]*>/gi, '').matchAll(/\/_next\/static\/chunks\/[^"']+\.(?:js|css)/g)].map((m) => m[0]))
   let raw = 0, br = 0
   for (const f of files) { const d = readFileSync(out + f); raw += d.length; br += brotliCompressSync(d).length }
   console.log(p.padEnd(24), String(files.size).padStart(3), 'files', String(raw).padStart(9), 'raw', String(br).padStart(8), 'br',
