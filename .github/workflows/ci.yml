@@ -148,6 +148,6 @@ jobs:
         env:
           GITHUB_ACTIONS: ''
         run: npm run build
-      - name: Lighthouse (mobile, / and /character/)
+      - name: Lighthouse (mobile, all 8 routes, 3 runs)
         if: steps.scope.outputs.code == 'true'
         run: npx --yes @lhci/cli@0.14.0 autorun --config=lighthouserc.json
