@@ -123,7 +123,7 @@ export default function SearchDialog({ onClose }: { onClose: () => void }) {
                 }`}
               >
                 <span
-                  className={`mt-0.5 shrink-0 text-[10px] font-medium tracking-wide uppercase ${CATEGORY_COLORS[entry.category]}`}
+                  className={`mt-0.5 shrink-0 text-[11px] font-medium tracking-wide uppercase ${CATEGORY_COLORS[entry.category]}`}
                 >
                   {entry.category}
                 </span>
@@ -139,7 +139,7 @@ export default function SearchDialog({ onClose }: { onClose: () => void }) {
             </li>
           ))}
         </ul>
-        <div className="flex items-center justify-between border-t border-line px-4 py-2 text-[10px] text-ink-mute">
+        <div className="flex items-center justify-between border-t border-line px-4 py-2 text-[11px] text-ink-mute">
           <span>↑↓ to navigate · Enter to select</span>
           <span>Esc to close</span>
         </div>

@@ -1,46 +1,16 @@
-/* Home only (H1): start picker and the one-line phone hero. */
-.start-picker {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 0.75rem;
-}
-.start-tile,
-.start-change {
+/* Home only: the first-visit actions, and the returning-player hero. */
+.home-start {
   display: flex;
-  flex-direction: column;
-  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.75rem;
   justify-content: center;
-  gap: 0.5rem;
-  aspect-ratio: 1;
-  padding: 0.75rem;
-  font-family: var(--font-heading);
-  font-size: 15px;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--ink);
 }
-.start-tile svg {
-  width: 2rem;
-  height: 2rem;
-  color: var(--accent);
+.home-start .btn {
+  min-height: var(--tap-min);
 }
-/* Chosen: the tile spans two columns; Change keeps the row height. */
-.start-tile:has(+ .start-change) {
-  grid-column: span 2;
-  aspect-ratio: auto;
-}
-.start-change {
-  font-size: 13px;
-  color: var(--ink-dim);
-}
-
-@media (min-width: 721px) {
-  .start-tile,
-  .start-change {
-    flex-direction: row;
-    aspect-ratio: auto;
-    padding: 0.75rem 1rem;
-  }
+/* A saved character (LastCharacterCard rendered): the hero is the title only. */
+.home-bento:has(.lc-plate) .hero-extra {
+  display: none;
 }
 
 /* Hero C, compact bold: pill, two-line title, gold gem rule, count row. */

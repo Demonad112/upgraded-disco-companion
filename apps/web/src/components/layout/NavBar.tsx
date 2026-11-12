@@ -70,7 +70,7 @@ export function NavBar() {
   return (
     <nav className="site-nav" aria-label="Primary">
       <div className="shell flex items-center gap-x-1 py-2">
-        <Link href="/" aria-label="PoE2 Endgame Companion" className="mr-2 flex shrink-0 items-center gap-2 sm:mr-4">
+        <Link href="/" aria-label="PoE2 Endgame Companion" className="mr-2 flex shrink-0 items-center gap-2 max-sm:min-w-11 max-sm:justify-center sm:mr-4">
           <svg viewBox="0 0 24 24" className="size-8 shrink-0" fill="none" aria-hidden>
             <path d="M12 2 L20 12 L12 22 L4 12 Z" stroke="var(--accent)" strokeWidth="1.5" fill="var(--accent-soft)" />
             <path d="M12 6 L16 12 L12 18 L8 12 Z" fill="var(--accent)" opacity="0.8" />
@@ -119,7 +119,7 @@ export function NavBar() {
             </svg>
             <span className="hidden lg:inline">Search</span>
             {/* Keyboard hint is noise on touch devices. */}
-            <kbd className="hidden border border-line px-1 py-0.5 font-mono text-[10px] text-ink-mute lg:inline">
+            <kbd className="hidden border border-line px-1 py-0.5 font-mono text-[11px] text-ink-mute lg:inline">
               {shortcut}
             </kbd>
           </button>

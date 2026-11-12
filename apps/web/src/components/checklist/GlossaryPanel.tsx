@@ -9,7 +9,7 @@ export function GlossaryPanel() {
       title="Glossary — endgame terms"
       summary="Waystones, Powerful Map Bosses, tablets, Crisis Fragments, Origin Cores, Masters, Honour and more."
       badge={
-        <span className="border border-line px-1.5 py-0.5 text-[10px] text-ink-mute">
+        <span className="border border-line px-1.5 py-0.5 text-[11px] text-ink-mute">
           {glossary.length} terms
         </span>
       }

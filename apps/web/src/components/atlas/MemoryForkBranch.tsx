@@ -30,7 +30,7 @@ export function MemoryForkBranch({ fork }: { fork: MemoryFork }) {
           aria-label={`Allocated ${fork.title}`}
           className="size-4"
         />
-        <h4 className="font-semibold text-ink">{fork.title}</h4>
+        <h2 className="font-semibold text-ink">{fork.title}</h2>
         <ProOnly><SourceFlag source={fork.source} /></ProOnly>
         <span className="ml-auto">
           <ShowOnTreeButton names={fork.treeNodes} label={fork.title} />

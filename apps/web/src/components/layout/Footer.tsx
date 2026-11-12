@@ -15,7 +15,7 @@ const TOOLS = [
   { href: "/character", label: "Character" },
   { href: "/checklist", label: "Checklist" },
   { href: "/atlas", label: "Atlas Tree" },
-  { href: "/dashboard", label: "Dashboard" },
+  { href: "/dashboard", label: "Farm" },
   { href: "/trade", label: "Price check" },
 ] as const;
 

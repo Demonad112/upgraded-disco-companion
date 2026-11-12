@@ -21,7 +21,7 @@
   --line-strong: #36343c;
   --ink: #f3eee4;
   --ink-dim: #b1aca3;
-  --ink-mute: #8f897f;
+  --ink-mute: #9b958b;
   --accent: #e3b341;
   --accent-dim: #8a6d22;
   --accent-soft: #e3b3411a;
@@ -68,12 +68,12 @@
   --lift: var(--card-highlight);
   --lift-raised: var(--card-highlight), 0 16px 40px -14px color-mix(in srgb, black 75%, transparent);
   --lift-distance: 3px;
-  /* Data panels (UI-PLAN U2): tinted glass under text and numbers, so star lines
+  /* Data panels (UI-PLAN U2, solid since PX1): an opaque fill under text and numbers, so star lines
      don't cross them. Home and hero cards stay clear. Painted as an image layer
      (styles/surfaces.css) so it stacks over the sky dim instead of replacing it.
      No blur (G3): a backdrop-filter makes every panel its own compositor layer,
      so there is no blur token (U2-4 removed --data-fill-blur). */
-  --data-fill: color-mix(in srgb, var(--surface) 72%, transparent);
+  --data-fill: var(--surface); /* opaque: no text is legible through a data panel (PX1) */
 
   /* Type (2.5). Families are wired in layout.tsx through next/font. */
   --font-heading: var(--font-garamond), ui-serif, Georgia, serif;
@@ -102,6 +102,7 @@
   --page-max: 1180px;
   --gutter: max(20px, env(safe-area-inset-left), env(safe-area-inset-right));
   --tap-min: 44px;
+  --fs-micro: 11px; /* floor for uppercase mono labels and chips; sentences are 12px or more (PX8 row 6) */
   --nav-h: 4rem;
   --tabbar-h: 3.5rem; /* phone tab bar, without the safe-area inset (styles/nav.css) */
   --focus-ring: 2px solid var(--accent);

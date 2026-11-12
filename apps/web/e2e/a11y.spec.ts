@@ -58,8 +58,10 @@ test('a step toggle flips from a click just outside its visible circle', async (
   await page.goto('checklist/')
   const toggle = page.locator(STEP_TOGGLE).first()
   await expect(toggle).toHaveAttribute('aria-pressed', 'false')
-  // 3 px left of the box: outside the circle, inside the 24 px ::after.
-  await toggle.click({ position: { x: -3, y: 8 } })
+  // Fine pointer: 3 px left of the box, outside the circle and inside the 24 px ::after.
+  // Coarse pointer: the button is the 44 px box itself (circle centred), so click its corner.
+  const coarse = await page.evaluate(() => matchMedia('(pointer: coarse)').matches)
+  await toggle.click({ position: coarse ? { x: 3, y: 22 } : { x: -3, y: 8 } })
   await expect(toggle).toHaveAttribute('aria-pressed', 'true')
 })
 

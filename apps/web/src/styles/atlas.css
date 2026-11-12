@@ -170,3 +170,67 @@
     border-color: CanvasText;
   }
 }
+
+/* Phones (PX7): the map is a bottom sheet opened by a row's Map button (or "Open map"). It is laid out while shut, off
+   screen, so the canvas already has a size when a node is framed. From 721px up none of this applies. */
+.atlas-open-map,
+.atlas-sheet-close,
+.atlas-backdrop {
+  display: none;
+}
+@media (max-width: 720px) {
+  .atlas-open-map {
+    display: inline-flex;
+    align-self: flex-start;
+    min-height: var(--tap-min);
+  }
+  .atlas-backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 55;
+    background: var(--qp-backdrop);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity var(--qp-sheet-motion);
+  }
+  .atlas-backdrop[data-open] {
+    opacity: 1;
+    visibility: visible;
+  }
+  .atlas-sheet {
+    position: fixed;
+    inset: auto 0 0 0;
+    z-index: 60;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    max-height: 92dvh;
+    overflow-y: auto;
+    padding: 12px var(--gutter) calc(12px + env(safe-area-inset-bottom, 0px));
+    border-width: 1px 0 0;
+    background: var(--surface);
+    visibility: hidden;
+    transform: translateY(100%);
+    transition: transform var(--qp-sheet-motion) ease-out, visibility 0s linear var(--qp-sheet-motion);
+  }
+  .atlas-sheet[data-open] {
+    visibility: visible;
+    transform: none;
+    transition: transform var(--qp-sheet-motion) ease-out;
+  }
+  .atlas-sheet-close {
+    display: inline-flex;
+    align-self: flex-end;
+    min-height: var(--tap-min);
+  }
+  .atlas-sheet .atlas-map {
+    height: min(58dvh, 26rem);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .atlas-sheet,
+  .atlas-backdrop {
+    transition: none;
+  }
+}
