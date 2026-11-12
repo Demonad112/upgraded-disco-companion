@@ -34,13 +34,14 @@ export * from './offence.js'
 export * from './damage.js'
 export * from './focus.js'
 export * from './axis.js'
+export * from './easy-wins.js'
 
 /**
  * Relative cost weights used for ranking. Free work is worth doing first: it
  * spends nothing, so it is weighted at half the cheapest paid kind. This is a
  * cost term (a documented preference), not a per-recommendation significance.
  */
-const COST_WEIGHT: Record<Cost['kind'], number> = {
+export const COST_WEIGHT: Record<Cost['kind'], number> = {
   free: 0.5,
   passive: 2,
   gear: 4,

@@ -13,7 +13,9 @@ import { Recommendations } from '@/components/Recommendations'
 import { Skeleton } from '@/components/Skeleton'
 import { changedFor } from '@/lib/characterNotes'
 import type { TabId } from '@/lib/characterTab'
+import { usePrefs } from '@/hooks/usePrefs'
 import { ChangedSincePanel } from './ChangedSincePanel'
+import { EasyWins } from './EasyWins'
 import { CharacterTabs, type TabDef } from './CharacterTabs'
 import { CopyLink } from './CopyLink'
 import { ShareCard } from './ShareCard'
@@ -56,10 +58,12 @@ function prefetchTabs() {
 function OverviewPanel({
   analysis: a,
   history,
+  tiersState,
   sourceUrl,
   expandFindings,
 }: PanelProps & { sourceUrl: string | null; expandFindings: boolean }) {
   const returning = changedFor(a, history.snapshots).available
+  const { proDetail } = usePrefs()
   return (
     <Panel id="overview" title="Overview">
       <Showcase analysis={a}>
@@ -81,6 +85,7 @@ function OverviewPanel({
           </>
         }
       />
+      <EasyWins analysis={a} tiersState={tiersState} proDetail={proDetail} />
       {a.warnings.map((w) => (
         <p key={w} data-surface="data" className="card border-warn/50 text-xs leading-relaxed text-warn">
           {w}
