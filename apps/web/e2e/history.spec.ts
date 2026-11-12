@@ -1,8 +1,9 @@
-import { PROFILE_URL, expect, test } from './fixtures'
+import { PROFILE_URL, expect, openTab, test } from './fixtures'
 
 test('the Progress panel charts each figure across imports', async ({ page }) => {
   await page.goto(`character/?import=${encodeURIComponent(PROFILE_URL)}`)
   await expect(page.getByRole('heading', { name: /Athrynas/ }).first()).toBeVisible({ timeout: 30_000 })
+  await openTab(page, 'progress')
   await expect
     .poll(() => page.evaluate(() => localStorage.getItem('poe2-endgame-companion:v1')?.includes('"snapshots":[{') ?? false))
     .toBe(true)
@@ -20,6 +21,7 @@ test('the Progress panel charts each figure across imports', async ({ page }) =>
   })
   await page.reload()
   await expect(page.getByRole('heading', { name: /Athrynas/ }).first()).toBeVisible({ timeout: 30_000 })
+  await openTab(page, 'progress')
 
   const panel = page.locator('details#progress-history')
   await panel.locator('summary').first().click()

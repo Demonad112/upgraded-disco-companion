@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import type { Page } from '@playwright/test'
-import { PROFILE_URL, expect, test } from './fixtures'
+import { PROFILE_URL, expect, openTab, test } from './fixtures'
 
 /**
  * Unique/corrupted mods have no craftable ladder; their text comes from mod-display.json,
@@ -30,6 +30,8 @@ async function importCharacter(page: Page) {
   await page.getByLabel('poe.ninja character URL').fill(PROFILE_URL)
   await page.getByRole('button', { name: 'Analyse', exact: true }).click()
   await expect(page.getByRole('heading', { name: /Athrynas/ }).first()).toBeVisible({ timeout: 30_000 })
+  // The mod text is fetched when a tab that shows it (Gear, Damage, Advanced) opens, not on import.
+  await openTab(page, 'advanced')
   await page.evaluate(() => document.querySelectorAll('details').forEach((d) => (d.open = true)))
 }
 

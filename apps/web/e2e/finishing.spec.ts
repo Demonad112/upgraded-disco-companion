@@ -1,4 +1,4 @@
-import { PROFILE_URL, expect, test } from './fixtures'
+import { PROFILE_URL, expect, openTab, test } from './fixtures'
 
 const importUrl = `character/?import=${encodeURIComponent(PROFILE_URL)}`
 
@@ -22,8 +22,8 @@ test('the share card previews and downloads a PNG of the verdict', async ({ page
 
 test('what-if marks where a hit bar started', async ({ page }) => {
   await page.goto(importUrl)
-  // What-if lives in the Advanced fold (CD2).
-  await page.locator('#advanced-fold > summary').click({ timeout: 30_000 })
+  // What-if lives in the Defence tab.
+  await openTab(page, 'defences')
   const panel = page.locator('#what-if')
   await expect(panel).toBeVisible({ timeout: 30_000 })
   await expect(panel.locator('.whatif-ghost')).toHaveCount(0)
@@ -71,8 +71,12 @@ test('glossary terms never sit inside another interactive element', async ({ pag
 
   await page.goto(importUrl)
   await expect(page.getByRole('heading', { name: /Athrynas/ }).first()).toBeVisible({ timeout: 30_000 })
-  await page.locator('details').evaluateAll((all) => all.forEach((d) => ((d as HTMLDetailsElement).open = true)))
-  expect(await page.evaluate(nestedTerms)).toBe(0)
+  // Each tab mounts its own panel, so open and check every one.
+  for (const id of ['overview', 'defences', 'damage', 'gear', 'progress', 'advanced'] as const) {
+    await openTab(page, id)
+    await page.locator('details').evaluateAll((all) => all.forEach((d) => ((d as HTMLDetailsElement).open = true)))
+    expect(await page.evaluate(nestedTerms), `glossary terms nested in the ${id} tab`).toBe(0)
+  }
 })
 
 test('an open glossary tip follows its word when the page scrolls', async ({ page }) => {

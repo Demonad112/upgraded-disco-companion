@@ -1,4 +1,4 @@
-import { PROFILE_URL, expect, test } from './fixtures'
+import { PROFILE_URL, expect, openTab, test } from './fixtures'
 
 const importUrl = `character/?import=${encodeURIComponent(PROFILE_URL)}`
 
@@ -43,6 +43,7 @@ test('two imported characters can be compared', async ({ page }) => {
   })
   await page.reload()
   await expect(page.getByRole('heading', { name: /Athrynas/ }).first()).toBeVisible({ timeout: 30_000 })
+  await openTab(page, 'progress')
   const panel = page.locator('details#compare')
   await panel.locator('summary').click()
   await expect(panel.getByRole('columnheader', { name: /Bob/ })).toBeVisible()
