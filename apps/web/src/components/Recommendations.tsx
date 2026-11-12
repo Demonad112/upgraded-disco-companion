@@ -96,13 +96,12 @@ function Card({ r, rank }: { r: Recommendation; rank: number }) {
         </Tag>
       </div>
       <h3 className="title-sentence mt-2.5 text-[17px] text-ink">{r.action}</h3>
-      <p className="mt-1.5 text-[13px] leading-relaxed text-ink-dim"><Glossed>{r.rationale}</Glossed></p>
 
       <div className="mt-3">
         <ImpactBar r={r} />
       </div>
 
-      {/* The caddy line above is the default. The measured reasoning, cost, trade-off and evidence sit behind
+      {/* The default card is the action, the gain and this button. The rationale, measured reasoning, cost, trade-off and evidence sit behind
           "Why?", and open by default with Pro detail on. Directly under the body, not pinned to the card's foot. */}
       <div className="mt-2">
         <button
@@ -115,6 +114,7 @@ function Card({ r, rank }: { r: Recommendation; rank: number }) {
         </button>
         {more ? (
           <div className="mt-2 space-y-2 border-l border-line pl-3">
+            <p className="text-[13px] leading-relaxed text-ink-dim"><Glossed>{r.rationale}</Glossed></p>
             {r.detail ? <p className="text-xs leading-relaxed text-ink-dim">{r.detail}</p> : null}
             <p className="text-xs leading-relaxed text-ink-dim">
               <span className="label-field">Cost:</span> {r.cost.detail}

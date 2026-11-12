@@ -8,10 +8,11 @@
  * or drops out rather than showing a zero.
  */
 
-import { useEffect, useRef, useSyncExternalStore, type ReactNode } from 'react'
+import { useEffect, useRef, useSyncExternalStore, type CSSProperties, type ReactNode } from 'react'
 import { dataAge, toSnapshot, type Analysis, type BuildAssessment, type BuildTier } from '@poe2/core'
 import { Tag } from '@/components/ui'
-import { CharacterCard } from '@/components/home/LastCharacterCard'
+import { DMG_VAR, cap } from './dmg'
+import '@/styles/buildcard.css'
 import { gradeText } from '@/lib/grade'
 
 let mountedAt: number | null = null
@@ -35,7 +36,7 @@ function GradeLadder({ assessment }: { assessment: BuildAssessment }) {
           <li
             key={l}
             data-lit={lit || undefined}
-            className={`grid size-7 place-items-center border font-display text-sm font-bold ${
+            className={`grid size-6 place-items-center border font-display text-sm font-bold ${
               lit ? 'border-accent bg-accent-soft text-accent' : 'border-line text-ink-mute'
             }`}
           >
@@ -46,18 +47,6 @@ function GradeLadder({ assessment }: { assessment: BuildAssessment }) {
     </ol>
   )
 }
-
-// Inline rather than utilities: these sizes are the showcase's alone, and every new utility lands in the CSS every route loads.
-const STAMP = {
-  width: 'clamp(104px,11vw,120px)',
-  height: 'clamp(104px,11vw,120px)',
-  borderWidth: 3,
-  transform: 'rotate(-6deg)',
-  // Engraved plate (IMG-2): a bevelled metal rim outside, a sunken well and an inner gold hairline inside.
-  background: 'linear-gradient(180deg, var(--accent-soft), transparent 60%), var(--well)',
-  boxShadow:
-    '0 0 0 1px black, 0 0 0 4px var(--metal-hi), 0 0 0 5px black, inset 0 2px 6px black, inset 0 0 0 3px var(--well), inset 0 0 0 4px var(--accent-line)',
-} as const
 
 /**
  * The grade as a square ink stamp. It lands once on mount (Web Animations, so no global keyframes); with reduced
@@ -80,13 +69,8 @@ function GradeStamp({ letter }: { letter: string }) {
   }, [])
   const long = letter.length > 1
   return (
-    <div
-      ref={ref}
-      data-grade-stamp
-      className="grid shrink-0 place-items-center border-accent"
-      style={STAMP}
-    >
-      <span className="font-display leading-none font-bold text-gradient-gold" style={{ fontSize: long ? 'clamp(34px,4vw,40px)' : 'clamp(68px,8vw,80px)' }}>
+    <div ref={ref} data-grade-stamp className="bc-stamp">
+      <span className="text-gradient-gold" style={{ fontSize: long ? 22 : 40 }}>
         {letter}
       </span>
     </div>
@@ -96,56 +80,150 @@ function GradeStamp({ letter }: { letter: string }) {
 /** Opens the "Why this grade" disclosure before the fragment link scrolls to it. */
 const openAssessment = () => document.getElementById('assessment')?.setAttribute('open', '')
 
+/** Compact figure: 225,652 -> 225.7k, 1,477 -> 1,477. Same cut-offs as the home card. */
+function compact(n: number): string {
+  if (Math.abs(n) >= 1_000_000) return `${(n / 1_000_000).toFixed(2)}M`
+  if (Math.abs(n) >= 10_000) return `${(n / 1000).toFixed(1)}k`
+  return n.toLocaleString(undefined, { maximumFractionDigits: 0 })
+}
+
+/**
+ * A tile figure. The final text is in the DOM from the first paint (`data-value` holds the number); unless motion is
+ * reduced it then counts up from 80 % over 480 ms and lands on the same text.
+ */
+function Figure({ value, delay }: { value: number | null; delay: number }) {
+  const ref = useRef<HTMLSpanElement>(null)
+  useEffect(() => {
+    const el = ref.current
+    if (!el || value === null || window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return
+    let raf = 0
+    const start = performance.now() + delay
+    const tick = (now: number) => {
+      const t = Math.min(1, Math.max(0, (now - start) / 480))
+      el.textContent = compact(value * (0.8 + 0.2 * (1 - (1 - t) ** 3)))
+      if (t < 1) raf = requestAnimationFrame(tick)
+      else el.textContent = compact(value)
+    }
+    raf = requestAnimationFrame(tick)
+    return () => {
+      cancelAnimationFrame(raf)
+      el.textContent = compact(value)
+    }
+  }, [value, delay])
+  if (value === null) return <span className="bc-val" data-missing>not reported</span>
+  return (
+    <span ref={ref} className="bc-val tabular" data-value={value} title={value.toLocaleString()}>
+      {compact(value)}
+    </span>
+  )
+}
+
+const RES_TONE = { fire: 'var(--dmg-fire)', cold: 'var(--dmg-cold)', lightning: 'var(--dmg-lightning)', chaos: 'var(--dmg-chaos)' } as const
+const RES_LABEL = { fire: 'Fire', cold: 'Cold', lightning: 'Light.', chaos: 'Chaos' } as const
+
 export function Showcase({ analysis, children }: { analysis: Analysis; children?: ReactNode }) {
-  const { identity, assessment } = analysis
+  const { identity, assessment, defense, dps } = analysis
   const nowMs = useSyncExternalStore(subscribeNever, clientNow, serverNow)
   const age = nowMs === null ? null : dataAge(identity.updatedUtc, new Date(nowMs))
   const grade = gradeText(assessment)
   const snap = toSnapshot(analysis, '')
-  const figure = (label: string, value: number | null) => ({ label, value: value ?? 0, show: value !== null && value > 0 })
+  const skill = dps.primary
+  const hitType = defense.lowestMaximumHitType
+  const tiles: { label: string; value: number | null; tone: string; sub?: string }[] = [
+    { label: 'Main skill DPS', value: snap.dps && snap.dps > 0 ? snap.dps : null, tone: 'var(--accent)', sub: skill?.dominantType ? cap(skill.dominantType) : undefined },
+    { label: 'Killed by', value: snap.weakestHit && snap.weakestHit > 0 ? snap.weakestHit : null, tone: 'var(--dmg-physical)', sub: hitType ? cap(hitType) : undefined },
+    { label: 'Life', value: snap.life && snap.life > 0 ? snap.life : null, tone: 'var(--dmg-fire)' },
+    { label: 'Energy shield', value: snap.energyShield && snap.energyShield > 0 ? snap.energyShield : null, tone: 'var(--dmg-cold)' },
+  ]
+  const resists = (['fire', 'cold', 'lightning', 'chaos'] as const).map((t) => defense.resistances.find((r) => r.type === t))
 
   return (
     <div data-showcase>
-      <CharacterCard
-        titleId="showcase-title"
-        eyebrow="Character"
-        name={identity.name}
-        level={identity.level ?? null}
-        className={[identity.className, identity.league].filter(Boolean).join(' · ') || null}
-        status={age ? <span className={age.stale ? 'text-danger' : undefined}>{age.label}{age.stale ? ' · re-import before buying' : ''}</span> : null}
-        figures={[
-          figure('Life', snap.life),
-          figure('Energy shield', snap.energyShield),
-          figure('Main skill DPS', snap.dps),
-          figure('Killed by', snap.weakestHit),
-        ]}
-        resists={snap}
-        actions={children}
-      >
-        <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-3">
+      <section aria-labelledby="showcase-title" className="bc">
+        <div className="bc-head">
+          <div className="min-w-0">
+            <div className="bc-top">{[identity.className, identity.league].filter(Boolean).join(' · ') || 'Character'}</div>
+            <h2 id="showcase-title" className="bc-name text-gradient-gold">{identity.name}</h2>
+          </div>
+          <div className="bc-level" aria-label={identity.level === null ? 'Level unknown' : `Level ${identity.level}`}>
+            <span>
+              <small>Lv</small>
+              {identity.level ?? '—'}
+            </span>
+          </div>
+        </div>
+        <p className="bc-skill" style={{ '--c': DMG_VAR[skill?.dominantType ?? ''] ?? 'var(--accent)' } as CSSProperties}>
+          {skill ? (
+            <>
+              <i aria-hidden />
+              <span>{skill.name}</span>
+            </>
+          ) : null}
+          {age ? (
+            <time className={`bc-age${age.stale ? ' text-danger' : ''}`} dateTime={identity.updatedUtc ?? undefined} title={age.stale ? 'Re-import before buying' : undefined}>
+              {age.label.replace(/^updated /, '')}
+              {age.stale ? ' · re-import' : ''}
+            </time>
+          ) : null}
+        </p>
+
+        <div className="bc-grade">
           {grade ? (
             <>
               <GradeStamp letter={grade.letter} />
               <div className="min-w-0">
-                <div className="label-metric">Grade</div>
-                <div className="mt-1.5">
+                <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1">
                   <GradeLadder assessment={assessment} />
+                  <span className="tabular font-mono text-[11px] whitespace-nowrap text-ink-dim">score {grade.score}</span>
                 </div>
-                <div className="tabular mt-1.5 font-mono text-sm text-ink-dim">score {grade.score}</div>
+                {analysis.pobStats ? (
+                  <div className="mt-1">
+                    <Tag tone="good">Cross-validated</Tag>
+                  </div>
+                ) : null}
               </div>
             </>
           ) : (
             <div className="label-metric">Grade unknown</div>
           )}
-          {analysis.pobStats ? <Tag tone="good">Cross-validated</Tag> : null}
         </div>
-        <p className="mt-3 max-w-prose text-sm leading-relaxed text-ink-dim">
+        <p className="bc-note">
           {assessment.note}{' '}
           <a href="#assessment" onClick={openAssessment} className="whitespace-nowrap text-accent underline underline-offset-2">
             Why this grade
           </a>
         </p>
-      </CharacterCard>
+
+        <dl className="bc-tiles">
+          {tiles.map((t, i) => (
+            <div key={t.label} className="bc-tile" style={{ '--c': t.tone } as CSSProperties}>
+              <dt>{t.label}</dt>
+              <dd>
+                <Figure value={t.value} delay={i * 40} />
+                {t.sub && t.value !== null ? <span className="bc-sub">{t.sub}</span> : null}
+              </dd>
+            </div>
+          ))}
+        </dl>
+
+        <ul className="bc-res" aria-label="Resistances">
+          {resists.map((r, i) => {
+            const type = (['fire', 'cold', 'lightning', 'chaos'] as const)[i]!
+            const short = r?.underCap != null && r.underCap > 0
+            return (
+              <li key={type} data-short={short || undefined} style={{ '--c': RES_TONE[type] } as CSSProperties}>
+                {RES_LABEL[type]}
+                <b>
+                  {r?.value == null ? 'unknown' : r.value}
+                  {r?.value != null && r.max != null ? <em>/{r.max}</em> : null}
+                </b>
+              </li>
+            )
+          })}
+        </ul>
+
+        {children ? <div className="bc-actions">{children}</div> : null}
+      </section>
     </div>
   )
 }

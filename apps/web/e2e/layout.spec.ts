@@ -22,6 +22,8 @@ test.describe('desktop layout', () => {
   test('findings flow into two columns', async ({ page }) => {
     await page.goto(`character/?import=${encodeURIComponent(PROFILE_URL)}`)
     await expect(page.getByRole('heading', { name: /Athrynas/ }).first()).toBeVisible({ timeout: 30_000 })
+    // The full findings list opens in place under the Top 3.
+    await page.getByRole('button', { name: /^Show all/ }).click()
     const cards = page.locator('section:has(> div [role="group"][aria-label="Focus"]) > ul > li')
     expect(await cards.count()).toBeGreaterThan(1)
     await expect(cards.nth(1)).toBeVisible()

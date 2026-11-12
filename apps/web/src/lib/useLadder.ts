@@ -13,8 +13,11 @@ import { useEffect, useState } from 'react'
 import { fetchLadder, type LadderSummary } from '@poe2/core'
 import { PROXY_BASE } from './proxy'
 
-export function useLadder(league: string | null, ascendancy: string | null): LadderSummary | null {
+/** `settled` is true once the request has answered (with a sample or without), or when there is nothing to ask for. */
+export function useLadder(league: string | null, ascendancy: string | null): { ladder: LadderSummary | null; settled: boolean } {
   const [summary, setSummary] = useState<LadderSummary | null>(null)
+  const [settledFor, setSettledFor] = useState<string | null>(null)
+  const key = league ? `${league}|${ascendancy ?? ''}` : null
 
   useEffect(() => {
     if (!league) {
@@ -29,12 +32,15 @@ export function useLadder(league: string | null, ascendancy: string | null): Lad
       league,
       ...(ascendancy ? { ascendancy } : {}),
     }).then((next) => {
-      if (!cancelled) setSummary(next)
+      if (!cancelled) {
+        setSummary(next)
+        setSettledFor(key)
+      }
     })
     return () => {
       cancelled = true
     }
-  }, [league, ascendancy])
+  }, [league, ascendancy, key])
 
-  return summary
+  return { ladder: summary, settled: key === null || settledFor === key }
 }

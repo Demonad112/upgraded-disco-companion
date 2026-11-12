@@ -6,12 +6,22 @@
  * `buildTradeQueries`); anything else, or a stat the trade snapshot cannot map, opens the site's own /trade page.
  */
 
-import { useEffect, useState } from 'react'
-import type { RecommendationReport, TradeStatMap } from '@poe2/core'
-import { fmt } from '@/components/ui'
+import { useEffect, useState, type ReactNode } from 'react'
+import type { Recommendation, RecommendationReport, TradeStatMap } from '@poe2/core'
+import { usePrefs } from '@/hooks/usePrefs'
 import { BASE_PATH, dataUrl } from '@/lib/basePath'
 import { TRADE_LEAGUE } from '@/lib/constants'
-import { fixAnchor, splitAction, topFixes, tradeLinkFor, tradeStatFor } from './topFixesData'
+import { fixAnchor, fixLines, topFixes, tradeLinkFor, tradeStatFor } from './topFixesData'
+
+let tradeMapRequest: Promise<TradeStatMap> | null = null
+/** One fetch of the trade map for the whole page, however many rows want it. */
+function loadTradeMap(): Promise<TradeStatMap> {
+  tradeMapRequest ??= fetch(dataUrl('trade-map.json'))
+    .then((r) => (r.ok ? (r.json() as Promise<{ map?: TradeStatMap }>) : Promise.reject(new Error(String(r.status)))))
+    .then((j) => j.map ?? {})
+    .catch(() => ({}) as TradeStatMap)
+  return tradeMapRequest
+}
 
 /** Internal stat id → trade id, resolved from the trade2 snapshot at build (`trade-map.json`, about 1 KB). Fetched only when a fix can use it. */
 export function useTradeMap(wanted: boolean): TradeStatMap | null {
@@ -19,11 +29,7 @@ export function useTradeMap(wanted: boolean): TradeStatMap | null {
   useEffect(() => {
     if (!wanted) return
     let live = true
-    const load = () =>
-      fetch(dataUrl('trade-map.json'))
-        .then((r) => (r.ok ? (r.json() as Promise<{ map?: TradeStatMap }>) : Promise.reject(new Error(String(r.status)))))
-        .then((j) => live && setMap(j.map ?? {}))
-        .catch(() => live && setMap({}))
+    const load = () => void loadTradeMap().then((m) => live && setMap(m))
     // Fetched when the browser is idle, not during the first paint (Safari has no requestIdleCallback).
     const ric = typeof window.requestIdleCallback === 'function'
     const handle = ric ? window.requestIdleCallback(load, { timeout: 3000 }) : window.setTimeout(load, 500)
@@ -36,10 +42,86 @@ export function useTradeMap(wanted: boolean): TradeStatMap | null {
   return map
 }
 
-export function TopFixes({ report, league }: { report: RecommendationReport; league?: string | null }) {
+/** One fix: action, one gain line, Details, and the one trade button. Shared by Top 3 and Easy wins. */
+export function FixRow({
+  f,
+  index,
+  map,
+  league,
+  pro,
+  note,
+}: {
+  f: Recommendation
+  index: number
+  map: TradeStatMap | null
+  league: string
+  pro: boolean
+  /** A muted line under the gain (Easy wins: how much of the gap it closes, or that the value is not measured). */
+  note?: ReactNode
+}) {
+  const { lead, gain, detail } = fixLines(f, pro)
+  const trade = map ? tradeLinkFor(f, map, league) : null
+  return (
+    <li className="flex gap-3 border border-line bg-sunken/65 p-3">
+      <span aria-hidden className="tabular grid size-7 shrink-0 place-items-center border border-accent font-mono text-sm text-accent">
+        {index}
+      </span>
+      <div className="min-w-0">
+        <p className="text-sm leading-snug font-medium text-ink">{lead}</p>
+        {detail ? <p className="mt-1 text-xs text-ink-mute">{detail}</p> : null}
+        {note ? <p className="mt-1 font-mono text-[11px] text-ink-mute">{note}</p> : null}
+        <div className="mt-2.5 flex flex-wrap items-center gap-2">
+          {gain ? <span className="tabular mr-1 font-mono text-xs text-good">{gain}</span> : null}
+          <a href={fixAnchor(f)} className="btn btn-secondary btn-sm" aria-label={`Details: ${lead}`}>
+            Details
+          </a>
+          {trade ? (
+            <a
+              href={trade}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="btn btn-secondary btn-sm"
+              aria-label={`Find on trade: search trade2 for ${lead.toLowerCase()}`}
+              data-trade="search"
+            >
+              Find on trade
+            </a>
+          ) : (
+            <a
+              href={`${BASE_PATH}/trade/`}
+              className="btn btn-secondary btn-sm"
+              aria-label={`Find on trade: open the trade page for ${lead.toLowerCase()}`}
+              data-trade="page"
+            >
+              Find on trade
+            </a>
+          )}
+        </div>
+      </div>
+    </li>
+  )
+}
+
+export function TopFixes({
+  report,
+  league,
+  all,
+  expand = false,
+}: {
+  report: RecommendationReport
+  league?: string | null
+  /** The full findings list, shown in place under "Show all (n)". */
+  all?: ReactNode
+  /** A link to `#findings` asks for the list to be open. */
+  expand?: boolean
+}) {
+  const [shown, setShown] = useState(false)
+  const open = shown || expand
   const fixes = topFixes(report)
+  const total = report.recommendations.length
   const map = useTradeMap(fixes.some((f) => tradeStatFor(f) !== null))
   const tradeLeague = league || TRADE_LEAGUE
+  const { proDetail } = usePrefs()
 
   return (
     <section data-surface="data" className="card min-w-0" aria-labelledby="top-fixes-title" data-top-fixes>
@@ -50,51 +132,41 @@ export function TopFixes({ report, league }: { report: RecommendationReport; lea
         <p className="mt-1.5 text-sm text-ink-dim">{report.summary || 'Nothing urgent to fix.'}</p>
       ) : (
         <ol className="mt-3 space-y-3">
-          {fixes.map((f, i) => {
-            const { lead, detail } = splitAction(f.action)
-            const trade = map ? tradeLinkFor(f, map, tradeLeague) : null
-            return (
-              <li key={f.id} className="flex gap-3 border border-line bg-sunken/65 p-3">
-                <span aria-hidden className="tabular grid size-7 shrink-0 place-items-center border border-accent font-mono text-sm text-accent">
-                  {i + 1}
-                </span>
-                <div className="min-w-0">
-                  <p className="text-sm leading-snug font-medium text-ink">{lead}</p>
-                  {detail ? <p className="mt-1 truncate text-xs text-ink-mute" title={detail}>{detail}</p> : null}
-                  <div className="mt-2.5 flex flex-wrap items-center gap-2">
-                    {f.impact ? (
-                      <span className="tabular mr-1 font-mono text-xs text-good">
-                        {f.impact.label}: {fmt(f.impact.from)}
-                        {f.impact.unit === 'percent' ? '%' : ''} → {fmt(f.impact.to)}
-                        {f.impact.unit === 'percent' ? '%' : ''}
-                      </span>
-                    ) : null}
-                    <a href={fixAnchor(f)} className="btn btn-ghost btn-sm" aria-label={`Details: ${lead}`}>
-                      Details
-                    </a>
-                    {trade ? (
-                      <a
-                        href={trade}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="btn btn-secondary btn-sm"
-                        aria-label={`Trade: search trade2 for ${lead.toLowerCase()}`}
-                        data-trade="search"
-                      >
-                        Trade
-                      </a>
-                    ) : (
-                      <a href={`${BASE_PATH}/trade/`} className="btn btn-secondary btn-sm" data-trade="page">
-                        Open /trade
-                      </a>
-                    )}
-                  </div>
-                </div>
-              </li>
-            )
-          })}
+          {fixes.map((f, i) => (
+            <FixRow key={f.id} f={f} index={i + 1} map={map} league={tradeLeague} pro={proDetail} />
+          ))}
         </ol>
       )}
+      {all && (total > fixes.length || report.suppressed.length > 0 || report.unresolved.length > 0) ? (
+        <div className="mt-3">
+          <button
+            type="button"
+            className="btn btn-ghost btn-sm"
+            aria-expanded={open}
+            aria-controls="findings"
+            onClick={() => setShown(!open)}
+          >
+            {open ? 'Show fewer' : `Show all (${total})`}
+          </button>
+          {open ? (
+            <div id="findings" className="mt-3">
+              {all}
+            </div>
+          ) : null}
+        </div>
+      ) : null}
+    </section>
+  )
+}
+
+/** Holds the Top 3's place (same heading, fixed height) until the full analysis has run, so the rows are written once. */
+export function TopFixesPlaceholder() {
+  return (
+    <section data-surface="data" className="card min-w-0" aria-labelledby="top-fixes-title" aria-busy="true" data-top-fixes data-pending>
+      <h3 id="top-fixes-title" className="h3">
+        Top 3 fixes
+      </h3>
+      <div className="skeleton mt-3" style={{ height: 'min(360px, 64vw + 130px)' }} />
     </section>
   )
 }

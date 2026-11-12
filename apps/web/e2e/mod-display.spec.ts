@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import type { Page } from '@playwright/test'
-import { PROFILE_URL, expect, test } from './fixtures'
+import { PROFILE_URL, expect, openTab, test } from './fixtures'
 
 /**
  * Unique/corrupted mods have no craftable ladder; their text comes from mod-display.json,
@@ -29,7 +29,11 @@ async function importCharacter(page: Page) {
   if ((await box.getAttribute('open')) === null) await page.getByText('Load another character').click()
   await page.getByLabel('poe.ninja character URL').fill(PROFILE_URL)
   await page.getByRole('button', { name: 'Analyse', exact: true }).click()
+  // The name heading is on Overview; a second import keeps the tab from the URL hash.
+  await openTab(page, 'overview')
   await expect(page.getByRole('heading', { name: /Athrynas/ }).first()).toBeVisible({ timeout: 30_000 })
+  // The mod text is fetched when a tab that shows it (Gear, Damage, Advanced) opens, not on import.
+  await openTab(page, 'advanced')
   await page.evaluate(() => document.querySelectorAll('details').forEach((d) => (d.open = true)))
 }
 
@@ -55,7 +59,11 @@ test('a failed mod-text fetch is retried once, so a blip does not leave raw ids'
   await page.route(/mod-display\.json/, (r) => (++fetches === 1 ? r.fulfill({ status: 500, body: 'x' }) : r.fallback()))
   await page.goto('character/')
   await importCharacter(page)
-  await expect(page.getByText(TEXT)).toBeVisible({ timeout: 10_000 })
+  // The retry's re-render can close the details opened above, so reopen until shown.
+  await expect(async () => {
+    await page.evaluate(() => document.querySelectorAll('details').forEach((d) => (d.open = true)))
+    await expect(page.getByText(TEXT)).toBeVisible({ timeout: 1_000 })
+  }).toPass({ timeout: 10_000 })
   expect(fetches).toBe(2)
 })
 
@@ -67,7 +75,11 @@ test('when the mod text stays unavailable, the page falls back to the raw id and
   })
   await page.goto('character/')
   await importCharacter(page)
-  await expect(page.getByText(RAW_ID)).toBeVisible()
+  // The raw id renders after the retry fails; that re-render can close the details opened above, so reopen until shown.
+  await expect(async () => {
+    await page.evaluate(() => document.querySelectorAll('details').forEach((d) => (d.open = true)))
+    await expect(page.getByText(RAW_ID)).toBeVisible({ timeout: 1_000 })
+  }).toPass({ timeout: 10_000 })
   await page.waitForTimeout(3_500)
   expect(fetches).toBe(2)
 })

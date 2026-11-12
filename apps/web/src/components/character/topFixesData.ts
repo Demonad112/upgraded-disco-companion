@@ -7,6 +7,7 @@ import {
   type RecommendationReport,
   type TradeStatMap,
 } from '@poe2/core'
+import { fmt } from '@/components/ui'
 
 /** The first `n` actionable findings, in the engine's rank order. Questions are not fixes. */
 export function topFixes(report: RecommendationReport, n = 3): Recommendation[] {
@@ -22,6 +23,24 @@ export function splitAction(action: string): { lead: string; detail: string | nu
   if (at < 0) return { lead: action, detail: null }
   const detail = action.slice(at + 3).trim()
   return { lead: action.slice(0, at).trim(), detail: detail ? detail.charAt(0).toUpperCase() + detail.slice(1) : null }
+}
+
+/**
+ * What one Top-3 row shows. Default (`pro` false): the action lead and one gain line, nothing else. The detail sentence
+ * is whole and only comes back with Pro detail; it is never cut (the old default clipped it with `truncate`).
+ */
+export function fixLines(
+  f: Pick<Recommendation, 'action' | 'impact'>,
+  pro: boolean,
+): { lead: string; gain: string | null; detail: string | null } {
+  const { lead, detail } = splitAction(f.action)
+  const i = f.impact
+  const pct = i?.unit === 'percent' ? '%' : ''
+  return {
+    lead,
+    gain: i ? `${i.label}: ${fmt(i.from)}${pct} → ${fmt(i.to)}${pct}` : null,
+    detail: pro ? detail : null,
+  }
 }
 
 const ANCHOR: Record<RecommendationCategory, string> = {

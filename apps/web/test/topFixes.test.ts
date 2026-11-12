@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest'
 import type { Recommendation, RecommendationReport } from '@poe2/core'
 import { URL_MAX_LENGTH } from '@poe2/core'
-import { fixAnchor, splitAction, topFixes, tradeLinkFor, tradeStatFor } from '@/components/character/topFixesData'
+import { readFileSync } from 'node:fs'
+import { analyzeCharacter } from '@poe2/core'
+import { fixAnchor, fixLines, splitAction, topFixes, tradeLinkFor, tradeStatFor } from '@/components/character/topFixesData'
 
 const rec = (over: Partial<Recommendation>): Recommendation =>
   ({ id: 'x', category: 'gear', action: 'Do it', impact: null, ...over }) as Recommendation
@@ -54,5 +56,26 @@ describe('top fixes', () => {
     const map = { 'base_chaos_damage_resistance_%': 'explicit.stat_1' }
     expect(tradeLinkFor(chaos, map, 'L')).not.toBeNull()
     expect(tradeLinkFor(chaos, map, 'x'.repeat(URL_MAX_LENGTH))).toBeNull()
+  })
+
+  it('default rows carry a lead and one gain line; the detail sentence is whole and Pro-only', async () => {
+    for (const name of ['yykiuy-v51', 'athrynas-v43']) {
+      const payload = JSON.parse(readFileSync(new URL(`../../../packages/core/test/fixtures/${name}.json`, import.meta.url), 'utf8'))
+      const fixes = topFixes((await analyzeCharacter(payload)).recommendations)
+      expect(fixes.length, name).toBeGreaterThan(0)
+      for (const f of fixes) {
+        const plain = fixLines(f, false)
+        const pro = fixLines(f, true)
+        const { lead, detail } = splitAction(f.action)
+        expect(plain.detail, `${name} ${f.id}`).toBeNull()
+        expect(plain.lead).toBe(lead)
+        expect(plain.lead.length, plain.lead).toBeLessThanOrEqual(60)
+        expect(plain.lead).not.toMatch(/…|\.\.\.$/)
+        expect(plain.gain, f.id).toBe(pro.gain)
+        if (f.impact) expect(plain.gain!.length, plain.gain!).toBeLessThanOrEqual(80)
+        expect(plain.gain ?? '').not.toMatch(/…|\.\.\.$/)
+        expect(pro.detail).toBe(detail) // full, untruncated
+      }
+    }
   })
 })

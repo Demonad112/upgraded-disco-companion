@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
-import { test as base, expect } from '@playwright/test'
+import { test as base, expect, type Page } from '@playwright/test'
 
 /**
  * Every test runs offline: requests leaving the site under test are refused,
@@ -17,6 +17,27 @@ const offsite = (url: URL) =>
   (url.protocol === 'http:' || url.protocol === 'https:') && url.hostname !== 'localhost' && url.host !== siteHost
 
 export const PROFILE_URL = 'https://poe.ninja/poe2/profile/Demonad112-2589/runesofaldur/character/Athrynas'
+
+/** The character page's tabs, by hash id, and their visible labels (see CharacterResults). */
+export const CHARACTER_TABS = {
+  overview: 'Overview',
+  defences: 'Defence',
+  damage: 'Damage',
+  gear: 'Gear',
+  progress: 'Progress',
+  advanced: 'Advanced',
+} as const
+export type CharacterTabId = keyof typeof CHARACTER_TABS
+
+/**
+ * Opens a character tab (clicks it, so the hash and aria-selected move as a user's would) and waits for its panel.
+ * Call it before asserting anything outside Overview.
+ */
+export async function openTab(page: Page, id: CharacterTabId) {
+  const tab = page.getByRole('tab', { name: new RegExp(`^${CHARACTER_TABS[id]}\\b`) })
+  if ((await tab.getAttribute('aria-selected')) !== 'true') await tab.click()
+  await expect(page.locator(`#panel-${id}`)).toBeVisible({ timeout: 30_000 })
+}
 
 export const test = base.extend<{ errors: string[] }>({
   errors: [

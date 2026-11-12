@@ -60,11 +60,16 @@ export function GearTargets({
             {link ? (
               <a href={link} target="_blank" rel="noopener noreferrer" className="btn btn-secondary btn-sm" data-trade="weighted">
                 <MapIcon name="trade" size={16} />
-                Find better gear
+                Find on trade
               </a>
             ) : (
-              <a href={`${BASE_PATH}/trade/`} className="btn btn-secondary btn-sm" data-trade="page">
-                Open /trade
+              <a
+                href={`${BASE_PATH}/trade/`}
+                className="btn btn-secondary btn-sm"
+                aria-label={`Find on trade: open the trade page for ${r.slotLabel.toLowerCase()}`}
+                data-trade="page"
+              >
+                Find on trade
               </a>
             )}
           </li>
