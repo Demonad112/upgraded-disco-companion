@@ -59,7 +59,11 @@ test('a failed mod-text fetch is retried once, so a blip does not leave raw ids'
   await page.route(/mod-display\.json/, (r) => (++fetches === 1 ? r.fulfill({ status: 500, body: 'x' }) : r.fallback()))
   await page.goto('character/')
   await importCharacter(page)
-  await expect(page.getByText(TEXT)).toBeVisible({ timeout: 10_000 })
+  // The retry's re-render can close the details opened above, so reopen until shown.
+  await expect(async () => {
+    await page.evaluate(() => document.querySelectorAll('details').forEach((d) => (d.open = true)))
+    await expect(page.getByText(TEXT)).toBeVisible({ timeout: 1_000 })
+  }).toPass({ timeout: 10_000 })
   expect(fetches).toBe(2)
 })
 
