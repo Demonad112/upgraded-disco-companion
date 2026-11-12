@@ -60,7 +60,7 @@ export function GearTargets({
             {link ? (
               <a href={link} target="_blank" rel="noopener noreferrer" className="btn btn-secondary btn-sm" data-trade="weighted">
                 <MapIcon name="trade" size={16} />
-                Find better gear
+                Find on trade
               </a>
             ) : (
               <a

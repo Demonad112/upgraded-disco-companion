@@ -1,0 +1,68 @@
+/* Character tabs (PX4). Own stylesheet: solid page colour so nothing shows through, sticky under the header,
+   scrolls sideways at phone width. Variables come from existing :root tokens. */
+.ct-bar {
+  --ct-h: 44px;
+  position: sticky;
+  top: env(safe-area-inset-top, 0px);
+  z-index: 15;
+  display: flex;
+  overflow-x: auto;
+  margin-inline: calc(-1 * var(--gutter));
+  padding-inline: var(--gutter);
+  background: var(--page);
+  border-bottom: 1px solid var(--line);
+  scrollbar-width: none;
+}
+.ct-bar::-webkit-scrollbar {
+  display: none;
+}
+.ct-tab {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+  min-height: var(--ct-h);
+  padding-inline: 14px;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  background: transparent;
+  font-family: var(--font-label);
+  font-size: 11.5px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: var(--ink-mute);
+  cursor: pointer;
+}
+.ct-tab:hover {
+  color: var(--ink);
+}
+.ct-tab[aria-selected='true'] {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+.ct-count {
+  margin-left: 6px;
+  color: var(--ink-dim);
+}
+.ct-panel {
+  padding-top: 8px;
+  outline-offset: -2px;
+}
+.ct-section {
+  padding-top: 0;
+}
+.ct-section > .grid-cards {
+  gap: 12px;
+}
+/* The import bar: one line after an import. */
+.ct-import {
+  padding: 0 12px;
+}
+.ct-import > summary {
+  min-height: var(--tap-min);
+  padding: 0;
+}
+.ct-import.card {
+  padding: 0 12px;
+}

@@ -1,8 +1,8 @@
 'use client'
 
-/** The Overview's supporting cards: spare to trade with since last import, resist glance, tree-data note. */
+/** Supporting cards: spare to trade (Gear), resist glance (Defence), tree-data note (Advanced). */
 
-import { resolveAllocation, type Analysis, type PassiveTree, type SnapshotDiff } from '@poe2/core'
+import { resolveAllocation, type Analysis, type PassiveTree } from '@poe2/core'
 import { DefenceChecklist } from './DefenceChecklist'
 import { Diamond, cap } from './dmg'
 import { Tag, fmt } from '../ui'
@@ -40,85 +40,11 @@ function SpareToTrade({ analysis }: { analysis: Analysis }) {
   )
 }
 
-const shortDate = (iso: string): string => {
-  const d = new Date(iso)
-  return Number.isNaN(d.getTime()) ? iso : d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })
-}
-
-/** The three biggest moves between the two latest snapshots, from the existing comparison. */
-function SinceLastImport({ diff }: { diff: SnapshotDiff }) {
-  const top = diff.changes.slice(0, 3)
+/** Spare to trade, as its own card (Gear tab). */
+export function SpareToTradeCard({ analysis }: { analysis: Analysis }) {
   return (
-    <section aria-label="Since last import" className="flex min-w-0 flex-col">
-      <h3 className="h3">Since last import</h3>
-      {top.length ? (
-        <ul className="mt-3 space-y-2.5">
-          {top.map((c) => {
-            const suffix = c.unit === 'percent' ? '%' : ''
-            return (
-              <li key={c.field} className="flex flex-wrap items-baseline justify-between gap-x-3">
-                <span className="label-field">{c.label}</span>
-                <span className="tabular font-mono text-sm">
-                  <span className="text-ink-mute">
-                    {fmt(c.before)}
-                    {suffix}
-                  </span>{' '}
-                  → {fmt(c.after)}
-                  {suffix}{' '}
-                  <span className={c.improved ? 'text-good' : 'text-warn'}>
-                    {c.delta > 0 ? '+' : ''}
-                    {fmt(c.delta)}
-                    {suffix}
-                    {c.percent !== null && c.unit !== 'percent' ? ` (${c.percent > 0 ? '+' : ''}${c.percent.toFixed(1)}%)` : ''}
-                  </span>
-                </span>
-              </li>
-            )
-          })}
-        </ul>
-      ) : (
-        <p className="mt-3 text-sm text-ink-dim">No tracked figure moved.</p>
-      )}
-      <p className="mt-auto flex flex-wrap items-baseline justify-between gap-2 pt-3 text-xs">
-        <span className="tabular font-mono text-ink-mute">
-          {shortDate(diff.from.at)} → {shortDate(diff.to.at)}
-        </span>
-        {top.length ? (
-          <a href="#progress" className="text-accent">
-            All {diff.changes.length} change{diff.changes.length === 1 ? '' : 's'}
-          </a>
-        ) : null}
-      </p>
-    </section>
-  )
-}
-
-/**
- * Spare to trade and Since last import (UI-PLAN U10). With a previous import they share one full-width card, two equal
- * columns, footers on one line. Without one, Spare to trade takes the width and the comparison is a one-line notice,
- * so no card stands half empty.
- */
-export function SpareAndChanges({ analysis, diff }: { analysis: Analysis; diff: SnapshotDiff | null }) {
-  if (!diff) {
-    return (
-      <>
-        <div data-surface="data" className="card">
-          <SpareToTrade analysis={analysis} />
-        </div>
-        <p data-surface="data" className="card flex flex-wrap items-baseline gap-x-3 gap-y-1 py-3 text-sm text-ink-dim">
-          <span className="label-field">Since last import</span>
-          Import again after playing; two reports are needed to compare.
-        </p>
-      </>
-    )
-  }
-  return (
-    <div
-      data-surface="data"
-      className="card grid gap-6 desk:grid-cols-2 desk:gap-0 desk:[&>*+*]:border-l desk:[&>*+*]:border-line desk:[&>*+*]:pl-7 desk:[&>*:first-child]:pr-7"
-    >
+    <div data-surface="data" className="card">
       <SpareToTrade analysis={analysis} />
-      <SinceLastImport diff={diff} />
     </div>
   )
 }

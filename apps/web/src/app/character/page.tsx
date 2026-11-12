@@ -19,6 +19,7 @@ import { PageHeader } from '@/components/layout/PageHeader'
 import { analysisNeedsDisplay, useModTiers } from '@/lib/useModTiers'
 import { useSupportCatalog } from '@/lib/useSupportCatalog'
 import { usePassiveTree } from '@/lib/usePassiveTree'
+import { useCharacterTab } from '@/lib/characterTab'
 
 // Everything below the import box only renders once a character is loaded, so it is its own chunk: a first visit
 // downloads the header, import box and empty state, and the panels arrive while the import is in flight.
@@ -41,6 +42,7 @@ export default function Home() {
   // one only makes the result MORE specific, and re-running is cheap — it is
   // pure computation over already-parsed data.
   const [raw, setRaw] = useState<unknown>(null)
+  const { tab, target, select: selectTab } = useCharacterTab()
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
   // The profile URL of the current import, when it came from one.
@@ -203,7 +205,7 @@ export default function Home() {
           stays mounted and keeps a failed URL and its error. Open and summary-less until then. */}
       <details
         data-surface={collapsed ? 'data' : undefined}
-        className={collapsed ? 'card group' : 'group'}
+        className={collapsed ? 'card ct-import group' : 'group'}
         open={collapsed ? boxOpen : true}
         onToggle={(e) => {
           if (collapsed) setBoxOpen(e.currentTarget.open)
@@ -238,7 +240,7 @@ export default function Home() {
         </p>
       ) : null}
 
-      <div className="mt-3">
+      <div className="mt-2">
         {busy ? <Skeleton /> : null}
 
         {!busy && !a && !pobAnalysis ? (
@@ -263,6 +265,9 @@ export default function Home() {
             treeState={treeState}
             catalogState={catalogState}
             analysisOptions={analysisOptions}
+            tab={tab}
+            target={target}
+            onTab={selectTab}
           />
         ) : null}
       </div>

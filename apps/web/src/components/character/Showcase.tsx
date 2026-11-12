@@ -130,8 +130,8 @@ export function Showcase({ analysis, children }: { analysis: Analysis; children?
   const skill = dps.primary
   const hitType = defense.lowestMaximumHitType
   const tiles: { label: string; value: number | null; tone: string; sub?: string }[] = [
-    { label: 'Main skill DPS', value: snap.dps && snap.dps > 0 ? snap.dps : null, tone: 'var(--accent)', sub: skill?.dominantType ? `${cap(skill.dominantType)} damage` : undefined },
-    { label: 'Killed by', value: snap.weakestHit && snap.weakestHit > 0 ? snap.weakestHit : null, tone: 'var(--dmg-physical)', sub: hitType ? `${cap(hitType)} hit` : undefined },
+    { label: 'Main skill DPS', value: snap.dps && snap.dps > 0 ? snap.dps : null, tone: 'var(--accent)', sub: skill?.dominantType ? cap(skill.dominantType) : undefined },
+    { label: 'Killed by', value: snap.weakestHit && snap.weakestHit > 0 ? snap.weakestHit : null, tone: 'var(--dmg-physical)', sub: hitType ? cap(hitType) : undefined },
     { label: 'Life', value: snap.life && snap.life > 0 ? snap.life : null, tone: 'var(--dmg-fire)' },
     { label: 'Energy shield', value: snap.energyShield && snap.energyShield > 0 ? snap.energyShield : null, tone: 'var(--dmg-cold)' },
   ]
@@ -140,11 +140,11 @@ export function Showcase({ analysis, children }: { analysis: Analysis; children?
   return (
     <div data-showcase>
       <section aria-labelledby="showcase-title" className="bc">
-        <div className="bc-top">
-          <span>{[identity.className, identity.league].filter(Boolean).join(' · ') || 'Character'}</span>
-        </div>
         <div className="bc-head">
-          <h2 id="showcase-title" className="bc-name text-gradient-gold">{identity.name}</h2>
+          <div className="min-w-0">
+            <div className="bc-top">{[identity.className, identity.league].filter(Boolean).join(' · ') || 'Character'}</div>
+            <h2 id="showcase-title" className="bc-name text-gradient-gold">{identity.name}</h2>
+          </div>
           <div className="bc-level" aria-label={identity.level === null ? 'Level unknown' : `Level ${identity.level}`}>
             <span>
               <small>Lv</small>
@@ -172,9 +172,15 @@ export function Showcase({ analysis, children }: { analysis: Analysis; children?
             <>
               <GradeStamp letter={grade.letter} />
               <div className="min-w-0">
-                <GradeLadder assessment={assessment} />
-                <div className="tabular mt-1.5 font-mono text-[11px] whitespace-nowrap text-ink-dim">grade score {grade.score}</div>
-                {analysis.pobStats ? <div className="mt-1"><Tag tone="good">Cross-validated</Tag></div> : null}
+                <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1">
+                  <GradeLadder assessment={assessment} />
+                  <span className="tabular font-mono text-[11px] whitespace-nowrap text-ink-dim">score {grade.score}</span>
+                </div>
+                {analysis.pobStats ? (
+                  <div className="mt-1">
+                    <Tag tone="good">Cross-validated</Tag>
+                  </div>
+                ) : null}
               </div>
             </>
           ) : (
