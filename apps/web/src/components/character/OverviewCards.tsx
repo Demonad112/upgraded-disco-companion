@@ -94,7 +94,7 @@ function SinceLastImport({ diff }: { diff: SnapshotDiff }) {
 }
 
 /**
- * Spare to trade and Since last import (UI-PLAN U10). With a previous import they share one full-width card, two equal
+ * Spare to trade and Since last import. With a previous import they share one full-width card, two equal
  * columns, footers on one line. Without one, Spare to trade takes the width and the comparison is a one-line notice,
  * so no card stands half empty.
  */

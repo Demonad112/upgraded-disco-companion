@@ -3,7 +3,7 @@
 ### Start (before changing anything)
 1. Run `git fetch origin` and branch off an up-to-date `origin/main`.
 2. **Check the previous batch.** For each batch that has run since the last check (the Active list in
-   `docs/carry/README.md` and register §6 in `docs/remaining/REMAINING-WORK.md`; the UI-PROGRESS wave table is finished):
+   `docs/carry/README.md` and register §6 in `docs/remaining/REMAINING-WORK.md`):
    - its PR is merged into `main`;
    - its register rows are updated;
    - a spot-check of its "Done when" items holds on `main`. Spot-check only; don't redo the work.

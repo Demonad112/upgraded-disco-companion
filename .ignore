@@ -1,5 +1,3 @@
 packages/data/generated/
 packages/data/trade2-stats.json
-**/test/fixtures/
-services/ninja-proxy/test/fixtures/
-docs/remaining/archive/
+packages/core/test/fixtures/*-v*.json

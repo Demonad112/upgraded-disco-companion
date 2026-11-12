@@ -85,7 +85,7 @@ function Meter({ r }: { r: DefenseSummary['resistances'][number] }) {
 }
 
 /* The Resistances / Largest hit pair stretches to one height (grid default); each card's footer is pushed to the
-   bottom with a rule, so the two footers line up (UI-PLAN U10). */
+   bottom with a rule, so the two footers line up. */
 const PAIR_CARD = 'card flex flex-col'
 const PAIR_FOOTER = 'mt-auto border-t border-line pt-3'
 
