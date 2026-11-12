@@ -41,7 +41,7 @@ Every open row in the nine active carry files now maps to a register row, or is 
 | U14-1 | R44 (owner) |
 | U14-2 | R54 (owner confirms) |
 | U14-3 | Done |
-| U14 local variant branches | Closed: already deleted (`HANDOFF.md:51`, `archive/OD1.md:18`) |
+| U14 local variant branches | Closed: already deleted (see git history) |
 
 ## Changes
 - `docs/remaining/REMAINING-WORK.md`:

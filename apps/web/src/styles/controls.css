@@ -1,4 +1,4 @@
-/* U4 controls kit (UI-PLAN U4): Select, Input, Segmented, Range, Button, and the one focus ring.
+/* U4 controls kit: Select, Input, Segmented, Range, Button, and the one focus ring.
    Components: components/shared/controls.tsx. Values come from tokens.css.
 
    Class rules sit in the components layer, like the rest of the shared finishes, so a Tailwind utility on the same

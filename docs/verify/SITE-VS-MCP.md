@@ -1,7 +1,7 @@
 # Site vs MCP: Yykiuy gap check
 
 **Date captured:** 2026-11-09. **URL:** https://poe.ninja/poe2/profile/Demonad112-2589/forbiddenrites/character/Yykiuy
-**Site values:** from `docs/verify/site-output/yykiuy-site-output.json` and `.md` (live poe.ninja data via the ninja proxy; same core analysis the character page runs). poe.ninja data timestamp: 2026-11-09T06:14:26.81743Z.
+**Site values:** from the site output (raw output removed; see git history; live poe.ninja data via the ninja proxy; same core analysis the character page runs). poe.ninja data timestamp: 2026-11-09T06:14:26.81743Z.
 **Format model:** `docs/verify/MCP-QUESTIONS.md` on branch `test/20261108-mcp2-verify` (not on this branch).
 
 ## How to compare
@@ -9,7 +9,7 @@
 1. Open a fresh chat with the `poe2-optimizer` MCP attached. Paste the shared preamble, then one area prompt. Do not paste the site-value table; the chat must not see it.
 2. Copy each answer row's value into the MCP value column of the matching area table below, then mark Match? (yes / no / n/a).
 3. **Tolerances:** integers exact (hits, resists, points, node counts, tiers); DPS and EHP within 1 %. Text rows (names, mod lines) match if the same entity is named. A site value labelled "page text" is the rounded figure the page prints; compare the unrounded figure to the MCP's.
-4. The site's live data can move (poe.ninja updated after capture); if every number is off by a similar amount, re-run `site-output` first.
+4. The site's live data can move (poe.ninja updated after capture); if every number is off by a similar amount, re-run the site output first.
 5. Prompts contain no character name, class, level, skill or number. The only identifying text is the URL in the preamble. Check: `grep -nE '[0-9]' ... ` ignoring `poe2` and the URL returns nothing for the five prompt blocks.
 
 ## Shared preamble (paste with every prompt)

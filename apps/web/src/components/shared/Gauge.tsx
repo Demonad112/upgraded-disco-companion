@@ -1,7 +1,7 @@
 import { gaugeModel } from "@/lib/gauge";
 
 /**
- * Square segmented progress meter (UI-PLAN U5): filled segments are gold, the
+ * Square segmented progress meter: filled segments are gold, the
  * next one is outlined, and `n / total` plus the percentage sit to the right in
  * mono. Styles: styles/gauge.css.
  */

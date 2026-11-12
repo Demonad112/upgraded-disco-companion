@@ -1,6 +1,6 @@
 // PreToolUse hook (Bash, PowerShell): blocks git/gh commands that would put Claude session info on GitHub.
-// Checks the command text and any message/body file it passes (-F, --file, --body-file). Same patterns as
-// scripts/check-pr-body.mjs, but run before the text leaves the machine. Exit 2 blocks the call and the
+// Checks the command text and any message/body file it passes (-F, --file, --body-file). Same intent as
+// scripts/check-pr-body.mjs; unanchored because it scans a command line, and run before the text leaves the machine. Exit 2 blocks the call and the
 // stderr text goes back to Claude.
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';

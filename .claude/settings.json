@@ -18,7 +18,10 @@
       "Read(**/.env.*.local)",
       "Read(**/.env.production)",
       "Read(**/*.pem)",
-      "Read(**/*.key)"
+      "Read(**/*.key)",
+      "Read(packages/data/generated/**)",
+      "Read(packages/data/trade2-stats.json)",
+      "Read(packages/core/test/fixtures/*-v*.json)"
     ]
   },
   "extraKnownMarketplaces": {
@@ -48,7 +51,7 @@
     ],
     "SessionStart": [
       {
-        "matcher": "startup",
+        "matcher": "startup|resume|clear",
         "hooks": [
           {
             "type": "command",

@@ -1,5 +1,5 @@
 // First-load JS/CSS weight per route (raw and brotli), from the static export.
-// Run from the repo root after `npm run build`. See docs/audit/04-PERFORMANCE-BASELINE.md.
+// Run from the repo root after `npm run build`. See docs/VARIANT-STRATEGY.md#perf-baseline.
 import { existsSync, readFileSync } from 'node:fs'
 import { brotliCompressSync } from 'node:zlib'
 const out = 'apps/web/out'

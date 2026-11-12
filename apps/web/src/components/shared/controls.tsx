@@ -10,7 +10,7 @@ import type {
 import { ScrollFade } from './ScrollFade'
 
 /*
- * Controls kit (UI-PLAN U4). The look is in styles/controls.css; these only pick the classes and keep the ARIA
+ * Controls kit. The look is in styles/controls.css; these only pick the classes and keep the ARIA
  * each caller already had. Square, 1 px line, gold for the active state, one focus ring.
  */
 
