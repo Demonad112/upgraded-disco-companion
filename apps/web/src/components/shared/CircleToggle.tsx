@@ -27,7 +27,7 @@ export function CircleToggle({
       aria-pressed={done}
       aria-label={children ? undefined : label}
       onClick={onToggle}
-      className={`${children ? "flex items-start gap-2 text-left" : "hit-area inline-grid"} ${className}`}
+      className={`${children ? "flex items-start gap-2 text-left pointer-coarse:min-h-(--tap-min) pointer-coarse:items-center" : "hit-area inline-grid"} ${className}`}
     >
       <span className="mark" aria-hidden />
       {children}

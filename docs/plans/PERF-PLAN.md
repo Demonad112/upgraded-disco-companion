@@ -170,10 +170,10 @@ Candidates that already have a number; the rest need items 4–7:
 
 | Candidate | Evidence | Expected | Status |
 |---|---|---|---|
-| Move the what's-new changelog out of the layout-shell chunk `2rnn6be960yle.js` | text present on all 8 routes | up to 9,760 B br of that chunk; exact share not measured | find the importer (`grep -rn "whats-new\|changelog" apps/web/src/components/layout apps/web/src/lib`) |
+| Move the what's-new changelog out of the layout-shell chunk | text present on all 8 routes (importer: `layout/NavMenu.tsx`) | 832 B br | **Tried in PXD: shared floor +1,010 B br (lazy chunk preloaded on every route). Dropped** |
 | Split global CSS per route | 16,561 B br on every route | not measured (item 7 coverage) | needs item 7 |
 | `content-visibility: auto` on below-fold sections of `/checklist`, `/dashboard`, `/atlas` | 347,645 B HTML, 2,191 nodes on `/checklist` | not measured (item 6) | needs item 6 |
-| Stop the sky rAF loop while scrolling, hidden, or fully covered by solid panels | code read: loop keeps spinning | not measured (item 5) | needs item 5 |
+| Stop the sky rAF loop while scrolling, hidden, or fully covered by solid panels | code read: skipped frames are an early return | hidden and scrolling: nothing to remove (PXD). Covered-by-panel: not measured | PXC, after PX1 |
 | `/character` first load: core chunks (47,120 B br) load before any import | measured | R50 "lazy core on `/character`" is in Do-not-do; the real route weight is 197,767, further under 250,000, so the answer does not change | **Not worth it / do not re-propose** |
 
 Files likely touched: `apps/web/src/app/layout.tsx`, `globals.css`, `components/fx/ConstellationSky.tsx`,
@@ -194,6 +194,8 @@ Measured inputs so far:
 Files: `scripts/route-weight.mjs`, `scripts/perf-*.cjs` (new), `apps/web/e2e/perf-import.spec.ts` (new),
 `lighthouserc.json`, `.github/workflows/ci.yml`. Model: Sonnet · medium. Steps, tier gate, done-when, prompt: to be
 written by the continuation run.
+
+**Landed in PXD (`docs/carry/PXD.md`):** PX11a route-weight fix and Appendix A as `scripts/perf-*`; Lighthouse on all 8 routes.
 
 ## Run order and shared files
 

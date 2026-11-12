@@ -55,7 +55,7 @@ as above, `{type, charModel}` envelope intact):
 
 | File | Character |
 |---|---|
-| `yykiuy-v<model version>.json` | Yykiuy, level 63 Martial Artist, Forbidden Rites |
+| `yykiuy-v<model version>.json` | Yykiuy, level 88 Martial Artist, Forbidden Rites |
 | `athrynas-94-v<model version>.json` | Athrynas at level 94 (the committed `athrynas-v43.json` is level 86) |
 
 Every file here is also checked by `tree.test.ts` for allocated passive nodes

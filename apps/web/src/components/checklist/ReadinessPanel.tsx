@@ -59,7 +59,7 @@ export function ReadinessPanel() {
             <div className="flex items-center justify-between gap-2">
               <span className="text-sm font-medium text-ink">{MILESTONE_LABELS[m]}</span>
               <span
-                className={`px-1.5 py-0.5 text-[10px] font-semibold uppercase ${
+                className={`px-1.5 py-0.5 text-[11px] font-semibold uppercase ${
                   ready[m] === null
                     ? "bg-line/40 text-ink-mute"
                     : ready[m]

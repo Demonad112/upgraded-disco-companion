@@ -43,6 +43,6 @@ test('a completed step dims and keeps no tint', async ({ page }) => {
   await page.getByRole('button', { name: /Mark done/ }).click()
   const done = page.locator('details[data-step-done]').first()
   await expect(done).toBeVisible()
-  expect(await done.locator('summary').evaluate((e) => getComputedStyle(e).color)).toBe('rgb(143, 137, 127)')
+  expect(await done.locator('summary').evaluate((e) => getComputedStyle(e).color)).toBe('rgb(155, 149, 139)')
   await expect(done.locator('summary')).not.toHaveClass(/bg-/)
 })

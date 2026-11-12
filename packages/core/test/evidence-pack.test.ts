@@ -79,5 +79,5 @@ describe.skipIf(!athrynas94)('Athrynas (level 94) evidence pack', () => {
 })
 
 // Visible in the run as pending until the captures are committed.
-if (!yykiuy) it.todo('Yykiuy: commit test/fixtures/yykiuy-v<model version>.json (level 63 Martial Artist)')
+if (!yykiuy) it.todo('Yykiuy: commit test/fixtures/yykiuy-v<model version>.json (level 88 Martial Artist)')
 if (!athrynas94) it.todo('Athrynas level 94: commit test/fixtures/athrynas-94-v<model version>.json')

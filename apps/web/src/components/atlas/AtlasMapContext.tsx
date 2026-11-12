@@ -17,6 +17,9 @@ interface FocusRequest {
 }
 
 interface AtlasMapContextValue {
+  /** Phones: the map is a sheet that opens from a row's Map button. Ignored from 721px up, where the map is on the page. */
+  open: boolean
+  setOpen: (open: boolean) => void
   request: FocusRequest | null
   focus: (names: string[], label?: string) => void
   clear: () => void
@@ -33,13 +36,17 @@ const Ctx = createContext<AtlasMapContextValue | null>(null)
 
 export function AtlasMapProvider({ children }: { children: ReactNode }) {
   const [request, setRequest] = useState<FocusRequest | null>(null)
+  const [open, setOpen] = useState(false)
   const focus = useCallback((names: string[], label?: string) => {
     setRequest({ names, label: label ?? names.join(', '), nonce: Date.now() })
+    setOpen(true)
+    // On a phone the sheet is the map: nothing to scroll to.
+    if (window.matchMedia('(max-width: 720px)').matches) return
     const map = document.getElementById('atlas-map')
     if (map && !mostlyInView(map)) map.scrollIntoView({ behavior: 'smooth', block: 'center' })
   }, [])
   const clear = useCallback(() => setRequest(null), [])
-  const value = useMemo(() => ({ request, focus, clear }), [request, focus, clear])
+  const value = useMemo(() => ({ open, setOpen, request, focus, clear }), [open, request, focus, clear])
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>
 }
 

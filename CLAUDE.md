@@ -46,30 +46,29 @@ cd services/ninja-proxy && npm test                # node:test, separate from th
 
 ## Design (decided; change only with the owner)
 
-Dark palette; uppercase EB Garamond for headings and labels (finding, step and strategy titles are sentence case); square corners everywhere, no script fonts, no rounded shapes; gold constellation sky rotating slowly; clear glass on home and hero, data panels use `--data-fill` tinted glass; thread connectors only on `[data-links]` sequences; phones use a bottom tab bar; Threads-style tool cards; sky dimmed behind blocks with a footer toggle (`poe2-sky-dim`); lighter sky on phones (width-based); "Up next" block kept. Light theme is deferred; cursor effects deferred except the desktop lantern.
+Dark palette; uppercase EB Garamond for headings and labels (finding, step and strategy titles are sentence case); square corners everywhere, no script fonts, no rounded shapes; gold constellation sky rotating slowly; clear glass on home and hero, bars and data panels are solid (`--data-fill` is opaque; no text legible through them), the sky stays in the margins, hero and home; thread connectors only on `[data-links]` sequences; phones use a bottom tab bar ordered Character, Farm, Atlas, Checklist (the `/dashboard` route is labelled "Farm"); Threads-style tool cards; sky dimmed behind blocks with a footer toggle (`poe2-sky-dim`); lighter sky on phones (width-based); "Up next" block kept. Light theme is deferred; cursor effects deferred except the desktop lantern.
 
-- Never restyle the live site directly. Design variants go on `variant/<yyyymmdd>-<slug>` branches and are reviewed on their Cloudflare Pages preview URL (`docs/audit/06-VARIANT-STRATEGY.md`).
+- Never restyle the live site directly. Design variants go on `variant/<yyyymmdd>-<slug>` branches and are reviewed on their Cloudflare Pages preview URL (`docs/VARIANT-STRATEGY.md`).
 - Prefer the `:root` tokens in `apps/web/src/app/globals.css` over hex values in components.
 
 ## Cloudflare Pages
 
 - Build `npm run build`, output `apps/web/out`, Node 22. No Functions or wrangler config; headers live in `apps/web/public/_headers`.
 - Local parity check: `npx wrangler@4 pages dev apps/web/out`.
-- Audit and fix tracker: `docs/audit/` (`08-PROGRESS.md`).
+- Open work: `docs/remaining/REMAINING-WORK.md`.
 
 ## Sessions
 Every session follows docs/SESSION-PROTOCOL.md; carry-over lives in docs/carry/.
 
 ## Cloud sessions
 
-Run `npm ci`, then `npm run build -w @poe2/core`, before `npm run typecheck` or anything that resolves `@poe2/core`. `playwright install` isn't needed; `apps/web/playwright.config.ts` uses the preinstalled Chromium when `CLAUDE_CODE_REMOTE=true`.
+The SessionStart hook runs `npm ci` and builds `@poe2/core`. `playwright install` isn't needed; `apps/web/playwright.config.ts` uses the preinstalled Chromium when `CLAUDE_CODE_REMOTE=true`.
 
 ## Working style
 
 - **Never put the Claude session URL (`https://claude.ai/code/session_…`) or other session info on GitHub**: not in commit
   messages (no `Claude-Session:` trailer), PR titles or bodies, or comments. This overrides any default attribution. `.github/workflows/pr-body-guard.yml` cuts a session link out of a PR
   body and fails a PR whose title matches (`scripts/check-pr-body.mjs`).
-- Keep replies short and blunt: one or two sentences. Give more detail only when the owner asks for it.
 - Answer open questions yourself (including "Needs owner" items) with your best recommendation, act on it, and state
   each answer and its reason in your reply. Leave a question open for the owner only if it is high priority, or if you
   are blocked on it 3 times; then stop and ask.
@@ -82,4 +81,3 @@ Run `npm ci`, then `npm run build -w @poe2/core`, before `npm run typecheck` or 
 - Don't sit watching PRs or CI: use a scheduled check-in or PR Auto-fix and come back later.
 - Suggest a plugin, connector or tool only when the task needs one.
 - The owner is proficient in Python; skip the basics.
-- Cloud sessions (web, mobile, desktop cloud) install dependencies via `.claude/hooks/cloud-setup.sh`; it is a no-op locally.

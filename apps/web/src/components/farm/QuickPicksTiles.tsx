@@ -11,7 +11,7 @@ const INVEST_WORD: Record<string, string> = { low: "Low investment", medium: "Me
 /** Farm risk 1–3 (the strategy's own rating, not the loadout's Map danger) as a word plus three square pips (the word carries the meaning; the pips are decoration). */
 function DangerPips({ level }: { level: 1 | 2 | 3 }) {
   return (
-    <span className="qp-danger">
+    <span className="qp-danger" data-level={level}>
       <span className="qp-pips" aria-hidden="true">
         {[1, 2, 3].map((n) => (
           <span key={n} className="qp-pip" data-on={n <= level || undefined} />
@@ -26,7 +26,7 @@ function DangerPips({ level }: { level: 1 | 2 | 3 }) {
 export function QuickPicksTiles({ onPick, onHelp }: { onPick: (pickId: string) => void; onHelp: () => void }) {
   const qp = d.quickPicks;
   return (
-    <section aria-labelledby="qp-h" className="qp flex flex-col gap-4" data-testid="quick-picks">
+    <section aria-labelledby="qp-h" className="qp flex flex-col gap-3 sm:gap-4" data-testid="quick-picks">
       <div className="flex flex-col gap-1">
         <h3 id="qp-h" className="section-title !mb-0">Quick picks</h3>
         <p className="qp-body text-ink-dim">
@@ -35,16 +35,16 @@ export function QuickPicksTiles({ onPick, onHelp }: { onPick: (pickId: string) =
         </p>
       </div>
       <ol className="qp-tiles">
-        {qp.picks.map((p) => {
+        {qp.picks.map((p, i) => {
           const s = farmingStrategies.find((x) => x.id === p.strategyId);
           return (
             <li key={p.id}>
               <article className="qp-tile" aria-labelledby={`qp-tile-${p.id}`}>
-                <span className="label-metric">{s ? INVEST_WORD[s.investment] : ""}</span>
+                <span className="label-metric qp-invest">{s ? INVEST_WORD[s.investment] : ""}</span>
                 <h4 id={`qp-tile-${p.id}`} className="title-sentence qp-tile-name">{p.name}</h4>
-                <p className="qp-body text-ink-dim">{p.line}</p>
+                <p className="qp-body qp-line text-ink-dim">{p.line}</p>
                 {s ? <DangerPips level={dangerLevel(s.risk)} /> : null}
-                <Button variant="primary" className="qp-setup" aria-label={`Set up ${p.name}`} onClick={() => onPick(p.id)}>
+                <Button variant={i === 0 ? "primary" : "secondary"} className="qp-setup" aria-label={`Set up ${p.name}`} onClick={() => onPick(p.id)}>
                   Set up →
                 </Button>
               </article>
@@ -52,7 +52,7 @@ export function QuickPicksTiles({ onPick, onHelp }: { onPick: (pickId: string) =
           );
         })}
       </ol>
-      <p className="text-sm text-ink-mute">{qp.excluded.map((x) => x.why).join(" ")} Every farm, Ritual included, is under All farms below.</p>
+      <p className="farm-tile-more text-sm text-ink-mute">{qp.excluded.map((x) => x.why).join(" ")} Every farm, Ritual included, is under All farms below.</p>
     </section>
   );
 }

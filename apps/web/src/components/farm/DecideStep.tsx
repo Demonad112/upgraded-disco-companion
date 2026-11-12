@@ -40,12 +40,12 @@ export function DecideStep({ onPick, onQuick }: { onPick: (id: string) => void; 
   };
 
   return (
-    <div className="flex flex-col gap-8">
+    <div className="flex flex-col gap-5 sm:gap-8">
       <QuickPicksTiles onPick={onQuick} onHelp={() => { setHelp(true); setJump((n) => n + 1); }} />
-      <section aria-labelledby="farm-all-h" className="flex flex-col gap-4">
+      <section aria-labelledby="farm-all-h" className="flex flex-col gap-2 sm:gap-4">
       <h3 id="farm-all-h" className="section-title !mb-0">All farms</h3>
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <p className="text-sm text-ink-dim">Pick the farm you are setting up. Tablets and the Waystone come next.</p>
+        <p className="farm-tile-more text-sm text-ink-dim">Pick the farm you are setting up. Tablets and the Waystone come next.</p>
         <Button id="farm-help-toggle" size="sm" aria-expanded={help} aria-controls="farm-help" onClick={() => setHelp((v) => !v)}>
           Help me choose
         </Button>
@@ -74,16 +74,18 @@ export function DecideStep({ onPick, onQuick }: { onPick: (id: string) => void; 
                       {fit === "fits" ? "Fits your build" : "Harder for your build"}
                     </span>
                   ) : null}
-                  {s.mechanics.map((m) => (
-                    <Tag key={m} mechanic={m} />
-                  ))}
+                  <span className="farm-tile-more flex flex-wrap items-center gap-1.5">
+                    {s.mechanics.map((m) => (
+                      <Tag key={m} mechanic={m} />
+                    ))}
+                  </span>
                 </span>
                 <span className="flex flex-wrap items-center gap-2 text-xs">
-                  <LevelPill label="Invest" value={s.investment} />
+                  <span className="farm-tile-more"><LevelPill label="Invest" value={s.investment} /></span>
                   <LevelPill label="Danger" value={s.risk} />
                 </span>
-                <span className="text-sm text-ink-dim">{s.expectedReturn}</span>
-                <span className="text-xs text-ink-mute">
+                <span className="farm-tile-more text-sm text-ink-dim">{s.expectedReturn}</span>
+                <span className="farm-tile-more text-xs text-ink-mute">
                   {preset.fallback ? "Scored with the general preset" : `Scored with the ${farmData.weights.presets[preset.id]!.name.toLowerCase()} preset`}
                 </span>
               </button>

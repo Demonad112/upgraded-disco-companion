@@ -1,0 +1,3 @@
+packages/data/generated/
+packages/data/trade2-stats.json
+packages/core/test/fixtures/*-v*.json

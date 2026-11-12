@@ -1,5 +1,5 @@
 /**
- * Segment maths for the square gauge (UI-PLAN U5). One segment per unit up to
+ * Segment maths for the square gauge. One segment per unit up to
  * 40 units (checklist steps, phase sub-steps); above that, 20 proportional
  * segments. A proportional segment fills only once its whole share is done, so
  * the gauge never shows full before the total is reached.

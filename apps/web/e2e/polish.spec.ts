@@ -24,7 +24,7 @@ test.describe('small controls have a 24px tap area', () => {
     await page.goto('')
     expect(await tapsWithin24px(page.getByRole('button', { name: 'Reset all progress' }))).toBe(true)
     const footer = page.locator('footer')
-    for (const name of ['Character', 'Checklist', 'Atlas Tree', 'Dashboard', 'Price check', 'Methodology', "What's new"]) {
+    for (const name of ['Character', 'Checklist', 'Atlas Tree', 'Farm', 'Price check', 'Methodology', "What's new"]) {
       expect(await tapsWithin24px(footer.getByRole('link', { name, exact: true })), name).toBe(true)
     }
     expect(await tapsWithin24px(footer.locator('label', { hasText: 'Dim sky behind blocks' }))).toBe(true)

@@ -43,6 +43,17 @@
 .site-footer .install-button:hover {
   color: var(--accent);
 }
+@media (pointer: coarse) {
+  /* Two columns, so 44px rows don't double the footer's height on a phone. */
+  .site-footer ul {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .footer-link:not(.inline),
+  .site-footer .install-button {
+    min-height: var(--tap-min);
+  }
+}
 .footer-link.inline {
   display: inline;
   min-height: 0;

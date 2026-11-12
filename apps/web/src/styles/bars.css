@@ -1,5 +1,5 @@
 /*
- * Engraved bars (IMG-2): the owner's pick, docs/ui/img/img1-bars-b.html. A bevelled metal trough holds a deep well
+ * Engraved bars (IMG-2): the owner's pick, docs/design/img1-bars-b.html. A bevelled metal trough holds a deep well
  * with engraved ticks every 10%; fills are glossy and hatched in the damage colour with a bright leading edge; a gold
  * pin marks a cap; values sit on a sunken plate. Imported by the components that draw bars, so `/` doesn't carry it.
  * Fills grow once on first view (useFirstView sets data-seen); with reduced motion they are simply there.

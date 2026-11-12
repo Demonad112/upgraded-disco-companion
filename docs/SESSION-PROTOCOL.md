@@ -1,17 +1,16 @@
 # Session protocol
 
 ### Start (before changing anything)
-1. Run `git fetch origin` and branch off an up-to-date `origin/main`. Cloud sessions run `npm ci` and then
-   `npm run build -w @poe2/core` first.
+1. Run `git fetch origin` and branch off an up-to-date `origin/main`.
 2. **Check the previous batch.** For each batch that has run since the last check (the Active list in
-   `docs/carry/README.md` and register §6 in `docs/remaining/REMAINING-WORK.md`; the UI-PROGRESS wave table is finished):
+   `docs/carry/README.md` and register §6 in `docs/remaining/REMAINING-WORK.md`):
    - its PR is merged into `main`;
    - its register rows are updated;
    - a spot-check of its "Done when" items holds on `main`. Spot-check only; don't redo the work.
 
    Run `npm run typecheck` and `npm test` on `main` before your own changes. Note any failure that was already there, so it
    isn't blamed on this batch.
-3. **Carry-over.** Read every `docs/carry/*.md` and find the open items whose `For` value is this session's ID, this session's
+3. **Carry-over.** Read the carry files listed under Active in `docs/carry/README.md` and find the open items whose `For` value is this session's ID, this session's
    track (`next-A` for audit sessions, `next-U` for UI sessions), or the ID of a session that has already run. Handle each item:
    - **Question:** pick the recommended answer and give a one-line reason. Implement it if it is small (about 30 minutes or
      less), stays inside the ground rules, and touches no file owned by the parallel session in this wave.

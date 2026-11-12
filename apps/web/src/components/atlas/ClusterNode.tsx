@@ -20,21 +20,23 @@ export function ClusterNode({ cluster }: { cluster: AtlasCluster }) {
     <li
       id={cluster.id}
       data-reveal="node"
-      className={`scroll-mt-40 border px-3 py-2.5 transition-colors ${
+      className={`scroll-mt-40 border px-3 py-2.5 transition-colors max-sm:py-1.5 ${
         allocated
           ? "border-good/30 bg-good/5"
           : "border-line bg-surface-raised shadow-[var(--lift)] hover:border-line-strong"
       }`}
     >
-      <div className="flex items-start gap-2.5">
-        <input
-          type="checkbox"
-          checked={allocated}
-          onChange={() => toggleCluster(cluster.id)}
-          aria-label={`Allocated ${cluster.name}`}
-          className="mt-0.5 size-4 shrink-0"
-        />
-        <span className="tabular mt-px flex size-5 shrink-0 items-center justify-center bg-surface-sunken text-[10px] text-ink-mute">
+      <div className="flex items-start gap-1.5">
+        <label className="-my-2.5 max-sm:-my-1.5 -ml-3 flex min-h-(--tap-min) min-w-(--tap-min) shrink-0 cursor-pointer items-center justify-center">
+          <input
+            type="checkbox"
+            checked={allocated}
+            onChange={() => toggleCluster(cluster.id)}
+            aria-label={`Allocated ${cluster.name}`}
+            className="size-4"
+          />
+        </label>
+        <span className="tabular mt-px flex size-5 shrink-0 items-center justify-center bg-surface-sunken text-[11px] text-ink-mute">
           {cluster.order}
         </span>
         <div className="min-w-0 flex-1">
@@ -43,22 +45,22 @@ export function ClusterNode({ cluster }: { cluster: AtlasCluster }) {
               {cluster.name}
             </span>
             {cluster.killGated ? (
-              <span className="border border-line px-1.5 py-px text-[10px] text-ink-mute">kill-gated</span>
+              <span className="border border-line px-1.5 py-px text-[11px] text-ink-mute">kill-gated</span>
             ) : null}
             <ProOnly><SourceFlag source={cluster.source} /></ProOnly>
           </div>
-          <p className={`mt-1 text-xs leading-relaxed text-ink-dim ${long && !expanded ? "line-clamp-2" : ""}`}>
+          <p className={`mt-1 text-xs leading-relaxed text-ink-dim ${expanded ? "" : `max-sm:hidden ${long ? "line-clamp-2" : ""}`}`}>
             {cluster.description}
           </p>
-          {long ? (
-            <button
-              type="button"
-              onClick={() => setExpanded((v) => !v)}
-              className="hit-area mt-0.5 text-[11px] text-accent hover:underline"
-            >
-              {expanded ? "Less" : "More"}
-            </button>
-          ) : null}
+          {/* Phones: every row's description is one tap away (compact rows); from sm up only the long ones clamp. */}
+          <button
+            type="button"
+            onClick={() => setExpanded((v) => !v)}
+            aria-expanded={expanded}
+            className={`hit-area mt-0.5 !min-h-0 -mb-1 text-[12px] text-accent hover:underline ${long ? "" : "sm:hidden"}`}
+          >
+            {expanded ? "Less" : "More"}
+          </button>
         </div>
         <ShowOnTreeButton names={cluster.treeNodes} label={cluster.name} />
       </div>

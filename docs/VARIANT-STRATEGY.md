@@ -71,3 +71,33 @@ git commit -am "Variant ember-glass: <what changed>"
 git push -u origin variant/20261101-ember-glass
 # Pages builds the preview; URL appears on the commit's Cloudflare check and in the Pages dashboard
 ```
+
+## Owner decisions
+
+Recorded from the 2026-10-22 audit (D1–D10 accepted 2026-10-22; D11–D15 accepted 2026-11-01). Full text is in git history.
+
+- D1 (2026-10-22): chat CSP allows the three provider origins in `connect-src` (bring-your-own-key).
+- D2 (2026-10-22): sky dim via CSS instead of canvas, gated on a screenshot match.
+- D3 (2026-10-22): quantised twinkle with 8 alpha levels (16 if stepping is visible).
+- D4 (2026-10-22): Dependabot grouped, weekly, max 5 open PRs, plus the CI `npm audit` step.
+- D5 (2026-10-22): branch-per-variant with Pages previews; tokens.css split; no new screenshots in git; no history rewrite.
+- D6 (2026-10-22): keep Cloudflare's managed robots.txt; add sitemap.xml; no in-repo robots.txt.
+- D7 (2026-10-22): the CLAUDE.md Design / Cloudflare Pages additions (applied).
+- D8 (2026-10-22): ninja-proxy CORS allowlist (production, pages.dev previews, localhost); owner deploys on Vercel.
+- D9 (2026-10-22): remove HSTS `includeSubDomains` before attaching a custom domain; no `preload`.
+- D10 (2026-10-22): fresh branch per task or phase off `main`, never `ui/glass-refresh`.
+- D11 (2026-11-01): SESSION-PROTOCOL Finish step 4 removes any session link the tooling appended to a PR body.
+- D12 (2026-11-01): timing budgets are ≤ +25 % over unmodified `main`, same session and machine; byte and count budgets stay absolute.
+- D13 (2026-11-01): U13 split into U13a (cloud) and U13b (local); recorded only.
+- D14 (2026-11-01): Windows-only e2e failures closed (fixed by the win32 worker cap).
+- D15 (2026-11-01): live test of the PR body guard skipped; unit tests cover the pattern.
+
+## Perf baseline
+
+Headline numbers from the 2026-10-22 audit and the 2026-11-01 Lighthouse baseline (U13b). Full tables are in git history.
+
+- Build output `apps/web/out`: 7.4 MB; all JS chunks 1,494,131 B raw / 378,331 B brotli (2026-10-22).
+- Route JS+CSS brotli, first load: `/` 223 KB, `/checklist/` 239 KB, `/character/` 263 KB, `/atlas/` 234 KB (2026-10-22). `/` HTML brotli 13.5 KB.
+- Lighthouse `/` (U13b, i5-8250U laptop, median of 3): mobile score 62, LCP 4.3 s, TBT 1,050 ms; desktop score 97, LCP 0.9 s, TBT 120 ms; CLS 0.
+- Budgets: `/` JS+CSS ≤ 192 KB br, any route ≤ 250 KB br, `/` HTML ≤ 16 KB br, phone canvas ≤ 3 MP, sky draw calls ≤ 75 per frame.
+- Timing budgets are relative: ≤ +25 % over unmodified `main`, same session, same machine (D12).

@@ -138,6 +138,7 @@ test.describe('quick picks', () => {
     expect(r.violations.map((v) => v.id)).toEqual([])
     await page.locator('[data-chip]').first().click()
     await expect(page.getByTestId('qp-sheet')).toBeVisible()
+    await page.waitForTimeout(400) // the sheet's 150 ms fade, so axe reads final colours
     r = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa']).analyze()
     expect(r.violations.map((v) => v.id)).toEqual([])
   })

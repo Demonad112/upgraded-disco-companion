@@ -39,14 +39,14 @@ export function TrapNodePanel() {
         {sortedTraps.map((trap, i) => (
           <li key={trap.id} id={trap.id} data-reveal="trap" className="scroll-mt-40">
             {trap.group && trap.group !== sortedTraps[i - 1]?.group ? (
-              <h4 className="mb-1 mt-2 text-xs font-semibold uppercase tracking-wide text-ink-mute">
+              <h2 className="mb-1 mt-2 text-xs font-semibold uppercase tracking-wide text-ink-mute">
                 {GROUP_LABELS[trap.group]}
-              </h4>
+              </h2>
             ) : null}
             <details className="group border border-line bg-surface-raised shadow-[var(--lift)] open:border-line-strong">
               <summary className="flex cursor-pointer list-none flex-wrap items-center gap-x-2 gap-y-1 px-3 py-2.5 [&::-webkit-details-marker]:hidden">
                 <span
-                  className={`border px-1.5 py-px text-[10px] font-semibold uppercase ${SEVERITY_STYLES[trap.severity]}`}
+                  className={`border px-1.5 py-px text-[11px] font-semibold uppercase ${SEVERITY_STYLES[trap.severity]}`}
                 >
                   {trap.severity}
                 </span>

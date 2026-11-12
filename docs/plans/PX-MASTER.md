@@ -72,8 +72,8 @@ The split follows file ownership, so the two W1 sessions never touch the same fi
 |---|---|---|---|
 | PXA (Opus · high) | build card, tabs, import path | easy-wins core function and tests (`packages/core` only); fix cards (`Recommendations.tsx`, `OverviewCards.tsx`, `shortCopy.test.ts`) | e2e selector updates, screenshots, carry file |
 | PXB (Sonnet · medium) | bars and panels, home, farm and atlas | none | PX8 rows, CLAUDE.md lines, screenshots, carry file |
-| PXC (Sonnet · high) | PX10 load and render | Lighthouse CI and budget config | visual baselines, 280–1920 px sweep, axe run, docs |
-| Orchestrator (Sonnet) | accept or revise | check each PR against its done-when | register and status rows |
+| PXC (Sonnet · high) | PX10 load and render, PX11b thresholds | none (Lighthouse routes done in PXD) | axe run, docs |
+| Orchestrator (Sonnet) | accept or revise from the carry file and CI status | none | register and status rows |
 
 Rule: a subagent only for a slice with its own files; none for a search or a single-file edit.
 
@@ -82,8 +82,8 @@ Rule: a subagent only for a slice with its own files; none for a search or a sin
 | When | Runs |
 |---|---|
 | During work | `npm run typecheck` and the touched vitest file only |
-| End of PXA and PXB | typecheck, lint, test, build, `node scripts/route-weight.mjs`, and the e2e specs for touched surfaces. Full e2e is left to CI on the PR |
-| End of programme (PXC) | The one main check: full gate, full e2e, Lighthouse and axe on all 8 routes, visual baselines green twice in CI, import-to-card timing test |
+| End of PXA and PXB | `typecheck`, the touched vitest files, and `node scripts/route-weight.mjs`. Lint, full test, build and e2e are left to CI on the PR (it runs them all); fix what CI reports |
+| End of programme (PXC) | One CI run carries the check: full gate, full e2e, Lighthouse (PR job) and axe on all 8 routes, visual baselines, import-to-card timing test. Rerun only a failed job |
 
 Kept because CI enforces them anyway: core coverage 90 % statements / 75 % branches, `npm run tools` for MCP drift,
 the PR-body guard, the 5 % perf bar. One commit per old batch ID, so one part can be reverted alone. These are
@@ -184,20 +184,22 @@ docs/carry/README.md: close the PX rows and archive the PX carry files.
 Order:
 1. Run the commands in PERF-PLAN "Not measured" (items 4–8); finish the PX10 and PX11 sections from the numbers.
 2. PX10 load and render. Keep a change only if it saves ≥ 5 % brotli on its file or route, or removes real work.
-3. PX11 guardrails: Lighthouse CI and route budgets, plus an import-to-card timing test.
+3. PX11b: pin route-budget thresholds from the post-merge numbers, plus an import-to-card timing test. (Lighthouse routes and the harness are PXD.)
 4. PX0 visual baselines: apps/web/e2e/visual.spec.ts, 8 routes x 2 viewports plus /character with the fixture, sky
-   masked, reduced motion.
-5. PX12 sweep at 280–1920 px; axe on all 8 routes; run the ux-audit, spacing, empty-states and verbs checks that PP3
+   masked, reduced motion. Add 280 and 1920 px to the same spec: they replace a separate width sweep.
+5. PX12: no separate 280–1920 px sweep (step 4 covers it); axe on all 8 routes; run the ux-audit, spacing, empty-states and verbs checks that PP3
    did not run; fix S-size findings, list the rest. Align home/LastCharacterCard.tsx with the build card. Re-run
    docs/plans/pp3/*.mjs for the final numbers, then delete them.
 
-Subagents: Sonnet for Lighthouse CI and budgets; Haiku for baselines, the width sweep, axe and docs.
+Subagents: Haiku for axe and docs only. Do not repeat checks CI already runs.
+
+Already done in PXD (read docs/carry/PXD.md first): PX11a (route-weight fix, perf harness as scripts/perf-*), Lighthouse on all 8 routes, R67. Tried and dropped: changelog split, sky rAF stop. Skip those; do the rest of step 1 and steps 2-5.
 
 Run start to finish; answer open questions with the recommended option and record each in one line in the PR. Stop
 only for a gate you cannot fix in 3 attempts or a change to CLAUDE.md "Design" not in Owner vision.
 
 Done when: the end state in PX-PROGRAMME "Verification of the programme" holds on the reference character at 390x844,
-the full gate passes, and CI is green twice in a row with the visual baselines.
+the full gate passes, and CI is green once with the visual baselines (rerun only if a job flaked).
 
 Replies: one or two sentences. Final message: PR link, preview URL, gate table, open items. No session links or ids
 on GitHub. Stop. Do not merge.
@@ -207,7 +209,7 @@ on GitHub. Stop. Do not merge.
 
 1. Owner merges this PR, PR 134 (PP1) and PR 133 (PP2). Both are docs only.
 2. Start PXA and PXB together from the prompts above. Schedule one check-in; do not watch.
-3. When each reports: check the PR against its done-when with a Sonnet subagent; accept, or send one revision.
+3. When each reports: check its done-when from the PR body, its carry file and CI status (no subagent, no diff reads); accept, or send one revision.
 4. Owner reviews the two previews and merges. Then start PXC.
 5. After each wave: update the register rows, `docs/carry/README.md` and the Status table here in one docs commit.
 
@@ -222,8 +224,8 @@ Read docs/plans/PX-MASTER.md (Status, Shape, Next steps, Prompts). Then:
 1. Check PR 133 and PR 134 are merged. If not, say so and stop.
 2. Start two cloud sessions together, not in plan mode, each with its prompt from PX-MASTER: PXA on Opus, effort high;
    PXB on Sonnet, effort medium. Schedule one check-in for 90 minutes; do not watch them.
-3. When a session reports, check its PR against the "Done when" in its prompt with a Sonnet subagent. Accept, or send
-   one revision message. Check the two PRs share no file.
+3. When a session reports, check its "Done when" from the PR body, its carry file and CI status; no subagent, no
+   diff reads. Accept, or send one revision message. Check the two PRs share no file.
 4. Tell me when both previews are ready to review. After I merge both, start PXC on Sonnet, effort high.
 5. After each wave, on a docs branch: update the PX rows in docs/remaining/REMAINING-WORK.md, docs/carry/README.md
    and the Status table in PX-MASTER; open a draft PR.

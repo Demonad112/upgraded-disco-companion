@@ -84,6 +84,13 @@ function AtlasMapCanvas({ atlas }: { atlas: AtlasTree }) {
     () => idsFor(atlas, [...atlasClusters.flatMap((c) => c.treeNodes ?? []), ...memoryForks.flatMap((f) => f.treeNodes ?? [])]),
     [atlas],
   )
+  // Guide order numbers for the badges: the first cluster to name a node wins.
+  const numbers = useMemo(() => {
+    const m = new globalThis.Map<number, number>()
+    for (const c of [...atlasClusters].sort((a, b) => a.order - b.order))
+      for (const id of idsFor(atlas, c.treeNodes ?? [])) if (!m.has(id)) m.set(id, c.order)
+    return m
+  }, [atlas])
   const trap = useMemo(() => idsFor(atlas, atlasTrapNodes.flatMap((t) => t.treeNodes ?? [])), [atlas])
   const allocated = useMemo(
     () =>
@@ -174,11 +181,12 @@ function AtlasMapCanvas({ atlas }: { atlas: AtlasTree }) {
         allocated,
         focused,
         hovered: hovered?.id ?? null,
+        numbers,
         pulse: pulseRef.current,
       })
     }
     paintRef.current()
-  }, [tree, viewport, size, guide, trap, allocated, focused, hovered])
+  }, [tree, viewport, size, guide, trap, allocated, focused, hovered, numbers])
 
   // --- interaction ----------------------------------------------------------
   const pick = (sx: number, sy: number) => {
@@ -349,7 +357,7 @@ function AtlasMapCanvas({ atlas }: { atlas: AtlasTree }) {
           >
             <div className="text-xs font-semibold text-ink">{hovered.name || 'Atlas'}</div>
             {subtreeLabel(atlas.subtree.get(hovered.id)) ? (
-              <div className="mt-0.5 text-[10px] text-ink-mute">{subtreeLabel(atlas.subtree.get(hovered.id))}</div>
+              <div className="mt-0.5 text-[11px] text-ink-mute">{subtreeLabel(atlas.subtree.get(hovered.id))}</div>
             ) : null}
             {hovered.stats.length ? (
               <ul className="mt-1.5 space-y-0.5 text-[11px] leading-snug text-ink-dim">
@@ -361,7 +369,7 @@ function AtlasMapCanvas({ atlas }: { atlas: AtlasTree }) {
             {tags.length ? (
               <div className="mt-1.5 flex flex-wrap gap-1">
                 {tags.map((t) => (
-                  <span key={t.label} className={`border px-1.5 py-px text-[10px] ${t.tone}`}>
+                  <span key={t.label} className={`border px-1.5 py-px text-[11px] ${t.tone}`}>
                     {t.label}
                   </span>
                 ))}
@@ -371,7 +379,7 @@ function AtlasMapCanvas({ atlas }: { atlas: AtlasTree }) {
         ) : null}
       </div>
 
-      <p className="text-[10px] leading-relaxed text-ink-mute">
+      <p className="text-[11px] leading-relaxed text-ink-mute">
         Node positions and effects come from the game&apos;s data, via poe2db. Green marks what you&apos;ve ticked here, not what&apos;s on your account.
       </p>
     </div>
