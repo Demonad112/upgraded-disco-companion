@@ -72,6 +72,12 @@
 html {
   background: var(--page);
 }
+/* Keyboard focus never lands under the fixed phone tab bar (PX8 row 1). */
+@media (max-width: 720px) {
+  html {
+    scroll-padding-bottom: calc(var(--tabbar-h) + env(safe-area-inset-bottom, 0px));
+  }
+}
 
 body {
   position: relative;
@@ -400,7 +406,8 @@ code,
   .bar {
     position: relative;
     z-index: 20;
-    background: color-mix(in srgb, var(--surface) var(--glass-fill), transparent);
+    /* Bars are solid: nothing is legible through them (PX1). */
+    background: var(--surface);
     /* G3 (shadow only): no backdrop-filter at all. Even blur(0) makes every
        block its own compositor layer. */
     text-shadow: var(--halo);
@@ -605,7 +612,7 @@ main [id] {
   overflow-x: auto;
   margin-inline: calc(-1 * var(--gutter));
   padding-inline: var(--gutter);
-  background: var(--page);
+  background: var(--surface);
   -webkit-backdrop-filter: none;
   backdrop-filter: none;
   text-shadow: none;
