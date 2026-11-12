@@ -71,7 +71,11 @@ test('when the mod text stays unavailable, the page falls back to the raw id and
   })
   await page.goto('character/')
   await importCharacter(page)
-  await expect(page.getByText(RAW_ID)).toBeVisible()
+  // The raw id renders after the retry fails; that re-render can close the details opened above, so reopen until shown.
+  await expect(async () => {
+    await page.evaluate(() => document.querySelectorAll('details').forEach((d) => (d.open = true)))
+    await expect(page.getByText(RAW_ID)).toBeVisible({ timeout: 1_000 })
+  }).toPass({ timeout: 10_000 })
   await page.waitForTimeout(3_500)
   expect(fetches).toBe(2)
 })
