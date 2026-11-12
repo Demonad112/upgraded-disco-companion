@@ -16,7 +16,8 @@ Wrote `docs/plans/PX-PROGRAMME.md`: presentation, UX and performance programme. 
 | 2 | follow-up | PP2 | Character page spec: build card, tabs, easy-wins formula | Run the PP2 prompt |
 | 3 | follow-up | PP3 | Design and accessibility audit → PX8 rows | Run the PP3 prompt |
 | 4 | follow-up | PX0–PX2 | Screenshot baseline, solid bars and panels, fix cards | Independent; run alongside W0 |
-| 5 | recommendation | PX1, PX4, PX6 | Update the matching CLAUDE.md "Design" line in the same PR (solid data panels, tabs, bottom bar order, "Farm" label) | Owner decided 2026-11-12 |
+| 5 | follow-up | next chat | Orchestrate the programme | Paste the "Orchestrator prompt" from `docs/plans/PX-PROGRAMME.md` |
+| 6 | recommendation | PX1, PX4, PX6 | Update the matching CLAUDE.md "Design" line in the same PR (solid data panels, tabs, bottom bar order, "Farm" label) | Owner decided 2026-11-12 |
 
 ## Needs owner
 - None. Live-site weights in the plan are the register's 2026-11-08 figures; nothing was built or re-measured.

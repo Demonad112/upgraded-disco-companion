@@ -230,6 +230,56 @@ Output one table: finding, route, file, severity, fix, size. Accepted rows form 
 reason. Skip anything already covered by PX1–PX7. Reply in two sentences plus the PR link.
 ```
 
+## Orchestration
+
+One chat acts as orchestrator. It never builds; it hands out work, checks results and keeps the master plan current.
+Run the planning prompts (PP1–PP3) outside plan mode: they need to build and measure, and they only write docs.
+
+Order:
+
+| Step | Runs | In parallel | Comes back as |
+|---|---|---|---|
+| 1 | PP2 character spec, PP1 performance plan, PP3 design audit | yes, three chats | `docs/plans/CHARACTER-SPEC.md`, `PERF-PLAN.md`, `DESIGN-AUDIT.md` (draft PRs) |
+| 2 | Orchestrator merges the three into `docs/plans/PX-MASTER.md` | — | every batch PX0–PX12 with its final prompt, branch, order and dependencies |
+| 3 | W1: PX0, PX1, PX2 | yes | three PRs |
+| 4 | W2: PX3, then PX4; PX5 alongside PX3 | partly | variant previews |
+| 5 | W3: PX6, PX7, PX8 | yes | variant previews |
+| 6 | W4: PX9, PX10, PX11 | in PERF-PLAN's order | PRs |
+| 7 | W5: PX12 | — | final QA PR |
+
+Each variant batch gets its own `variant/<yyyymmdd>-<slug>` branch and preview; a later batch branches off the previous
+merged one, never off an unmerged variant, so each preview shows one change.
+
+### Orchestrator prompt
+```
+You are the orchestrator for the PX programme of the PoE2 Endgame Companion. Follow CLAUDE.md. Do not edit source code
+yourself. Replies: short. Answer open questions with your recommended option and say which you picked.
+
+Setup: git fetch origin. Read docs/plans/PX-PROGRAMME.md (if it is not on main, read it from
+origin/claude/festive-euler-q02lqu). Read docs/carry/README.md and the PX rows in docs/remaining/REMAINING-WORK.md to
+see which batches are already done; skip those.
+
+Then work through the Orchestration table one step at a time:
+1. For the current step, try to start each batch as a new cloud session (create_session: this repo, base branch
+   origin/main or the branch that holds the plans, the batch's model, the batch's prompt from the plan with the standard
+   header, not plan mode). If I approve, watch them with get_session and list_events instead of polling in a loop;
+   schedule one check-in rather than waiting.
+2. If session creation is denied or unavailable, print the prompts for this step instead: one fenced block per chat,
+   numbered in run order, marked "run together" or "run after N", each with the model and effort to pick. Then stop and
+   wait for me to paste back each chat's PR link or its plan text.
+3. When results come back (PR links or pasted text), check each against its "Done when": read the PR diff or the doc,
+   not the whole repo. List anything missing as a follow-up prompt for that same chat.
+4. After step 1 of the table (PP1, PP2, PP3), write docs/plans/PX-MASTER.md: every batch PX0 to PX12 in run order with
+   wave, dependencies, branch name, model and effort, the final ready-to-paste prompt (taken from the three plan docs,
+   conflicts between them resolved and noted), the verification tier for each step, and done-when. Where two plans touch
+   the same file in the same wave, put them in sequence. Commit it on a docs branch and open a draft PR.
+5. After every later step, update the status column in PX-MASTER.md and the register rows, then give me the next step's
+   prompts or start its sessions.
+Stop and ask me only when a batch fails its gate three times, two plans conflict on an Owner-vision decision, or a
+batch needs a change to CLAUDE.md "Design" that the Owner vision table does not already cover.
+Start now with step 1.
+```
+
 ## Lower confidence or lower value (last, or not at all)
 
 | Item | Why it is here |
