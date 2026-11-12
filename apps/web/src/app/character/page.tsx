@@ -184,14 +184,20 @@ export default function Home() {
 
   return (
     <>
-      <PageHeader
-        tool="character"
-        eyebrow="Character import"
-        title="Character"
-        accent="Analysis"
-        source="poe.ninja"
-        description="Paste your poe.ninja character and see the top things to fix first."
-      />
+      {/* Once a character is loaded the title folds into the import bar below, so the build card is the first thing on the
+          phone screen. The h1 stays for headings and screen readers. */}
+      {collapsed ? (
+        <h1 className="sr-only">Character Analysis</h1>
+      ) : (
+        <PageHeader
+          tool="character"
+          eyebrow="Character import"
+          title="Character"
+          accent="Analysis"
+          source="poe.ninja"
+          description="Paste your poe.ninja character and see the top things to fix first."
+        />
+      )}
 
       {/* Once an import starts the box steps aside, so the verdict sits near the top. One element either way: the bar
           stays mounted and keeps a failed URL and its error. Open and summary-less until then. */}
@@ -204,7 +210,7 @@ export default function Home() {
         }}
       >
         <summary
-          className={`${collapsed ? 'flex' : 'hidden'} cursor-pointer list-none items-center gap-3 text-sm text-ink-dim [&::-webkit-details-marker]:hidden`}
+          className={`${collapsed ? 'flex' : 'hidden'} min-h-[var(--tap-min)] cursor-pointer list-none items-center gap-3 text-sm text-ink-dim [&::-webkit-details-marker]:hidden`}
         >
           <svg
             viewBox="0 0 20 20"
@@ -214,7 +220,12 @@ export default function Home() {
           >
             <path d="M7.5 5l5 5-5 5" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
-          Load another character
+          <span className="shrink-0">Load another character</span>
+          {a ? (
+            <span className="tabular ml-auto min-w-0 truncate font-mono text-[11px] text-ink-mute">
+              {[a.identity.name, a.identity.level != null ? `Lv ${a.identity.level}` : null].filter(Boolean).join(' · ')}
+            </span>
+          ) : null}
         </summary>
         <div className={collapsed ? 'dbody border-t border-line' : undefined}>
           <ImportBar onResult={handleResult} busy={busy} setBusy={setImportBusy} />
@@ -227,7 +238,7 @@ export default function Home() {
         </p>
       ) : null}
 
-      <div className="mt-6">
+      <div className="mt-3">
         {busy ? <Skeleton /> : null}
 
         {!busy && !a && !pobAnalysis ? (
