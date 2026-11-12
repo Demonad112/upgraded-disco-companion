@@ -54,9 +54,9 @@ export function BiomePanel() {
         </div>
 
         <div>
-          <h4 className="mb-2 text-sm font-semibold text-ink-dim">
+          <h2 className="mb-2 text-sm font-semibold text-ink-dim">
             Which Atlas stat to push for your farm
-          </h4>
+          </h2>
           <ul className="grid gap-1 text-sm sm:grid-cols-2">
             {atlasFocusByFarm.map((f) => (
               <li key={f.farm} className="text-ink-mute">

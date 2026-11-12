@@ -14,7 +14,7 @@ export function TrialOfChaosPanel() {
       title="Trial of Chaos (0.5.5 rework)"
       summary="Pause and resume, a chest every room, 30 rooms on one Ultimatum, which modifiers to take and which wagers."
       badge={
-        <span className="border border-accent-line px-1.5 py-0.5 text-[10px] text-accent">
+        <span className="border border-accent-line px-1.5 py-0.5 text-[11px] text-accent">
           Spec-sourced, unverified
         </span>
       }
@@ -27,7 +27,7 @@ export function TrialOfChaosPanel() {
         </ul>
         <div className="grid gap-3 sm:grid-cols-2">
           <div>
-            <h4 className="mb-1 text-xs font-semibold uppercase tracking-wide text-ink-mute">Take: free or buffs loot</h4>
+            <h3 className="mb-1 text-xs font-semibold uppercase tracking-wide text-ink-mute">Take: free or buffs loot</h3>
             <ul className="space-y-1">
               {free.map((m) => (
                 <li key={m.name}>
@@ -38,7 +38,7 @@ export function TrialOfChaosPanel() {
             </ul>
           </div>
           <div>
-            <h4 className="mb-1 text-xs font-semibold uppercase tracking-wide text-danger">Avoid: run-killers</h4>
+            <h3 className="mb-1 text-xs font-semibold uppercase tracking-wide text-danger">Avoid: run-killers</h3>
             <ul className="space-y-1">
               {avoid.map((m) => (
                 <li key={m.name}>
@@ -50,7 +50,7 @@ export function TrialOfChaosPanel() {
           </div>
         </div>
         <div>
-          <h4 className="mb-1 text-xs font-semibold uppercase tracking-wide text-ink-mute">Wagers</h4>
+          <h3 className="mb-1 text-xs font-semibold uppercase tracking-wide text-ink-mute">Wagers</h3>
           <ul className="list-disc space-y-1 pl-5 text-ink-dim">
             {trialOfChaosWagers.map((w) => (
               <li key={w}>{w}</li>

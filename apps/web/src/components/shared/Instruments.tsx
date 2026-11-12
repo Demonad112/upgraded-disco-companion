@@ -20,7 +20,7 @@ const TONE_TEXT: Record<Tone, string> = {
 export function StatusChip({ tone = 'muted', children }: { tone?: Tone; children: React.ReactNode }) {
   return (
     <span
-      className={`shrink-0 border border-current px-1.5 py-px text-[10px] font-bold tracking-wider uppercase ${TONE_TEXT[tone]}`}
+      className={`shrink-0 border border-current px-1.5 py-px text-[11px] font-bold tracking-wider uppercase ${TONE_TEXT[tone]}`}
     >
       {children}
     </span>

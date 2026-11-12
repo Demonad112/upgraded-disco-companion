@@ -36,7 +36,7 @@ export function ClusterNode({ cluster }: { cluster: AtlasCluster }) {
             className="size-4"
           />
         </label>
-        <span className="tabular mt-px flex size-5 shrink-0 items-center justify-center bg-surface-sunken text-[10px] text-ink-mute">
+        <span className="tabular mt-px flex size-5 shrink-0 items-center justify-center bg-surface-sunken text-[11px] text-ink-mute">
           {cluster.order}
         </span>
         <div className="min-w-0 flex-1">
@@ -45,7 +45,7 @@ export function ClusterNode({ cluster }: { cluster: AtlasCluster }) {
               {cluster.name}
             </span>
             {cluster.killGated ? (
-              <span className="border border-line px-1.5 py-px text-[10px] text-ink-mute">kill-gated</span>
+              <span className="border border-line px-1.5 py-px text-[11px] text-ink-mute">kill-gated</span>
             ) : null}
             <ProOnly><SourceFlag source={cluster.source} /></ProOnly>
           </div>

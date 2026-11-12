@@ -46,7 +46,7 @@ export function ChecklistPhaseNav() {
             <span className="hidden whitespace-nowrap md:inline">
               {(ROADMAP_PHASE_LABELS[phase] ?? phase).split(" — ")[0]}
             </span>
-            <span className="font-mono text-[10px]">
+            <span className="font-mono text-[11px]">
               {count}/{ids.length}
             </span>
             {/* Decorative: the chip text already says n/total. Segments come from lib/gauge via <Gauge>. */}

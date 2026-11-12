@@ -58,7 +58,7 @@ export function ChecklistStep({
         done={complete}
         onToggle={() => toggleStep(step.id)}
         label={`Done: ${step.title}`}
-        className="absolute top-[0.9rem] left-3 z-[1]"
+        className="absolute top-[0.9rem] left-3 z-[1] pointer-coarse:-left-px pointer-coarse:top-px pointer-coarse:size-11 pointer-coarse:place-items-center"
       />
       <details
         id={step.id}
@@ -83,7 +83,7 @@ export function ChecklistStep({
           <span className="flex shrink-0 items-center gap-1.5">
             {items.length ? (
               <span
-                className={`tabular px-1.5 py-px text-[10px] ${
+                className={`tabular px-1.5 py-px text-[11px] ${
                   itemsDone === items.length ? "bg-good/10 text-good" : "bg-surface-sunken text-ink-mute"
                 }`}
                 title="Action items done"
@@ -92,12 +92,12 @@ export function ChecklistStep({
               </span>
             ) : null}
             {avoid.length ? (
-              <span className="bg-danger/10 px-1.5 py-px text-[10px] text-danger" title="Mistakes to avoid">
+              <span className="bg-danger/10 px-1.5 py-px text-[11px] text-danger" title="Mistakes to avoid">
                 ⚠ {avoid.length}
               </span>
             ) : null}
             {gates.length ? (
-              <span className="bg-accent-soft px-1.5 py-px text-[10px] text-accent" title="Readiness gate">
+              <span className="bg-accent-soft px-1.5 py-px text-[11px] text-accent" title="Readiness gate">
                 gate
               </span>
             ) : null}
@@ -165,7 +165,7 @@ export function ChecklistStep({
                       <span className="min-w-0 flex-1">
                         <span className="text-ink-mute">Avoid:</span> {m.title}
                       </span>
-                      <span className="text-[10px] text-ink-mute group-open/avoid:hidden">why?</span>
+                      <span className="text-[11px] text-ink-mute group-open/avoid:hidden">why?</span>
                     </summary>
                     <p className="px-2.5 pb-2 pl-7 text-xs leading-relaxed text-ink-mute">{avoidTexts[i]}</p>
                   </details>
