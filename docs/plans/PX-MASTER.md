@@ -193,6 +193,8 @@ Order:
 
 Subagents: Sonnet for Lighthouse CI and budgets; Haiku for baselines, the width sweep, axe and docs.
 
+Already done in PXD (read docs/carry/PXD.md first): PX11a (route-weight fix, perf harness as scripts/perf-*), Lighthouse on all 8 routes, R67. Tried and dropped: changelog split, sky rAF stop. Skip those; do the rest of step 1 and steps 2-5.
+
 Run start to finish; answer open questions with the recommended option and record each in one line in the PR. Stop
 only for a gate you cannot fix in 3 attempts or a change to CLAUDE.md "Design" not in Owner vision.
 
