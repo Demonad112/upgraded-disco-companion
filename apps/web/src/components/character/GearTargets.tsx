@@ -63,8 +63,13 @@ export function GearTargets({
                 Find better gear
               </a>
             ) : (
-              <a href={`${BASE_PATH}/trade/`} className="btn btn-secondary btn-sm" data-trade="page">
-                Open /trade
+              <a
+                href={`${BASE_PATH}/trade/`}
+                className="btn btn-secondary btn-sm"
+                aria-label={`Find on trade: open the trade page for ${r.slotLabel.toLowerCase()}`}
+                data-trade="page"
+              >
+                Find on trade
               </a>
             )}
           </li>

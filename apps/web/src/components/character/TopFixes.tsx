@@ -8,10 +8,10 @@
 
 import { useEffect, useState } from 'react'
 import type { RecommendationReport, TradeStatMap } from '@poe2/core'
-import { fmt } from '@/components/ui'
+import { usePrefs } from '@/hooks/usePrefs'
 import { BASE_PATH, dataUrl } from '@/lib/basePath'
 import { TRADE_LEAGUE } from '@/lib/constants'
-import { fixAnchor, splitAction, topFixes, tradeLinkFor, tradeStatFor } from './topFixesData'
+import { fixAnchor, fixLines, topFixes, tradeLinkFor, tradeStatFor } from './topFixesData'
 
 /** Internal stat id → trade id, resolved from the trade2 snapshot at build (`trade-map.json`, about 1 KB). Fetched only when a fix can use it. */
 export function useTradeMap(wanted: boolean): TradeStatMap | null {
@@ -40,6 +40,7 @@ export function TopFixes({ report, league }: { report: RecommendationReport; lea
   const fixes = topFixes(report)
   const map = useTradeMap(fixes.some((f) => tradeStatFor(f) !== null))
   const tradeLeague = league || TRADE_LEAGUE
+  const { proDetail } = usePrefs()
 
   return (
     <section data-surface="data" className="card min-w-0" aria-labelledby="top-fixes-title" data-top-fixes>
@@ -51,7 +52,7 @@ export function TopFixes({ report, league }: { report: RecommendationReport; lea
       ) : (
         <ol className="mt-3 space-y-3">
           {fixes.map((f, i) => {
-            const { lead, detail } = splitAction(f.action)
+            const { lead, gain, detail } = fixLines(f, proDetail)
             const trade = map ? tradeLinkFor(f, map, tradeLeague) : null
             return (
               <li key={f.id} className="flex gap-3 border border-line bg-sunken/65 p-3">
@@ -60,16 +61,10 @@ export function TopFixes({ report, league }: { report: RecommendationReport; lea
                 </span>
                 <div className="min-w-0">
                   <p className="text-sm leading-snug font-medium text-ink">{lead}</p>
-                  {detail ? <p className="mt-1 truncate text-xs text-ink-mute" title={detail}>{detail}</p> : null}
+                  {detail ? <p className="mt-1 text-xs text-ink-mute">{detail}</p> : null}
                   <div className="mt-2.5 flex flex-wrap items-center gap-2">
-                    {f.impact ? (
-                      <span className="tabular mr-1 font-mono text-xs text-good">
-                        {f.impact.label}: {fmt(f.impact.from)}
-                        {f.impact.unit === 'percent' ? '%' : ''} → {fmt(f.impact.to)}
-                        {f.impact.unit === 'percent' ? '%' : ''}
-                      </span>
-                    ) : null}
-                    <a href={fixAnchor(f)} className="btn btn-ghost btn-sm" aria-label={`Details: ${lead}`}>
+                    {gain ? <span className="tabular mr-1 font-mono text-xs text-good">{gain}</span> : null}
+                    <a href={fixAnchor(f)} className="btn btn-secondary btn-sm" aria-label={`Details: ${lead}`}>
                       Details
                     </a>
                     {trade ? (
@@ -78,14 +73,19 @@ export function TopFixes({ report, league }: { report: RecommendationReport; lea
                         target="_blank"
                         rel="noopener noreferrer"
                         className="btn btn-secondary btn-sm"
-                        aria-label={`Trade: search trade2 for ${lead.toLowerCase()}`}
+                        aria-label={`Find on trade: search trade2 for ${lead.toLowerCase()}`}
                         data-trade="search"
                       >
-                        Trade
+                        Find on trade
                       </a>
                     ) : (
-                      <a href={`${BASE_PATH}/trade/`} className="btn btn-secondary btn-sm" data-trade="page">
-                        Open /trade
+                      <a
+                        href={`${BASE_PATH}/trade/`}
+                        className="btn btn-secondary btn-sm"
+                        aria-label={`Find on trade: open the trade page for ${lead.toLowerCase()}`}
+                        data-trade="page"
+                      >
+                        Find on trade
                       </a>
                     )}
                   </div>
