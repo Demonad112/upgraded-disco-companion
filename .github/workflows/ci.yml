@@ -15,6 +15,24 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  changes:
+    # One scope decision for both jobs below. A PR that changes only Markdown, docs/ or LICENSE skips their build and
+    # tests; the jobs still run and pass, so the required checks are reported. fetch-depth 2: HEAD is the PR merge
+    # commit, HEAD^1 its base.
+    runs-on: ubuntu-latest
+    outputs:
+      code: ${{ steps.scope.outputs.code }}
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 2
+      - id: scope
+        run: |
+          if [ "$GITHUB_EVENT_NAME" = pull_request ] && ! git diff --name-only HEAD^1 HEAD | grep -qvE '(\.md$|^docs/|^LICENSE$)'; then
+            echo "code=false" >> "$GITHUB_OUTPUT"; echo "Docs-only change: build and tests skipped."
+          else
+            echo "code=true" >> "$GITHUB_OUTPUT"
+          fi
   secrets:
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -27,41 +45,31 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   test:
+    needs: changes
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v5
-        with:
-          fetch-depth: 2
-      - name: Scope
-        # A PR that changes only Markdown, docs/ or LICENSE skips the build and tests below. The job still runs and
-        # passes, so the required check is reported. fetch-depth 2: HEAD is the PR merge commit, HEAD^1 its base.
-        id: scope
-        run: |
-          if [ "$GITHUB_EVENT_NAME" = pull_request ] && ! git diff --name-only HEAD^1 HEAD | grep -qvE '(\.md$|^docs/|^LICENSE$)'; then
-            echo "code=false" >> "$GITHUB_OUTPUT"; echo "Docs-only change: build and tests skipped."
-          else
-            echo "code=true" >> "$GITHUB_OUTPUT"
-          fi
+        if: needs.changes.outputs.code == 'true'
       - uses: actions/setup-node@v5
-        if: steps.scope.outputs.code == 'true'
+        if: needs.changes.outputs.code == 'true'
         with:
           node-version: 22
           cache: npm
       - run: npm ci
-        if: steps.scope.outputs.code == 'true'
+        if: needs.changes.outputs.code == 'true'
       - name: Audit runtime deps
-        if: steps.scope.outputs.code == 'true'
+        if: needs.changes.outputs.code == 'true'
         # Runtime dependencies only; dev tooling advisories don't ship.
         run: npm audit --omit=dev --audit-level=high
       - name: Typecheck
-        if: steps.scope.outputs.code == 'true'
+        if: needs.changes.outputs.code == 'true'
         run: npm run typecheck
       - name: Lint
-        if: steps.scope.outputs.code == 'true'
+        if: needs.changes.outputs.code == 'true'
         run: npm run lint
       - name: Test core (with coverage floor), mcp and web
-        if: steps.scope.outputs.code == 'true'
+        if: needs.changes.outputs.code == 'true'
         # Core runs once, under coverage: the 90% statements / 75% branches floors in packages/core/vitest.config.ts
         # fail the step. Same suites as `npm test`, without running core twice.
         run: |
@@ -69,85 +77,77 @@ jobs:
           npm run test --workspace @poe2/mcp
           npm run test --workspace @poe2/web
       - name: Test ninja-proxy
-        if: steps.scope.outputs.code == 'true'
+        if: needs.changes.outputs.code == 'true'
         # Not an npm workspace (it deploys separately), so the root test run
         # never reached it. Its tests pin the live ladder decoder and the
         # league snapshot lookup.
         run: npm test
         working-directory: services/ninja-proxy
       - name: Build web
-        if: steps.scope.outputs.code == 'true'
+        if: needs.changes.outputs.code == 'true'
         run: npm run build --workspace @poe2/web
       - name: Cache Playwright browsers
-        if: steps.scope.outputs.code == 'true'
+        if: needs.changes.outputs.code == 'true'
         uses: actions/cache@v4
         with:
           path: ~/.cache/ms-playwright
           key: playwright-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
       - name: Install Chromium for the smoke tests
-        if: steps.scope.outputs.code == 'true'
+        if: needs.changes.outputs.code == 'true'
         run: npx playwright install --with-deps chromium
         working-directory: apps/web
       - name: Smoke-test the built site
-        if: steps.scope.outputs.code == 'true'
+        if: needs.changes.outputs.code == 'true'
         # Serves apps/web/out under the same base path this CI build used and drives
         # it offline with the captured fixture character. No traces on CI; to debug a failure, re-run that test
         # locally with `--trace on`.
         run: npm run e2e --workspace @poe2/web -- --trace off
       - name: Upload the smoke-test report
-        if: failure() && steps.scope.outputs.code == 'true'
+        if: failure() && needs.changes.outputs.code == 'true'
         uses: actions/upload-artifact@v6
         with:
           name: playwright-report
           path: apps/web/playwright-report
           retention-days: 7
       - name: Build MCP server
-        if: steps.scope.outputs.code == 'true'
+        if: needs.changes.outputs.code == 'true'
         run: npm run build --workspace @poe2/mcp
       - name: Verify MCP server over stdio
-        if: steps.scope.outputs.code == 'true'
+        if: needs.changes.outputs.code == 'true'
         # Spawns the real binary and drives it with actual protocol messages,
         # asserting the values returned are the real character's.
         run: node scripts/verify-mcp.mjs
       - name: Check the generated tool table is up to date
-        if: steps.scope.outputs.code == 'true'
+        if: needs.changes.outputs.code == 'true'
         run: |
           npm run tools --workspace @poe2/mcp
           git diff --exit-code apps/mcp/TOOLS.md \
             || (echo "TOOLS.md is stale — run 'npm run tools -w @poe2/mcp' and commit the result." && exit 1)
 
   lighthouse:
+    needs: changes
+    # PRs only: the merge commit was already measured on the PR. 2 runs per route on the PR (median).
+    if: github.event_name == 'pull_request'
     # Mobile Lighthouse on the built static site. Fails the job when LCP > 2.5 s or CLS > 0.1 (R49: flipped from warn
     # after five clean main runs, 2026-11-06). If it flakes, set `continue-on-error: true` and the assertions back to "warn".
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v5
-        with:
-          fetch-depth: 2
-      - name: Scope
-        # A PR that changes only Markdown, docs/ or LICENSE skips the build and tests below. The job still runs and
-        # passes, so the required check is reported. fetch-depth 2: HEAD is the PR merge commit, HEAD^1 its base.
-        id: scope
-        run: |
-          if [ "$GITHUB_EVENT_NAME" = pull_request ] && ! git diff --name-only HEAD^1 HEAD | grep -qvE '(\.md$|^docs/|^LICENSE$)'; then
-            echo "code=false" >> "$GITHUB_OUTPUT"; echo "Docs-only change: build and tests skipped."
-          else
-            echo "code=true" >> "$GITHUB_OUTPUT"
-          fi
+        if: needs.changes.outputs.code == 'true'
       - uses: actions/setup-node@v5
-        if: steps.scope.outputs.code == 'true'
+        if: needs.changes.outputs.code == 'true'
         with:
           node-version: 22
           cache: npm
       - run: npm ci
-        if: steps.scope.outputs.code == 'true'
+        if: needs.changes.outputs.code == 'true'
       - name: Build web
-        if: steps.scope.outputs.code == 'true'
+        if: needs.changes.outputs.code == 'true'
         # No GITHUB_ACTIONS basePath: the static server below serves the export from its root.
         env:
           GITHUB_ACTIONS: ''
         run: npm run build
-      - name: Lighthouse (mobile, all 8 routes, 3 runs)
-        if: steps.scope.outputs.code == 'true'
-        run: npx --yes @lhci/cli@0.14.0 autorun --config=lighthouserc.json
+      - name: Lighthouse (mobile, all 8 routes, 2 runs)
+        if: needs.changes.outputs.code == 'true'
+        run: npx --yes @lhci/cli@0.14.0 autorun --config=lighthouserc.json --collect.numberOfRuns=2
