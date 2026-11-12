@@ -18,7 +18,11 @@
       "Read(**/.env.*.local)",
       "Read(**/.env.production)",
       "Read(**/*.pem)",
-      "Read(**/*.key)"
+      "Read(**/*.key)",
+      "Read(packages/data/generated/**)",
+      "Read(packages/data/trade2-stats.json)",
+      "Read(**/test/fixtures/**)",
+      "Read(docs/remaining/archive/**)"
     ]
   },
   "extraKnownMarketplaces": {
