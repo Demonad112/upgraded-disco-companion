@@ -138,14 +138,29 @@ export default function Home() {
       })
   }, [raw, full, analysisOptions])
 
-  // The tree is asked for once the card is on screen, when the browser is idle.
-  const cardPainted = analysis !== null
+  // The tree is asked for once the card is on screen, when the browser is idle. A first analysis alone is not enough:
+  // the results chunk can still be loading, so wait for it, then two frames (the card's paint), then idle time.
+  const cardReady = analysis !== null
   useEffect(() => {
-    if (!cardPainted) return
-    const ric = typeof window.requestIdleCallback === 'function'
-    const h = ric ? window.requestIdleCallback(() => setTreeWanted(true), { timeout: 1000 }) : window.setTimeout(() => setTreeWanted(true), 200)
-    return () => (ric ? window.cancelIdleCallback(h) : window.clearTimeout(h))
-  }, [cardPainted])
+    if (!cardReady) return
+    let cancel = () => {}
+    let live = true
+    void loadResults().then(() => {
+      if (!live) return
+      let f = requestAnimationFrame(() => {
+        f = requestAnimationFrame(() => {
+          const ric = typeof window.requestIdleCallback === 'function'
+          const h = ric ? window.requestIdleCallback(() => setTreeWanted(true), { timeout: 1000 }) : window.setTimeout(() => setTreeWanted(true), 200)
+          cancel = () => (ric ? window.cancelIdleCallback(h) : window.clearTimeout(h))
+        })
+      })
+      cancel = () => cancelAnimationFrame(f)
+    })
+    return () => {
+      live = false
+      cancel()
+    }
+  }, [cardReady])
 
   // Only recorded from the full pass. A snapshot taken before then carries an uncorrected pool, and would be followed
   // by a corrected one — two rows for one import, showing a change nobody made.
