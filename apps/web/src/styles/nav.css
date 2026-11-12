@@ -105,7 +105,7 @@
 /* Very narrow phones (280px): labels step down so "Character" fits a quarter of the width. */
 @media (max-width: 340px) {
   .tab-bar a {
-    font-size: 11px;
+    font-size: 10.5px;
     letter-spacing: 0.03em;
   }
 }
