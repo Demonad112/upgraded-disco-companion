@@ -7,6 +7,7 @@ import { TierHeadroom } from "@/components/atlas/TierHeadroom";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { AtlasMapProvider } from "@/components/atlas/AtlasMapContext";
 import { AtlasTreeMap } from "@/components/atlas/AtlasTreeMap";
+import { AtlasMapSheet, OpenMapButton } from "@/components/atlas/AtlasMapSheet";
 import { AtlasGuideTabs } from "@/components/atlas/AtlasGuideTabs";
 import { commonMistakes } from "@/data/commonMistakes";
 
@@ -17,7 +18,7 @@ export const metadata: Metadata = {
 export default function AtlasPage() {
   return (
     <AtlasMapProvider>
-      <div className="flex flex-col gap-5">
+      <div className="flex flex-col gap-4 sm:gap-5">
         <PageHeader
           tool="atlas"
           eyebrow="Atlas passive tree"
@@ -26,18 +27,17 @@ export default function AtlasPage() {
           description="Which Atlas nodes to take, in order. Tap Map to find one on the tree."
         />
 
+        <OpenMapButton />
+
         <AtlasSequenceTracker />
 
         {/* Phones keep map-then-guide. From lg the guide takes the left column
             and the map sticks in the right one, so "Map" on any row frames the
             node without scrolling back up to find the tree. */}
         <div className="flex flex-col gap-5 lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)] lg:items-start">
-          <section
-            data-surface="data" className="card p-3 sm:p-4 lg:sticky lg:top-18 lg:col-start-2 lg:row-start-1"
-            aria-label="Atlas tree map"
-          >
+          <AtlasMapSheet>
             <AtlasTreeMap />
-          </section>
+          </AtlasMapSheet>
 
           <div className="flex min-w-0 flex-col gap-5 lg:col-start-1 lg:row-start-1">
             <WarningPanel mistakes={commonMistakes} stage="atlas" title="Atlas mistakes" />

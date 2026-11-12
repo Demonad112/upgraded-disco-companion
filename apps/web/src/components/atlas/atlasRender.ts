@@ -40,6 +40,8 @@ interface AtlasRenderOptions {
   allocated: Set<number>
   focused: Set<number>
   hovered: number | null
+  /** Guide order numbers by node id, drawn as small badges (the sheet on phones). */
+  numbers?: Map<number, number>
   /** 0..1 phase of the focus pulse; null when not animating. */
   pulse: number | null
 }
@@ -143,6 +145,24 @@ export function renderAtlas(ctx: CanvasRenderingContext2D, o: AtlasRenderOptions
       ctx.stroke()
       ctx.globalAlpha = 1
     }
+  }
+
+  // --- guide order numbers --------------------------------------------------
+  if (o.numbers?.size) {
+    ctx.font = `700 10px ${p.font}`
+    ctx.textAlign = 'center'
+    ctx.textBaseline = 'middle'
+    for (const [id, n] of o.numbers) {
+      const node = tree.node(id)
+      if (!node || !inView(node)) continue
+      const pt = at(node)
+      const off = nodeRadius(node, vp.scale) + 6
+      ctx.fillStyle = p.guide
+      ctx.fillRect(pt.x + off - 7, pt.y - off - 7, 14, 14)
+      ctx.fillStyle = p.surface
+      ctx.fillText(String(n), pt.x + off, pt.y - off + 0.5)
+    }
+    ctx.textAlign = 'start'
   }
 
   // --- labels ---------------------------------------------------------------

@@ -344,3 +344,82 @@
     font-size: 17px;
   }
 }
+
+/* Phones (PX7): farms are compact rows. Quick picks: name and risk on the left, the open button on the right; the top
+   pick's button is the one gold action. All farms: name, danger and invest on two lines; the detail lines are on the
+   farm's own screen. Risk pips take their colour from the level, with existing tokens. */
+.qp-pip[data-level] {
+  border-color: var(--lvl);
+}
+.qp-danger[data-level='1'] {
+  --lvl: var(--good);
+}
+.qp-danger[data-level='2'] {
+  --lvl: var(--warn);
+}
+.qp-danger[data-level='3'] {
+  --lvl: var(--danger);
+}
+.qp-danger .qp-pip {
+  border-color: var(--lvl, var(--danger));
+}
+.qp-danger .qp-pip[data-on] {
+  background: var(--lvl, var(--danger));
+}
+@media (max-width: 720px) {
+  .qp-tiles,
+  .farm-tiles {
+    gap: 6px;
+  }
+  .qp-tile {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    column-gap: 12px;
+    row-gap: 4px;
+    height: auto;
+    padding: 6px 8px 6px 14px;
+  }
+  .qp-tile .qp-invest,
+  .qp-tile .qp-line {
+    display: none;
+  }
+  .qp-tile-name {
+    grid-column: 1;
+    font-size: 19px;
+    line-height: 1.2;
+  }
+  .qp-danger {
+    grid-column: 1;
+    font-size: 13px;
+  }
+  .qp-setup {
+    grid-column: 2;
+    grid-row: 1 / span 2;
+    width: auto;
+    min-width: 96px;
+    min-height: var(--tap-min);
+    margin: 0;
+    padding-inline: 14px;
+  }
+  .farm-tile {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 4px 10px;
+    min-height: var(--tap-min);
+    padding: 10px 14px;
+  }
+  .farm-tile > .title-sentence {
+    flex: 1 1 auto;
+    font-size: 16px;
+    line-height: 1.25;
+  }
+  .farm-tile > span:nth-child(2):not(:has(.farm-mark)) {
+    display: none;
+  }
+  .farm-tile-more {
+    display: none !important;
+  }
+}

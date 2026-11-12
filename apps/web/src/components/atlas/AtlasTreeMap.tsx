@@ -84,6 +84,13 @@ function AtlasMapCanvas({ atlas }: { atlas: AtlasTree }) {
     () => idsFor(atlas, [...atlasClusters.flatMap((c) => c.treeNodes ?? []), ...memoryForks.flatMap((f) => f.treeNodes ?? [])]),
     [atlas],
   )
+  // Guide order numbers for the badges: the first cluster to name a node wins.
+  const numbers = useMemo(() => {
+    const m = new globalThis.Map<number, number>()
+    for (const c of [...atlasClusters].sort((a, b) => a.order - b.order))
+      for (const id of idsFor(atlas, c.treeNodes ?? [])) if (!m.has(id)) m.set(id, c.order)
+    return m
+  }, [atlas])
   const trap = useMemo(() => idsFor(atlas, atlasTrapNodes.flatMap((t) => t.treeNodes ?? [])), [atlas])
   const allocated = useMemo(
     () =>
@@ -174,11 +181,12 @@ function AtlasMapCanvas({ atlas }: { atlas: AtlasTree }) {
         allocated,
         focused,
         hovered: hovered?.id ?? null,
+        numbers,
         pulse: pulseRef.current,
       })
     }
     paintRef.current()
-  }, [tree, viewport, size, guide, trap, allocated, focused, hovered])
+  }, [tree, viewport, size, guide, trap, allocated, focused, hovered, numbers])
 
   // --- interaction ----------------------------------------------------------
   const pick = (sx: number, sy: number) => {

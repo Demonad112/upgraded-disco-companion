@@ -3,6 +3,7 @@
 import dynamic from "next/dynamic";
 import { useLocalStore } from "@/lib/localStore";
 import { recentCharacters } from "@/lib/recentCharacters";
+import { Accordion } from "@/components/shared/Accordion";
 
 const Headroom = dynamic(() => import("@/components/Headroom").then((m) => m.Headroom), {
   ssr: false,
@@ -16,11 +17,12 @@ const Headroom = dynamic(() => import("@/components/Headroom").then((m) => m.Hea
 export function TierHeadroom() {
   const recents = useLocalStore(recentCharacters);
   const level = recents[0]?.level ?? null;
-  // The panel's own title is an h3 (it sits under "Defences" on the Character page), so it gets an h2 here.
+  // One tap away on every width (PX7): the panel is 1,000 px tall on a phone. Its own title is an h3.
   return (
-    <section aria-labelledby="atlas-tiers-h" className="flex flex-col gap-3">
-      <h2 id="atlas-tiers-h" className="section-title !mb-0">Which tier to run</h2>
-      <Headroom key={level ?? "none"} defense={null} level={level} />
-    </section>
+    <Accordion id="atlas-tiers" title="Which tier to run" summary="Survivability by tier, from your level." lazy>
+      <div className="p-3">
+        <Headroom key={level ?? "none"} defense={null} level={level} />
+      </div>
+    </Accordion>
   );
 }
