@@ -29,6 +29,8 @@ async function importCharacter(page: Page) {
   if ((await box.getAttribute('open')) === null) await page.getByText('Load another character').click()
   await page.getByLabel('poe.ninja character URL').fill(PROFILE_URL)
   await page.getByRole('button', { name: 'Analyse', exact: true }).click()
+  // The name heading is on Overview; a second import keeps the tab from the URL hash.
+  await openTab(page, 'overview')
   await expect(page.getByRole('heading', { name: /Athrynas/ }).first()).toBeVisible({ timeout: 30_000 })
   // The mod text is fetched when a tab that shows it (Gear, Damage, Advanced) opens, not on import.
   await openTab(page, 'advanced')

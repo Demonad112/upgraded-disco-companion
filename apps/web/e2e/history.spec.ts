@@ -20,6 +20,8 @@ test('the Progress panel charts each figure across imports', async ({ page }) =>
     localStorage.setItem(key, JSON.stringify(state))
   })
   await page.reload()
+  // The reload keeps #progress in the URL, so the Overview name heading is not mounted; open Overview first.
+  await openTab(page, 'overview')
   await expect(page.getByRole('heading', { name: /Athrynas/ }).first()).toBeVisible({ timeout: 30_000 })
   await openTab(page, 'progress')
 
