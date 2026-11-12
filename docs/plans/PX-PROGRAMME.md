@@ -81,6 +81,9 @@ CLAUDE.md "Design" in the same PR (solid data panels, tab order, "Farm" label).
 
 ## Waves
 
+> Superseded by `docs/plans/PX-MASTER.md` (2026-11-12): 3 build sessions (PXA, PXB, PXC) replace these waves. Batch
+> scope below still holds.
+
 W0 planning runs alongside W1. W2 needs PP2 and PX0. W4 needs PP1.
 
 | Wave | Batch | Model · effort | Scope | Depends |
@@ -231,6 +234,9 @@ reason. Skip anything already covered by PX1–PX7. Reply in two sentences plus 
 ```
 
 ## Orchestration
+
+> Superseded by `docs/plans/PX-MASTER.md` (2026-11-12): 3 build sessions (PXA, PXB, PXC) replace these waves. Batch
+> scope below still holds.
 
 One chat acts as orchestrator. It never builds; it hands out work, checks results and keeps the master plan current.
 Run the planning prompts (PP1–PP3) outside plan mode: they need to build and measure, and they only write docs.

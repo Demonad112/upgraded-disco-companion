@@ -51,7 +51,7 @@ Read "Owner vision" in docs/plans/PX-PROGRAMME.md. The decided design in CLAUDE.
 7. Write the PX8 batch: files touched (token edits in app/tokens.css only), ordered steps, done-when (the scripted
    numbers that must hold), and a ready-to-paste prompt. Apply carry answers 2, 3 and 4.
 8. Update docs/carry/PP3.md, commit, push, edit the PR body (Summary, Limits, open questions with the option picked).
-9. Send session_019X9NrdHSabTtMNzegqvGQL (claude-code-remote send_message): PR link, count of accepted PX8 rows by
+9. Send the orchestrator session named in the owner's prompt (claude-code-remote send_message): PR link, count of accepted PX8 rows by
    severity, the 5 highest-severity rows in one line each, skills or widths not run, each open question with the option
    picked. Then stop. Do not watch CI.
 ```
