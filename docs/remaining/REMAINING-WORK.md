@@ -128,6 +128,26 @@ N1, N2 and N3 are independent and can run in parallel. The owner pass (OP) runs 
 - [ ] R43: trade extras (optional, 10 min)
 - [ ] Say OK or no to N3 and F2 (tests under `packages/core/test`)
 
+### PX programme (2026-11-12)
+Plan, owner vision and prompts: `docs/plans/PX-PROGRAMME.md`. Core changes are allowed add-only with tests (owner, 2026-11-12).
+
+| ID | Scope | Depends on | Status |
+|---|---|---|---|
+| PP1 | Performance plan (writes PX9–PX11) | — | open |
+| PP2 | Character page spec: build card, tabs, easy wins | — | open |
+| PP3 | Design and accessibility audit (writes PX8 rows) | — | open |
+| PX0 | Screenshot baseline e2e | — | open |
+| PX1 | Solid bars and data panels | — | open |
+| PX2 | Fix cards: new vs Pro, one trade label | — | open |
+| PX3 | Build card hero | PP2, PX0 | open |
+| PX4 | Character tabs | PX3 | open |
+| PX5 | Easy wins (core ranking + UI) | PP2 | open |
+| PX6 | Home for returning players; bottom bar order | PX3 | open |
+| PX7 | Farm and atlas on phone | PX0 | open |
+| PX8 | Type, contrast, spacing | PP3 | open |
+| PX9–PX11 | Performance batches | PP1, PX4 | open |
+| PX12 | Final QA | all | open |
+
 ### Do not do
 | Item | Why |
 |---|---|
