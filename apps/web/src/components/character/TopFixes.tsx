@@ -13,17 +13,23 @@ import { BASE_PATH, dataUrl } from '@/lib/basePath'
 import { TRADE_LEAGUE } from '@/lib/constants'
 import { fixAnchor, fixLines, topFixes, tradeLinkFor, tradeStatFor } from './topFixesData'
 
+let tradeMapRequest: Promise<TradeStatMap> | null = null
+/** One fetch of the trade map for the whole page, however many rows want it. */
+function loadTradeMap(): Promise<TradeStatMap> {
+  tradeMapRequest ??= fetch(dataUrl('trade-map.json'))
+    .then((r) => (r.ok ? (r.json() as Promise<{ map?: TradeStatMap }>) : Promise.reject(new Error(String(r.status)))))
+    .then((j) => j.map ?? {})
+    .catch(() => ({}) as TradeStatMap)
+  return tradeMapRequest
+}
+
 /** Internal stat id → trade id, resolved from the trade2 snapshot at build (`trade-map.json`, about 1 KB). Fetched only when a fix can use it. */
 export function useTradeMap(wanted: boolean): TradeStatMap | null {
   const [map, setMap] = useState<TradeStatMap | null>(null)
   useEffect(() => {
     if (!wanted) return
     let live = true
-    const load = () =>
-      fetch(dataUrl('trade-map.json'))
-        .then((r) => (r.ok ? (r.json() as Promise<{ map?: TradeStatMap }>) : Promise.reject(new Error(String(r.status)))))
-        .then((j) => live && setMap(j.map ?? {}))
-        .catch(() => live && setMap({}))
+    const load = () => void loadTradeMap().then((m) => live && setMap(m))
     // Fetched when the browser is idle, not during the first paint (Safari has no requestIdleCallback).
     const ric = typeof window.requestIdleCallback === 'function'
     const handle = ric ? window.requestIdleCallback(load, { timeout: 3000 }) : window.setTimeout(load, 500)
@@ -149,6 +155,18 @@ export function TopFixes({
           ) : null}
         </div>
       ) : null}
+    </section>
+  )
+}
+
+/** Holds the Top 3's place (same heading, fixed height) until the full analysis has run, so the rows are written once. */
+export function TopFixesPlaceholder() {
+  return (
+    <section data-surface="data" className="card min-w-0" aria-labelledby="top-fixes-title" aria-busy="true" data-top-fixes data-pending>
+      <h3 id="top-fixes-title" className="h3">
+        Top 3 fixes
+      </h3>
+      <div className="skeleton mt-3" style={{ height: 'min(360px, 64vw + 130px)' }} />
     </section>
   )
 }

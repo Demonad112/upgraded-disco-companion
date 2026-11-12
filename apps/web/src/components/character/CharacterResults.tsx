@@ -20,7 +20,7 @@ import { CharacterTabs, type TabDef } from './CharacterTabs'
 import { CopyLink } from './CopyLink'
 import { ShareCard } from './ShareCard'
 import { Showcase } from './Showcase'
-import { TopFixes } from './TopFixes'
+import { TopFixes, TopFixesPlaceholder } from './TopFixes'
 import { Panel } from './tabs/Panel'
 import type { PanelProps } from './tabs/types'
 import type { CharacterHistory } from '@/lib/useCharacterHistory'
@@ -61,7 +61,8 @@ function OverviewPanel({
   tiersState,
   sourceUrl,
   expandFindings,
-}: PanelProps & { sourceUrl: string | null; expandFindings: boolean }) {
+  fixesReady,
+}: PanelProps & { sourceUrl: string | null; expandFindings: boolean; fixesReady: boolean }) {
   const returning = changedFor(a, history.snapshots).available
   const { proDetail } = usePrefs()
   return (
@@ -71,6 +72,7 @@ function OverviewPanel({
         <ShareCard analysis={a} sourceUrl={sourceUrl} diff={history.diff} />
       </Showcase>
       {returning ? <ChangedSincePanel analysis={a} snapshots={history.snapshots} /> : null}
+      {fixesReady ? (
       <TopFixes
         report={a.recommendations}
         league={a.identity.league}
@@ -85,7 +87,10 @@ function OverviewPanel({
           </>
         }
       />
-      <EasyWins analysis={a} tiersState={tiersState} proDetail={proDetail} />
+      ) : (
+        <TopFixesPlaceholder />
+      )}
+      {fixesReady ? <EasyWins analysis={a} tiersState={tiersState} proDetail={proDetail} /> : null}
       {a.warnings.map((w) => (
         <p key={w} data-surface="data" className="card border-warn/50 text-xs leading-relaxed text-warn">
           {w}
@@ -104,6 +109,7 @@ export function CharacterResults({
   treeState,
   catalogState,
   analysisOptions,
+  fixesReady,
   tab,
   target,
   onTab,
@@ -115,6 +121,8 @@ export function CharacterResults({
   treeState: PassiveTreeState
   catalogState: SupportCatalogState
   analysisOptions: AnalyzeOptions
+  /** False until the full analysis has run: the Top 3 are written once, from it, so a skeleton holds their place. */
+  fixesReady: boolean
   tab: TabId
   /** The hash id to scroll to once the tab's panel is mounted (an alias or an element inside a panel). */
   target: string | null
@@ -149,7 +157,7 @@ export function CharacterResults({
 
   return (
     <CharacterTabs tabs={TABS} active={tab} onSelect={onTab}>
-      {tab === 'overview' ? <OverviewPanel {...props} sourceUrl={sourceUrl} expandFindings={target === 'findings'} /> : null}
+      {tab === 'overview' ? <OverviewPanel {...props} sourceUrl={sourceUrl} expandFindings={target === 'findings'} fixesReady={fixesReady} /> : null}
       {tab === 'defences' ? <DefenceTab {...props} /> : null}
       {tab === 'damage' ? <DamageTab {...props} /> : null}
       {tab === 'gear' ? <GearTab {...props} /> : null}

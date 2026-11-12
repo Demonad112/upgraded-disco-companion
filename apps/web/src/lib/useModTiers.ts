@@ -23,7 +23,8 @@ const DISPLAY_RETRY_MS = 1500
 export type ModTiersState =
   | { status: 'idle' }
   | { status: 'loading' }
-  | { status: 'ready'; tiers: ModTiers }
+  /** `base` is the tiers as first loaded; `tiers` may later gain the display-only text. Analysis keys off `base`, so the text arriving does not re-run it. */
+  | { status: 'ready'; tiers: ModTiers; base: ModTiers }
   | { status: 'error'; message: string }
 
 /**
@@ -53,7 +54,7 @@ export function useModTiers(enabled: boolean, needsDisplay = false): ModTiersSta
       .catch(() => new Promise((r) => setTimeout(r, DISPLAY_RETRY_MS)).then(load))
       .then((d) => {
         if (cancelled) return
-        setState((s) => (s.status === 'ready' ? { status: 'ready', tiers: s.tiers.withDisplay(d.displayOnly) } : s))
+        setState((s) => (s.status === 'ready' ? { status: 'ready', tiers: s.tiers.withDisplay(d.displayOnly), base: s.base } : s))
         setDisplayDone(true)
       })
       // Still failing: those mods keep their raw-id fallback; the ladders still work.
@@ -79,7 +80,10 @@ export function useModTiers(enabled: boolean, needsDisplay = false): ModTiersSta
         return (await res.json()) as ModTierData
       })
       .then((data) => {
-        if (!cancelled) setState({ status: 'ready', tiers: new ModTiers(data) })
+        if (!cancelled) {
+          const tiers = new ModTiers(data)
+          setState({ status: 'ready', tiers, base: tiers })
+        }
       })
       .catch((err: Error) => {
         if (!cancelled) setState({ status: 'error', message: err.message })

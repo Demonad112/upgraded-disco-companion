@@ -1,6 +1,7 @@
 'use client'
 
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { preconnect } from 'react-dom'
 import dynamic from 'next/dynamic'
 import {
   analyzeCharacter,
@@ -15,24 +16,32 @@ import { useCharacterHistory } from '@/lib/useCharacterHistory'
 import { recordRecent } from '@/lib/recentCharacters'
 import { gradeText } from '@/lib/grade'
 import { useLadder } from '@/lib/useLadder'
+import { PROXY_BASE } from '@/lib/proxy'
 import { PageHeader } from '@/components/layout/PageHeader'
 import { analysisNeedsDisplay, useModTiers } from '@/lib/useModTiers'
 import { useSupportCatalog } from '@/lib/useSupportCatalog'
 import { usePassiveTree } from '@/lib/usePassiveTree'
 import { useCharacterTab } from '@/lib/characterTab'
 
-// Everything below the import box only renders once a character is loaded, so it is its own chunk: a first visit
-// downloads the header, import box and empty state, and the panels arrive while the import is in flight.
-const CharacterResults = dynamic(
-  () => import('@/components/character/CharacterResults').then((m) => m.CharacterResults),
-  { ssr: false, loading: () => <Skeleton /> },
-)
-const PobResults = dynamic(() => import('@/components/character/CharacterResults').then((m) => m.PobResults), {
+// Everything below the import box only renders once a character is loaded, so it is its own chunk. Overview (build card,
+// Top 3) is in it; every other tab is a chunk of its own, fetched when the tab opens. The chunk is requested when an
+// import starts, in parallel with the proxy, not after the first analysis.
+const loadResults = () => import('@/components/character/CharacterResults')
+const CharacterResults = dynamic(() => loadResults().then((m) => m.CharacterResults), {
+  ssr: false,
+  loading: () => <Skeleton />,
+})
+const PobResults = dynamic(() => loadResults().then((m) => m.PobResults), {
   ssr: false,
   loading: () => <Skeleton />,
 })
 
+/** How long Top 3 waits for the ladder sample once the tiers and the tree are in. It then lands as one more run. */
+const LADDER_GRACE_MS = 600
+
 export default function Home() {
+  // The proxy origin is known at build time, so the connection can be opened while the page is still parsing.
+  preconnect(PROXY_BASE)
   const [analysis, setAnalysis] = useState<Analysis | null>(null)
   // A Path of Building code yields fewer panels — every figure real, none of
   // them estimated — so it is kept as its own shape rather than pretending to
@@ -42,7 +51,7 @@ export default function Home() {
   // one only makes the result MORE specific, and re-running is cheap — it is
   // pure computation over already-parsed data.
   const [raw, setRaw] = useState<unknown>(null)
-  const { tab, target, select: selectTab } = useCharacterTab()
+  const { tab, target, opened, select: selectTab } = useCharacterTab()
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
   // The profile URL of the current import, when it came from one.
@@ -52,64 +61,95 @@ export default function Home() {
   // An import starting closes the box, so the skeleton sits where the panels will land (no shift when they do).
   const setImportBusy = useCallback((b: boolean) => {
     setBusy(b)
-    if (b) setBoxOpen(false)
+    if (b) {
+      setBoxOpen(false)
+      void loadResults()
+    }
   }, [])
 
-  // One fetch each, for the whole page. The gear panel and the findings list
-  // must agree about what is wasted and what would fix it; the tree drawing and
-  // the keystone corrections must agree about what is allocated. Two fetches of
-  // the same artifact into two components is how both of those drift.
+  // One fetch each, for the whole page. The gear panel and the findings list must agree about what is wasted and what
+  // would fix it; the tree drawing and the keystone corrections must agree about what is allocated.
+  //
+  // What loads when: the affix ladders on import (Top 3 needs them); the passive tree once the build card has painted,
+  // when the browser is idle (keystones can change the card's pool and the findings, and the history snapshot waits for
+  // it); the support-gem catalogue when Damage opens; the implicit/unique mod text when Gear, Damage or Advanced opens.
+  const [treeWanted, setTreeWanted] = useState(false)
   const [tiersBase, setTiersBase] = useState(false)
-  const tiersState = useModTiers(raw !== null, tiersBase)
-  // Implicit/corrupted/unique mod text is a separate file, fetched only if this character has such a mod.
+  const displayTab = opened.has('gear') || opened.has('damage') || opened.has('advanced')
+  const tiersState = useModTiers(raw !== null, tiersBase && displayTab)
+  const treeState = usePassiveTree(treeWanted)
+  const catalogState = useSupportCatalog(opened.has('damage'))
   const wantsDisplay = useMemo(() => analysisNeedsDisplay(analysis, tiersState), [analysis, tiersState])
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- one-way latch for the hook
     if (wantsDisplay) setTiersBase(true)
   }, [wantsDisplay])
-  const treeState = usePassiveTree(raw !== null)
-  const catalogState = useSupportCatalog(raw !== null)
-  // Needs the character's league and ascendancy, so it can only start once
-  // there is a first analysis. Failure is silent: the assessment already knows
-  // how to leave damage unscored and say why.
-  const ladder = useLadder(analysis?.identity.league ?? null, analysis?.identity.className ?? null)
-  // Memoised so the gear panels' own memos don't recompute on every render.
+  // Needs the character's league and ascendancy, so it starts once the first analysis has painted. Failure is silent:
+  // the assessment already knows how to leave damage unscored and say why.
+  const { ladder, settled: ladderSettled } = useLadder(analysis?.identity.league ?? null, analysis?.identity.className ?? null)
 
-  // One options object for the main analysis and the what-if re-runs.
+  const treeSettled = treeState.status === 'ready' || treeState.status === 'error'
+  const tiersSettled = tiersState.status === 'ready' || tiersState.status === 'error'
+  const [grace, setGrace] = useState(false)
+  const inputsIn = raw !== null && treeSettled && tiersSettled
+  useEffect(() => {
+    if (!inputsIn || ladderSettled) return
+    const t = window.setTimeout(() => setGrace(true), LADDER_GRACE_MS)
+    return () => window.clearTimeout(t)
+  }, [inputsIn, ladderSettled])
+  // The full analysis runs once its inputs are in: tiers, tree, and the ladder if it answered in time.
+  const full = inputsIn && (ladderSettled || grace)
+
+  // One options object for the main analysis and the what-if re-runs. Keyed on the tiers as first loaded, so the
+  // display text arriving later does not re-run the analysis.
+  const baseTiers = tiersState.status === 'ready' ? tiersState.base : null
+  const tree = treeState.status === 'ready' ? treeState.tree : null
   const analysisOptions = useMemo(
     () => ({
-      ...(tiersState.status === 'ready' ? { tiers: tiersState.tiers } : {}),
-      ...(treeState.status === 'ready' ? { tree: treeState.tree } : {}),
+      ...(baseTiers ? { tiers: baseTiers } : {}),
+      ...(tree ? { tree } : {}),
       ladder,
     }),
-    [tiersState, treeState, ladder],
+    [baseTiers, tree, ladder],
   )
 
+  // Two kinds of run per import: the card pass (the raw data alone, enough for the build card) and the full pass once
+  // its inputs are in. The ladder landing after the grace window is the only reason for a third. A result from a run
+  // that has since been superseded is dropped.
+  const runId = useRef(0)
+  const [stage, setStage] = useState<'card' | 'full'>('card')
   useEffect(() => {
+    const id = ++runId.current
     if (!raw) return
-    let cancelled = false
-    void analyzeCharacter(raw, analysisOptions)
+    const isFull = full
+    void analyzeCharacter(raw, isFull ? analysisOptions : {})
       .then((next) => {
-        if (!cancelled) setAnalysis(next)
+        if (id !== runId.current) return
+        setAnalysis(next)
+        setStage(isFull ? 'full' : 'card')
       })
       .catch((err: Error) => {
-        if (cancelled) return
+        if (id !== runId.current) return
         setError(`Could not analyse that data: ${err.message}`)
         setAnalysis(null)
       })
       .finally(() => {
-        if (!cancelled) setBusy(false)
+        if (id === runId.current) setBusy(false)
       })
-    return () => {
-      cancelled = true
-    }
-  }, [raw, analysisOptions])
+  }, [raw, full, analysisOptions])
 
-  // Only recorded once the tree has settled, either way. A snapshot taken
-  // before then carries an uncorrected pool, and would be followed by a
-  // corrected one — two rows for one import, showing a change nobody made.
-  const treeSettled = treeState.status === 'ready' || treeState.status === 'error'
-  const settled = treeSettled ? analysis : null
+  // The tree is asked for once the card is on screen, when the browser is idle.
+  const cardPainted = analysis !== null
+  useEffect(() => {
+    if (!cardPainted) return
+    const ric = typeof window.requestIdleCallback === 'function'
+    const h = ric ? window.requestIdleCallback(() => setTreeWanted(true), { timeout: 1000 }) : window.setTimeout(() => setTreeWanted(true), 200)
+    return () => (ric ? window.cancelIdleCallback(h) : window.clearTimeout(h))
+  }, [cardPainted])
+
+  // Only recorded from the full pass. A snapshot taken before then carries an uncorrected pool, and would be followed
+  // by a corrected one — two rows for one import, showing a change nobody made.
+  const settled = stage === 'full' ? analysis : null
   const history = useCharacterHistory(settled)
 
   // A recent-characters row carries no figures the tree could correct, but it
@@ -150,8 +190,9 @@ export default function Home() {
       } else {
         setPobAnalysis(null)
         setAnalysis(null)
-        // The effect above owns analysis from here — it re-runs as the tree,
-        // affix data and ladder sample land, and clears `busy` when done.
+        setStage('card')
+        setGrace(false)
+        // The effects above own analysis from here: the card pass now, the full pass once its inputs are in.
         setRaw(r.data)
       }
     } catch (err) {
@@ -171,6 +212,7 @@ export default function Home() {
     // The effect starts a fetch; the page has to show it is busy for its length.
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setBusy(true)
+    void loadResults()
     void importProfile(target).then((r) => {
       if (cancelled) return
       setBusy(false)
@@ -265,6 +307,7 @@ export default function Home() {
             treeState={treeState}
             catalogState={catalogState}
             analysisOptions={analysisOptions}
+            fixesReady={stage === 'full'}
             tab={tab}
             target={target}
             onTab={selectTab}
