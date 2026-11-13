@@ -4,6 +4,7 @@ One line per ID: status, PR. Archived carry files were removed (see Archive belo
 Live rows are tracked in `docs/remaining/REMAINING-WORK.md`.
 
 ## Active
+- [UXS](UXS.md): done, PR open (ux-audit, spacing, empty-states, verbs, a11y sweeps; open rows UXS-1 to UXS-5)
 Each has at least one open row. Owner-side rows are tracked in `../remaining/REMAINING-WORK.md`.
 - [CF2](CF2.md): done, PR open (audit items 5–19; Yykiuy 0.48 C → 0.65 B; open rows for the next batch)
 - [CF1](CF1.md): done, merged PR #162 (audit items 1–4; CF1-2 to CF1-4 resolved in CF2, CF1-1 and CF1-5 carried in CF2)

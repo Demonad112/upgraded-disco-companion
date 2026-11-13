@@ -60,6 +60,7 @@ export function ClusterNode({ cluster }: { cluster: AtlasCluster }) {
             type="button"
             onClick={() => setExpanded((v) => !v)}
             aria-expanded={expanded}
+            aria-label={`${expanded ? "Less" : "More"} about ${cluster.name}`}
             className={`hit-area mt-0.5 !min-h-0 -mb-1 text-[12px] text-accent hover:underline ${long ? "" : "sm:hidden"}`}
           >
             {expanded ? "Less" : "More"}

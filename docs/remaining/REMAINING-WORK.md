@@ -155,6 +155,17 @@ spec: `docs/plans/CF-AUDIT-YYKIUY.md`. Core changes approved in the plan.
 | CF1 | Element order, affix slots, dead stats, Martial Artist gloves (audit 1–4) | — | done, PR open (web gloves and catalog wiring go to CF2: see `docs/carry/CF1.md`) |
 | CF2 | Rubric, ranking, headline, waystone risk, methodology wording (audit 5–19) | CF1 | done, PR open (items 17 and 18 partial; open rows in `docs/carry/CF2.md`) |
 
+### UXS (2026-11-13)
+Sweeps PXC skipped. Open rows in `docs/carry/UXS.md`.
+
+| ID | Scope | Depends on | Status |
+|---|---|---|---|
+| UXS-1 | Collapse text sizes to about 8, 11 px label floor (M) | — | open |
+| UXS-2 | Re-measure tap boxes under 36 px without `hit-area` (S) | PXC | open |
+| UXS-3 | ImportBar example button label without a verb (S) | — | open |
+| UXS-4 | `/character` empty preview box has no next action (S) | — | open |
+| UXS-5 | Read the 1440 px screenshots with the critique rubric | — | open |
+
 ### Do not do
 | Item | Why |
 |---|---|
