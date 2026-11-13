@@ -59,6 +59,7 @@ Status is `done`, `answered` or `parked`. A parked row comes back only if the ow
 | R64 | `weightedTradeLink` weighted held resist types and set min = gap sum | S | PV1 | Closed by N4: weights on gap types only, min = gap sum; held types stay as minimums; no gap means no link. Test in `apps/web/test/gearTargets.test.ts` |
 | R66 | Reallocation emitted cost kind 'free' though it needs a gear swap | S | PV1 | Closed by N4: `gear`, amount 1, tier `trivial`; text branches keyed on a `reallocated` flag. Goldens and two ranking assertions updated |
 | R67 | Stale "level 63" for Yykiuy | S | PV1 | Closed by N4: already fixed (PXD, before #138); no "level 63" left in the repo |
+| R63 | PoB2 MCP oracle: engine parity, proof stat per rec id, config robustness (Yykiuy, Athrynas) | M | PV1 | Closed 2026-11-13: the owner ran the PoB2 verification; `docs/plans/POB-VERIFY.md` removed |
 
 ## PX programme closed in PXC (2026-11-13)
 Moved from `docs/remaining/REMAINING-WORK.md`. Full results: `docs/carry/PXC.md`, `docs/plans/PERF-PLAN.md` ("4–8", PX10, PX11).

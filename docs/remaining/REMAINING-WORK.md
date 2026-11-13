@@ -41,7 +41,6 @@ These rows run in the §6 owner-pass order.
 ## 3. Code and CI follow-ups (class C)
 | ID | Item | Size | Origin | Notes | Status |
 |---|---|---|---|---|---|
-| R63 | PoB2 MCP oracle: engine parity, proof stat per rec id, config robustness (Yykiuy, Athrynas) | M | PV1 | `docs/plans/POB-VERIFY.md` §2, §6; needs fork must-have 1 | open; batch PV2 |
 | R65 | F7: trade-map uses explicit single-resist ids; pseudo totals count every source | M | PV1 | one live trade2 check first | open; batch PV3 |
 
 ## 4. Standing rules (no work)
