@@ -19,36 +19,20 @@
       }
     },
     "assert": {
-      "assertMatrix": [
-        {
-          "matchingUrlPattern": "^(?!.*/trade/).*$",
-          "assertions": {
-            "largest-contentful-paint": [
-              "error",
-              {
-                "maxNumericValue": 2500
-              }
-            ],
-            "cumulative-layout-shift": [
-              "error",
-              {
-                "maxNumericValue": 0.1
-              }
-            ]
+      "assertions": {
+        "largest-contentful-paint": [
+          "error",
+          {
+            "maxNumericValue": 2500
           }
-        },
-        {
-          "matchingUrlPattern": ".*/trade/.*",
-          "assertions": {
-            "largest-contentful-paint": [
-              "error",
-              {
-                "maxNumericValue": 2500
-              }
-            ]
+        ],
+        "cumulative-layout-shift": [
+          "error",
+          {
+            "maxNumericValue": 0.1
           }
-        }
-      ]
+        ]
+      }
     },
     "upload": {
       "target": "filesystem",

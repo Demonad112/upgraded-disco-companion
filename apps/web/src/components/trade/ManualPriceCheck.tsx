@@ -116,7 +116,7 @@ export function ManualPriceCheck() {
     }
   }
 
-  if (load.state === 'loading') return <p data-surface="data" className="card text-sm text-ink-dim">Loading trade data…</p>
+  if (load.state === 'loading') return <p data-surface="data" className="card min-h-[840px] text-sm text-ink-dim md:min-h-[660px]">Loading trade data…</p>
   if (load.state === 'error')
     return (
       <p data-surface="data" className="card text-sm text-warn" role="alert">

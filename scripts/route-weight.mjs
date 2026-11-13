@@ -4,11 +4,19 @@ import { existsSync, readFileSync } from 'node:fs'
 import { brotliCompressSync } from 'node:zlib'
 const out = 'apps/web/out'
 // Brotli budgets (bytes), counting only what a modern browser downloads: `<script noModule>` (Next's 35,158 B br
-// polyfill chunk) is skipped, and every budget was lowered by that amount so no headroom is gained (PERF-PLAN PX11).
-// `/` was 192,000 (raised from 190,000 in CH5: shared classes land on `/`); any other route was 250,000.
-const NOMODULE_BR = 35_158
-const BUDGET = { 'index.html': 192_000 - NOMODULE_BR }
-const DEFAULT_BUDGET = 250_000 - NOMODULE_BR
+// polyfill chunk) is skipped. Pinned per route in PXC (PX11b) to the measured size rounded up to the next 2,000 B, so
+// a route that grows by more than ~2 KB fails and the budget is raised on purpose, with the reason in the PR.
+const BUDGET = {
+  'index.html': 158_000,
+  'checklist/index.html': 167_000,
+  'character/index.html': 209_000,
+  'atlas/index.html': 177_000,
+  'dashboard/index.html': 188_000,
+  'trade/index.html': 162_000,
+  'methodology/index.html': 156_000,
+  'whats-new/index.html': 154_000,
+}
+const DEFAULT_BUDGET = 190_000
 let over = 0
 for (const p of ['index.html', 'checklist/index.html', 'character/index.html', 'atlas/index.html', 'dashboard/index.html', 'trade/index.html', 'methodology/index.html', 'whats-new/index.html']) {
   if (!existsSync(`${out}/${p}`)) continue
