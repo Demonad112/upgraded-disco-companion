@@ -9,15 +9,18 @@ add or update a Yykiuy fixture. Treat those as approved, not as "Needs owner" it
 - Where a sentence is factually wrong, change only the wrong words.
 - No invented game numbers: anything not in the site's data stays "not measured".
 - No trade prices or currency amounts. Don't assert mod spawn legality the site's data can't confirm.
-- `poe.ninja numbers are used as given` (CLAUDE.md) still holds: ninja's displayed resistances, max res and max hits
-  already include glove transforms, so nothing is re-added to displayed caps.
+- **poe.ninja is the only source of output numbers (owner, 2026-11-13).** Every character number the site shows or
+  scores (life, ES, resistances, max res, max hits, EHP, DPS, damage split) is ninja's value as given. Δ estimates are
+  derived from ninja values only (existing `whatIfDefense`). PoB-simulated figures in the audit are never an output,
+  a test target or a default; game data (`packages/data`) only labels things (tiers, mod names, legality) and never
+  replaces a ninja number. Ninja's resistances and max res already include glove transforms, so nothing is re-added.
 
 ## Decisions taken while planning (answered here, with reasons)
 | # | Question | Answer | Why |
 |---|---|---|---|
 | D1 | Must Ephij rank above Bameth? | Only under the old rubric (locked first as a baseline test). After the rubric change the test asserts that order follows Δgrade, and the carry file reports which wins | Ephij's +0.15 is the old binary "all elemental capped" cliff that audit item 11 removes. On damage taken, chaos 31%→25% (−19%) beats lightning 26%→24% (−7.7%), and Bameth's max-hit gain (+2,275) beats Ephij's (+1,124). Forcing the audit's order would contradict its own item 11 |
 | D2 | Remove Ward entirely? | Drop it from the pool sum and every pool sentence; keep the parsed `ward` field; hide the Ward tile when it is null or 0 | ninja still emits `ward` (stat 26), and its numbers are used as given. Yykiuy then shows no "Ward" anywhere |
-| D3 | Dead-stat ΔDPS (+15.9 %)? | The finding names the dead line and the candidate swaps with "DPS gain not measured" | No PoB engine runs on the site (`packages/core/src/pob/` is interfaces only). The PoB figures go in a test comment as the reference, not in the UI |
+| D3 | Dead-stat ΔDPS (+15.9 %)? | The finding names the dead line and the candidate swaps with "DPS gain not measured" | ninja has no figure for it and PoB numbers are not outputs (ground rules) |
 | D4 | Mod legality ("of Ephij" on boots, "+3 Melee" on amulets) | Check `packages/data/generated/mod-bases.json`. Confirmed → normal finding; not found → keep the finding, no legality claim | The audit's lookup failed on the MCP's missing mod DB; the site has its own |
 | D5 | Fixture | Keep `yykiuy-v51.json` (2026-11-08). CF1 fetches the current model through the proxy; if the version differs, commit it verbatim as `yykiuy-v<n>.json` and point the tests at it | The audit snapshot is 2026-11-12. The repo already keeps verbatim fixtures (`test/fixtures/README.md`). Never Read the fixture whole (≈400 KB); query it from a test or a node one-liner |
 | D6 | Keystones (item 15) | 14 of 15 are already in `keystones/index.ts`; add Blackflame Covenant only, and Mana in the pool under MoM / Eldritch Battery | Grep shows the rest present |
@@ -51,7 +54,7 @@ Audit items 1–4. Core and data only; no web edits beyond what an index fix for
    copies the whole folder. In `gear/tiers.ts` (or where tiers are read), when the character's ascendancy is Martial
    Artist (find the ascendancy id mapping; don't hard-code a guess), reverse-map glove lines to source mod and tier.
    Expect Damnation Grip: Extra Cold = AddedColdDamage7 (T7 of 9), Extra Lightning = AddedLightningDamage7.
-   Hand-wrap max-res lines count toward caps in gear analysis and what-ifs only (ground rules).
+   This is labelling only: caps and max res stay ninja's values (ground rules).
 6. **Gate (reduced).** `npm run typecheck`, `npm run test:coverage -w @poe2/core`, the touched web vitest files,
    `npm run tools -w @poe2/mcp` if any tool output text changed. CI runs lint, build and e2e on the PR.
 
@@ -76,9 +79,10 @@ Audit items 5–19. Start after CF1 merges.
 6. **Ranking (items 6–9).** D7. Rank by Δgrade, then Δ lowest max hit, then ΔDPS, computed with `whatIfDefense` and
    `assessBuild`. Evaluate every alternative on a line and lead with the best (D1). "Toughen up against physical"
    gives concrete changes: with no armour or physical reduction, +1 Life/ES = +1 physical max hit; never "ceiling =
-   best other max hit". Mixed-unit gain text ("% of gap", "slots 29→30") goes.
+   best other max hit". Mixed-unit gain text ("% of gap", "slots 29→30") goes. ΔDPS is "not measured" unless ninja
+   supplies it.
 7. **Methodology page (`apps/web/src/app/methodology/page.tsx`, items 18–19).** Change only the wrong words: Ward out;
-   "import, PoB engine or game dataset"; ungraded range; keystone list; one percentile statement; D8 label;
+   "every number comes from the imported data" stays and gains "or is derived from it" where What-if values show; ungraded range; keystone list; one percentile statement; D8 label;
    tolerances 1 absolute point for resistances and charges (and the matching check in `packages/core/src/reconcile/`).
 8. **Gate.** As CF1, plus `npm run tools -w @poe2/mcp` and one Playwright load of `/character` on the fixture (not the
    live proxy) confirming Overview, Defence and Damage show the corrected values.
@@ -95,5 +99,5 @@ Audit items 5–19. Start after CF1 merges.
 | Headline | from physical (lowest max hit 4,399), not resistances |
 | Dead stat | 28 % Cast Speed on Demon Pendant flagged, DPS gain "not measured" |
 
-PoB references for the test comments only: chaos max hit 11,752 with Bameth; lightning 16,293 with Ephij;
-DPS 205,437 → 238,134 (+3 Melee) / 220,870 (+37 % crit damage).
+Tests assert ninja values and values derived from them only. The audit's PoB figures (11,752; 16,293; 205,437 →
+238,134 / 220,870) are not used anywhere in code or tests.
