@@ -14,7 +14,7 @@ Each has at least one open row. Owner-side rows are tracked in `../remaining/REM
 - [N3](N3.md): done, PR open (row R61 closed; no open rows)
 - [N2](N2.md): done, PR open (row R62 closed; no open rows)
 - [PL1](PL1.md): active, this branch (plan 2026-11-08; open rows are register batches N1–N3)
-- [PV1](PV1.md): done, PR open (PoB2 MCP verify plan; open rows R63–R67 for PV2, PV3)
+- [PV1](PV1.md): done, merged (PoB2 verification done by the owner 2026-11-13; plan doc removed; R65 still open)
 - [PX](PX.md): active (plan 2026-11-12; run order in `docs/plans/PX-MASTER.md`; open rows are register batches PX0–PX12, run as PXA, PXB, PXC)
 - [PP1](PP1.md): partial, merged PR #134 (items 4–8 go to PXC as "measure first"; continuation prompt not run)
 - [PP2](PP2.md): partial, merged PR #133 (gaps go to PXA as "measure first"; continuation prompt not run)
