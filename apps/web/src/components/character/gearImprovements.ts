@@ -68,3 +68,19 @@ export function tierSummary(item: ItemAnalysis): { top: number; of: number } {
   const tiered = item.mods.filter((m) => isAffixLine(m) && m.tier !== null)
   return { top: tiered.filter((m) => m.tier === 1).length, of: tiered.length }
 }
+
+const SHORT: [RegExp, string][] = [
+  [/\bphysical\b/gi, 'Phys'],
+  [/\bmaximum\b/gi, 'Max'],
+  [/\bresistances?\b/gi, 'Res'],
+  [/\battack(s)?\b/gi, 'Atk'],
+  [/\bdamage\b/gi, 'Dmg'],
+  [/\bincreased\b/gi, 'inc'],
+  [/\bcritical\b/gi, 'Crit'],
+  [/\bmovement\b/gi, 'Move'],
+  [/\baccuracy\b/gi, 'Acc'],
+  [/\bevasion\b/gi, 'Eva'],
+  [/\benergy shield\b/gi, 'ES'],
+]
+/** A mod line in short form ("+45 to Max Life", "inc Phys Dmg"); the full text stays in the title and Pro detail. */
+export const abbrev = (text: string): string => SHORT.reduce((t, [re, to]) => t.replace(re, to), text)

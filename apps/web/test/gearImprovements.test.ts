@@ -88,3 +88,11 @@ describe('improvement ranking', () => {
     expect(tierSummary(item([...mods, mod('unplaced', 'prefix', null), mod('rune', null, 1, { source: 'rune' })]))).toEqual({ top: 1, of: 5 })
   })
 })
+
+import { abbrev } from '../src/components/character/gearImprovements'
+describe('abbrev', () => {
+  it('shortens common stat words and leaves the numbers', () => {
+    expect(abbrev('+45 to maximum Life')).toBe('+45 to Max Life')
+    expect(abbrev('20% increased Physical Damage')).toBe('20% inc Phys Dmg')
+  })
+})

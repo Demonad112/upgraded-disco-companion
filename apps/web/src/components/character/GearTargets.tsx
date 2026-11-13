@@ -23,12 +23,12 @@ import { BASE_PATH } from '@/lib/basePath'
 import { TRADE_LEAGUE } from '@/lib/constants'
 import type { ModTiersState } from '@/lib/useModTiers'
 import { improvable, resistGaps, weightedTradeLink } from './gearTargetsData'
-import { isAffixLine, KIND_LABEL, rankImprovements, tierSummary, type Improvement } from './gearImprovements'
+import { abbrev, isAffixLine, KIND_LABEL, rankImprovements, tierSummary, type Improvement } from './gearImprovements'
 import { useTradeMap } from './TopFixes'
 import { MapIcon } from '@/components/icons'
 import { GearSlotGrid } from './GearSlotGrid'
 
-const tierTone = (t: number | null) => (t === 1 ? 'text-accent' : t !== null && t <= 3 ? 'text-ink' : 'text-ink-mute')
+const tierTone = (t: number | null) => (t !== null && t <= 3 ? 'text-ink' : 'text-ink-mute')
 
 function ItemCard({
   row,
@@ -68,13 +68,15 @@ function ItemCard({
     if (!lines.length && !opens.length) return null
     return (
       <div className="gcard-group">
-        <h4 className="label-metric">{title}</h4>
+        <h4 className="label-metric" aria-label={title}>
+          {title.slice(0, 3)}
+        </h4>
         {lines.map(({ m, i }) => {
           const imp = improvements.find((x) => x.modIndex === i)
           return (
             <div key={i} className="gline" data-top={imp && imp === first ? true : undefined}>
-              <span className={`gline-tier ${tierTone(m.tier)}`}>{m.tier === null ? '—' : `T${m.tier}`}</span>
-              <span>{m.text}</span>
+              <span className={`gline-tier ${tierTone(m.tier)}`} data-t={m.tier ?? undefined}>{m.tier === null ? '—' : `T${m.tier}`}</span>
+              <span title={m.text}>{abbrev(m.text)}</span>
               {lineMark(imp)}
               <ProOnly>
                 <span className="col-span-full text-xs text-ink-mute">

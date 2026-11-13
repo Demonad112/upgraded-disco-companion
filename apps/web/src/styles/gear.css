@@ -58,12 +58,11 @@
   color: var(--accent);
 }
 .waystone[data-state='taken']::before {
-  border-color: var(--accent);
-  background: var(--gold-gradient);
+  border-color: var(--accent-line);
+  background: color-mix(in srgb, var(--accent) 16%, var(--page));
 }
 .waystone[data-state='taken'] > span {
-  color: var(--on-accent);
-  font-weight: 700;
+  color: var(--accent);
 }
 .waystone[data-state='next']::before {
   border-color: var(--accent);
@@ -103,18 +102,20 @@
 
 /* --- Relic grid: top two get the strong frame ------------------------------------------------------------ */
 .relic-slot[data-top] {
-  border: 2px solid var(--accent);
-  box-shadow: inset 0 1px 3px #000c, 0 0 16px -6px var(--accent);
+  border: 1px solid var(--accent);
+  background: color-mix(in srgb, var(--accent) 7%, var(--sunken));
+  box-shadow: inset 0 1px 3px #000c;
 }
 .relic-strip {
   margin: 4px -10px -10px;
   padding: 3px 6px;
   white-space: nowrap;
-  background: var(--gold-gradient);
-  color: var(--on-accent);
+  background: color-mix(in srgb, var(--accent) 16%, transparent);
+  border-top: 1px solid var(--accent-line);
+  color: var(--accent);
   font-family: var(--font-label);
   font-size: 10px;
-  font-weight: 700;
+  font-weight: 600;
   letter-spacing: 0.03em;
   text-transform: uppercase;
 }
@@ -233,9 +234,13 @@
   font-style: normal;
 }
 .gline[data-top] .gline-mark > i {
-  background: var(--gold-gradient);
-  color: var(--on-accent);
+  background: color-mix(in srgb, var(--accent) 16%, transparent);
   border-color: var(--accent);
+}
+/* Top tier: a hollow gold-edged chip rather than gold text; T2-T3 plain, T4+ muted. */
+.gline-tier[data-t='1'] {
+  color: var(--ink);
+  box-shadow: inset 0 -1px 0 var(--accent);
 }
 @media (max-width: 479px) {
   .gline {
@@ -243,5 +248,68 @@
   }
   .gline-mark {
     grid-column: 2;
+  }
+}
+
+/* Progress: imports as stops on a horizontal thread. */
+.trail {
+  --stone: 22px;
+  position: relative;
+  display: flex;
+  gap: 0;
+  overflow-x: auto;
+  padding: 4px 2px 2px;
+  scrollbar-width: thin;
+}
+.trail-stop {
+  position: relative;
+  display: flex;
+  flex: 1 0 96px;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  min-width: 96px;
+  text-align: center;
+}
+/* Thread segment from this stop to the next one. */
+.trail-stop:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  top: calc(4px + var(--stone) / 2);
+  left: calc(50% + var(--stone) / 2 + 4px);
+  right: calc(-50% + var(--stone) / 2 + 4px);
+  height: 1px;
+  background: var(--accent);
+}
+.trail-stop[data-ghost]::after,
+.trail-stop:has(+ [data-ghost])::after {
+  background: none;
+  border-top: 1px dashed var(--accent-line);
+}
+.trail-stop .waystone {
+  position: relative;
+  top: 0;
+  left: 0;
+}
+.trail-stop[data-ghost] .waystone::before {
+  border-style: dashed;
+  background: transparent;
+}
+.trail-date {
+  font-family: var(--font-label);
+  font-size: var(--fs-micro);
+  color: var(--ink-mute);
+}
+.trail-stop[data-latest] .trail-date {
+  color: var(--accent);
+}
+.trail-delta {
+  font-family: var(--font-label);
+  font-size: 13px;
+}
+@media (max-width: 639px) {
+  .trail-stop {
+    flex-basis: 72px;
+    min-width: 72px;
   }
 }
