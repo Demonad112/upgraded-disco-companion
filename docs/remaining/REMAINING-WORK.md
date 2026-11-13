@@ -148,6 +148,15 @@ Plan, owner vision and batch sections: `docs/plans/PX-PROGRAMME.md`. Run order, 
 | PX9–PX11 | Performance batches | PP1, PX4 | open (PX9 in PXA; PX10, PX11 in PXC) |
 | PX12 | Final QA | all | open (PXC) |
 
+### CF programme (2026-11-13)
+Character-analysis correctness fixes from the Yykiuy PoB2 audit. Plan and decisions: `docs/plans/CF-PLAN.md`;
+spec: `docs/plans/CF-AUDIT-YYKIUY.md`. Core changes approved in the plan.
+
+| ID | Scope | Depends on | Status |
+|---|---|---|---|
+| CF1 | Element order, affix slots, dead stats, Martial Artist gloves (audit 1–4) | — | open |
+| CF2 | Rubric, ranking, headline, waystone risk, methodology wording (audit 5–19) | CF1 | open |
+
 ### Do not do
 | Item | Why |
 |---|---|
