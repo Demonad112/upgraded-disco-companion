@@ -1,7 +1,7 @@
 # PXA carry-over · 2026-11-12
 PR: draft, see branch · Branch: variant/20261112-character · Preview: Cloudflare Pages preview of the branch
 
-Status: **nearly done** (one e2e failure, item 10). PX2, PX3, PX4, PX5, PX9 built, measured and gated (continuation run, same day). Open items 1-6 are
+Status: **done** (item 10 fixed in N1). PX2, PX3, PX4, PX5, PX9 built, measured and gated (continuation run, same day). Open items 1-6 are
 closed; 7-8 stay with the owner.
 
 ## Checked (previous wave)
@@ -61,7 +61,7 @@ closed; 7-8 stay with the owner.
 | 7 | question | owner | Tab bar scrolls at 390 px. Accept, or shorten labels ("Defence" to "Def.")? | Accept; the active tab scrolls into view |
 | 8 | question | owner | Tree fetched at idle after the card paints (not on tab open) | Keep; Top 3 no longer waits for it |
 | 9 | follow-up | PX10 | Card and Top 3 are 20-60 ms over target; the remaining wait is the ladder | Start the ladder request from the import (league and class are in the raw JSON) instead of after the card pass |
-| 10 | bug | PXA-next | `character.spec.ts` "phone-first screen ... above the fold after import" fails on mobile only: `TypeError: Cannot read properties of null (reading 'y')` (a `boundingBox()` is null). Likely from the card/fixes/full pass split (commit c356b41). All other /character specs pass on both projects (a11y 46, features 24, finishing 12, mod-display 6, sharing 4, history 2, layout 2, character 20/21) | Find the element it measures; fix the page if it is not rendered by then, the wait if it is |
+| 10 | done | - | `character.spec.ts` phone-first screen failed on mobile: the pending and final Top fixes cards share `#top-fixes-title`, and the pending one was swapped out between the visibility check and `boundingBox()` | Fixed in N1: the spec now targets the settled card (`:not([data-pending])`) and polls until the box exists; assertion unchanged |
 
 ## Needs owner
 - PXA-7, PXA-8 above.
