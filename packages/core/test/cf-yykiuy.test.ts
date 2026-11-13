@@ -9,8 +9,9 @@ import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
 import { analyzeCharacter } from '../src/analyze.js'
+import { SupportCatalog, type PobSkillData } from '../src/gems/catalog.js'
 import { analyzeItem } from '../src/gear/analyze.js'
-import { ModTiers, type ModTierData } from '../src/gear/tiers.js'
+import { ModTiers, type ModTierData, type MonkGloveEntry } from '../src/gear/tiers.js'
 import { normalizeItems } from '../src/model/slots.js'
 
 const here = dirname(fileURLToPath(import.meta.url))
@@ -49,5 +50,61 @@ describe('CF1 item 2: affix slot limits', () => {
     const rec = analysis.recommendations.recommendations.find((r) => r.id === 'gear-open-affixes')
     const text = JSON.stringify(rec ?? {})
     expect(text).not.toContain('Demon Pendant')
+  })
+})
+
+describe('CF1 item 4: Martial Artist gloves', () => {
+  const monk = JSON.parse(
+    readFileSync(join(here, '..', '..', 'data', 'generated', 'monk-gloves.json'), 'utf8'),
+  ) as MonkGloveEntry[]
+  const withMonk = tiers.withMonkGloves(monk)
+  const grip = () =>
+    normalizeItems(payload.charModel)
+      .filter((i) => i.active && i.name === 'Damnation Grip')
+      .map((i) => analyzeItem(i, withMonk, analysis.defense))[0]!
+
+  it('has the 588-row transform table', () => {
+    expect(monk).toHaveLength(588)
+  })
+
+  it('reverse-maps Extra Cold and Extra Lightning to AddedColdDamage7 / AddedLightningDamage7 (7th id of 9)', () => {
+    for (const [id, source] of [
+      ['HandWrapsAddedColdDamage7', 'AddedColdDamage7'],
+      ['HandWrapsAddedLightningDamage7', 'AddedLightningDamage7'],
+    ] as const) {
+      const m = grip().mods.find((x) => x.id === id)!
+      expect(withMonk.monkGloveSource(id)?.modId).toBe(source)
+      expect(m.tiers).toBe(9)
+      expect(m.unresolved).toBeNull()
+      // The site numbers tiers from the top (T1 best), so id 7 of 9 is T3.
+      expect(m.tier).toBe(3)
+      expect(m.text).toMatch(/Gain .*Extra (Cold|Lightning) Damage/)
+    }
+  })
+
+  it('leaves the glove untiered without the table', () => {
+    const plain = normalizeItems(payload.charModel)
+      .filter((i) => i.active && i.name === 'Damnation Grip')
+      .map((i) => analyzeItem(i, tiers, analysis.defense))[0]!
+    expect(plain.mods.find((x) => x.id === 'HandWrapsAddedColdDamage7')!.tier).toBeNull()
+  })
+})
+
+describe('CF1 item 3: dead stats', () => {
+  const catalog = new SupportCatalog(
+    JSON.parse(readFileSync(join(here, '..', '..', 'data', 'generated', 'pob-skills.json'), 'utf8')) as PobSkillData,
+  )
+  it('flags 28% Cast Speed on Demon Pendant, gain not measured', async () => {
+    const a = await analyzeCharacter(payload, { tiers, catalog })
+    const rec = a.recommendations.recommendations.find((r) => r.id === 'gear-dead-stat')!
+    expect(rec).toBeDefined()
+    expect(rec.action).toContain('increased Cast Speed" (rolled 28)')
+    expect(rec.action).toContain('Demon Pendant')
+    expect(rec.detail).toContain('DPS gain not measured')
+    expect(rec.evidence.some((e) => e.kind === 'item' && e.itemName === 'Demon Pendant')).toBe(true)
+  })
+
+  it('is skipped without the skills catalog', () => {
+    expect(analysis.recommendations.recommendations.find((r) => r.id === 'gear-dead-stat')).toBeUndefined()
   })
 })

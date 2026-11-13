@@ -49,6 +49,7 @@ import {
   findResistanceSwaps,
   summarizeSwaps,
   type ItemAnalysis,
+  type ItemModAnalysis,
 } from '../gear/analyze.js'
 import type { ModTiers } from '../gear/tiers.js'
 import {
@@ -58,6 +59,7 @@ import {
   type LedgerStat,
 } from '../constraints/ledger.js'
 import type { Evidence, Recommendation } from './types.js'
+import { scalesSkill } from './damage.js'
 
 /** The resistance cap, and the yardstick significance is measured against. */
 const RESIST_CAP = 75
@@ -69,10 +71,22 @@ function score(significance: number, kind: keyof typeof COST_WEIGHT, amount: num
   return significance / (COST_WEIGHT[kind] * Math.max(1, amount))
 }
 
+/** What the dead-stat rule needs to know about the main skill. */
+export interface MainSkillContext {
+  name: string
+  /** PoB's types for the skill (Attack, Spell, Melee, ...). */
+  types: ReadonlySet<string>
+  /** Damage types it deals. */
+  dealt: ReadonlySet<string>
+  crit: boolean
+}
+
 export interface GearRecommendationInput {
   items: EquippedItem[]
   defense: DefenseSummary
   tiers: ModTiers
+  /** Main skill and its types. Without it the dead-stat rule is skipped. */
+  skill?: MainSkillContext | null
 }
 
 /** One item with room left on it. */
@@ -230,6 +244,108 @@ function openAffixRule(analysed: ItemAnalysis[]): Recommendation[] {
   ]
 }
 
+/**
+ * Why this line can do nothing for the skill, or null when it can (or we cannot tell).
+ *
+ * Deliberately narrow: only the attack/spell split, which PoB's skill types state
+ * outright. "Skill speed" affects both, and a skill that is both attack and spell
+ * is never called dead.
+ */
+function deadReason(text: string, skill: MainSkillContext): string | null {
+  const t = text.toLowerCase()
+  if (/skill speed|level of/.test(t)) return null
+  const attack = skill.types.has('Attack')
+  const spell = skill.types.has('Spell')
+  if (attack && !spell && (/cast speed/.test(t) || /spell damage/.test(t))) {
+    return `${skill.name} is an attack, so this spell line never applies to it`
+  }
+  if (spell && !attack && (/attack speed/.test(t) || /attack damage/.test(t))) {
+    return `${skill.name} is a spell, so this attack line never applies to it`
+  }
+  return null
+}
+
+/**
+ * A line that cannot affect the main skill is a replaceable slot, the same as an
+ * empty one. The gain is not measured: poe.ninja has no figure for a swap and the
+ * site does not simulate one, so candidates carry no DPS number.
+ */
+function deadStatRule(analysed: ItemAnalysis[], tiers: ModTiers, skill: MainSkillContext): Recommendation[] {
+  interface Dead { item: ItemAnalysis; mod: ItemModAnalysis; why: string }
+  const dead: Dead[] = []
+  let lines = 0
+  for (const item of analysed) {
+    if (!item.active || item.corrupted || item.itemLevel === null) continue
+    for (const mod of item.mods) {
+      if (!mod.kind || !OCCUPIES_AFFIX_SLOT.has(mod.source)) continue
+      lines += 1
+      const why = deadReason(mod.text, skill)
+      if (why) dead.push({ item, mod, why })
+    }
+  }
+  if (!dead.length) return []
+
+  const label = (d: Dead) => {
+    const rolled = d.mod.rolled[0]?.value
+    return `"${d.mod.text}"${rolled !== undefined ? ` (rolled ${rolled})` : ''}`
+  }
+  const first = dead[0]!
+  const evidence: Evidence[] = dead.slice(0, 4).map(
+    (d): Evidence => ({
+      kind: 'item',
+      slotId: d.item.slotId,
+      slotLabel: d.item.slotLabel,
+      itemName: d.item.name,
+      note: `${label(d)} on ${d.item.name}: ${d.why}.`,
+    }),
+  )
+
+  const lineage = first.item
+  const tags = tiers.tagsForBase(lineage.baseType)
+  const onItem = new Set(lineage.mods.map((m) => m.affix))
+  const candidates = tags
+    ? tiers
+        .available(first.mod.kind!, tags, { maxIlvl: lineage.itemLevel! })
+        .filter((e) => e.text && !onItem.has(e.affix) && scalesSkill(e.text, skill.types, new Set(skill.dealt), skill.crit))
+        .slice(0, 3)
+        .map((e) => e.text!)
+    : []
+
+  const names = dead.map((d) => `${label(d)} on ${d.item.name}`).join('; ')
+  return [
+    {
+      id: 'gear-dead-stat',
+      category: 'gear',
+      action:
+        `Replace ${names}: ${first.why}.` +
+        (candidates.length ? ` Lines this slot can roll that do scale it: ${candidates.join('; ')}.` : ''),
+      rationale: 'A line that cannot affect your main skill takes up a slot a useful one could hold.',
+      detail:
+        `${dead.length} of ${lines} affix lines on your active gear cannot affect ${skill.name}. ` +
+        `DPS gain not measured: poe.ninja gives no figure for swapping a line, and this site does not simulate one.`,
+      impact: {
+        stat: 'liveAffixLines',
+        label: 'Affix lines that can affect the main skill',
+        from: lines - dead.length,
+        to: lines,
+        delta: dead.length,
+        unit: 'points',
+        significance: dead.length / lines,
+      },
+      cost: {
+        kind: 'currency',
+        amount: dead.length,
+        currencyTier: 'low',
+        detail: 'Removing the line and rolling a replacement on the same item; a desecrated or crafted line takes its own currency.',
+      },
+      tradeoff: 'The replacement is a rolled modifier and cannot be chosen outright.',
+      evidence,
+      provenance: 'ninja',
+      score: score(dead.length / lines, 'currency', dead.length),
+    },
+  ]
+}
+
 export interface SameLineSwap {
   rec: Recommendation
   type: string
@@ -280,7 +396,7 @@ export function mergeSameLineSwaps(entries: SameLineSwap[]): Recommendation {
  * Returns an empty list when the affix data resolves nothing useful — a caller
  * merging these keeps its original findings, which are never wrong, only vague.
  */
-export function gearRecommendations({ items, defense, tiers }: GearRecommendationInput): Recommendation[] {
+export function gearRecommendations({ items, defense, tiers, skill }: GearRecommendationInput): Recommendation[] {
   const active = items.filter((i) => i.active)
   if (!active.length) return []
 
@@ -460,6 +576,9 @@ export function gearRecommendations({ items, defense, tiers }: GearRecommendatio
 
   // --- unused affix slots ---------------------------------------------------
   out.push(...openAffixRule(analysed))
+
+  // --- lines that cannot affect the main skill -----------------------------
+  if (skill) out.push(...deadStatRule(analysed, tiers, skill))
 
   return out.sort((a, b) => b.score - a.score)
 }

@@ -227,7 +227,7 @@ export function highestSocketedTier(setups: SkillSetup[], catalog: SupportCatalo
 }
 
 /** Which modifier text scales this skill. Returns the reason, or null. */
-function scalesSkill(text: string, types: ReadonlySet<string>, dealt: Set<string>, crit: boolean): string | null {
+export function scalesSkill(text: string, types: ReadonlySet<string>, dealt: Set<string>, crit: boolean): string | null {
   const t = text.toLowerCase()
   if (/minion|damage taken|reflect|while you|allies/.test(t)) return null
   const attack = types.has('Attack')

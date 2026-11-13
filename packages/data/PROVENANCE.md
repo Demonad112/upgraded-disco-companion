@@ -352,3 +352,17 @@ so they join cleanly.
   reports anything left unmatched.
 - `unique` mods are excluded: they appear on specific uniques rather than
   through crafting, so including them would let anything validate anywhere.
+
+## `generated/monk-gloves.json`
+
+Martial Artist rewrites the stats on gloves and hand wraps. poe.ninja reports the
+rewritten mod (`HandWraps<SourceModId>`, e.g. `HandWrapsAddedColdDamage7`), whose
+craftable ladder is the *source* mod's. This table lets `ModTiers.monkGloveSource`
+reverse-map a glove line to its source mod and tier. It labels only; resistances and
+maximum resistances stay poe.ninja's values.
+
+- **Source:** `vaisest/PathOfBuilding-PoE2`, branch `monk-export`,
+  `python-stuff/monk_gloves.txt` (MIT, via Path of Building). 85,855 B, 588 blocks.
+- **Build:** `npm run build:monk-gloves -w @poe2/data [url-or-path]`.
+- **Shape:** `{ modId, source, transformed[] }[]`, `modId` being the source mod id.
+- **Not synced to the web yet:** only the MCP server loads it (`apps/mcp/src/state.ts`).

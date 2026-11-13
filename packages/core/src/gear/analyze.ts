@@ -334,9 +334,12 @@ export function analyzeItem(
   const mods: ItemModAnalysis[] = []
 
   for (const entry of structured) {
-    const raw = tiers.raw(entry.id)
-    const ladder = baseTags ? tiers.ladderFor(entry.id, baseTags) : null
-    const position = ladder?.entries.find((e) => e.id === entry.id) ?? null
+    // Martial Artist gloves: ninja ships the transformed mod; the craftable ladder is the source mod's.
+    const monk = itemClass === 'Gloves' ? tiers.monkGloveSource(entry.id) : null
+    const lookupId = monk?.modId ?? entry.id
+    const raw = tiers.raw(lookupId)
+    const ladder = baseTags ? tiers.ladderFor(lookupId, baseTags) : null
+    const position = ladder?.entries.find((e) => e.id === lookupId) ?? null
 
     const rolled: RolledStat[] = Object.entries(entry.stats).map(([id, value]) => {
       const range = position?.stats.find((s) => s.id === id) ?? raw?.stats.find(([sid]) => sid === id)
@@ -382,7 +385,7 @@ export function analyzeItem(
           tier: better.tier,
           ilvl: better.ilvl,
           affix: better.affix,
-          text: better.text,
+          text: monk ? (tiers.monkGloveText(better.id) ?? better.text) : better.text,
           reachableOnThisItem: item.itemLevel !== null && item.itemLevel >= better.ilvl,
           // Always the size of the improvement, never a signed delta that
           // reads as negative for an inverted ladder.
@@ -397,7 +400,9 @@ export function analyzeItem(
       source: entry.source,
       kind: raw ? (raw.t === 'p' ? 'prefix' : 'suffix') : null,
       affix: raw?.name ?? displayed?.name ?? null,
-      text: stripModMarkup(position?.text ?? raw?.text ?? displayed?.text ?? entry.id),
+      text: stripModMarkup(
+        (monk ? tiers.monkGloveText(lookupId) : null) ?? position?.text ?? raw?.text ?? displayed?.text ?? entry.id,
+      ),
       tier: position?.tier ?? null,
       tiers: ladder?.entries.length ?? null,
       ilvlRequired: raw?.lvl ?? null,

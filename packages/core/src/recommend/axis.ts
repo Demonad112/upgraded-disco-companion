@@ -17,7 +17,7 @@ const SURVIVABILITY_STATS: ReadonlySet<string> = new Set([
   'effectiveHealthPool',
   'armour',
 ])
-const DAMAGE_STATS: ReadonlySet<string> = new Set(['hitChance', 'criticalStrikeMultiplier'])
+const DAMAGE_STATS: ReadonlySet<string> = new Set(['hitChance', 'criticalStrikeMultiplier', 'liveAffixLines'])
 
 export function axisOf(rec: Pick<Recommendation, 'category' | 'impact'>): RecommendationAxis {
   if (rec.category === 'damage') return 'damage'
