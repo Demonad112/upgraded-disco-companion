@@ -15,6 +15,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { TreeNode } from '@poe2/core'
 import { atlasClusters, memoryForks } from '@/data/atlasTree'
 import { atlasTrapNodes } from '@/data/trapNodes'
+import { nextStep, routeSteps, type RouteStep } from '@/lib/atlasRoute'
 import { useAtlasProgress } from '@/hooks/useAtlasProgress'
 import { useAtlasTree, type AtlasTree } from '@/lib/useAtlasTree'
 import { extentOf, fitExtent, treeToScreen, type Viewport } from '../tree/geometry'
@@ -48,14 +49,12 @@ function idsFor(atlas: AtlasTree, names: Iterable<string>): Set<number> {
   return out
 }
 
-/** One numbered step of the open tab: a cluster, or a Memory fork. A step with several tree nodes shares one number. */
-interface RouteItem {
-  num: number
-  kind: 'cluster' | 'fork'
-  id: string
-  name: string
+/** A route step with its tree node ids resolved. */
+interface RouteItem extends RouteStep {
   nodes: number[]
 }
+
+const NONE: Set<number> = new Set()
 
 const TAB_NOUN: Record<string, string> = { path: 'Path', forks: 'Fork', late: 'Late game' }
 
@@ -91,6 +90,8 @@ function AtlasMapCanvas({ atlas }: { atlas: AtlasTree }) {
   const [hovered, setHovered] = useState<TreeNode | null>(null)
   const tipRef = useRef<HTMLDivElement>(null)
   const [query, setQuery] = useState('')
+  const [step, setStep] = useState(0)
+  const [show, setShow] = useState({ route: true, traps: true, ticked: true })
 
   // --- what to mark ---------------------------------------------------------
   const guide = useMemo(
@@ -99,19 +100,10 @@ function AtlasMapCanvas({ atlas }: { atlas: AtlasTree }) {
   )
   // Only the open tab is numbered: Path = early-progression clusters by order, Late game = general clusters,
   // Memory forks = file order. Mechanics and Traps have no sequence, so no numbers.
-  const route = useMemo<RouteItem[]>(() => {
-    if (tab === 'path' || tab === 'late') {
-      const group = tab === 'path' ? 'early-progression' : 'general'
-      return atlasClusters
-        .filter((c) => c.group === group)
-        .sort((a, b) => a.order - b.order)
-        .map((c) => ({ num: c.order, kind: 'cluster' as const, id: c.id, name: c.name, nodes: [...idsFor(atlas, c.treeNodes ?? [])] }))
-    }
-    if (tab === 'forks') {
-      return memoryForks.map((f, i) => ({ num: i + 1, kind: 'fork' as const, id: f.id, name: f.title, nodes: [...idsFor(atlas, f.treeNodes ?? [])] }))
-    }
-    return []
-  }, [atlas, tab])
+  const route = useMemo<RouteItem[]>(
+    () => routeSteps(tab).map((step) => ({ ...step, nodes: [...idsFor(atlas, step.treeNodes)] })),
+    [atlas, tab],
+  )
   const numbers = useMemo(() => {
     const m = new globalThis.Map<number, number>()
     for (const r of route) for (const id of r.nodes) if (!m.has(id)) m.set(id, r.num)
@@ -131,7 +123,14 @@ function AtlasMapCanvas({ atlas }: { atlas: AtlasTree }) {
       ]),
     [atlas, isClusterAllocated, isForkAllocated],
   )
-  const focused = useMemo(() => (request ? idsFor(atlas, request.names) : new Set<number>()), [atlas, request])
+  const taken = (r: RouteStep) => (r.kind === 'cluster' ? isClusterAllocated(r.id) : isForkAllocated(r.id))
+  // The step the stepper is on: its nodes are ringed and named. A Map button's request takes over while it lasts.
+  const current = route[Math.min(step, route.length - 1)]
+  const nextIdx = nextStep(route, taken) ? route.findIndex((r) => !taken(r)) : -1
+  const focused = useMemo(
+    () => (request ? idsFor(atlas, request.names) : current ? new Set(current.nodes) : new Set<number>()),
+    [atlas, request, current],
+  )
 
   // --- sizing and framing ---------------------------------------------------
   useEffect(() => {
@@ -167,7 +166,20 @@ function AtlasMapCanvas({ atlas }: { atlas: AtlasTree }) {
     else fitAll()
   }, [tabIds, tree, size.width, size.height, fitAll])
 
-  // Open framed to the active tab, and reframe when the tab changes.
+  // Zoom to one step of the route; the stepper bar tracks it.
+  const frameStep = useCallback(
+    (i: number) => {
+      const it = route[i]
+      if (!it || !size.width || !size.height) return
+      setStep(i)
+      const points = it.nodes.map((id) => tree.node(id)).filter((n): n is TreeNode => !!n)
+      const extent = extentOf(points, 700)
+      if (extent) setViewport(fitExtent(extent, size.width, size.height, 0.1))
+    },
+    [route, tree, size.width, size.height],
+  )
+
+  // Open on the next node to take, or framed to the tab when there is no route; reframe when the tab changes., and reframe when the tab changes.
   const framedTab = useRef<string | null>(null)
   useEffect(() => {
     if (!size.width || !size.height || framedTab.current === tab) return
@@ -176,8 +188,13 @@ function AtlasMapCanvas({ atlas }: { atlas: AtlasTree }) {
     if (first && request) return // a Map button got here first; let it frame its node
     clear()
     setHovered(null)
-    fitRoute()
-  }, [tab, size.width, size.height, request, clear, fitRoute])
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- framing waits on the size a ResizeObserver reports
+    if (nextIdx >= 0) frameStep(nextIdx)
+    else {
+      setStep(0)
+      fitRoute()
+    }
+  }, [tab, size.width, size.height, request, clear, fitRoute, frameStep, nextIdx])
 
   // The canvas paint, kept in a ref so the focus pulse can repaint without a render.
   const pulseRef = useRef<number | null>(null)
@@ -233,17 +250,17 @@ function AtlasMapCanvas({ atlas }: { atlas: AtlasTree }) {
         width: size.width,
         height: size.height,
         palette: paletteRef.current.palette,
-        guide,
-        trap,
-        allocated,
+        guide: show.route ? guide : NONE,
+        trap: show.traps ? trap : NONE,
+        allocated: show.ticked ? allocated : NONE,
         focused,
         hovered: hovered?.id ?? null,
-        numbers,
+        ...(show.route ? { numbers } : {}),
         pulse: pulseRef.current,
       })
     }
     paintRef.current()
-  }, [tree, viewport, size, guide, trap, allocated, focused, hovered, numbers])
+  }, [tree, viewport, size, guide, trap, allocated, focused, hovered, numbers, show])
 
   // --- interaction ----------------------------------------------------------
   const pick = (sx: number, sy: number) => {
@@ -263,10 +280,22 @@ function AtlasMapCanvas({ atlas }: { atlas: AtlasTree }) {
     fitAll()
   }
 
+  const tickStep = () => {
+    if (!current) return
+    const done = taken(current)
+    if (current.kind === 'cluster') toggleCluster(current.id)
+    else toggleFork(current.id)
+    if (done) return
+    // Ticked: move on to the next step still to take.
+    const i = route.findIndex((r, j) => j !== route.indexOf(current) && j > route.indexOf(current) && !taken(r))
+    const any = i >= 0 ? i : route.findIndex((r) => r !== current && !taken(r))
+    if (any >= 0) frameStep(any)
+  }
+
   // Tooltip actions, for nodes on the open tab's route.
   const item = hovered ? itemOf.get(hovered.id) : undefined
   const itemDone = item ? (item.kind === 'cluster' ? isClusterAllocated(item.id) : isForkAllocated(item.id)) : false
-  const nextStep = () => {
+  const goNext = () => {
     if (!item) return
     const target = route[(route.indexOf(item) + 1) % route.length]
     const node = target?.nodes.map((id) => tree.node(id)).find((n): n is TreeNode => !!n)
@@ -315,21 +344,23 @@ function AtlasMapCanvas({ atlas }: { atlas: AtlasTree }) {
     : []
 
   return (
-    <div className="space-y-2.5">
+    <div className="atlas-root space-y-2.5">
       <div className="atlas-head">
         <ul className="atlas-legend" aria-label="Map legend">
-          <li>
-            <span className="atlas-swatch" data-kind="guide" aria-hidden="true" />
-            Guide <span className="tabular">{guide.size}</span>
-          </li>
-          <li>
-            <span className="atlas-swatch" data-kind="trap" aria-hidden="true" />
-            Trap <span className="tabular">{trap.size}</span>
-          </li>
-          <li>
-            <span className="atlas-swatch" data-kind="ticked" aria-hidden="true" />
-            Ticked <span className="tabular">{allocated.size}</span>
-          </li>
+          {(
+            [
+              ['route', 'Route', 'guide'],
+              ['traps', 'Traps', 'trap'],
+              ['ticked', 'Ticked', 'ticked'],
+            ] as const
+          ).map(([key, label, kind]) => (
+            <li key={key}>
+              <button type="button" aria-pressed={show[key]} onClick={() => setShow((v) => ({ ...v, [key]: !v[key] }))}>
+                <span className="atlas-swatch" data-kind={kind} aria-hidden="true" />
+                {label}
+              </button>
+            </li>
+          ))}
         </ul>
         <div className="atlas-search">
           <Input
@@ -468,7 +499,7 @@ function AtlasMapCanvas({ atlas }: { atlas: AtlasTree }) {
                   {itemDone ? '✓ Ticked' : 'Tick'}
                 </Button>
                 {route.length > 1 ? (
-                  <Button size="sm" onClick={nextStep}>
+                  <Button size="sm" onClick={goNext}>
                     Next →
                   </Button>
                 ) : null}
@@ -477,6 +508,26 @@ function AtlasMapCanvas({ atlas }: { atlas: AtlasTree }) {
           </div>
         ) : null}
       </div>
+
+      {current ? (
+        <div className="atlas-stepper" role="group" aria-label="Route steps">
+          <span className="atlas-stepper-count tabular">
+            {route.indexOf(current) + 1} of {route.length}
+          </span>
+          <span className="atlas-stepper-name">{current.name}</span>
+          <div className="atlas-stepper-btns">
+            <Button size="sm" onClick={() => frameStep(route.indexOf(current) - 1)} disabled={route.indexOf(current) === 0}>
+              ← Prev
+            </Button>
+            <Button size="sm" onClick={() => frameStep(route.indexOf(current) + 1)} disabled={route.indexOf(current) === route.length - 1}>
+              Next →
+            </Button>
+            <Button size="sm" variant={taken(current) ? 'secondary' : 'primary'} aria-pressed={taken(current)} onClick={tickStep}>
+              {taken(current) ? '✓ Ticked' : 'Tick'}
+            </Button>
+          </div>
+        </div>
+      ) : null}
 
       <p className="text-[11px] leading-relaxed text-ink-mute">
         {proDetail ? (

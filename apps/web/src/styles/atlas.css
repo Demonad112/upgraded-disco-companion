@@ -22,11 +22,27 @@
 .atlas-legend li {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
 }
-.atlas-legend .tabular {
+/* Legend toggles: Route, Traps, Ticked. A pressed one shows its marks on the map. */
+.atlas-legend button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: var(--tap-min);
+  padding: 0 8px;
+  border: 1px solid var(--line);
+  background: transparent;
+  color: var(--ink-mute);
+  font: inherit;
+  cursor: pointer;
+}
+.atlas-legend button[aria-pressed='true'] {
+  border-color: var(--accent-line);
   color: var(--ink);
-  font-weight: 600;
+}
+.atlas-legend button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
 }
 .atlas-swatch {
   width: 10px;
@@ -205,10 +221,10 @@
     display: flex;
     flex-direction: column;
     gap: 8px;
-    max-height: 92dvh;
-    overflow-y: auto;
-    padding: 12px var(--gutter) calc(12px + env(safe-area-inset-bottom, 0px));
-    border-width: 1px 0 0;
+    height: 100dvh;
+    overflow: hidden;
+    padding: calc(12px + env(safe-area-inset-top, 0px)) var(--gutter) calc(12px + env(safe-area-inset-bottom, 0px));
+    border-width: 0;
     background: var(--surface);
     visibility: hidden;
     transform: translateY(100%);
@@ -224,8 +240,16 @@
     align-self: flex-end;
     min-height: var(--tap-min);
   }
+  .atlas-sheet .atlas-root {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    min-height: 0;
+  }
   .atlas-sheet .atlas-map {
-    height: min(58dvh, 26rem);
+    flex: 1;
+    height: auto;
+    min-height: 12rem;
   }
 }
 @media (prefers-reduced-motion: reduce) {
@@ -279,4 +303,35 @@
     width: auto;
     max-width: none;
   }
+}
+
+/* Focus variant: the "1 of 17" stepper pinned under the map (atlas/AtlasTreeMap.tsx). Solid data fill, square corners. */
+.atlas-stepper {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 12px;
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  background: var(--data-fill);
+}
+.atlas-stepper-count {
+  color: var(--accent);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.atlas-stepper-name {
+  min-width: 0;
+  flex: 1 1 8rem;
+  overflow: hidden;
+  color: var(--ink);
+  font-size: 13px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.atlas-stepper-btns {
+  display: flex;
+  gap: 6px;
 }
