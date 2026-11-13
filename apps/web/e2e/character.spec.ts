@@ -164,8 +164,16 @@ test('phone first screen: the Top fixes heading sits above the fold after import
   test.skip(!isMobile, 'phone first screen only')
   await page.setViewportSize({ width: 390, height: 844 })
   await page.goto(importUrl)
-  const heading = page.locator('#top-fixes-title')
+  // The pending and final cards share this id and the pending one is swapped out
+  // once the fixes pass lands, so measure only the settled card.
+  const heading = page.locator('[data-top-fixes]:not([data-pending]) #top-fixes-title')
   await expect(heading).toBeVisible({ timeout: 30_000 })
-  const box = await heading.boundingBox()
-  expect(box!.y + box!.height).toBeLessThan(844)
+  await expect
+    .poll(async () => {
+      const box = await heading.boundingBox()
+      return box ? box.y + box.height : null
+    })
+    .not.toBeNull()
+  const box = (await heading.boundingBox())!
+  expect(box.y + box.height).toBeLessThan(844)
 })

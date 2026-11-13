@@ -38,6 +38,8 @@ const PobResults = dynamic(() => loadResults().then((m) => m.PobResults), {
 
 /** How long Top 3 waits for the ladder sample once the tiers and the tree are in. It then lands as one more run. */
 const LADDER_GRACE_MS = 600
+/** The card pass's options: one object, so inputs arriving before the fixes pass do not re-run it. */
+const NO_OPTIONS = {}
 
 export default function Home() {
   // The proxy origin is known at build time, so the connection can be opened while the page is still parsing.
@@ -91,14 +93,17 @@ export default function Home() {
   const treeSettled = treeState.status === 'ready' || treeState.status === 'error'
   const tiersSettled = tiersState.status === 'ready' || tiersState.status === 'error'
   const [grace, setGrace] = useState(false)
-  const inputsIn = raw !== null && treeSettled && tiersSettled
+  const tiersIn = raw !== null && tiersSettled
   useEffect(() => {
-    if (!inputsIn || ladderSettled) return
+    if (!tiersIn || ladderSettled) return
     const t = window.setTimeout(() => setGrace(true), LADDER_GRACE_MS)
     return () => window.clearTimeout(t)
-  }, [inputsIn, ladderSettled])
-  // The full analysis runs once its inputs are in: tiers, tree, and the ladder if it answered in time.
-  const full = inputsIn && (ladderSettled || grace)
+  }, [tiersIn, ladderSettled])
+  // Which pass the inputs allow: the card pass (raw data alone); the fixes pass once the tiers are in (and the ladder,
+  // if it answered in time), which writes Top 3; the full pass once the tree is in too. The tree changes Top 3 only for
+  // keystone builds, so it is not worth holding Top 3 for (PERF-PLAN: identical rows with and without it on both
+  // reference characters).
+  const want: 'card' | 'fixes' | 'full' = tiersIn && (ladderSettled || grace) ? (treeSettled ? 'full' : 'fixes') : 'card'
 
   // One options object for the main analysis and the what-if re-runs. Keyed on the tiers as first loaded, so the
   // display text arriving later does not re-run the analysis.
@@ -113,20 +118,23 @@ export default function Home() {
     [baseTiers, tree, ladder],
   )
 
-  // Two kinds of run per import: the card pass (the raw data alone, enough for the build card) and the full pass once
-  // its inputs are in. The ladder landing after the grace window is the only reason for a third. A result from a run
-  // that has since been superseded is dropped.
+  // Three passes per import: card, fixes, full (above). Each runs once; the ladder landing after the grace window is
+  // the only reason for another. A result from a run that has since been superseded is dropped.
+  const passOptions = useMemo(
+    () => (want === 'card' ? NO_OPTIONS : want === 'fixes' ? { ...(baseTiers ? { tiers: baseTiers } : {}), ladder } : analysisOptions),
+    [want, baseTiers, ladder, analysisOptions],
+  )
   const runId = useRef(0)
-  const [stage, setStage] = useState<'card' | 'full'>('card')
+  const [stage, setStage] = useState<'card' | 'fixes' | 'full'>('card')
   useEffect(() => {
     const id = ++runId.current
     if (!raw) return
-    const isFull = full
-    void analyzeCharacter(raw, isFull ? analysisOptions : {})
+    const pass = want
+    void analyzeCharacter(raw, passOptions)
       .then((next) => {
         if (id !== runId.current) return
         setAnalysis(next)
-        setStage(isFull ? 'full' : 'card')
+        setStage(pass)
       })
       .catch((err: Error) => {
         if (id !== runId.current) return
@@ -136,16 +144,31 @@ export default function Home() {
       .finally(() => {
         if (id === runId.current) setBusy(false)
       })
-  }, [raw, full, analysisOptions])
+  }, [raw, want, passOptions])
 
-  // The tree is asked for once the card is on screen, when the browser is idle.
-  const cardPainted = analysis !== null
+  // The tree is asked for once the card is on screen, when the browser is idle. A first analysis alone is not enough:
+  // the results chunk can still be loading, so wait for it, then two frames (the card's paint), then idle time.
+  const cardReady = analysis !== null
   useEffect(() => {
-    if (!cardPainted) return
-    const ric = typeof window.requestIdleCallback === 'function'
-    const h = ric ? window.requestIdleCallback(() => setTreeWanted(true), { timeout: 1000 }) : window.setTimeout(() => setTreeWanted(true), 200)
-    return () => (ric ? window.cancelIdleCallback(h) : window.clearTimeout(h))
-  }, [cardPainted])
+    if (!cardReady) return
+    let cancel = () => {}
+    let live = true
+    void loadResults().then(() => {
+      if (!live) return
+      let f = requestAnimationFrame(() => {
+        f = requestAnimationFrame(() => {
+          const ric = typeof window.requestIdleCallback === 'function'
+          const h = ric ? window.requestIdleCallback(() => setTreeWanted(true), { timeout: 1000 }) : window.setTimeout(() => setTreeWanted(true), 200)
+          cancel = () => (ric ? window.cancelIdleCallback(h) : window.clearTimeout(h))
+        })
+      })
+      cancel = () => cancelAnimationFrame(f)
+    })
+    return () => {
+      live = false
+      cancel()
+    }
+  }, [cardReady])
 
   // Only recorded from the full pass. A snapshot taken before then carries an uncorrected pool, and would be followed
   // by a corrected one — two rows for one import, showing a change nobody made.
@@ -307,7 +330,7 @@ export default function Home() {
             treeState={treeState}
             catalogState={catalogState}
             analysisOptions={analysisOptions}
-            fixesReady={stage === 'full'}
+            fixesReady={stage !== 'card'}
             tab={tab}
             target={target}
             onTab={selectTab}
