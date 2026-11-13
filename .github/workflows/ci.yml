@@ -6,6 +6,8 @@ on:
     paths-ignore: ['**.md', 'LICENSE']
   # No paths-ignore here: guard, test and secrets are required checks, so they must run on every PR.
   pull_request:
+    # ready_for_review: marking a draft ready runs the full suite once.
+    types: [opened, synchronize, reopened, ready_for_review]
 
 permissions:
   contents: read
@@ -22,6 +24,8 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       code: ${{ steps.scope.outputs.code }}
+      # Draft PRs run typecheck, lint and unit tests only; e2e and Lighthouse wait until the PR is marked ready.
+      heavy: ${{ steps.scope.outputs.code == 'true' && github.event.pull_request.draft != true }}
     steps:
       - uses: actions/checkout@v5
         with:
@@ -83,27 +87,36 @@ jobs:
         # league snapshot lookup.
         run: npm test
         working-directory: services/ninja-proxy
+      - name: Cache Next.js build cache
+        if: needs.changes.outputs.code == 'true'
+        uses: actions/cache@v4
+        with:
+          path: apps/web/.next/cache
+          key: next-${{ runner.os }}-${{ hashFiles('package-lock.json') }}-${{ hashFiles('apps/web/src/**', 'apps/web/public/**', 'apps/web/*.ts', 'apps/web/*.mjs', 'packages/core/src/**', 'packages/data/generated/**') }}
+          restore-keys: |
+            next-${{ runner.os }}-${{ hashFiles('package-lock.json') }}-
+            next-${{ runner.os }}-
       - name: Build web
         if: needs.changes.outputs.code == 'true'
         run: npm run build --workspace @poe2/web
       - name: Cache Playwright browsers
-        if: needs.changes.outputs.code == 'true'
+        if: needs.changes.outputs.heavy == 'true'
         uses: actions/cache@v4
         with:
           path: ~/.cache/ms-playwright
           key: playwright-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
       - name: Install Chromium for the smoke tests
-        if: needs.changes.outputs.code == 'true'
+        if: needs.changes.outputs.heavy == 'true'
         run: npx playwright install --with-deps chromium
         working-directory: apps/web
       - name: Smoke-test the built site
-        if: needs.changes.outputs.code == 'true'
+        if: needs.changes.outputs.heavy == 'true'
         # Serves apps/web/out under the same base path this CI build used and drives
         # it offline with the captured fixture character. No traces on CI; to debug a failure, re-run that test
         # locally with `--trace on`.
         run: npm run e2e --workspace @poe2/web -- --trace off
       - name: Upload the smoke-test report
-        if: failure() && needs.changes.outputs.code == 'true'
+        if: failure() && needs.changes.outputs.heavy == 'true'
         uses: actions/upload-artifact@v6
         with:
           name: playwright-report
@@ -134,20 +147,20 @@ jobs:
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v5
-        if: needs.changes.outputs.code == 'true'
+        if: needs.changes.outputs.heavy == 'true'
       - uses: actions/setup-node@v5
-        if: needs.changes.outputs.code == 'true'
+        if: needs.changes.outputs.heavy == 'true'
         with:
           node-version: 22
           cache: npm
       - run: npm ci
-        if: needs.changes.outputs.code == 'true'
+        if: needs.changes.outputs.heavy == 'true'
       - name: Build web
-        if: needs.changes.outputs.code == 'true'
+        if: needs.changes.outputs.heavy == 'true'
         # No GITHUB_ACTIONS basePath: the static server below serves the export from its root.
         env:
           GITHUB_ACTIONS: ''
         run: npm run build
       - name: Lighthouse (mobile, all 8 routes, 2 runs)
-        if: needs.changes.outputs.code == 'true'
+        if: needs.changes.outputs.heavy == 'true'
         run: npx --yes @lhci/cli@0.14.0 autorun --config=lighthouserc.json --collect.numberOfRuns=2
