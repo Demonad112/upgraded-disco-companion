@@ -15,6 +15,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { TreeNode } from '@poe2/core'
 import { atlasClusters, memoryForks } from '@/data/atlasTree'
 import { atlasTrapNodes } from '@/data/trapNodes'
+import { routeSteps, type RouteStep } from '@/lib/atlasRoute'
 import { useAtlasProgress } from '@/hooks/useAtlasProgress'
 import { useAtlasTree, type AtlasTree } from '@/lib/useAtlasTree'
 import { extentOf, fitExtent, treeToScreen, type Viewport } from '../tree/geometry'
@@ -48,14 +49,12 @@ function idsFor(atlas: AtlasTree, names: Iterable<string>): Set<number> {
   return out
 }
 
-/** One numbered step of the open tab: a cluster, or a Memory fork. A step with several tree nodes shares one number. */
-interface RouteItem {
-  num: number
-  kind: 'cluster' | 'fork'
-  id: string
-  name: string
+/** A route step with its tree node ids resolved. */
+interface RouteItem extends RouteStep {
   nodes: number[]
 }
+
+const NONE: Set<number> = new Set()
 
 const TAB_NOUN: Record<string, string> = { path: 'Path', forks: 'Fork', late: 'Late game' }
 
@@ -91,6 +90,7 @@ function AtlasMapCanvas({ atlas }: { atlas: AtlasTree }) {
   const [hovered, setHovered] = useState<TreeNode | null>(null)
   const tipRef = useRef<HTMLDivElement>(null)
   const [query, setQuery] = useState('')
+  const [show, setShow] = useState({ route: true, traps: true, ticked: true })
 
   // --- what to mark ---------------------------------------------------------
   const guide = useMemo(
@@ -99,19 +99,10 @@ function AtlasMapCanvas({ atlas }: { atlas: AtlasTree }) {
   )
   // Only the open tab is numbered: Path = early-progression clusters by order, Late game = general clusters,
   // Memory forks = file order. Mechanics and Traps have no sequence, so no numbers.
-  const route = useMemo<RouteItem[]>(() => {
-    if (tab === 'path' || tab === 'late') {
-      const group = tab === 'path' ? 'early-progression' : 'general'
-      return atlasClusters
-        .filter((c) => c.group === group)
-        .sort((a, b) => a.order - b.order)
-        .map((c) => ({ num: c.order, kind: 'cluster' as const, id: c.id, name: c.name, nodes: [...idsFor(atlas, c.treeNodes ?? [])] }))
-    }
-    if (tab === 'forks') {
-      return memoryForks.map((f, i) => ({ num: i + 1, kind: 'fork' as const, id: f.id, name: f.title, nodes: [...idsFor(atlas, f.treeNodes ?? [])] }))
-    }
-    return []
-  }, [atlas, tab])
+  const route = useMemo<RouteItem[]>(
+    () => routeSteps(tab).map((step) => ({ ...step, nodes: [...idsFor(atlas, step.treeNodes)] })),
+    [atlas, tab],
+  )
   const numbers = useMemo(() => {
     const m = new globalThis.Map<number, number>()
     for (const r of route) for (const id of r.nodes) if (!m.has(id)) m.set(id, r.num)
@@ -233,17 +224,17 @@ function AtlasMapCanvas({ atlas }: { atlas: AtlasTree }) {
         width: size.width,
         height: size.height,
         palette: paletteRef.current.palette,
-        guide,
-        trap,
-        allocated,
+        guide: show.route ? guide : NONE,
+        trap: show.traps ? trap : NONE,
+        allocated: show.ticked ? allocated : NONE,
         focused,
         hovered: hovered?.id ?? null,
-        numbers,
+        ...(show.route ? { numbers } : {}),
         pulse: pulseRef.current,
       })
     }
     paintRef.current()
-  }, [tree, viewport, size, guide, trap, allocated, focused, hovered, numbers])
+  }, [tree, viewport, size, guide, trap, allocated, focused, hovered, numbers, show])
 
   // --- interaction ----------------------------------------------------------
   const pick = (sx: number, sy: number) => {
@@ -315,21 +306,23 @@ function AtlasMapCanvas({ atlas }: { atlas: AtlasTree }) {
     : []
 
   return (
-    <div className="space-y-2.5">
+    <div className="atlas-root space-y-2.5">
       <div className="atlas-head">
         <ul className="atlas-legend" aria-label="Map legend">
-          <li>
-            <span className="atlas-swatch" data-kind="guide" aria-hidden="true" />
-            Guide <span className="tabular">{guide.size}</span>
-          </li>
-          <li>
-            <span className="atlas-swatch" data-kind="trap" aria-hidden="true" />
-            Trap <span className="tabular">{trap.size}</span>
-          </li>
-          <li>
-            <span className="atlas-swatch" data-kind="ticked" aria-hidden="true" />
-            Ticked <span className="tabular">{allocated.size}</span>
-          </li>
+          {(
+            [
+              ['route', 'Route', 'guide'],
+              ['traps', 'Traps', 'trap'],
+              ['ticked', 'Ticked', 'ticked'],
+            ] as const
+          ).map(([key, label, kind]) => (
+            <li key={key}>
+              <button type="button" aria-pressed={show[key]} onClick={() => setShow((v) => ({ ...v, [key]: !v[key] }))}>
+                <span className="atlas-swatch" data-kind={kind} aria-hidden="true" />
+                {label}
+              </button>
+            </li>
+          ))}
         </ul>
         <div className="atlas-search">
           <Input

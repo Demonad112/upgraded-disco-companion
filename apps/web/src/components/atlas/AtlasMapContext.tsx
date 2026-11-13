@@ -7,9 +7,9 @@
 
 import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from 'react'
 import { Button } from '@/components/shared/controls'
+import type { AtlasTab } from '@/lib/atlasRoute'
 
-/** The Atlas guide tab that is open; the map numbers and frames that tab's nodes. */
-export type AtlasTab = 'path' | 'forks' | 'mechanics' | 'late' | 'traps'
+export type { AtlasTab }
 
 interface FocusRequest {
   names: string[]
