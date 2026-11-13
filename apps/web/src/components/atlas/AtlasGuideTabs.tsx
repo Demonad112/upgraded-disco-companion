@@ -88,7 +88,7 @@ export function AtlasGuideTabs() {
       <div className="mb-2 flex justify-end">
         <ProToggle />
       </div>
-      <div data-bleed className="sticky top-14 z-10 mx-[calc(var(--gutter)*-1)] mb-4 border-b border-line bg-surface px-(--gutter) py-2 sm:mx-0 sm:border-b-0 sm:bg-transparent sm:p-0">
+      <div data-bleed className="sticky top-14 z-10 mx-[calc(var(--gutter)*-1)] mb-4 border-b border-line bg-surface px-(--gutter) py-2 sm:mx-0 sm:border-b-0 sm:p-0">
         <Segmented
           kind="tabs"
           label="Atlas guide sections"

@@ -31,7 +31,9 @@ test.describe('companion', () => {
     await expect(toggle).not.toBeChecked()
     await page.waitForTimeout(2000) // past the idle load
     await expect(launcher(page)).toBeHidden()
-    await toggle.check()
+    // Click the label, as a person would: its hit-area ::after sits over the checkbox (see sky.spec).
+    await page.locator('label', { hasText: 'Show the companion' }).click()
+    await expect(toggle).toBeChecked()
     await expect(launcher(page)).toBeVisible()
   })
 

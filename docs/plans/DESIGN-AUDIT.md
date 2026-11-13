@@ -25,16 +25,16 @@ no skill was invoked. Sections with data below are scripted checks only.
 
 | Section | State |
 |---|---|
-| ux-audit | run 2026-11-13 (UXS): 8 routes + import at 390 and 1440; findings in `docs/carry/UXS.md` |
-| accessibility-review | scripted checks only: contrast, targets, focus, headings |
+| ux-audit | run 2026-11-13 (UXS), 1440 crops read 2026-11-13 (UXS2); findings in `docs/carry/UXS.md` and `UXS2.md` |
+| accessibility-review | scripted checks: contrast, focus, headings; targets re-measured with `hit-area` 2026-11-13 (UXS2) |
 | typography | scripted checks only: sizes and families; line length unverified |
-| spacing | run 2026-11-13 (UXS): 4 px grid holds; type-size spread is open (UXS-1) |
+| spacing | run 2026-11-13 (UXS): 4 px grid holds; type-size spread is open (UXS-1, Needs owner in UXS2, 2026-11-13) |
 | colour-palette | scripted contrast only |
 | viewports | scripted: overflow and page height at 3 widths |
-| empty-states | run 2026-11-13 (UXS): by hand; one preview box without an action (UXS-4) |
+| empty-states | run 2026-11-13 (UXS): by hand; preview box now points at Analyse (UXS-4, fixed 2026-11-13) |
 | motion | scripted counts only |
 | reduced-motion | scripted, complete |
-| verbs | run 2026-11-13 (UXS): buttons reviewed; one label without a verb (UXS-3) |
+| verbs | run 2026-11-13 (UXS): buttons reviewed; example button now has a verb (UXS-3, fixed 2026-11-13) |
 | keyboard | scripted, 390 px analysed; 1440 px captured, not analysed |
 
 ### Contrast (390 px, median background)
