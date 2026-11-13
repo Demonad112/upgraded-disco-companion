@@ -25,9 +25,14 @@ export function AtlasSequenceTracker() {
             {taken} of {path.length} path nodes taken
           </span>
         </div>
-        <h2 id="atlas-next-title" className="title-sentence mt-2 text-xl text-ink">
-          {next ? next.name : "Every main-path node is ticked"}
-        </h2>
+        <div className="mt-3 flex items-center gap-4">
+          <span className="waystone waystone-lg" data-state={next ? "next" : "taken"} aria-hidden>
+            <span className="tabular">{next ? next.order : "✓"}</span>
+          </span>
+          <h2 id="atlas-next-title" className="title-sentence text-xl text-ink">
+            {next ? next.name : "Every main-path node is ticked"}
+          </h2>
+        </div>
         <p className="mt-1 line-clamp-2 text-sm text-ink-dim">
           {next ? next.description : "Spend the rest in Memory forks, a mechanic, or Late game."}
         </p>

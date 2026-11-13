@@ -15,7 +15,7 @@ import { atlasClusters, memoryForks } from "@/data/atlasTree";
 import { atlasTrapNodes } from "@/data/trapNodes";
 import type { Mechanic } from "@/lib/types";
 import { useAtlasProgress } from "@/hooks/useAtlasProgress";
-import { ClusterNode } from "./ClusterNode";
+import { RouteList } from "./RouteList";
 import { MemoryForkBranch } from "./MemoryForkBranch";
 import { MechanicSubTreeList } from "./MechanicSubTreeList";
 import { TrapNodePanel } from "./TrapNodePanel";
@@ -102,11 +102,7 @@ export function AtlasGuideTabs() {
               Main-path allocation order, before and after the Arbiter of Ash and Divinity kills. The numbers are the
               order to take them in — tap <span className="text-accent">Map</span> to see where each one is.
             </Intro>
-            <ul className="grid grid-cols-[minmax(0,1fr)] gap-1.5 sm:gap-2">
-              {early.map((c) => (
-                <ClusterNode key={c.id} cluster={c} />
-              ))}
-            </ul>
+            <RouteList clusters={early} />
           </>
         ) : null}
 
@@ -135,11 +131,7 @@ export function AtlasGuideTabs() {
         {tab === "late" ? (
           <>
             <Intro>Once the main path is done: where the rest of your points go.</Intro>
-            <ul className="grid grid-cols-[minmax(0,1fr)] gap-1.5 sm:gap-2">
-              {general.map((c) => (
-                <ClusterNode key={c.id} cluster={c} />
-              ))}
-            </ul>
+            <RouteList clusters={general} />
           </>
         ) : null}
 

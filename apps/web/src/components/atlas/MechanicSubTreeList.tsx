@@ -6,7 +6,7 @@ import type { AtlasCluster, Mechanic } from "@/lib/types";
 import { MECHANIC_LABELS } from "@/lib/constants";
 import { Tag } from "@/components/shared/Tag";
 import { ScrollFade } from "@/components/shared/ScrollFade";
-import { ClusterNode } from "./ClusterNode";
+import { RouteList } from "./RouteList";
 import { IconPlate } from "@/components/icons";
 
 const MECHANICS: Mechanic[] = ["abyss", "breach", "expedition", "ritual", "delirium"];
@@ -60,11 +60,7 @@ export function MechanicSubTreeList({ clusters, initial }: { clusters: AtlasClus
       <p className="mb-3 text-xs leading-relaxed text-ink-mute">
         Priority order for {MECHANIC_LABELS[active]}. Don&apos;t run this mechanic&apos;s own tablets while doing its quest; they slow it down.
       </p>
-      <ul className="grid grid-cols-[minmax(0,1fr)] gap-2">
-        {activeNodes.map((cluster) => (
-          <ClusterNode key={cluster.id} cluster={cluster} />
-        ))}
-      </ul>
+      <RouteList clusters={activeNodes} />
     </div>
   );
 }

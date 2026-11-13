@@ -11,7 +11,8 @@ import { ShowOnTreeButton } from "./AtlasMapContext";
 /** Descriptions longer than this are clamped to two lines until expanded. */
 const LONG = 120;
 
-export function ClusterNode({ cluster }: { cluster: AtlasCluster }) {
+/** `step` places the row on a route (styles/waystone.css): the stone's state and whether the thread up to here is walked. */
+export function ClusterNode({ cluster, step }: { cluster: AtlasCluster; step?: { next: boolean; walked: boolean } }) {
   const { isClusterAllocated, toggleCluster } = useAtlasProgress();
   const allocated = isClusterAllocated(cluster.id);
   const [expanded, setExpanded] = useState(false);
@@ -23,10 +24,15 @@ export function ClusterNode({ cluster }: { cluster: AtlasCluster }) {
       data-reveal="node"
       data-surface="data"
       data-taken={allocated || undefined}
+      data-next={step?.next || undefined}
+      data-walked={step?.walked || undefined}
       className={`scroll-mt-40 border px-3 py-2.5 shadow-[var(--lift)] transition-colors max-sm:py-1.5 ${
         allocated ? "border-good/40" : "border-line hover:border-line-strong"
       }`}
     >
+      <span className="waystone" data-state={allocated ? "taken" : step?.next ? "next" : "todo"} aria-hidden>
+        <span className="tabular">{cluster.order}</span>
+      </span>
       <div className="flex items-start gap-1.5">
         <label className="-my-2.5 max-sm:-my-1.5 -ml-3 flex min-h-(--tap-min) min-w-(--tap-min) shrink-0 cursor-pointer items-center justify-center">
           <input
@@ -37,13 +43,7 @@ export function ClusterNode({ cluster }: { cluster: AtlasCluster }) {
             className="size-4"
           />
         </label>
-        <span
-          className={`tabular mt-px flex size-5 shrink-0 items-center justify-center border text-[length:var(--fs-micro)] ${
-            allocated ? "border-good/40 text-good" : "border-accent-line text-accent"
-          }`}
-        >
-          {cluster.order}
-        </span>
+        <span className="sr-only">Step {cluster.order}.</span>
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
             <span className={`text-sm font-medium ${allocated ? "text-ink-mute line-through" : "text-ink"}`}>

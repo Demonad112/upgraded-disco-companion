@@ -46,11 +46,14 @@ export function GearTargets({
     ) : !rows.length ? (
       <Empty>Nothing measurable to improve on your equipped gear.</Empty>
     ) : (
-      <ol className="gear-rows" data-gear-targets>
+      <ol className="gear-rows route" data-gear-targets data-links>
         {rows.map((r, i) => {
           const link = map ? weightedTradeLink(r, gaps, map, league || TRADE_LEAGUE) : null
           return (
-            <li key={r.slotId} className="gear-row">
+            <li key={r.slotId} className="gear-row" data-next={i === 0 || undefined}>
+              <span className="waystone" data-state={i === 0 ? 'next' : 'todo'} aria-hidden>
+                <span className="tabular">{i + 1}</span>
+              </span>
               <span className="gear-rank tabular" aria-hidden>
                 {i + 1}
               </span>
