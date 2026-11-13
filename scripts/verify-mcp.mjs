@@ -155,13 +155,15 @@ const assessment = await callTool('poe2_assess_build')
 if (assessment.tier !== null || assessment.score !== null) {
   failures.push(`a single tier was claimed without a damage grade: ${assessment.tier} (${assessment.score})`)
 }
-if (assessment.tierRange?.worst !== 'D' || assessment.tierRange?.best !== 'B') {
+if (assessment.tierRange?.worst !== 'C' || assessment.tierRange?.best !== 'A') {
   failures.push(`tier range wrong: ${JSON.stringify(assessment.tierRange)}`)
 }
-if (assessment.scoreRange?.min !== 0.15 || assessment.scoreRange?.max !== 0.65) {
+// CF2: defence 0.30, ungraded damage worth 0.15 to 0.5.
+if (assessment.scoreRange?.min !== 0.45 || assessment.scoreRange?.max !== 0.8) {
   failures.push(`score range wrong: ${JSON.stringify(assessment.scoreRange)}`)
 }
-if (assessment.pool?.total !== 4091) {
+// Life + energy shield; ward is not a pool (CF2, D2).
+if (assessment.pool?.total !== 3385) {
   failures.push(`assessment pool wrong: ${JSON.stringify(assessment.pool)}`)
 }
 // No ladder sample is configured here, so damage MUST be unscored rather than
@@ -169,9 +171,9 @@ if (assessment.pool?.total !== 4091) {
 if (assessment.offence !== null || !/ladder sample/i.test(assessment.offenceUnscoredReason ?? '')) {
   failures.push('damage was scored without a ladder sample to grade it against')
 }
-const risk = (assessment.weaknesses ?? []).find((w) => w.text.includes('one-shot'))
+const risk = (assessment.weaknesses ?? []).find((w) => w.text.includes('weak damage types'))
 if (!risk?.text.includes('Chaos 3,808') || !risk.text.includes('Physical 4,264')) {
-  failures.push(`one-shot risks incomplete: ${risk?.text}`)
+  failures.push(`weak damage types incomplete: ${risk?.text}`)
 }
 console.log(
   `assess: ${assessment.tierRange.worst}-${assessment.tierRange.best} ` +

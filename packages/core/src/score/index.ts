@@ -16,7 +16,7 @@
  *     resistance" is not a harsh verdict, it is a wrong one.
  */
 
-import { knownResistances, type DefenseSummary } from '../defense/index.js'
+import { knownResistances, type DefenseSummary, type ResistanceState } from '../defense/index.js'
 import type { DpsSummary } from '../dps/index.js'
 import { effectiveArmour, effectivePool, NO_KEYSTONE_EFFECTS, type KeystoneEffects } from '../keystones/index.js'
 import { bandFor, describeLadderSample, type LadderStat, type LadderSummary } from '../ninja/ladder.js'
@@ -25,18 +25,103 @@ import {
   ARMOUR_NEGLIGIBLE,
   BLOCK_NEGLIGIBLE,
   CHAOS_CRITICAL,
-  CHAOS_TARGET,
   EVASION_SUBSTANTIAL,
-  isHealthy,
+  MAX_HIT_SCORE,
   OFFENCE_GRADE,
   OFFENCE_WEIGHT,
-  ONE_SHOT_RATIO,
-  POOL_GOOD,
-  POOL_THIN,
+  RES_GAP_CRITICAL,
   TIER_A_MIN,
   TIER_B_MIN,
   TIER_C_MIN,
+  WEAK_HIT_RATIO,
 } from '../thresholds.js'
+
+/**
+ * Every parameter of the build score in one object (audit items 11-14). The
+ * values are judgement calls declared in `thresholds.ts`; nothing here is a
+ * game constant.
+ */
+export const RUBRIC = Object.freeze({
+  /** Defence parts; they sum to the defence half. */
+  weights: Object.freeze({ maxHit: 0.3, elemental: 0.15, chaos: 0.05 }),
+  defenceWeight: 0.5,
+  offenceWeight: OFFENCE_WEIGHT,
+  /** Survivability part: linear on the lowest of the five max hits. */
+  maxHit: MAX_HIT_SCORE,
+  /** Offence by ladder band. `below` is also the floor of the ungraded range. */
+  offence: OFFENCE_GRADE,
+  /** A max hit under this fraction of the best marks a weak damage type. */
+  weakHitRatio: WEAK_HIT_RATIO,
+  /** A resistance gap raising damage taken by this fraction or more is critical. */
+  resGapCritical: RES_GAP_CRITICAL,
+  tiers: Object.freeze({ A: TIER_A_MIN, B: TIER_B_MIN, C: TIER_C_MIN }),
+})
+
+/**
+ * Extra damage taken because a resistance is below its cap: (1 - res) / (1 - cap) - 1.
+ * 0 at or over the cap. The cap is ninja's maximum as given.
+ */
+export function resGapDamageTaken(r: Pick<ResistanceState, 'value' | 'max'> & { value: number }): number {
+  const cap = Math.min(r.max, 99)
+  if (r.value >= cap) return 0
+  return (1 - r.value / 100) / (1 - cap / 100) - 1
+}
+
+/** 0-1 credit for one resistance: damage taken at the cap over damage taken now. */
+function resCredit(r: Pick<ResistanceState, 'value' | 'max'> & { value: number }): number {
+  return 1 / (1 + resGapDamageTaken(r))
+}
+
+export interface DefenceParts {
+  /** Survivability, from the lowest max hit. 0 when unknown. */
+  maxHit: number
+  elemental: number
+  chaos: number
+  /** Unrounded sum, for ranking changes too small to move the rounded score. */
+  total: number
+}
+
+/**
+ * The defence half, unrounded, part by part. Exported so a what-if can be
+ * ranked on the same rubric that grades the build.
+ */
+export function defenceParts(
+  defense: Pick<DefenseSummary, 'resistances' | 'maxHits' | 'lowestMaximumHit'>,
+  keystones: KeystoneEffects = NO_KEYSTONE_EFFECTS,
+): DefenceParts {
+  const w = RUBRIC.weights
+  const hit = lowestCountedHit(defense, keystones)
+  const { zeroAt, fullAt } = RUBRIC.maxHit
+  const maxHit = hit === null ? 0 : w.maxHit * Math.min(1, Math.max(0, (hit - zeroAt) / (fullAt - zeroAt)))
+
+  // Unknown elements earn no credit; the caveats say so.
+  const elementalAll = defense.resistances.filter((r) => r.type !== 'chaos')
+  const elementalKnown = knownResistances({ resistances: elementalAll })
+  const elemental = elementalAll.length
+    ? (w.elemental * elementalKnown.reduce((sum, r) => sum + resCredit(r), 0)) / elementalAll.length
+    : 0
+
+  // Chaos immunity earns the chaos credit outright: it is strictly better than
+  // any resistance value, so scoring it as a miss would penalise it.
+  const chaosRes = defense.resistances.find((r) => r.type === 'chaos')
+  const chaos = keystones.chaosImmune
+    ? w.chaos
+    : chaosRes && chaosRes.value !== null
+      ? w.chaos * resCredit({ value: chaosRes.value, max: chaosRes.max })
+      : 0
+
+  return { maxHit, elemental, chaos, total: maxHit + elemental + chaos }
+}
+
+/** The lowest max hit that can kill: chaos is skipped under chaos immunity. */
+function lowestCountedHit(
+  defense: Pick<DefenseSummary, 'maxHits' | 'lowestMaximumHit'>,
+  keystones: KeystoneEffects,
+): number | null {
+  const hits = defense.maxHits.filter((h) => h.value > 0 && !(keystones.chaosImmune && h.type === 'chaos'))
+  if (!hits.length) return null
+  return Math.min(...hits.map((h) => h.value))
+}
 
 export type Severity = 'critical' | 'warning'
 
@@ -86,8 +171,8 @@ export interface BuildAssessment {
   offence: number | null
   /** Why offence went unscored, when it did. */
   offenceUnscoredReason: string | null
-  /** The keystone-corrected pool the score used, and what it excludes. */
-  pool: { total: number | null; label: string; excluded: string[] }
+  /** The keystone-corrected pool (reported, not graded), its chaos reading, and what it excludes. */
+  pool: { total: number | null; chaos: number | null; label: string; excluded: string[] }
   /** Caveats that qualify the verdict without changing it. */
   caveats: string[]
 }
@@ -136,32 +221,32 @@ export function assessBuild(input: BuildAssessmentInput): BuildAssessment {
   const caveats: string[] = []
 
   // --- Defensive pool ------------------------------------------------------
-  // Named by what it actually contains: a keystone may have converted life or
-  // energy shield away, in which case calling the total "life + ES + ward"
-  // credits the build with a buffer it does not have.
+  // Named by what it actually contains: life + energy shield, plus mana under
+  // Mind Over Matter; a keystone may have converted life or energy shield away.
+  // The pool is reported, not graded: the lowest max hit below is what decides
+  // what kills the character (audit item 12).
   const pool = effectivePool(defense, keystones)
   const poolLabel = `combined ${pool.parts.join(' + ')}`
-
-  const poolTotal = pool.total
-  if (poolTotal === null) {
-    caveats.push(`The defensive pool is unknown: the payload did not report every part of the ${poolLabel}. It was not graded.`)
-  } else if (poolTotal > POOL_GOOD) {
-    strengths.push(`Healthy defensive pool (${poolTotal.toLocaleString()} ${poolLabel})`)
-  } else if (poolTotal < POOL_THIN) {
-    weaknesses.push({
-      text: `Thin defensive pool — ${poolTotal.toLocaleString()} ${poolLabel}`,
-      severity: 'critical',
-    })
-  }
   if (pool.excluded.length) {
     caveats.push(
       `${pool.excluded.join(' and ')} ${pool.excluded.length === 1 ? 'is' : 'are'} excluded from the pool: an allocated keystone has converted ${pool.excluded.length === 1 ? 'it' : 'them'} away.`,
     )
   }
 
+  const parts = defenceParts(defense, keystones)
+  const hits = defense.maxHits.filter((h) => h.value > 0 && !(keystones.chaosImmune && h.type === 'chaos'))
+  if (!hits.length) {
+    caveats.push('The payload carries no maximum-hit figures, so survivability was not graded.')
+  } else if (parts.maxHit >= RUBRIC.weights.maxHit) {
+    const low = Math.min(...hits.map((h) => h.value))
+    strengths.push(`Survives a ${low.toLocaleString()} hit of every damage type`)
+  }
+
   // --- Resistances ---------------------------------------------------------
   // An unreported resistance is unknown, not 0: it is neither credited nor
-  // listed as a shortfall, and the caveat says it was not graded.
+  // listed as a shortfall, and the caveat says it was not graded. A gap is
+  // sized by how much more damage it lets through, so 2 points short of the
+  // cap is a warning, not the same verdict as 40 short (audit items 10-11).
   const elementalAll = defense.resistances.filter((r) => r.type !== 'chaos')
   const elemental = knownResistances({ resistances: elementalAll })
   const elementalUnknown = elementalAll.filter((r) => r.value === null)
@@ -170,20 +255,23 @@ export function assessBuild(input: BuildAssessmentInput): BuildAssessment {
       `${elementalUnknown.map((r) => `${r.type[0]!.toUpperCase()}${r.type.slice(1)}`).join(', ')} resistance not in the payload, so it was not graded.`,
     )
   }
-  const uncapped = elemental.filter((r) => !isHealthy(r))
+  const titled = (t: string) => `${t[0]!.toUpperCase()}${t.slice(1)}`
+  const gapText = (r: { type: string; value: number; max: number }) =>
+    `${titled(r.type)} ${r.value}% of ${r.max}%, ${Math.round(resGapDamageTaken(r) * 100)}% more ${r.type} damage taken`
+  const uncapped = elemental.filter((r) => resGapDamageTaken(r) > 0)
   const allElementalCapped = elemental.length > 0 && elementalUnknown.length === 0 && uncapped.length === 0
   if (allElementalCapped) {
     strengths.push(
       `All three elemental resistances at their maximum (${elemental.map((r) => `${r.max}%`).join(' / ')})`,
     )
   } else if (uncapped.length) {
+    const worst = Math.max(...uncapped.map(resGapDamageTaken))
     weaknesses.push({
-      text: `Uncapped elemental resistance (${uncapped
-        .map((r) => `${r.type[0]!.toUpperCase()}${r.type.slice(1)} ${r.value}% of ${r.max}%`)
-        .join(', ')})`,
-      severity: 'critical',
+      text: `Uncapped elemental resistance (${uncapped.map(gapText).join('; ')})`,
+      severity: worst >= RUBRIC.resGapCritical ? 'critical' : 'warning',
     })
   }
+  const elementalCritical = uncapped.some((r) => resGapDamageTaken(r) >= RUBRIC.resGapCritical)
 
   const chaos = defense.resistances.find((r) => r.type === 'chaos')
   if (keystones.chaosImmune) {
@@ -192,10 +280,11 @@ export function assessBuild(input: BuildAssessmentInput): BuildAssessment {
     caveats.push('Chaos resistance not in the payload, so it was not graded.')
   } else if (chaos && chaos.value !== null && chaos.value < CHAOS_CRITICAL) {
     weaknesses.push({ text: `Negative chaos resistance (${chaos.value}%)`, severity: 'critical' })
-  } else if (chaos && chaos.value !== null && chaos.value < CHAOS_TARGET) {
+  } else if (chaos && chaos.value !== null && resGapDamageTaken({ value: chaos.value, max: chaos.max }) > 0) {
+    const gap = resGapDamageTaken({ value: chaos.value, max: chaos.max })
     weaknesses.push({
-      text: `Low chaos resistance (${chaos.value}%, against a ${CHAOS_TARGET}% target)`,
-      severity: 'warning',
+      text: `Chaos resistance below its cap (${gapText({ type: 'chaos', value: chaos.value, max: chaos.max })})`,
+      severity: gap >= RUBRIC.resGapCritical ? 'critical' : 'warning',
     })
   }
 
@@ -211,9 +300,6 @@ export function assessBuild(input: BuildAssessmentInput): BuildAssessment {
         : `${defense.evasion.toLocaleString()} evasion is a real mitigation layer`,
     )
   }
-  if (defense.ward !== null && defense.ward > 0) {
-    strengths.push(`${defense.ward.toLocaleString()} ward adds a recovering buffer over life and energy shield`)
-  }
   if (armour < ARMOUR_NEGLIGIBLE && defense.blockChance < BLOCK_NEGLIGIBLE) {
     weaknesses.push({
       text: 'Little armour or block — leaning on evasion and resistances alone',
@@ -221,29 +307,21 @@ export function assessBuild(input: BuildAssessmentInput): BuildAssessment {
     })
   }
 
-  // --- One-shot risk -------------------------------------------------------
-  // A build can look healthy on paper and still be deleted by a damage type it
-  // has no answer to. EVERY type under the threshold is reported, not just the
-  // single lowest: on the reference character chaos (3,808) and physical
-  // (4,264) both sat under it, and naming only the minimum hid the physical
-  // gap — the more dangerous of the two, since physical hits are far more
-  // common in maps than chaos hits.
-  const hits = defense.maxHits.filter((h) => h.value > 0)
+  // --- Weak damage types --------------------------------------------------
+  // A build can look healthy on paper and still fall to a damage type it has no
+  // answer to. EVERY type under the ratio is reported, not just the lowest. The
+  // ratio compares the character with itself: the data carries no enemy hit
+  // sizes, so this flags a weak type, not a one-shot (audit item 16).
   const best = hits.reduce((max, h) => Math.max(max, h.value), 0)
-  const atRisk = hits
-    .filter((h) => !(keystones.chaosImmune && h.type === 'chaos'))
-    .filter((h) => h.value < best * ONE_SHOT_RATIO)
-    .sort((a, b) => a.value - b.value)
+  const atRisk = hits.filter((h) => h.value < best * RUBRIC.weakHitRatio).sort((a, b) => a.value - b.value)
 
   if (best > 0 && atRisk.length > 0) {
-    const named = atRisk
-      .map((h) => `${h.type[0]!.toUpperCase()}${h.type.slice(1)} ${h.value.toLocaleString()}`)
-      .join(', ')
+    const named = atRisk.map((h) => `${titled(h.type)} ${h.value.toLocaleString()}`).join(', ')
     weaknesses.push({
       text:
         atRisk.length === 1
-          ? `${named} is the one-shot risk — the largest survivable hit of that type is only ${atRisk[0]!.value.toLocaleString()} against ${best.toLocaleString()} at best`
-          : `${atRisk.length} one-shot risks — ${named}, against ${best.toLocaleString()} at best`,
+          ? `${titled(atRisk[0]!.type)} is the weak spot — the largest ${atRisk[0]!.type} hit you survive is ${atRisk[0]!.value.toLocaleString()}, against ${best.toLocaleString()} at best`
+          : `${atRisk.length} weak damage types — ${named}, against ${best.toLocaleString()} at best`,
       severity: 'warning',
     })
   }
@@ -306,34 +384,28 @@ export function assessBuild(input: BuildAssessmentInput): BuildAssessment {
   }
 
   // --- Score ---------------------------------------------------------------
-  // Defence and offence are weighted evenly at 0.5 each.
-  let defenceRaw = 0
-  // Unknown parts earn no credit; the caveats above say so.
-  if (poolTotal !== null && poolTotal > POOL_GOOD) defenceRaw += 0.3
-  else if (poolTotal !== null && poolTotal >= POOL_THIN) defenceRaw += 0.15
-  if (allElementalCapped) defenceRaw += 0.15
-  // Chaos immunity earns the chaos credit outright — it is strictly better than
-  // any resistance value, so scoring it as a miss would penalise it.
-  if (keystones.chaosImmune || (chaos && chaos.value !== null && chaos.value >= CHAOS_TARGET)) defenceRaw += 0.05
-  // 0.3 + 0.15 + 0.05 is 0.49999999999999994 in binary floating point, which
-  // rendered as a perfect half everywhere it was formatted while comparing as
-  // less than one. Rounded once, here, so every figure derived from it agrees.
-  const defence = Math.round(defenceRaw * 100) / 100
+  // Defence and offence are weighted evenly at 0.5 each. Rounded once, here, so
+  // every figure derived from it agrees.
+  const defence = Math.round(parts.total * 100) / 100
 
   // With both halves measured the score is a point. With only defence measured
-  // it is the interval [defence, defence + 0.5] — every value damage could still
-  // turn out to be worth — and neither end of it is asserted as the answer.
+  // it is the interval [defence + lowest damage grade, defence + 0.5]: every
+  // value damage could still be worth. Neither end is asserted as the answer.
   const round = (n: number) => Math.round(Math.min(1, Math.max(0, n)) * 100) / 100
   const score = offence === null ? null : round(defence + offence)
-  const scoreRange = offence === null ? { min: round(defence), max: round(defence + OFFENCE_WEIGHT) } : null
+  const scoreRange =
+    offence === null ? { min: round(defence + RUBRIC.offence.below), max: round(defence + RUBRIC.offenceWeight) } : null
   const tier = score === null ? null : tierFor(score)
   const tierRange = scoreRange ? { worst: tierFor(scoreRange.min), best: tierFor(scoreRange.max) } : null
 
+  // The headline names what kills the character first: the lowest max hit when
+  // a type is flagged weak, before any resistance gap (audit item 10).
+  const weakest = atRisk[0] ?? null
   let note: string
-  if (uncapped.length) {
+  if (weakest) {
+    note = `${titled(weakest.type)} hits are the biggest thing holding this back — the largest you survive is ${weakest.value.toLocaleString()}.`
+  } else if (elementalCritical) {
     note = 'Uncapped elemental resistances are the biggest thing holding this back.'
-  } else if (poolTotal !== null && poolTotal < POOL_THIN) {
-    note = `Resistances are handled — the ${poolTotal.toLocaleString()} ${poolLabel} is the limiting factor.`
   } else if (offence === null && tierRange) {
     note =
       tierRange.worst === tierRange.best
@@ -359,7 +431,7 @@ export function assessBuild(input: BuildAssessmentInput): BuildAssessment {
     defence,
     offence,
     offenceUnscoredReason,
-    pool: { total: pool.total, label: poolLabel, excluded: pool.excluded },
+    pool: { total: pool.total, chaos: pool.chaos, label: poolLabel, excluded: pool.excluded },
     caveats,
   }
 }

@@ -256,7 +256,7 @@ export function WhatIfPanel({ analysis, options }: { analysis: Analysis; options
                   <span className="w-28 text-right font-mono">
                     <Delta before={was} after={h.value} />
                   </span>
-                  {h.isLowest ? <Tag tone="warn">one-shot</Tag> : null}
+                  {h.isLowest ? <Tag tone="warn">weakest</Tag> : null}
                 </li>
               )
             })}

@@ -142,32 +142,47 @@ describe('corroboration', () => {
 })
 
 describe('effective pool', () => {
-  const pools = { life: 1000, energyShield: 2000, ward: 300 }
+  const pools = { life: 1000, energyShield: 2000, ward: 300, mana: 500 }
 
-  it('sums everything with no corrections', () => {
+  it('sums life and energy shield with no corrections; ward and mana are not pools', () => {
     const pool = effectivePool({ ...defense, ...pools }, NO_KEYSTONE_EFFECTS)
-    expect(pool.total).toBe(3300)
+    expect(pool.total).toBe(3000)
+    // Chaos removes energy shield at 2x, so ES counts half against it.
+    expect(pool.chaos).toBe(2000)
     expect(pool.excluded).toEqual([])
-    expect(pool.parts).toEqual(['life', 'energy shield', 'ward'])
+    expect(pool.parts).toEqual(['life', 'energy shield'])
   })
 
   it('drops life under Chaos Inoculation and names what it dropped', () => {
     const effects = keystoneEffectsOf([{ name: 'Chaos Inoculation' }], stats({ life: 1 }))
     const pool = effectivePool({ ...defense, ...pools }, effects)
-    expect(pool.total).toBe(2300)
+    expect(pool.total).toBe(2000)
     expect(pool.excluded).toEqual(['life'])
-    expect(pool.parts).toEqual(['energy shield', 'ward'])
+    expect(pool.parts).toEqual(['energy shield'])
   })
 
   it('drops energy shield under Eldritch Battery', () => {
     const effects = keystoneEffectsOf([{ name: 'Eldritch Battery' }], stats({ energyShield: 0 }))
     const pool = effectivePool({ ...defense, ...pools }, effects)
-    expect(pool.total).toBe(1300)
+    expect(pool.total).toBe(1000)
     expect(pool.excluded).toEqual(['energy shield'])
   })
 
+  it('adds mana under Mind Over Matter, and with Eldritch Battery only alongside it', () => {
+    const mom = keystoneEffectsOf([{ name: 'Mind Over Matter' }], stats({}))
+    expect(effectivePool({ ...defense, ...pools }, mom)).toMatchObject({ total: 3500, parts: ['life', 'energy shield', 'mana'] })
+    const both = keystoneEffectsOf([{ name: 'Mind Over Matter' }, { name: 'Eldritch Battery' }], stats({ energyShield: 0 }))
+    expect(effectivePool({ ...defense, ...pools }, both)).toMatchObject({ total: 1500, parts: ['life', 'mana'] })
+  })
+
+  it('notes Blackflame Covenant from its node text', () => {
+    const effects = keystoneEffectsOf([{ name: 'Blackflame Covenant' }], stats({}))
+    expect(effects.applied).toEqual(['Blackflame Covenant'])
+    expect(effects.notes[0]!.text).toContain('fire damage to chaos')
+  })
+
   it('defaults to the uncorrected reading', () => {
-    expect(effectivePool({ ...defense, ...pools }).total).toBe(3300)
+    expect(effectivePool({ ...defense, ...pools }).total).toBe(3000)
   })
 })
 

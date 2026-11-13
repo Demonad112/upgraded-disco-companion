@@ -1,12 +1,12 @@
 'use client'
 
 /**
- * Easy wins: the findings ranked by effort first, then by how much of the character's own measured gap each one
- * closes (`rankEasyWins`, packages/core). Three rows, no prices. A figure that cannot be measured says so.
+ * Easy wins: the findings ranked by effort first, then by measured score gain (`rankEasyWins`, packages/core).
+ * Three rows, no prices. A figure that cannot be measured says so.
  */
 
 import { useMemo } from 'react'
-import { analyzeItem, rankEasyWins, rankReplacements, type Analysis, type EasyWin } from '@poe2/core'
+import { analyzeItem, gradeGainText, rankEasyWins, rankReplacements, type Analysis, type EasyWin } from '@poe2/core'
 import { TRADE_LEAGUE } from '@/lib/constants'
 import type { ModTiersState } from '@/lib/useModTiers'
 import { FixRow, useTradeMap } from './TopFixes'
@@ -19,18 +19,11 @@ const EFFORT: Record<EasyWin['effort'], string> = {
   currency: 'Craft',
   unknown: 'Effort unclear',
 }
-const GAP: Record<EasyWin['gapKind'], string> = {
-  resistance: 'resistance',
-  'killed-by': 'killed-by',
-  'affix-slots': 'open-affix',
-}
 
-/** How much of the gap a win closes, or why it has no value. */
+/** The effort, and a note when the score gain is not measured (the gain line carries it when it is). */
 export function easyWinNote(w: EasyWin): string {
   const effort = EFFORT[w.effort]
-  if (w.value === null) return `${effort} · value not measured${w.missing.length ? ` (${w.missing[0]})` : ''}`
-  const pct = Math.round(w.share * 100)
-  return `${effort} · ${w.bound === 'upper' ? 'up to ' : ''}${pct}% of your ${GAP[w.gapKind]} gap`
+  return w.grade === null ? `${effort} · ${gradeGainText(null)}` : effort
 }
 
 export function EasyWins({
@@ -65,7 +58,7 @@ export function EasyWins({
       <h3 id="easy-wins-title" className="h3">
         Easy wins
       </h3>
-      <p className="mt-1 text-xs text-ink-dim">Least effort first, then the most of your own gap closed.</p>
+      <p className="mt-1 text-xs text-ink-dim">Least effort first, then the biggest score gain.</p>
       <ol className="mt-3 space-y-3">
         {rows.map((w, i) => {
           const f = byId.get(w.id)

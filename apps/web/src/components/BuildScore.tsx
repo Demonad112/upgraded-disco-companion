@@ -65,11 +65,10 @@ export function BuildScore({ assessment, keystones }: { assessment: BuildAssessm
       </div>
 
       {/*
-        The pool the score was computed from, always shown — not only when it
-        crosses a band and lands in one of the columns below. Naming its parts
-        is the point: a keystone may have converted life or energy shield away,
-        and calling the total "life + ES + ward" regardless would credit the
-        build with a buffer it does not have.
+        The keystone-corrected pool, always shown. Naming its parts is the
+        point: a keystone may have converted life or energy shield away, and
+        calling the total "life + ES" regardless would credit the build with a
+        buffer it does not have. Ward is never part of it.
       */}
       <p className="mt-3 text-[11px] leading-relaxed text-ink-mute">
         Defensive pool{' '}

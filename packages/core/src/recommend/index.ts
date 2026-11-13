@@ -6,8 +6,8 @@
  * Where a number cannot be derived, the rule emits an `Unresolved` naming what
  * is missing instead of guessing.
  *
- * Rules are ranked by impact significance divided by cost weight, so a free
- * fix always outranks an equal-sized fix that costs an exalt.
+ * Rules are ranked by measured score gain per unit of cost (`rank.ts`), so a
+ * free fix always outranks an equal-sized fix that costs an exalt.
  */
 
 import type { CharModel } from '../model/types.js'
@@ -18,6 +18,8 @@ import { indexBreakdowns, projectStat, statSources, type BreakdownIndex } from '
 import { normalizePassives, inactiveSetNodes, type PassiveAllocation } from '../model/passives.js'
 import { normalizeItems, type EquippedItem } from '../model/slots.js'
 import { OFFENCE_RULES } from './offence.js'
+import { compareRecommendations, costScore, measureRecommendations } from './rank.js'
+import { WEAK_HIT_RATIO } from '../thresholds.js'
 import type {
   Cost,
   Evidence,
@@ -36,25 +38,13 @@ export * from './focus.js'
 export * from './axis.js'
 export * from './easy-wins.js'
 
-/**
- * Relative cost weights used for ranking. Free work is worth doing first: it
- * spends nothing, so it is weighted at half the cheapest paid kind. This is a
- * cost term (a documented preference), not a per-recommendation significance.
- */
-export const COST_WEIGHT: Record<Cost['kind'], number> = {
-  free: 0.5,
-  passive: 2,
-  gear: 4,
-  currency: 5,
-  unknown: 6,
-}
+export * from './rank.js'
 
 function score(impact: Impact | null, cost: Cost): number {
   // Findings without a quantifiable impact rank last among actionable items —
   // they are real, but a measured gain always outranks an unmeasured one.
   if (!impact) return 0
-  const weight = COST_WEIGHT[cost.kind] * Math.max(1, cost.amount)
-  return impact.significance / weight
+  return costScore(impact.significance, cost)
 }
 
 function make(
@@ -212,7 +202,7 @@ function resistanceRules(ctx: Context): Recommendation[] {
 }
 
 // ---------------------------------------------------------------------------
-// Rule: the lowest max hit is the one-shot vector, and EHP hides it.
+// Rule: the lowest max hit is the weakest damage type, and EHP hides it.
 // ---------------------------------------------------------------------------
 function oneShotRule(ctx: Context): Recommendation[] {
   const d = ctx.defense
@@ -257,7 +247,7 @@ function oneShotRule(ctx: Context): Recommendation[] {
       kind: 'stat',
       stat: 'effectiveHealthPool',
       value: d.effectiveHealthPool,
-      note: `Effective health pool reads ${d.effectiveHealthPool.toLocaleString()}, overstating the true one-shot threshold by ${d.ehpOverstatementRatio.toFixed(1)}x. Do not use it to judge this build's safety.`,
+      note: `Effective health pool reads ${d.effectiveHealthPool.toLocaleString()}, overstating the largest hit you survive by ${d.ehpOverstatementRatio.toFixed(1)}x. Do not use it to judge this build's safety.`,
     })
   }
 
@@ -285,38 +275,59 @@ function oneShotRule(ctx: Context): Recommendation[] {
     })
   }
 
+  // A concrete change with a derived gain, never "the ceiling": when ninja's
+  // physical maximum hit equals life + energy shield, nothing mitigates it, so
+  // each point of either adds one point to it (audit item 7). The target is the
+  // point where physical stops being flagged as weak (WEAK_HIT_RATIO of the best).
+  const pool = ctx.keystones.lifeIsNegligible ? d.energyShield : d.life !== null && d.energyShield !== null ? d.life + d.energyShield : null
+  const unmitigated =
+    lowest.type === 'physical' && d.armour === 0 && !d.physicalDamageReduction && pool !== null && pool === lowest.value
+  const target = Math.ceil(highest.value * WEAK_HIT_RATIO)
+  const needed = target - lowest.value
+  const poolWords = ctx.keystones.lifeIsNegligible ? 'energy shield' : 'life or energy shield'
+  const Type = `${lowest.type[0]!.toUpperCase()}${lowest.type.slice(1)}`
+  const concrete = unmitigated && needed > 0
+  if (concrete) {
+    evidence.push({
+      kind: 'stat',
+      stat: 'physicalMaximumHitTaken',
+      value: lowest.value,
+      note: `With no armour or physical damage reduction, the physical maximum hit equals ${poolWords} (${pool!.toLocaleString()}), so each point of ${poolWords} adds one.`,
+    })
+  }
+
   return [
     make({
       id: `one-shot-${lowest.type}`,
       category: 'survivability',
-      action: `Toughen up against ${lowest.type} hits — a ${lowest.value.toLocaleString()} ${lowest.type} hit kills you first.`,
-      rationale: `${lowest.type[0]!.toUpperCase()}${lowest.type.slice(1)} is your weakest defence, so it's what kills you first.`,
+      action: concrete
+        ? `Add ${needed.toLocaleString()} ${poolWords} — it raises your ${lowest.value.toLocaleString()} physical maximum hit to ${target.toLocaleString()}.`
+        : `Toughen up against ${lowest.type} hits — ${lowest.value.toLocaleString()} is the largest ${lowest.type} hit you survive.`,
+      rationale: `${Type} is your weakest defence: the largest hit you survive is smallest for ${lowest.type}.`,
       detail:
-        `${lowest.type[0]!.toUpperCase()}${lowest.type.slice(1)} has the lowest maximum survivable hit of any damage type ` +
-        `that can kill this character, ${ratio.toFixed(1)}x below the strongest. The figure opposite is the CEILING — what this vector ` +
-        `would reach if it matched the safest one` +
+        `${Type} has the lowest maximum survivable hit of any damage type that can hurt this character, ` +
+        `${ratio.toFixed(1)}x below the strongest. ` +
+        (concrete
+          ? `Nothing mitigates physical here, so every point of ${poolWords} is a point of physical maximum hit; ${target.toLocaleString()} is ${Math.round(WEAK_HIT_RATIO * 100)}% of your best (${highest.value.toLocaleString()}).`
+          : `The gain of any one change is not measured: it depends on mitigation poe.ninja does not break down.`) +
         (lowest.type === 'chaos'
-          ? ', which chaos cannot fully do here: it drains energy shield at twice the rate, so a capped resistance still leaves it your weakest type.'
-          : '.'),
-      impact: {
-        stat: 'lowestMaximumHitTaken',
-        // Named a ceiling because that is what it is. `highest.value` is what
-        // this vector would reach if it matched the safest damage type, not a
-        // predicted outcome — and for chaos it is not even attainable, since
-        // chaos drains energy shield at 2x. Presenting a bound as a result is
-        // the same failure as inventing a number.
-        label: 'Lowest maximum hit taken — ceiling if fully closed',
-        from: lowest.value,
-        to: highest.value,
-        delta: highest.value - lowest.value,
-        unit: 'flat',
-        // Share of the safest vector's hit that this vector is missing.
-        significance: Math.min(1, Math.max(0, 1 - 1 / ratio)),
-      },
+          ? ' Chaos drains energy shield at twice the rate, so a capped resistance can still leave it your weakest type.'
+          : ''),
+      impact: concrete
+        ? {
+            stat: 'physicalMaximumHitTaken',
+            label: 'Physical maximum hit',
+            from: lowest.value,
+            to: target,
+            delta: needed,
+            unit: 'flat',
+            significance: Math.min(1, needed / target),
+          }
+        : null,
       cost,
       tradeoff: null,
       evidence,
-      provenance: 'ninja',
+      provenance: concrete ? 'derived' : 'ninja',
     }),
   ]
 }
@@ -654,7 +665,9 @@ export function recommend(
     suppressed: [],
   }
 
-  const recommendations = RULES.flatMap((rule) => rule(ctx)).sort((a, b) => b.score - a.score)
+  const recommendations = measureRecommendations(RULES.flatMap((rule) => rule(ctx)), ctx.defense, keystones).sort(
+    compareRecommendations,
+  )
   const unresolved = collectUnresolved(ctx)
 
   // Questions aren't findings — a build with only questions is a sound build.
@@ -667,8 +680,8 @@ export function recommend(
     suppressed: ctx.suppressed,
     buildIsSound,
     summary: buildIsSound
-      ? 'No clear weaknesses found: resistances are capped, no damage type is a one-shot risk and gear is consistent. This build is in good shape.'
-      : `${actionable.length} actionable ${actionable.length === 1 ? 'improvement' : 'improvements'} found, ranked by gain per unit of cost.`,
+      ? 'No clear weaknesses found: resistances are capped, no damage type is far weaker than the rest and gear is consistent. This build is in good shape.'
+      : `${actionable.length} actionable ${actionable.length === 1 ? 'improvement' : 'improvements'} found, ranked by score gain per unit of cost.`,
   }
 }
 

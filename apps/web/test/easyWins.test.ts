@@ -26,12 +26,11 @@ describe('easy wins on the page', () => {
   }
 
   it('says when a value was not measured instead of inventing one', () => {
-    const base = { effort: 'currency', gapKind: 'affix-slots', gap: 1, closed: 1, share: 1, bound: 'point' } as const
-    expect(easyWinNote({ ...base, id: 'a', action: '', cost: {} as never, value: null, missing: ['no axis weight'] })).toBe(
-      'Craft · value not measured (no axis weight)',
+    const base = { effort: 'currency', lowestMaxHit: null, dps: null } as const
+    expect(easyWinNote({ ...base, id: 'a', action: '', cost: {} as never, grade: null, missing: ['score gain not measured'] })).toBe(
+      'Craft · score gain not measured',
     )
-    expect(easyWinNote({ ...base, id: 'b', action: '', cost: {} as never, value: 0.3, share: 0.75, bound: 'upper', missing: [] })).toBe(
-      'Craft · up to 75% of your open-affix gap',
-    )
+    // A measured gain is on the row's gain line; the note keeps to the effort.
+    expect(easyWinNote({ ...base, id: 'b', action: '', cost: {} as never, grade: 0.12, missing: [] })).toBe('Craft')
   })
 })

@@ -24,7 +24,7 @@ export const MECHANICS: readonly Mechanic[] = Object.freeze([
     detail:
       'Armour scales badly until it is large, and its value depends entirely on what it is defending against. ' +
       '1,000 armour stops 50% of a 100 damage hit but only 9% of a 1,000 damage hit. This is why a modest armour ' +
-      'value can look adequate against a damage-taken average and still leave a thin one-shot vector. Partial ' +
+      'value can look adequate against a damage-taken average and still leave a thin maximum hit. Partial ' +
       'investment is the worst of both worlds: either commit enough for the curve to matter, or treat armour as a ' +
       'non-defence and rely on evasion, energy shield and resistances.',
     basis: 'Formula locked by unit test; reproduces the 2% reduction poe.ninja reports for 207 armour on the reference character.',

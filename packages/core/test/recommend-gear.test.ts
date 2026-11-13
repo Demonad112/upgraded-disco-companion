@@ -13,6 +13,7 @@ import { analyzeCharacter } from '../src/analyze.js'
 import { analyzeItem } from '../src/gear/analyze.js'
 import { ModTiers, type ModTierData } from '../src/gear/tiers.js'
 import { mergeGearRecommendations, mergeSameLineSwaps } from '../src/recommend/gear.js'
+import { compareRecommendations } from '../src/recommend/rank.js'
 import type { Recommendation } from '../src/recommend/types.js'
 
 const payload = JSON.parse(
@@ -91,27 +92,25 @@ describe('enriching recommendations with gear data', () => {
     }
   })
 
-  it('stays sorted by score', () => {
-    const scores = enriched.recommendations.recommendations.map((r) => r.score)
-    expect([...scores].sort((a, b) => b - a)).toEqual(scores)
+  it('stays in rank order (measured score gain per cost, CF2)', () => {
+    const recs = enriched.recommendations.recommendations
+    expect([...recs].sort(compareRecommendations).map((r) => r.id)).toEqual(recs.map((r) => r.id))
   })
 })
 
 describe('not presenting a bound as an outcome', () => {
-  it('labels the one-shot impact as a ceiling, not a prediction', () => {
+  it('claims no gain at all rather than a ceiling (CF2, audit item 7)', () => {
     const rec = enriched.recommendations.recommendations.find((r) => r.id === 'one-shot-chaos')!
-    // `to` is the strongest vector's max hit — what this one would reach if it
-    // matched, not what closing the resistance gap actually delivers.
-    expect(rec.impact!.label).toMatch(/ceiling/i)
-    expect(rec.detail).toMatch(/CEILING/)
+    // The strongest vector's max hit is not an outcome of any change.
+    expect(rec.impact).toBeNull()
+    expect(rec.detail).not.toMatch(/ceiling/i)
+    expect(rec.detail).toContain('not measured')
   })
 
-  it('says why the ceiling is unreachable for chaos specifically', () => {
+  it('says why chaos can stay the weakest type', () => {
     const rec = enriched.recommendations.recommendations.find((r) => r.id === 'one-shot-chaos')!
-    // Chaos drains energy shield at 2x, which this project already models —
-    // so a capped chaos resistance still leaves it the thinnest vector.
+    // Chaos drains energy shield at 2x, which this project already models.
     expect(rec.detail).toMatch(/twice the rate|2x/)
-    expect(rec.detail).toMatch(/cannot fully/)
   })
 })
 
@@ -268,11 +267,24 @@ describe('findings that recraft the same line', () => {
   const chaos = { rec: rec('gear-swap-chaos'), type: 'chaos', closes: 27, gap: 59, option: '"of Bameth"', coverId: 'res-chaos-under-cap' }
   const cold = { rec: rec('gear-swap-cold'), type: 'cold', closes: 6, gap: 6, option: '"of Haast"', coverId: 'res-cold-under-cap' }
 
-  it('becomes one decision, closable option first', () => {
+  it('becomes one decision; unmeasured, the option that closes its own gap leads', () => {
     const primary = mergeSameLineSwaps([chaos, cold])
     expect(primary.id).toBe('gear-swap-cold')
-    expect(primary.action).toMatch(/one choice: "of Haast": closes 6 of the 6% cold shortfall; or "of Bameth": closes 27 of the 59% chaos shortfall, which this line cannot close/)
+    expect(primary.action).toMatch(/one choice: "of Haast": cold \+6%, score gain not measured; or "of Bameth": chaos \+27%, score gain not measured/)
     expect(primary.alsoCovers).toEqual(['res-chaos-under-cap'])
+  })
+
+  it('leads with the larger measured score gain when the defence is known (CF2, audit item 6)', () => {
+    const impact = (stat: string, from: number, to: number) =>
+      ({ stat, label: '', from, to, delta: to - from, unit: 'percent', significance: 0 }) as const
+    // Athrynas: cold 74 of 75, chaos 18 of 75. Chaos 18 -> 45 cuts chaos damage
+    // taken far more than cold 74 -> 75 does, and lifts the 3,808 chaos max hit
+    // (the lowest), so it leads although it leaves a gap.
+    const c = { ...chaos, rec: { ...rec('gear-swap-chaos'), impact: impact('chaosResistance', 18, 45) } }
+    const k = { ...cold, rec: { ...rec('gear-swap-cold'), impact: impact('coldResistance', 74, 75) } }
+    const primary = mergeSameLineSwaps([k, c], enriched.defense)
+    expect(primary.id).toBe('gear-swap-chaos')
+    expect(primary.action).toMatch(/"of Bameth": chaos 18% → 45%, score \+0\.04; or "of Haast": cold 74% → 75%, score under \+0\.01/)
   })
 
   it('supersedes the generic finding of every alternative, not only the primary', () => {

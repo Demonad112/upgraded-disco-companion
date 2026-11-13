@@ -62,28 +62,28 @@
   "assessment": {
     "score": null,
     "scoreRange": {
-      "min": 0.15,
-      "max": 0.65
+      "min": 0.45,
+      "max": 0.8
     },
     "tier": null,
     "tierRange": {
-      "worst": "D",
-      "best": "B"
+      "worst": "C",
+      "best": "A"
     },
     "offenceUnscoredReason": "No ladder sample was available for this league and ascendancy, and this codebase does not carry invented damage thresholds to fall back on.",
     "weaknesses": [
-      "critical: Uncapped elemental resistance (Cold 74% of 75%)",
-      "warning: Low chaos resistance (18%, against a 30% target)",
+      "warning: Uncapped elemental resistance (Cold 74% of 75%, 4% more cold damage taken)",
+      "critical: Chaos resistance below its cap (Chaos 18% of 75%, 228% more chaos damage taken)",
       "warning: Little armour or block — leaning on evasion and resistances alone",
-      "warning: 2 one-shot risks — Chaos 3,808, Physical 4,264, against 14,611 at best"
+      "warning: 2 weak damage types — Chaos 3,808, Physical 4,264, against 14,611 at best"
     ]
   },
   "recommendations": [
     "res-chaos-under-cap",
-    "one-shot-chaos",
-    "weapon-ilvl-lag",
     "res-cold-under-cap",
-    "anoint-unused"
+    "weapon-ilvl-lag",
+    "anoint-unused",
+    "one-shot-chaos"
   ],
   "pobConfigInputCount": 20,
   "warnings": [],

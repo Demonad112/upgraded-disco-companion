@@ -32,9 +32,20 @@ export const CHAOS_TARGET = 30
 /** Below this, chaos resistance is actively dangerous rather than merely low. */
 export const CHAOS_CRITICAL = 0
 
-/** Combined defensive pool bands, in points of life + energy shield + ward. */
-export const POOL_GOOD = 6000
-export const POOL_THIN = 4000
+/**
+ * Lowest maximum hit taken (any damage type) at which the survivability part of
+ * the defence score earns nothing, and full credit. Linear in between. A
+ * judgement call: the old 4,000 / 6,000 pool bands, made continuous and moved
+ * onto the figure that decides what kills the character (audit item 12).
+ */
+export const MAX_HIT_SCORE = Object.freeze({ zeroAt: 2000, fullAt: 6000 })
+
+/**
+ * A resistance gap is critical when it raises damage taken of that type by at
+ * least this fraction: (1 - res) / (1 - cap) - 1. Two points short of a 76% cap
+ * is +8.3% (warning); 69 of 75 chaos is +24% (warning); 60 of 75 is +60%.
+ */
+export const RES_GAP_CRITICAL = 0.25
 
 /**
  * Evasion above this is a real mitigation layer worth naming as a strength,
@@ -52,15 +63,16 @@ export const ARMOUR_NEGLIGIBLE = 500
 export const BLOCK_NEGLIGIBLE = 20
 
 /**
- * A maximum-hit-taken value below this fraction of the character's best is a
- * one-shot risk worth flagging.
+ * A maximum-hit-taken value below this fraction of the character's best marks a
+ * weak damage type worth flagging. It compares the character with itself only:
+ * the data carries no enemy hit sizes, so it is not a one-shot claim.
  *
  * Applied to EVERY damage type, not only the single lowest. On the reference
  * character physical (4,264) sat under the threshold alongside chaos (3,808)
  * and went unreported — the more dangerous miss of the two, since physical hits
  * are far more common in maps than chaos hits.
  */
-export const ONE_SHOT_RATIO = 0.4
+export const WEAK_HIT_RATIO = 0.4
 
 /**
  * Below this, critical strikes contribute so little that scaling them is not

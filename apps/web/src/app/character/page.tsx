@@ -109,13 +109,16 @@ export default function Home() {
   // display text arriving later does not re-run the analysis.
   const baseTiers = tiersState.status === 'ready' ? tiersState.base : null
   const tree = treeState.status === 'ready' ? treeState.tree : null
+  // The skills catalogue lets the full pass flag dead stats (CF1-2). It loads with Damage, so the finding joins then.
+  const catalog = catalogState.status === 'ready' ? catalogState.catalog : null
   const analysisOptions = useMemo(
     () => ({
       ...(baseTiers ? { tiers: baseTiers } : {}),
       ...(tree ? { tree } : {}),
+      ...(catalog ? { catalog } : {}),
       ladder,
     }),
-    [baseTiers, tree, ladder],
+    [baseTiers, tree, catalog, ladder],
   )
 
   // Three passes per import: card, fixes, full (above). Each runs once; the ladder landing after the grace window is

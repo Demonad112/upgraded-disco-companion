@@ -24,6 +24,7 @@
  */
 
 import type { DefenseSummary } from '../defense/index.js'
+import { CHAOS_ES_MULTIPLIER } from '../defense/constants.js'
 import { NODE_KIND, type PassiveTree } from '../tree/index.js'
 import { fuzzyFind } from '../search/fuzzy.js'
 import type { Lookup } from '../gear/validate.js'
@@ -35,6 +36,8 @@ export interface KeystoneEffects {
   lifeIsNegligible: boolean
   /** Energy shield has been converted away; it is not a defensive pool. */
   esNotDefensive: boolean
+  /** Damage is taken from mana before life, so mana is part of the defensive pool. */
+  manaIsPool: boolean
   /** Evasion rating functions as armour. */
   evasionIsArmour: boolean
   /** This character cannot crit; crit modifiers do nothing. */
@@ -91,7 +94,7 @@ const RULES: Readonly<Record<string, KeystoneRule>> = Object.freeze({
   },
   'Eldritch Battery': {
     effects: { esNotDefensive: true },
-    note: 'All energy shield is converted to mana, so it is not absorbing hits — your defensive pool is life and ward only.',
+    note: 'All energy shield is converted to mana, so it is not absorbing hits — your defensive pool is life only, plus mana under Mind Over Matter.',
     verify: (d) =>
       d.energyShield !== null && d.energyShield > 0
         ? `energy shield reads ${d.energyShield.toLocaleString()}, but this keystone converts all of it to mana`
@@ -113,11 +116,15 @@ const RULES: Readonly<Record<string, KeystoneRule>> = Object.freeze({
     effects: { fireOnly: true },
     note: 'You deal no non-fire damage, so added cold, lightning and chaos damage modifiers do nothing.',
   },
+  'Blackflame Covenant': {
+    note: 'Fire spells convert all their fire damage to chaos, and their ignites deal chaos damage, so fire-damage advice applies to them as chaos.',
+  },
   'Necromantic Talisman': {
     effects: { amuletToMinions: true },
     note: 'Every bonus on your equipped amulet applies to your minions instead of you.',
   },
   'Mind Over Matter': {
+    effects: { manaIsPool: true },
     note: 'All damage is taken from mana before life, so your effective pool is larger than life and energy shield alone suggest — and mana recovery is 50% slower.',
   },
   'Blood Magic': {
@@ -163,6 +170,7 @@ export const NO_KEYSTONE_EFFECTS: Readonly<KeystoneEffects> = Object.freeze({
   chaosImmune: false,
   lifeIsNegligible: false,
   esNotDefensive: false,
+  manaIsPool: false,
   evasionIsArmour: false,
   neverCrits: false,
   fireOnly: false,
@@ -222,6 +230,11 @@ export function keystoneEffectsOf(
 export interface EffectivePool {
   /** Null when a part that counts toward the pool was not reported. */
   total: number | null
+  /**
+   * The pool against chaos hits: chaos removes twice as much energy shield as
+   * it deals, so ES counts half. Null when a part was not reported.
+   */
+  chaos: number | null
   /** Pools a keystone converted away, named so the total can be labelled. */
   excluded: string[]
   /** The parts that remain, in the order they are summed. */
@@ -229,40 +242,45 @@ export interface EffectivePool {
 }
 
 /**
- * The defensive pool, with keystone conversions applied.
+ * The defensive pool, with keystone conversions applied: life + energy shield,
+ * plus mana under Mind Over Matter; energy shield only under Chaos Inoculation.
+ * Ward is not a pool and is never summed.
  *
- * Naively summing life + ES + ward is wrong on any build that has converted one
- * of them away, and wrong in the dangerous direction: it reports a bigger
- * buffer than the character has.
+ * Naively summing every pool is wrong on any build that has converted one of
+ * them away, and wrong in the dangerous direction: it reports a bigger buffer
+ * than the character has.
  */
 export function effectivePool(
-  defense: Pick<DefenseSummary, 'life' | 'energyShield' | 'ward'>,
+  defense: Pick<DefenseSummary, 'life' | 'energyShield'> & { mana?: number | null },
   effects: KeystoneEffects = NO_KEYSTONE_EFFECTS,
 ): EffectivePool {
   const excluded: string[] = []
   const parts: string[] = []
   let total: number | null = 0
+  let chaos: number | null = 0
+  const add = (value: number | null | undefined, chaosShare: number) => {
+    total = value == null || total === null ? null : total + value
+    chaos = value == null || chaos === null ? null : chaos + value * chaosShare
+  }
 
   if (effects.lifeIsNegligible) excluded.push('life')
   else {
-    total = defense.life === null || total === null ? null : total + defense.life
+    add(defense.life, 1)
     parts.push('life')
   }
 
   if (effects.esNotDefensive) excluded.push('energy shield')
   else {
-    total = defense.energyShield === null || total === null ? null : total + defense.energyShield
+    add(defense.energyShield, 1 / CHAOS_ES_MULTIPLIER)
     parts.push('energy shield')
   }
 
-  // Ward is a 0.5 mechanic many characters lack. Unreported ward adds nothing to the total and is
-  // not listed in `parts`, rather than blanking a pool that life and ES already establish.
-  if (defense.ward !== null) {
-    if (total !== null) total += defense.ward
-    parts.push('ward')
+  if (effects.manaIsPool) {
+    add(defense.mana, 1)
+    parts.push('mana')
   }
 
-  return { total, excluded, parts }
+  return { total, chaos: chaos === null ? null : Math.round(chaos), excluded, parts }
 }
 
 /**
