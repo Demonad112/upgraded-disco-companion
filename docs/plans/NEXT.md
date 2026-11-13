@@ -20,10 +20,11 @@ Closed #145 (duplicate of #143).
 | N2 | PXA follow-ups from `docs/carry/PXA.md` Open #2 and #4: remaining `#advanced-fold` clicks → `openTab`; network-log check that no tree/pob-skills/mod-display request starts before the card paints | Sonnet · low | `claude/pxa-followups` | carry rows closed. Status: done on branch; no `#advanced-fold` on main (re-check after #142); `request-order.spec.ts` added, e2e pending CI — see `docs/carry/PXA-followups.md` |
 | N3 | PXC (PX10, PX11, PX0, PX12): run PERF-PLAN "Not measured" commands, finish PX10/PX11, ux-audit/spacing/empty-states/verbs sweep, re-run then delete `docs/plans/pp3/*.mjs`. Docs and screenshots to a Haiku subagent | Sonnet · medium | `claude/pxc-perf-qa` | One CI run carries full gate, e2e, Lighthouse, axe on 8 routes |
 | N4 | Small core fixes R64, R66, R67 (verify R67 is not already fixed by #138) in one PR | Sonnet · low | `claude/r64-r66-r67` | unit tests cover each. Status: done on branch; see `docs/carry/N4.md` |
-| N5 | R63 PoB2 oracle (Yykiuy, Athrynas) per `docs/plans/POB-VERIFY.md` | Sonnet · medium | `claude/r63-pob-oracle` | parity table in the PR |
 | — | Register, carry README and status rows after each merge | Haiku · low | same PR as the step | — |
 
-N2 and N4 can run in parallel with N1 (no shared files). N3 waits for N1. N5 any time after N4.
+N2 and N4 can run in parallel with N1 (no shared files). N3 waits for N1.
+
+The PoB2 oracle step (old N5, R63) was dropped 2026-11-13: the owner ran the PoB2 verification and `POB-VERIFY.md` was removed.
 
 ## Decisions taken (owner may revise)
 
