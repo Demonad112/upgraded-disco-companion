@@ -15,6 +15,7 @@ import { atlasClusters, memoryForks } from "@/data/atlasTree";
 import { atlasTrapNodes } from "@/data/trapNodes";
 import type { Mechanic } from "@/lib/types";
 import { useAtlasProgress } from "@/hooks/useAtlasProgress";
+import { useAtlasMap, type AtlasTab } from "./AtlasMapContext";
 import { ClusterNode } from "./ClusterNode";
 import { MemoryForkBranch } from "./MemoryForkBranch";
 import { MechanicSubTreeList } from "./MechanicSubTreeList";
@@ -22,7 +23,7 @@ import { TrapNodePanel } from "./TrapNodePanel";
 import { ProToggle } from "@/components/shared/ProToggle";
 import { Segmented, tabPanelProps } from "@/components/shared/controls";
 
-type TabId = "path" | "forks" | "mechanics" | "late" | "traps";
+type TabId = AtlasTab;
 
 const TABS: { id: TabId; label: string }[] = [
   { id: "path", label: "Path" },
@@ -54,6 +55,10 @@ export function AtlasGuideTabs() {
   const [tab, setTab] = useState<TabId>("path");
   const [mechanic, setMechanic] = useState<Mechanic | undefined>(undefined);
   const { isClusterAllocated, isForkAllocated } = useAtlasProgress();
+  const { setTab: publishTab } = useAtlasMap();
+
+  // The map numbers and frames whichever tab is open.
+  useEffect(() => publishTab(tab), [tab, publishTab]);
 
   useEffect(() => {
     const sync = () => {

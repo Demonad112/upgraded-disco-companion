@@ -13,6 +13,7 @@
 
 import type { PassiveTree, TreeNode } from '@poe2/core'
 import { NODE_KIND } from '@poe2/core'
+import { placeBadges, type BadgeInput } from './atlasBadges'
 import { treeToScreen, visibleBounds, type Viewport } from '../tree/geometry'
 
 export interface AtlasPalette {
@@ -40,7 +41,7 @@ interface AtlasRenderOptions {
   allocated: Set<number>
   focused: Set<number>
   hovered: number | null
-  /** Guide order numbers by node id, drawn as small badges (the sheet on phones). */
+  /** Order numbers by node id for the open guide tab, drawn as badges. */
   numbers?: Map<number, number>
   /** 0..1 phase of the focus pulse; null when not animating. */
   pulse: number | null
@@ -148,19 +149,23 @@ export function renderAtlas(ctx: CanvasRenderingContext2D, o: AtlasRenderOptions
   }
 
   // --- guide order numbers --------------------------------------------------
+  // Only the open tab's sequence is numbered; placement and clipping live in atlasBadges.ts.
   if (o.numbers?.size) {
-    ctx.font = `700 10px ${p.font}`
-    ctx.textAlign = 'center'
-    ctx.textBaseline = 'middle'
-    for (const [id, n] of o.numbers) {
+    const inputs: BadgeInput[] = []
+    for (const [id, n] of [...o.numbers].sort((x, y) => x[1] - y[1])) {
       const node = tree.node(id)
       if (!node || !inView(node)) continue
       const pt = at(node)
-      const off = nodeRadius(node, vp.scale) + 6
+      inputs.push({ id, x: pt.x, y: pt.y, r: nodeRadius(node, vp.scale), label: String(n) })
+    }
+    ctx.font = `700 10px ${p.font}`
+    ctx.textAlign = 'center'
+    ctx.textBaseline = 'middle'
+    for (const r of placeBadges(inputs, width, height)) {
       ctx.fillStyle = p.guide
-      ctx.fillRect(pt.x + off - 7, pt.y - off - 7, 14, 14)
+      ctx.fillRect(r.x, r.y, r.w, r.h)
       ctx.fillStyle = p.surface
-      ctx.fillText(String(n), pt.x + off, pt.y - off + 0.5)
+      ctx.fillText(r.label, r.x + r.w / 2, r.y + r.h / 2 + 0.5)
     }
     ctx.textAlign = 'start'
   }
