@@ -7,6 +7,7 @@ Live rows are tracked in `docs/remaining/REMAINING-WORK.md`.
 Each has at least one open row. Owner-side rows are tracked in `../remaining/REMAINING-WORK.md`.
 - [CF2](CF2.md): done, PR open (audit items 5–19; Yykiuy 0.48 C → 0.65 B; open rows for the next batch)
 - [CF1](CF1.md): done, merged PR #162 (audit items 1–4; CF1-2 to CF1-4 resolved in CF2, CF1-1 and CF1-5 carried in CF2)
+- [ATLAS-MAP](ATLAS-MAP.md): done, merged (#164, Focus variant #166; Route #165 closed; Route-only visuals optional for next-U)
 - [PXV](PXV.md): parity plus three design variants, draft PRs open
 - [N4](N4.md): done, PR open (rows R64, R66, R67 closed; no open rows)
 - [N1](N1.md): done, PR open (rows R56, R58 closed; no open rows)

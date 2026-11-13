@@ -60,13 +60,38 @@ async function openMap(page: import('@playwright/test').Page) {
 }
 
 test.describe('atlas map panel', () => {
-  test('the legend sits in the panel with counts', async ({ page }) => {
+  test('the legend sits in the panel as Route, Traps and Ticked toggles', async ({ page }) => {
     await openMap(page)
     const legend = page.getByRole('list', { name: 'Map legend' })
-    await expect(legend).toContainText(/Guide\s*\d+/)
-    await expect(legend).toContainText(/Trap\s*\d+/)
-    await expect(legend).toContainText(/Ticked\s*\d+/)
+    for (const name of ['Route', 'Traps', 'Ticked']) {
+      const toggle = legend.getByRole('button', { name })
+      await expect(toggle).toHaveAttribute('aria-pressed', 'true')
+      await toggle.click()
+      await expect(toggle).toHaveAttribute('aria-pressed', 'false')
+    }
     await expect(page.locator('section[aria-label="Atlas tree map"]').getByRole('list', { name: 'Map legend' })).toBeVisible()
+  })
+
+  test('on a phone the map is a dialog: Escape and back close it, focus stays inside', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 })
+    await page.goto('atlas/')
+    const dialog = page.getByRole('dialog', { name: 'Atlas tree map' })
+    await expect(dialog).toHaveCount(0)
+    await page.getByRole('button', { name: 'Open map' }).click()
+    await expect(dialog).toBeVisible()
+    // Tab never leaves the dialog.
+    for (let i = 0; i < 25; i++) {
+      await page.keyboard.press('Tab')
+      expect(await page.evaluate(() => !!document.activeElement?.closest('section[aria-label="Atlas tree map"]'))).toBe(true)
+    }
+    await page.keyboard.press('Escape')
+    await expect(dialog).toHaveCount(0)
+    expect(new URL(page.url()).pathname).toMatch(/atlas\/?$/)
+    await page.getByRole('button', { name: 'Open map' }).click()
+    await expect(dialog).toBeVisible()
+    await page.goBack()
+    await expect(dialog).toHaveCount(0)
+    expect(new URL(page.url()).pathname).toMatch(/atlas\/?$/)
   })
 
   test('search shows a result count and has a clear button', async ({ page }) => {
