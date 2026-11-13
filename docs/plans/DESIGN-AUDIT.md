@@ -1,4 +1,4 @@
-# PP3 design and accessibility audit · 2026-11-12 · PARTIAL
+# PP3 design and accessibility audit · 2026-11-12 · PARTIAL (final scripted numbers in PXC; ux-audit, spacing, empty-states, verbs not run)
 
 Status: **stopped early by the owner at 06:00 UTC.** Measurement is done at 390, 768 and 1440 px; the screenshot
 read-through and three sections are not. Every number below was computed by script on the built site
@@ -119,3 +119,16 @@ Counts: 3 High, 3 Medium, 3 Low.
 Not written: it needs the three unrun sections and the file checks. Files will be `app/tokens.css` for token edits
 (rows 6, 7) and `styles/nav.css`, `styles/footer.css`, `app/globals.css` plus the atlas and checklist row components
 for the rest. See the continuation prompt.
+
+## Final numbers (PXC, 2026-11-13)
+
+Re-run at 390 and 1440 px on main with the `docs/plans/pp3/*.mjs` scripts, then deleted from the repo.
+
+| Check | 390 px | 1440 px |
+|---|---|---|
+| Contrast failures | 1: dashboard `#farm-tab-setup` "Set up" (ink-mute @0.45 = 2.21:1; a dimmed tab, disabled state not yet confirmed) | 9 rows: 6 are mid-fade artefacts (hero-more at opacity 0.1, atlas rows at 0.37), plus the same Set up tab |
+| Touch targets under 44 px | skip link; "About patch data" 16x12; "Dismiss patch notice" 21x14; two 112x18 checkbox labels; footer "Farm" 29x44 (home and character) | not measured |
+
+Not fixed in PXC: all touch-target rows and the Set up tab (PXC carry row 9 and 10).
+
+Sections still NOT run (no pass claimed): **ux-audit, spacing, empty-states, verbs**. The skills are not installed in the PXC session. Run them where the skills exist.

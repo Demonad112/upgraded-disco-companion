@@ -48,6 +48,8 @@ export default defineConfig({
   fullyParallel: true,
   forbidOnly: isCI,
   retries: 0,
+  // PX0: a missing visual baseline is written (CI uploads it) instead of failing; an existing one is compared.
+  updateSnapshots: 'missing',
   // On the owner's Windows PC the default (half the cores = 4) starves the mobile project into 30 s timeouts.
   workers: process.platform === 'win32' ? 2 : undefined,
   reporter: isCI ? [['list'], ['html', { open: 'never' }]] : 'list',

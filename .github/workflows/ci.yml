@@ -122,6 +122,14 @@ jobs:
           name: playwright-report
           path: apps/web/playwright-report
           retention-days: 7
+      - name: Upload new visual baselines
+        if: always() && needs.changes.outputs.heavy == 'true'
+        uses: actions/upload-artifact@v6
+        with:
+          name: visual-baselines
+          path: apps/web/e2e/visual.spec.ts-snapshots
+          if-no-files-found: ignore
+          retention-days: 14
       - name: Build MCP server
         if: needs.changes.outputs.code == 'true'
         run: npm run build --workspace @poe2/mcp

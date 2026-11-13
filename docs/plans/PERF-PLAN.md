@@ -1,6 +1,6 @@
-# PERF-PLAN (PP1) · 2026-11-12 · PARTIAL
+# PERF-PLAN (PP1) · 2026-11-12 · PARTIAL (items 4–8 measured in PXC 2026-11-13)
 
-Status: **partial**. Items 1–3 measured; items 4–8 not measured (session stopped early by the owner). PX9 is written
+Status: **partial**. Items 1–3 measured; items 4–8 measured in PXC (1b and 1c still not run). The PX10/PX11 status is in their sections below. PX9 is written
 from measurements; PX10 and PX11 are drafts that the continuation run (prompt in `docs/carry/PP1.md`) must finish
 after measuring items 4–8. No number in this file is a guess; unmeasured rows say so and give the command.
 
@@ -115,15 +115,15 @@ Shared floor (in the HTML of all 8 routes) = **185,581 B br as counted, 150,423 
 
 ## 4–8. Not measured (stopped early)
 
-| # | Item | Command / method |
-|---|---|---|
-| 1b | Trace split of the import (script vs style/layout vs paint vs JSON parse) | `MODE=trace node imp.cjs Yykiuy 1` |
-| 1c | Live ladder timing and its effect on the grade repaint | `curl -w` the `/api/ladder?...` URL from the fetch log in `imp-Yykiuy-plain.json` |
-| 4 | Per route: LCP element + time, CLS, TBT, long tasks, interaction delay (tab, accordion, tick) | Playwright, same profile; `PerformanceObserver` for `largest-contentful-paint`, `layout-shift`, `longtask`, `event`; click 2nd `[role=tab]`, first `summary`, first checkbox |
-| 5 | Canvas: backing-store sizes, ms/frame idle and scrolling, rAF under hidden / off-screen / reduced motion / solid panel | wrap `requestAnimationFrame` in an init script and count per second; CDP Profiler 5 s idle and 5 s scrolling on `/`; `page.emulateMedia({ reducedMotion: 'reduce' })`. Code read so far: sky caps DPR at 1.5, runs at 24 fps (15 lite), skips paint while scrolling or `document.hidden`, paints one still frame under reduced motion, but **keeps the rAF loop spinning** in the first two cases and has no off-screen or behind-panel check (`ConstellationSky.tsx:118-132`) |
-| 6 | `/checklist` and `/character` after import: share of nodes below the fold, style + layout cost | count `getBoundingClientRect().top > innerHeight`; trace `UpdateLayoutTree` + `Layout`. Known: `/character` after import = 2,091 nodes, 11,833 px |
-| 7 | Fonts preloaded vs used; CSS unused share per route; backdrop-filter cost | `<link rel=preload as=font>` vs `document.fonts`; CDP `CSS.startRuleUsageTracking`; count `backdrop-filter` elements and trace `Paint` with it disabled |
-| 8 | Service worker precache list and size, second-visit hits, update path | run without `serviceWorkers: 'block'`, read `caches.keys()` and entries, reload and read `transferSize`; `scripts/sw-update-check.cjs` |
+| # | Item | Command / method | Result (PXC, c6caaee, 390 px, 4x CPU) |
+|---|---|---|---|
+| 1b | Trace split of the import (script vs style/layout vs paint vs JSON parse) | `MODE=trace node imp.cjs Yykiuy 1` | Not run. Open (PXC carry row 7) |
+| 1c | Live ladder timing and its effect on the grade repaint | `curl -w` the `/api/ladder?...` URL from the fetch log in `imp-Yykiuy-plain.json` | Not run: needs the proxy (offline in session). Open |
+| 4 | Per route: LCP element + time, CLS, TBT, long tasks, interaction delay (tab, accordion, tick) | Playwright, same profile; `PerformanceObserver` for `largest-contentful-paint`, `layout-shift`, `longtask`, `event`; click 2nd `[role=tab]`, first `summary`, first checkbox | LCP 604–848 ms on all 8 routes (heading or paragraph, never an image). CLS 0 everywhere except /trade 0.3855, fixed (min-height on loading card). TBT ms: / 101, /character 134, /dashboard 141, /atlas 95, /checklist 319 (4 long tasks, max 237), /trade 89, /methodology 83, /whats-new 112. Slow inputs (>=16 ms, 8 each) on /character, /dashboard, /atlas, /checklist; worst pointerover 96 ms on /character |
+| 5 | Canvas: backing-store sizes, ms/frame idle and scrolling, rAF under hidden / off-screen / reduced motion / solid panel | wrap `requestAnimationFrame` in an init script and count per second; CDP Profiler 5 s idle and 5 s scrolling on `/`; `page.emulateMedia({ reducedMotion: 'reduce' })`. Code read so far: sky caps DPR at 1.5, runs at 24 fps (15 lite), skips paint while scrolling or `document.hidden`, paints one still frame under reduced motion, but **keeps the rAF loop spinning** in the first two cases and has no off-screen or behind-panel check (`ConstellationSky.tsx:118-132`) | Backing store 585x1266 = 740,610 px at 390 wide. rAF 60/s while idle, scrolling and hidden (headless; skipped frames return early). Busy 11.1 % idle, 7.9 % scrolling, 1.8 % hidden. Not changed: hidden/scroll cost is small; behind-panel pause not measurable (sky stays visible in margins) |
+| 6 | `/checklist` and `/character` after import: share of nodes below the fold, style + layout cost | count `getBoundingClientRect().top > innerHeight`; trace `UpdateLayoutTree` + `Layout`. Known: `/character` after import = 2,091 nodes, 11,833 px | /checklist 2,128 nodes, 85.3 % below fold, style 93 ms, layout 61 ms, paint 151 ms. /dashboard 1,133 nodes, 64.4 %, 130/40/350 ms. /atlas 960 nodes, 77 %, 141/63/90 ms. / 331 nodes, 47.7 %. backdrop-filter elements: 0 on all. content-visibility not applied (needs intrinsic sizes; CLS risk) |
+| 7 | Fonts preloaded vs used; CSS unused share per route; backdrop-filter cost | `<link rel=preload as=font>` vs `document.fonts`; CDP `CSS.startRuleUsageTracking`; count `backdrop-filter` elements and trace `Paint` with it disabled | 3 woff2 preloaded (EB Garamond, Geist Mono, Inter), all used. Unused CSS reported 0 % (coverage tool; treat as unproven). Global CSS split not applied. backdrop-filter: 0 elements |
+| 8 | Service worker precache list and size, second-visit hits, update path | run without `serviceWorkers: 'block'`, read `caches.keys()` and entries, reload and read `transferSize`; `scripts/sw-update-check.cjs` | Not conclusive. Headless run under `scripts/perf-serve.cjs` registered no controller (caches empty); second visit 48 requests / 618,544 B from network. `sw.js` read found no fault. Open (PXC carry row 6) |
 
 ## PX9 — import path (written from measurements)
 
@@ -164,7 +164,9 @@ Goal: build card painted first; nothing the Overview does not need is fetched, p
   or any finding wording. Done when the PX9 "Done when" line holds. No session links on GitHub.
   ```
 
-## PX10 — load and render (DRAFT; finish after items 4–8)
+## PX10 — load and render (FINISHED in PXC, 2026-11-13; partial)
+
+**Landed:** /trade CLS fix (loading card min-height 840 px phone / 660 px md+; CLS 0.3855 → expected 0). **Did not land:** content-visibility on /checklist (not applied, see PXC carry row 3); sky pause while covered (not applied, sky visible in margins); global CSS split (coverage unproven). Items 4–8 are in the table above.
 
 Candidates that already have a number; the rest need items 4–7:
 
@@ -180,7 +182,9 @@ Files likely touched: `apps/web/src/app/layout.tsx`, `globals.css`, `components/
 `fx/useCanvas.ts`, `fx/CardLinksCanvas.tsx`, `app/checklist/page.tsx`, `components/layout/*`. Model: Sonnet · medium.
 Steps, tier gate, done-when and prompt: to be written by the continuation run.
 
-## PX11 — guardrails (DRAFT; finish after items 4, 8)
+## PX11 — guardrails (FINISHED in PXC, 2026-11-13; partial)
+
+**Landed (PX11b):** route-weight budgets = measured rounded up to next 2,000 B (`/` 158,000; `/checklist` 167,000; `/character` 209,000; `/atlas` 177,000; `/dashboard` 188,000; `/trade` 162,000; `/methodology` 156,000; `/whats-new` 154,000; default 190,000). `apps/web/e2e/perf-import.spec.ts`: import-to-heading under 3,700 ms on mobile with 4x CPU and throttled net (measured 2.77–2.90 s over 3 runs, +30 %). `lighthouserc.json`: one global assertion (LCP ≤ 2,500, CLS ≤ 0.1) on all 8 routes; /trade exemption removed. **Did not land:** `/character` lazy-chunk budget line (needs PX9 chunk names). The harness card-paint number (`scripts/perf-import.cjs`, 0.8–1.1 s) is a different clock from the e2e test.
 
 Measured inputs so far:
 1. `scripts/route-weight.mjs`: exclude `noModule` scripts, add `/methodology` and `/whats-new`, and lower each budget

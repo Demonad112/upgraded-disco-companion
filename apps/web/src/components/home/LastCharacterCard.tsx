@@ -79,10 +79,11 @@ export function LastCharacterCard() {
   const figure = (label: string, value: number | null, before: number | null | undefined) =>
     ({ label, value: value ?? 0, before: before ?? undefined, show: value !== null && value > 0 });
   const figures: { label: string; value: number; before?: number; show: boolean }[] = [
-    figure("Life", latest.life, previous?.life),
-    figure("Energy shield", latest.energyShield, previous?.energyShield),
+    // Same order as the character page's build card (Showcase): offence, then the hit that kills, then the pools.
     figure("Main skill DPS", latest.dps, previous?.dps),
     figure("Killed by", latest.weakestHit, previous?.weakestHit),
+    figure("Life", latest.life, previous?.life),
+    figure("Energy shield", latest.energyShield, previous?.energyShield),
   ];
 
   return (

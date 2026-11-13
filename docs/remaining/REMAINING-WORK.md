@@ -135,7 +135,6 @@ Plan, owner vision and batch sections: `docs/plans/PX-PROGRAMME.md`. Run order, 
 | PP1 | Performance plan (writes PX9–PX11) | — | partial, merged PR #134; gaps go to PXC |
 | PP2 | Character page spec: build card, tabs, easy wins | — | partial, merged PR #133; gaps go to PXA |
 | PP3 | Design and accessibility audit (writes PX8 rows) | — | partial, merged PR #132; gaps go to PXB, PXC |
-| PX0 | Screenshot baseline e2e | — | open (PXC) |
 | PX1 | Solid bars and data panels | — | open (PXB) |
 | PX2 | Fix cards: new vs Pro, one trade label | — | open (PXA) |
 | PX3 | Build card hero | PP2 | open (PXA) |
@@ -144,8 +143,8 @@ Plan, owner vision and batch sections: `docs/plans/PX-PROGRAMME.md`. Run order, 
 | PX6 | Home for returning players; bottom bar order | — | open (PXB) |
 | PX7 | Farm and atlas on phone | — | open (PXB) |
 | PX8 | Type, contrast, spacing | PP3 | open (PXB) |
-| PX9–PX11 | Performance batches | PP1, PX4 | open (PX9 in PXA; PX10, PX11 in PXC) |
-| PX12 | Final QA | all | open (PXC) |
+| PX9 | Performance batch: import path (lazy-chunk budget line waits here) | PP1, PX4 | open (PXA) |
+| PX12 | Final QA | all | partial (PXC): scripted audit and CI gate done; ux-audit, spacing, empty-states, verbs not run (skills missing); touch-target list open. See `docs/carry/PXC.md` |
 
 ### CF programme (2026-11-13)
 Character-analysis correctness fixes from the Yykiuy PoB2 audit. Plan and decisions: `docs/plans/CF-PLAN.md`;

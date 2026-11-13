@@ -60,3 +60,13 @@ Status is `done`, `answered` or `parked`. A parked row comes back only if the ow
 | R66 | Reallocation emitted cost kind 'free' though it needs a gear swap | S | PV1 | Closed by N4: `gear`, amount 1, tier `trivial`; text branches keyed on a `reallocated` flag. Goldens and two ranking assertions updated |
 | R67 | Stale "level 63" for Yykiuy | S | PV1 | Closed by N4: already fixed (PXD, before #138); no "level 63" left in the repo |
 | R63 | PoB2 MCP oracle: engine parity, proof stat per rec id, config robustness (Yykiuy, Athrynas) | M | PV1 | Closed 2026-11-13: the owner ran the PoB2 verification; `docs/plans/POB-VERIFY.md` removed |
+
+## PX programme closed in PXC (2026-11-13)
+Moved from `docs/remaining/REMAINING-WORK.md`. Full results: `docs/carry/PXC.md`, `docs/plans/PERF-PLAN.md` ("4–8", PX10, PX11).
+
+| ID | Item | Class | Origin | Recommended / notes | Status |
+|---|---|---|---|---|---|
+| PX0 | Screenshot baseline e2e (9 pages x 4 widths, 36 shots) | C | PX-PROGRAMME | Owner commits CI `visual-baselines` PNGs; diffs fail until then | done on branch (PXC); owner step open (PXC carry row 1) |
+| PX10 | Load and render: /trade CLS fix; other candidates measured | C | PERF-PLAN | Sky pause, content-visibility, global CSS split not applied (PXC rows 3–5) | done (partial, PXC): /trade CLS 0.3855 fixed |
+| PX11 | Guardrails: route-weight budgets, import e2e, Lighthouse all 8 routes | C | PERF-PLAN | `/character` lazy-chunk budget line waits for PX9 (PXC row 2) | done (partial, PXC): PX11b landed |
+
