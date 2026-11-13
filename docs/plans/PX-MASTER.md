@@ -1,5 +1,7 @@
 # PX-MASTER · consolidated run plan for the PX programme
 
+> **Superseded for run order and status by [`NEXT.md`](NEXT.md) (2026-11-12).** Keep this file for scope and overlap rules.
+
 Supersedes the wave table and the orchestrator prompt in `docs/plans/PX-PROGRAMME.md` ("Waves", "Orchestration").
 The Owner vision table, the findings and the batch sections PX0–PX12 in that file still hold. Nothing in Owner vision
 changes here; only the packaging does: 16 batches in 6 waves become 6 sessions in 3 waves.
