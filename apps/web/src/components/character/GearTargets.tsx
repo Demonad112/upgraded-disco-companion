@@ -16,6 +16,7 @@ import type { ModTiersState } from '@/lib/useModTiers'
 import { improvable, resistGaps, weightedTradeLink } from './gearTargetsData'
 import { useTradeMap } from './TopFixes'
 import { MapIcon } from '@/components/icons'
+import { GearSlotGrid } from './GearSlotGrid'
 
 export function GearTargets({
   items,
@@ -104,6 +105,13 @@ export function GearTargets({
           </span>
         ) : null}
       </header>
+      {rows ? (
+        <GearSlotGrid
+          items={items}
+          rows={rows}
+          linkFor={(r) => (map ? weightedTradeLink(r, gaps, map, league || TRADE_LEAGUE) : null)}
+        />
+      ) : null}
       {body}
     </section>
   )

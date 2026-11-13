@@ -6,6 +6,8 @@ import { useAtlasProgress } from "@/hooks/useAtlasProgress";
 import { atlasClusters } from "@/data/atlasTree";
 import { ShowOnTreeButton } from "./AtlasMapContext";
 
+const R = 50;
+const C = 2 * Math.PI * R;
 const path = atlasClusters.filter((c) => c.group === "early-progression").sort((a, b) => a.order - b.order);
 
 /** "Up next" for the Atlas: the first main-path node not yet ticked, plus the overall gauge. */
@@ -40,8 +42,26 @@ export function AtlasSequenceTracker() {
           </div>
         ) : null}
       </div>
-      <div className="atlas-next-gauge">
-        <Gauge done={allocatedCount} total={allocationTotal} label="Tracked clusters allocated" />
+      <div className="atlas-next-gauge flex items-center gap-5">
+        <div className="relic-ring" role="img" aria-label={`${taken} of ${path.length} path nodes taken`}>
+          <svg viewBox="0 0 112 112" aria-hidden>
+            <circle className="relic-ring-track" cx="56" cy="56" r={R} />
+            <circle
+              className="relic-ring-fill"
+              cx="56"
+              cy="56"
+              r={R}
+              strokeDasharray={C}
+              strokeDashoffset={C * (1 - taken / path.length)}
+            />
+          </svg>
+          <span className="relic-ring-gem" aria-hidden>
+            <span className="tabular">{next ? next.order : "✓"}</span>
+          </span>
+        </div>
+        <div className="min-w-0 flex-1">
+          <Gauge done={allocatedCount} total={allocationTotal} label="Tracked clusters allocated" />
+        </div>
       </div>
     </section>
   );
