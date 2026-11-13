@@ -25,16 +25,16 @@ no skill was invoked. Sections with data below are scripted checks only.
 
 | Section | State |
 |---|---|
-| ux-audit | not run (stopped early): screenshots captured, not read |
+| ux-audit | run 2026-11-13 (UXS): 8 routes + import at 390 and 1440; findings in `docs/carry/UXS.md` |
 | accessibility-review | scripted checks only: contrast, targets, focus, headings |
 | typography | scripted checks only: sizes and families; line length unverified |
-| spacing | not run (stopped early) |
+| spacing | run 2026-11-13 (UXS): 4 px grid holds; type-size spread is open (UXS-1) |
 | colour-palette | scripted contrast only |
 | viewports | scripted: overflow and page height at 3 widths |
-| empty-states | not run (stopped early) |
+| empty-states | run 2026-11-13 (UXS): by hand; one preview box without an action (UXS-4) |
 | motion | scripted counts only |
 | reduced-motion | scripted, complete |
-| verbs | not run (stopped early): control labels collected, not reviewed |
+| verbs | run 2026-11-13 (UXS): buttons reviewed; one label without a verb (UXS-3) |
 | keyboard | scripted, 390 px analysed; 1440 px captured, not analysed |
 
 ### Contrast (390 px, median background)
