@@ -17,11 +17,12 @@ import { atlasClusters, memoryForks } from '@/data/atlasTree'
 import { atlasTrapNodes } from '@/data/trapNodes'
 import { useAtlasProgress } from '@/hooks/useAtlasProgress'
 import { useAtlasTree, type AtlasTree } from '@/lib/useAtlasTree'
-import { extentOf, fitExtent, type Viewport } from '../tree/geometry'
+import { extentOf, fitExtent, treeToScreen, type Viewport } from '../tree/geometry'
 import { sizeCanvas, usePanZoom } from '../tree/usePanZoom'
 import { hitTestAtlas, renderAtlas, type AtlasPalette } from './atlasRender'
 import { useAtlasMap } from './AtlasMapContext'
-import { Input } from '@/components/shared/controls'
+import { usePrefs } from '@/hooks/usePrefs'
+import { Button, Input } from '@/components/shared/controls'
 
 function readPalette(el: HTMLElement): AtlasPalette {
   const css = getComputedStyle(el)
@@ -47,6 +48,17 @@ function idsFor(atlas: AtlasTree, names: Iterable<string>): Set<number> {
   return out
 }
 
+/** One numbered step of the open tab: a cluster, or a Memory fork. A step with several tree nodes shares one number. */
+interface RouteItem {
+  num: number
+  kind: 'cluster' | 'fork'
+  id: string
+  name: string
+  nodes: number[]
+}
+
+const TAB_NOUN: Record<string, string> = { path: 'Path', forks: 'Fork', late: 'Late game' }
+
 const SUBTREE_LABEL: Record<string, string> = { AzmeriSpirit: 'Azmeri Spirits', RogueExiles: 'Rogue Exiles', StoneCircle: 'Stone Circles' }
 const subtreeLabel = (t: string | undefined) =>
   !t ? null : SUBTREE_LABEL[t] ?? t.replace(/^Biome/, 'Biome: ').replace(/([a-z])([A-Z])/g, '$1 $2')
@@ -68,15 +80,16 @@ export function AtlasTreeMap() {
 
 function AtlasMapCanvas({ atlas }: { atlas: AtlasTree }) {
   const { tree } = atlas
-  const { request, focus, clear } = useAtlasMap()
-  const { isClusterAllocated, isForkAllocated } = useAtlasProgress()
+  const { request, focus, clear, tab } = useAtlasMap()
+  const { isClusterAllocated, isForkAllocated, toggleCluster, toggleFork } = useAtlasProgress()
+  const { proDetail } = usePrefs()
 
   const wrapRef = useRef<HTMLDivElement>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const [size, setSize] = useState({ width: 0, height: 0 })
   const [viewport, setViewport] = useState<Viewport | null>(null)
   const [hovered, setHovered] = useState<TreeNode | null>(null)
-  const [pointer, setPointer] = useState({ x: 0, y: 0 })
+  const tipRef = useRef<HTMLDivElement>(null)
   const [query, setQuery] = useState('')
 
   // --- what to mark ---------------------------------------------------------
@@ -84,13 +97,31 @@ function AtlasMapCanvas({ atlas }: { atlas: AtlasTree }) {
     () => idsFor(atlas, [...atlasClusters.flatMap((c) => c.treeNodes ?? []), ...memoryForks.flatMap((f) => f.treeNodes ?? [])]),
     [atlas],
   )
-  // Guide order numbers for the badges: the first cluster to name a node wins.
+  // Only the open tab is numbered: Path = early-progression clusters by order, Late game = general clusters,
+  // Memory forks = file order. Mechanics and Traps have no sequence, so no numbers.
+  const route = useMemo<RouteItem[]>(() => {
+    if (tab === 'path' || tab === 'late') {
+      const group = tab === 'path' ? 'early-progression' : 'general'
+      return atlasClusters
+        .filter((c) => c.group === group)
+        .sort((a, b) => a.order - b.order)
+        .map((c) => ({ num: c.order, kind: 'cluster' as const, id: c.id, name: c.name, nodes: [...idsFor(atlas, c.treeNodes ?? [])] }))
+    }
+    if (tab === 'forks') {
+      return memoryForks.map((f, i) => ({ num: i + 1, kind: 'fork' as const, id: f.id, name: f.title, nodes: [...idsFor(atlas, f.treeNodes ?? [])] }))
+    }
+    return []
+  }, [atlas, tab])
   const numbers = useMemo(() => {
     const m = new globalThis.Map<number, number>()
-    for (const c of [...atlasClusters].sort((a, b) => a.order - b.order))
-      for (const id of idsFor(atlas, c.treeNodes ?? [])) if (!m.has(id)) m.set(id, c.order)
+    for (const r of route) for (const id of r.nodes) if (!m.has(id)) m.set(id, r.num)
     return m
-  }, [atlas])
+  }, [route])
+  const itemOf = useMemo(() => {
+    const m = new globalThis.Map<number, RouteItem>()
+    for (const r of route) for (const id of r.nodes) if (!m.has(id)) m.set(id, r)
+    return m
+  }, [route])
   const trap = useMemo(() => idsFor(atlas, atlasTrapNodes.flatMap((t) => t.treeNodes ?? [])), [atlas])
   const allocated = useMemo(
     () =>
@@ -118,10 +149,35 @@ function AtlasMapCanvas({ atlas }: { atlas: AtlasTree }) {
     if (size.width && size.height) setViewport(fitExtent(tree.extent, size.width, size.height, 0.06))
   }, [tree, size.width, size.height])
 
+  // The nodes the open tab is about: its sequence, the mechanic clusters, or the traps.
+  const tabIds = useMemo(() => {
+    if (route.length) return new Set(route.flatMap((r) => r.nodes))
+    if (tab === 'traps') return trap
+    return idsFor(
+      atlas,
+      atlasClusters.filter((c) => c.group !== 'early-progression' && c.group !== 'general').flatMap((c) => c.treeNodes ?? []),
+    )
+  }, [atlas, route, tab, trap])
+
+  const fitRoute = useCallback(() => {
+    if (!size.width || !size.height) return
+    const points = [...tabIds].map((id) => tree.node(id)).filter((n): n is TreeNode => !!n)
+    const extent = extentOf(points, 500)
+    if (extent) setViewport(fitExtent(extent, size.width, size.height, 0.1))
+    else fitAll()
+  }, [tabIds, tree, size.width, size.height, fitAll])
+
+  // Open framed to the active tab, and reframe when the tab changes.
+  const framedTab = useRef<string | null>(null)
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- framing waits on the size a ResizeObserver reports
-    if (viewport === null) fitAll()
-  }, [viewport, fitAll])
+    if (!size.width || !size.height || framedTab.current === tab) return
+    const first = framedTab.current === null
+    framedTab.current = tab
+    if (first && request) return // a Map button got here first; let it frame its node
+    clear()
+    setHovered(null)
+    fitRoute()
+  }, [tab, size.width, size.height, request, clear, fitRoute])
 
   // The canvas paint, kept in a ref so the focus pulse can repaint without a render.
   const pulseRef = useRef<number | null>(null)
@@ -135,7 +191,8 @@ function AtlasMapCanvas({ atlas }: { atlas: AtlasTree }) {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- framing waits on the size a ResizeObserver reports
     if (extent) setViewport(fitExtent(extent, size.width, size.height, 0.1))
     setHovered(points[0] ?? null)
-    setPointer({ x: size.width / 2, y: size.height / 2 })
+    // Reduced motion: frame and ring the node, but don't pulse.
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
     // The pulse repaints the canvas directly through a ref: driving it through
     // state would re-render the whole map every frame for ~2.7 s.
     const start = performance.now()
@@ -191,16 +248,34 @@ function AtlasMapCanvas({ atlas }: { atlas: AtlasTree }) {
   // --- interaction ----------------------------------------------------------
   const pick = (sx: number, sy: number) => {
     if (!viewport) return
-    setPointer({ x: sx, y: sy })
     setHovered(hitTestAtlas(tree, sx, sy, viewport, size.width, size.height))
   }
   const { onPointerDown, onPointerMove, onPointerUp, zoomBy } = usePanZoom(canvasRef, size, setViewport, pick)
 
-  const showAll = () => {
+  const showRoute = () => {
+    clear()
+    setHovered(null)
+    fitRoute()
+  }
+  const showWhole = () => {
     clear()
     setHovered(null)
     fitAll()
   }
+
+  // Tooltip actions, for nodes on the open tab's route.
+  const item = hovered ? itemOf.get(hovered.id) : undefined
+  const itemDone = item ? (item.kind === 'cluster' ? isClusterAllocated(item.id) : isForkAllocated(item.id)) : false
+  const nextStep = () => {
+    if (!item) return
+    const target = route[(route.indexOf(item) + 1) % route.length]
+    const node = target?.nodes.map((id) => tree.node(id)).find((n): n is TreeNode => !!n)
+    if (!node) return
+    clear()
+    setViewport((vp) => (vp ? { ...vp, cx: node.x, cy: node.y } : vp)) // a jump, never an animated pan
+    setHovered(node)
+  }
+  const tipAt = hovered && viewport ? treeToScreen(hovered.x, hovered.y, viewport, size.width, size.height) : null
 
 
   // --- search ---------------------------------------------------------------
@@ -224,11 +299,13 @@ function AtlasMapCanvas({ atlas }: { atlas: AtlasTree }) {
     if (e.ctrlKey || e.metaKey || e.altKey) return
     if (e.key === '+' || e.key === '=') zoomBy(1.4)
     else if (e.key === '-' || e.key === '_') zoomBy(1 / 1.4)
-    else if (e.key === '0') showAll()
+    else if (e.key === '0') showRoute()
     else return
     e.preventDefault()
   }
 
+  const subtitle = hovered ? subtreeLabel(atlas.subtree.get(hovered.id)) : null
+  const stats = hovered ? hovered.stats.filter((x) => x !== hovered.name) : []
   const tags = hovered
     ? [
         guide.has(hovered.id) ? { label: 'In the guide', tone: 'text-accent border-accent/40' } : null,
@@ -304,7 +381,7 @@ function AtlasMapCanvas({ atlas }: { atlas: AtlasTree }) {
         ref={wrapRef}
         role="group"
         tabIndex={0}
-        aria-label="Atlas map. Keys: plus to zoom in, minus to zoom out, 0 to show the whole tree."
+        aria-label="Atlas map. Keys: plus to zoom in, minus to zoom out, 0 to fit the route."
         onKeyDown={onMapKey}
         className="atlas-map relative h-[22rem] w-full scroll-mt-32 touch-none overflow-hidden border border-line bg-surface-sunken select-none sm:h-[29rem] lg:h-[calc(100dvh-12rem)] lg:min-h-[24rem]"
       >
@@ -316,7 +393,9 @@ function AtlasMapCanvas({ atlas }: { atlas: AtlasTree }) {
           onPointerMove={onPointerMove}
           onPointerUp={onPointerUp}
           onPointerCancel={onPointerUp}
-          onPointerLeave={(e) => e.pointerType === 'mouse' && !request && setHovered(null)}
+          onPointerLeave={(e) =>
+            e.pointerType === 'mouse' && !request && !tipRef.current?.contains(e.relatedTarget as Node | null) && setHovered(null)
+          }
           role="img"
           aria-label={`Atlas passive tree: ${guide.size} guide nodes, ${trap.size} trap nodes, ${allocated.size} ticked. Drag to pan, scroll or pinch to zoom.`}
         />
@@ -325,7 +404,7 @@ function AtlasMapCanvas({ atlas }: { atlas: AtlasTree }) {
           {[
             { label: 'Zoom in', key: '+', text: '+', on: () => zoomBy(1.4) },
             { label: 'Zoom out', key: '-', text: '−', on: () => zoomBy(1 / 1.4) },
-            { label: 'Show the whole tree', key: '0', text: 'fit', on: showAll },
+            { label: 'Fit route', key: '0', text: 'fit', on: showRoute },
           ].map((b) => (
             <button key={b.label} type="button" onClick={b.on} aria-label={b.label} aria-keyshortcuts={b.key}>
               <span className={b.text === 'fit' ? 'map-fit-text' : undefined} aria-hidden="true">
@@ -347,21 +426,29 @@ function AtlasMapCanvas({ atlas }: { atlas: AtlasTree }) {
           </div>
         ) : null}
 
-        {hovered ? (
+        {hovered && tipAt ? (
           <div
-            className="pointer-events-none absolute z-10 w-60 max-w-[80%] border border-line bg-surface-raised/95 p-2.5 shadow-[var(--lift-raised)]"
-            style={{
-              left: Math.min(Math.max(8, pointer.x + 14), Math.max(8, size.width - 248)),
-              top: Math.min(Math.max(8, pointer.y + 14), Math.max(8, size.height - 140)),
-            }}
+            ref={tipRef}
+            className="atlas-tip absolute z-10 w-60 max-w-[80%] border border-line bg-surface-raised/95 p-2.5 shadow-[var(--lift-raised)]"
+            style={
+              {
+                '--tip-left': `${Math.min(Math.max(8, tipAt.x + 14), Math.max(8, size.width - 248))}px`,
+                '--tip-top': `${Math.min(Math.max(8, tipAt.y + 14), Math.max(8, size.height - 150))}px`,
+              } as React.CSSProperties
+            }
+            onPointerLeave={(e) => e.pointerType === 'mouse' && !request && e.relatedTarget !== canvasRef.current && setHovered(null)}
           >
-            <div className="text-xs font-semibold text-ink">{hovered.name || 'Atlas'}</div>
-            {subtreeLabel(atlas.subtree.get(hovered.id)) ? (
-              <div className="mt-0.5 text-[11px] text-ink-mute">{subtreeLabel(atlas.subtree.get(hovered.id))}</div>
+            {item ? (
+              <div className="text-[11px] font-semibold tracking-wide text-accent uppercase">
+                {TAB_NOUN[tab]} {item.num}
+                {item.name !== hovered.name ? ` · ${item.name}` : ''}
+              </div>
             ) : null}
-            {hovered.stats.length ? (
+            <div className="text-xs font-semibold text-ink">{hovered.name || 'Atlas'}</div>
+            {subtitle && subtitle !== hovered.name ? <div className="mt-0.5 text-[11px] text-ink-mute">{subtitle}</div> : null}
+            {stats.length ? (
               <ul className="mt-1.5 space-y-0.5 text-[11px] leading-snug text-ink-dim">
-                {hovered.stats.map((s) => (
+                {stats.map((s) => (
                   <li key={s}>{s}</li>
                 ))}
               </ul>
@@ -375,11 +462,28 @@ function AtlasMapCanvas({ atlas }: { atlas: AtlasTree }) {
                 ))}
               </div>
             ) : null}
+            {item ? (
+              <div className="mt-2 flex gap-1.5">
+                <Button size="sm" variant={itemDone ? 'secondary' : 'primary'} aria-pressed={itemDone} onClick={() => (item.kind === 'cluster' ? toggleCluster(item.id) : toggleFork(item.id))}>
+                  {itemDone ? '✓ Ticked' : 'Tick'}
+                </Button>
+                {route.length > 1 ? (
+                  <Button size="sm" onClick={nextStep}>
+                    Next →
+                  </Button>
+                ) : null}
+              </div>
+            ) : null}
           </div>
         ) : null}
       </div>
 
       <p className="text-[11px] leading-relaxed text-ink-mute">
+        {proDetail ? (
+          <Button size="sm" onClick={showWhole} className="mr-2">
+            Whole tree
+          </Button>
+        ) : null}
         Node positions and effects come from the game&apos;s data, via poe2db. Green marks what you&apos;ve ticked here, not what&apos;s on your account.
       </p>
     </div>

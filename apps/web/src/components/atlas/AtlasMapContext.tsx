@@ -8,6 +8,9 @@
 import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from 'react'
 import { Button } from '@/components/shared/controls'
 
+/** The Atlas guide tab that is open; the map numbers and frames that tab's nodes. */
+export type AtlasTab = 'path' | 'forks' | 'mechanics' | 'late' | 'traps'
+
 interface FocusRequest {
   names: string[]
   /** Label shown on the map while focused ("Man Trap"). */
@@ -23,6 +26,9 @@ interface AtlasMapContextValue {
   request: FocusRequest | null
   focus: (names: string[], label?: string) => void
   clear: () => void
+  /** Set by AtlasGuideTabs. */
+  tab: AtlasTab
+  setTab: (tab: AtlasTab) => void
 }
 
 /** True when at least 60% of the element's height is on screen (the sticky desktop map). */
@@ -37,6 +43,7 @@ const Ctx = createContext<AtlasMapContextValue | null>(null)
 export function AtlasMapProvider({ children }: { children: ReactNode }) {
   const [request, setRequest] = useState<FocusRequest | null>(null)
   const [open, setOpen] = useState(false)
+  const [tab, setTab] = useState<AtlasTab>('path')
   const focus = useCallback((names: string[], label?: string) => {
     setRequest({ names, label: label ?? names.join(', '), nonce: Date.now() })
     setOpen(true)
@@ -46,7 +53,7 @@ export function AtlasMapProvider({ children }: { children: ReactNode }) {
     if (map && !mostlyInView(map)) map.scrollIntoView({ behavior: 'smooth', block: 'center' })
   }, [])
   const clear = useCallback(() => setRequest(null), [])
-  const value = useMemo(() => ({ open, setOpen, request, focus, clear }), [open, request, focus, clear])
+  const value = useMemo(() => ({ open, setOpen, request, focus, clear, tab, setTab }), [open, request, focus, clear, tab])
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>
 }
 

@@ -264,3 +264,19 @@
 .atlas-group-label {
   margin: 12px 0 6px;
 }
+
+/* The map tooltip: beside its node; under 640px docked to the bottom of the map so it never covers the node. */
+.atlas-tip {
+  left: var(--tip-left);
+  top: var(--tip-top);
+}
+@media (max-width: 639px) {
+  .atlas-tip {
+    left: 8px;
+    right: 8px;
+    top: auto;
+    bottom: 8px;
+    width: auto;
+    max-width: none;
+  }
+}
