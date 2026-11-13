@@ -45,7 +45,15 @@ interface AtlasRenderOptions {
   numbers?: Map<number, number>
   /** 0..1 phase of the focus pulse; null when not animating. */
   pulse: number | null
+  /**
+   * The open tab's sequence drawn as a route: a gold thread through `thread` in order, taken nodes filled, the `next`
+   * node pulsing (`pulse` 0..1, or null for a still ring), the rest hollow, and everything off the route dimmed.
+   */
+  route?: { thread: number[]; ids: Set<number>; next: Set<number>; pulse: number | null }
 }
+
+/** Nodes off the route sit at this opacity while a route is drawn. */
+const OFF_ROUTE_ALPHA = 0.35
 
 /** Marks grow with zoom but stay legible when zoomed right out. */
 function zoomFactor(scale: number): number {
@@ -68,6 +76,8 @@ export function renderAtlas(ctx: CanvasRenderingContext2D, o: AtlasRenderOptions
 
   // --- edges ----------------------------------------------------------------
   ctx.lineCap = 'round'
+  const active = !!o.route && o.route.ids.size > 0
+  ctx.globalAlpha = active ? OFF_ROUTE_ALPHA : 1
   ctx.strokeStyle = p.edge
   ctx.lineWidth = Math.max(0.8, 1.3 * zoomFactor(vp.scale) * 0.7)
   ctx.beginPath()
@@ -86,6 +96,7 @@ export function renderAtlas(ctx: CanvasRenderingContext2D, o: AtlasRenderOptions
     ctx.lineTo(pc.x, pc.y)
   }
   ctx.stroke()
+  ctx.globalAlpha = 1
 
   ctx.strokeStyle = p.allocated
   ctx.lineWidth = Math.max(1.4, 2.2 * zoomFactor(vp.scale) * 0.7)
@@ -104,13 +115,39 @@ export function renderAtlas(ctx: CanvasRenderingContext2D, o: AtlasRenderOptions
     const pt = at(node)
     const r = nodeRadius(node, vp.scale)
     const allocated = o.allocated.has(node.id)
-    ctx.globalAlpha = allocated ? 1 : node.kind === NODE_KIND.normal ? 0.45 : 0.75
+    const dim = active && !o.route!.ids.has(node.id) && !o.trap.has(node.id) ? OFF_ROUTE_ALPHA : 1
+    ctx.globalAlpha = (allocated ? 1 : node.kind === NODE_KIND.normal ? 0.45 : 0.75) * dim
     ctx.fillStyle = allocated ? p.allocated : node.kind === NODE_KIND.normal ? p.node : p.notable
     ctx.beginPath()
     ctx.arc(pt.x, pt.y, r, 0, Math.PI * 2)
     ctx.fill()
   }
   ctx.globalAlpha = 1
+
+  // --- route thread ---------------------------------------------------------
+  if (active) {
+    const pts = o.route!.thread.map((id) => tree.node(id)).filter((n): n is TreeNode => !!n).map(at)
+    if (pts.length > 1) {
+      ctx.strokeStyle = p.guide
+      ctx.globalAlpha = 0.85
+      ctx.lineWidth = Math.min(3, Math.max(1.6, 2.4 * zoomFactor(vp.scale) * 0.7))
+      ctx.lineJoin = 'round'
+      ctx.beginPath()
+      pts.forEach((pt, i) => (i ? ctx.lineTo(pt.x, pt.y) : ctx.moveTo(pt.x, pt.y)))
+      ctx.stroke()
+      ctx.globalAlpha = 1
+    }
+    // Hollow: a route node not yet taken is an open ring; the next one is solid gold.
+    for (const id of o.route!.ids) {
+      const node = tree.node(id)
+      if (!node || !inView(node) || o.allocated.has(id)) continue
+      const pt = at(node)
+      ctx.fillStyle = o.route!.next.has(id) ? p.guide : p.surface
+      ctx.beginPath()
+      ctx.arc(pt.x, pt.y, nodeRadius(node, vp.scale) + 1, 0, Math.PI * 2)
+      ctx.fill()
+    }
+  }
 
   // --- guide and trap rings -------------------------------------------------
   const ring = (ids: Set<number>, colour: string) => {
@@ -145,6 +182,28 @@ export function renderAtlas(ctx: CanvasRenderingContext2D, o: AtlasRenderOptions
       ctx.arc(pt.x, pt.y, r + 6 + o.pulse * 26, 0, Math.PI * 2)
       ctx.stroke()
       ctx.globalAlpha = 1
+    }
+  }
+
+  // --- the next node's pulse --------------------------------------------------
+  if (active) {
+    ctx.strokeStyle = p.guide
+    ctx.lineWidth = 2
+    for (const id of o.route!.next) {
+      const node = tree.node(id)
+      if (!node || !inView(node)) continue
+      const pt = at(node)
+      const r = nodeRadius(node, vp.scale) + 6
+      ctx.beginPath()
+      ctx.arc(pt.x, pt.y, r, 0, Math.PI * 2)
+      ctx.stroke()
+      if (o.route!.pulse !== null) {
+        ctx.globalAlpha = 1 - o.route!.pulse
+        ctx.beginPath()
+        ctx.arc(pt.x, pt.y, r + o.route!.pulse * 20, 0, Math.PI * 2)
+        ctx.stroke()
+        ctx.globalAlpha = 1
+      }
     }
   }
 

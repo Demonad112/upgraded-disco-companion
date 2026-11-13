@@ -3,17 +3,20 @@
 import { Gauge } from "@/components/shared/Gauge";
 import { Button } from "@/components/shared/controls";
 import { useAtlasProgress } from "@/hooks/useAtlasProgress";
+import { nextStep, routeSteps } from "@/lib/atlasRoute";
 import { atlasClusters } from "@/data/atlasTree";
 import { ShowOnTreeButton } from "./AtlasMapContext";
 
 const R = 50;
 const C = 2 * Math.PI * R;
-const path = atlasClusters.filter((c) => c.group === "early-progression").sort((a, b) => a.order - b.order);
+const path = routeSteps("path");
 
 /** "Up next" for the Atlas: the first main-path node not yet ticked, plus the overall gauge. */
 export function AtlasSequenceTracker() {
   const { allocatedCount, allocationTotal, isClusterAllocated, toggleCluster } = useAtlasProgress();
-  const next = path.find((c) => !isClusterAllocated(c.id));
+  // The map pulses this same step (atlas/AtlasTreeMap.tsx reads nextStep over the same route).
+  const nextRoute = nextStep(path, (s) => isClusterAllocated(s.id));
+  const next = nextRoute && atlasClusters.find((c) => c.id === nextRoute.id);
   const taken = path.filter((c) => isClusterAllocated(c.id)).length;
 
   return (

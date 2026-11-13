@@ -29,6 +29,6 @@ export function routeSteps(tab: AtlasTab): RouteStep[] {
 }
 
 /** The first step not yet taken. The map's pulsing node and the "Up next" card both read this. */
-export function nextStep(steps: RouteStep[], isDone: (step: RouteStep) => boolean): RouteStep | undefined {
+export function nextStep<T extends RouteStep>(steps: T[], isDone: (step: T) => boolean): T | undefined {
   return steps.find((s) => !isDone(s))
 }

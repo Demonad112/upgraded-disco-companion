@@ -15,7 +15,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { TreeNode } from '@poe2/core'
 import { atlasClusters, memoryForks } from '@/data/atlasTree'
 import { atlasTrapNodes } from '@/data/trapNodes'
-import { routeSteps, type RouteStep } from '@/lib/atlasRoute'
+import { nextStep, routeSteps, type RouteStep } from '@/lib/atlasRoute'
 import { useAtlasProgress } from '@/hooks/useAtlasProgress'
 import { useAtlasTree, type AtlasTree } from '@/lib/useAtlasTree'
 import { extentOf, fitExtent, treeToScreen, type Viewport } from '../tree/geometry'
@@ -113,6 +113,13 @@ function AtlasMapCanvas({ atlas }: { atlas: AtlasTree }) {
     for (const r of route) for (const id of r.nodes) if (!m.has(id)) m.set(id, r)
     return m
   }, [route])
+  const taken = (r: RouteStep) => (r.kind === 'cluster' ? isClusterAllocated(r.id) : isForkAllocated(r.id))
+  // The next step to take: the same function the "Up next" card uses.
+  const nextItem = useMemo(
+    () => nextStep(route, taken),
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- `taken` closes over the two progress readers below
+    [route, isClusterAllocated, isForkAllocated],
+  )
   const trap = useMemo(() => idsFor(atlas, atlasTrapNodes.flatMap((t) => t.treeNodes ?? [])), [atlas])
   const allocated = useMemo(
     () =>
@@ -203,6 +210,40 @@ function AtlasMapCanvas({ atlas }: { atlas: AtlasTree }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [request?.nonce])
 
+  // The next node pulses until the user takes it. Not under reduced motion (a still ring instead), and not while a
+  // phone's sheet is shut.
+  const routePulseRef = useRef<number | null>(null)
+  const { open } = useAtlasMap()
+  useEffect(() => {
+    routePulseRef.current = null
+    if (!nextItem || !show.route) return
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
+    if (!open && window.matchMedia('(max-width: 720px)').matches) return
+    let frame = 0
+    let last = 0
+    const tick = (now: number) => {
+      if (now - last > 40) {
+        last = now
+        routePulseRef.current = (now / 1400) % 1
+        paintRef.current()
+      }
+      frame = requestAnimationFrame(tick)
+    }
+    frame = requestAnimationFrame(tick)
+    return () => {
+      cancelAnimationFrame(frame)
+      routePulseRef.current = null
+    }
+  }, [nextItem, show.route, open])
+
+  const routeDraw = useMemo(
+    () =>
+      show.route && route.length
+        ? { thread: route.flatMap((r) => r.nodes), ids: new Set(route.flatMap((r) => r.nodes)), next: new Set(nextItem?.nodes ?? []) }
+        : null,
+    [show.route, route, nextItem],
+  )
+
   // --- painting -------------------------------------------------------------
   // CSS colours change only with the size (breakpoint) or a reload; reading them
   // on every hover or pan step was a getComputedStyle per frame.
@@ -231,10 +272,11 @@ function AtlasMapCanvas({ atlas }: { atlas: AtlasTree }) {
         hovered: hovered?.id ?? null,
         ...(show.route ? { numbers } : {}),
         pulse: pulseRef.current,
+        ...(routeDraw ? { route: { ...routeDraw, pulse: routePulseRef.current } } : {}),
       })
     }
     paintRef.current()
-  }, [tree, viewport, size, guide, trap, allocated, focused, hovered, numbers, show])
+  }, [tree, viewport, size, guide, trap, allocated, focused, hovered, numbers, show, routeDraw])
 
   // --- interaction ----------------------------------------------------------
   const pick = (sx: number, sy: number) => {
@@ -257,7 +299,7 @@ function AtlasMapCanvas({ atlas }: { atlas: AtlasTree }) {
   // Tooltip actions, for nodes on the open tab's route.
   const item = hovered ? itemOf.get(hovered.id) : undefined
   const itemDone = item ? (item.kind === 'cluster' ? isClusterAllocated(item.id) : isForkAllocated(item.id)) : false
-  const nextStep = () => {
+  const goNext = () => {
     if (!item) return
     const target = route[(route.indexOf(item) + 1) % route.length]
     const node = target?.nodes.map((id) => tree.node(id)).find((n): n is TreeNode => !!n)
@@ -461,7 +503,7 @@ function AtlasMapCanvas({ atlas }: { atlas: AtlasTree }) {
                   {itemDone ? '✓ Ticked' : 'Tick'}
                 </Button>
                 {route.length > 1 ? (
-                  <Button size="sm" onClick={nextStep}>
+                  <Button size="sm" onClick={goNext}>
                     Next →
                   </Button>
                 ) : null}
