@@ -234,3 +234,33 @@
     transition: none;
   }
 }
+
+/* PXV parity: the "Up next" tracker (atlas/AtlasSequenceTracker.tsx). The next path node on the left, the overall
+   gauge on the right from sm up; stacked on phones. Same card, padding and eyebrow as checklist/NextStepCard. */
+.atlas-next {
+  display: grid;
+  gap: 16px 32px;
+  padding: var(--card-pad);
+}
+@media (min-width: 640px) {
+  .atlas-next {
+    grid-template-columns: minmax(0, 1fr) minmax(220px, 34%);
+    align-items: end;
+  }
+}
+.atlas-next-gauge {
+  border-top: 1px solid var(--line);
+  padding-top: 12px;
+}
+@media (min-width: 640px) {
+  .atlas-next-gauge {
+    border-top: 0;
+    border-left: 1px solid var(--line);
+    padding: 0 0 0 24px;
+  }
+}
+
+/* Trap group labels inside the Traps tab: the shared metric label, with room above. */
+.atlas-group-label {
+  margin: 12px 0 6px;
+}

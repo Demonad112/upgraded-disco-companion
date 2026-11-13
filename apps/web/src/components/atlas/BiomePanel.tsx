@@ -54,7 +54,7 @@ export function BiomePanel() {
         </div>
 
         <div>
-          <h2 className="mb-2 text-sm font-semibold text-ink-dim">
+          <h2 className="label-metric mb-2">
             Which Atlas stat to push for your farm
           </h2>
           <ul className="grid gap-1 text-sm sm:grid-cols-2">

@@ -14,8 +14,9 @@ export function MemoryForkBranch({ fork }: { fork: MemoryFork }) {
     <div
       id={fork.id}
       data-reveal="branch"
-      className={`relative scroll-mt-40 flex-1 border p-3.5 transition-colors ${
-        allocated ? "border-good/30 bg-good/5" : "card hover:border-line-strong"
+      data-surface="data"
+      className={`card relative scroll-mt-40 flex-1 !p-3.5 transition-colors ${
+        allocated ? "!border-good/40" : "hover:border-line-strong"
       }`}
     >
       {/* The branch: a gold stroke along the top edge that draws in as the fork scrolls into view (styles/motion.css). */}
@@ -30,7 +31,7 @@ export function MemoryForkBranch({ fork }: { fork: MemoryFork }) {
           aria-label={`Allocated ${fork.title}`}
           className="size-4"
         />
-        <h2 className="font-semibold text-ink">{fork.title}</h2>
+        <h2 className="title-sentence text-base text-ink">{fork.title}</h2>
         <ProOnly><SourceFlag source={fork.source} /></ProOnly>
         <span className="ml-auto">
           <ShowOnTreeButton names={fork.treeNodes} label={fork.title} />

@@ -66,3 +66,70 @@
 .ct-import.card {
   padding: 0 12px;
 }
+
+/* PXV parity: Gear "Worth replacing" rows (character/GearTargets.tsx). Rank square, item, reasons as chips, trade.
+   Rows sit on the panel's opaque fill, so they use the sunken level rather than a second card. */
+.gear-rows {
+  display: grid;
+  gap: 8px;
+}
+.gear-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 16px;
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  background: var(--sunken);
+}
+.gear-rank {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  align-self: flex-start;
+  width: 28px;
+  height: 28px;
+  border: 1px solid var(--accent-line);
+  color: var(--accent);
+  font-family: var(--font-label);
+  font-size: var(--fs-micro);
+}
+/* Phones: the trade button gets its own full-width line instead of squeezing the reasons into a narrow column. */
+@media (max-width: 639px) {
+  .gear-row .gear-trade {
+    flex-basis: 100%;
+  }
+}
+
+/* PXV parity: Progress summary tiles (character/tabs/ProgressTab.tsx). */
+.progress-tiles {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+@media (min-width: 621px) {
+  .progress-tiles {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+.gear-reasons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px 16px;
+  margin-top: 6px;
+  font-size: 13px;
+  color: var(--ink-dim);
+}
+.gear-reasons > li {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 8px;
+}
+.gear-reasons > li::before {
+  content: '';
+  flex: none;
+  width: 5px;
+  height: 5px;
+  transform: translateY(-2px) rotate(45deg);
+  background: var(--accent);
+}

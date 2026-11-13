@@ -5,6 +5,7 @@ import type { AtlasCluster } from "@/lib/types";
 import { ProOnly } from "@/components/shared/ProToggle";
 import { SourceFlag } from "@/components/shared/SourceFlag";
 import { useAtlasProgress } from "@/hooks/useAtlasProgress";
+import { Tag } from "@/components/ui";
 import { ShowOnTreeButton } from "./AtlasMapContext";
 
 /** Descriptions longer than this are clamped to two lines until expanded. */
@@ -20,10 +21,10 @@ export function ClusterNode({ cluster }: { cluster: AtlasCluster }) {
     <li
       id={cluster.id}
       data-reveal="node"
-      className={`scroll-mt-40 border px-3 py-2.5 transition-colors max-sm:py-1.5 ${
-        allocated
-          ? "border-good/30 bg-good/5"
-          : "border-line bg-surface-raised shadow-[var(--lift)] hover:border-line-strong"
+      data-surface="data"
+      data-taken={allocated || undefined}
+      className={`scroll-mt-40 border px-3 py-2.5 shadow-[var(--lift)] transition-colors max-sm:py-1.5 ${
+        allocated ? "border-good/40" : "border-line hover:border-line-strong"
       }`}
     >
       <div className="flex items-start gap-1.5">
@@ -36,7 +37,11 @@ export function ClusterNode({ cluster }: { cluster: AtlasCluster }) {
             className="size-4"
           />
         </label>
-        <span className="tabular mt-px flex size-5 shrink-0 items-center justify-center bg-surface-sunken text-[11px] text-ink-mute">
+        <span
+          className={`tabular mt-px flex size-5 shrink-0 items-center justify-center border text-[length:var(--fs-micro)] ${
+            allocated ? "border-good/40 text-good" : "border-accent-line text-accent"
+          }`}
+        >
           {cluster.order}
         </span>
         <div className="min-w-0 flex-1">
@@ -44,9 +49,7 @@ export function ClusterNode({ cluster }: { cluster: AtlasCluster }) {
             <span className={`text-sm font-medium ${allocated ? "text-ink-mute line-through" : "text-ink"}`}>
               {cluster.name}
             </span>
-            {cluster.killGated ? (
-              <span className="border border-line px-1.5 py-px text-[11px] text-ink-mute">kill-gated</span>
-            ) : null}
+            {cluster.killGated ? <Tag>kill-gated</Tag> : null}
             <ProOnly><SourceFlag source={cluster.source} /></ProOnly>
           </div>
           <p className={`mt-1 text-xs leading-relaxed text-ink-dim ${expanded ? "" : `max-sm:hidden ${long ? "line-clamp-2" : ""}`}`}>

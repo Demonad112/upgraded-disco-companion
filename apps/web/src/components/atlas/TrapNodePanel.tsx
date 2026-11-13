@@ -3,13 +3,10 @@
 import { atlasTrapNodes } from "@/data/trapNodes";
 import { ProOnly } from "@/components/shared/ProToggle";
 import { SourceFlag } from "@/components/shared/SourceFlag";
+import { StatusChip } from "@/components/shared/Instruments";
 import { ShowOnTreeButton } from "./AtlasMapContext";
 
-const SEVERITY_STYLES: Record<string, string> = {
-  avoid: "border-danger/40 bg-danger/10 text-danger",
-  situational: "border-warn/40 bg-warn/10 text-warn",
-  optional: "border-line bg-surface-sunken text-ink-mute",
-};
+const SEVERITY_TONE = { avoid: "danger", situational: "warn", optional: "muted" } as const;
 
 const GROUP_LABELS: Record<number, string> = {
   1: "Group 1 · hard avoid",
@@ -39,17 +36,15 @@ export function TrapNodePanel() {
         {sortedTraps.map((trap, i) => (
           <li key={trap.id} id={trap.id} data-reveal="trap" className="scroll-mt-40">
             {trap.group && trap.group !== sortedTraps[i - 1]?.group ? (
-              <h2 className="mb-1 mt-2 text-xs font-semibold uppercase tracking-wide text-ink-mute">
+              <h2 className="label-metric atlas-group-label">
                 {GROUP_LABELS[trap.group]}
               </h2>
             ) : null}
-            <details className="group border border-line bg-surface-raised shadow-[var(--lift)] open:border-line-strong">
+            <details data-surface="data" className="group border border-line shadow-[var(--lift)] open:border-line-strong">
               <summary className="flex cursor-pointer list-none flex-wrap items-center gap-x-2 gap-y-1 px-3 py-2.5 [&::-webkit-details-marker]:hidden">
-                <span
-                  className={`border px-1.5 py-px text-[11px] font-semibold uppercase ${SEVERITY_STYLES[trap.severity]}`}
-                >
+                <StatusChip tone={SEVERITY_TONE[trap.severity]}>
                   {trap.severity}
-                </span>
+                </StatusChip>
                 <span className="text-sm font-medium text-ink">{trap.node}</span>
                 <span className="text-xs text-ink-mute">{trap.affects}</span>
                 <span className="ml-auto flex items-center gap-1.5">

@@ -5,7 +5,7 @@
 import { resolveAllocation, type Analysis, type PassiveTree } from '@poe2/core'
 import { DefenceChecklist } from './DefenceChecklist'
 import { Diamond, cap } from './dmg'
-import { Tag, fmt } from '../ui'
+import { Empty, Tag, fmt } from '../ui'
 import { ProvenanceBadge } from '../shared/ProvenanceBadge'
 
 /** Resistances over cap. "Spare" is max(0, uncapped − cap), i.e. the existing overCap figure; labelled derived. */
@@ -18,23 +18,23 @@ function SpareToTrade({ analysis }: { analysis: Analysis }) {
         <ProvenanceBadge label="derived" />
       </div>
       {spare.length ? (
-        <ul className="mt-3 space-y-2">
+        <ul className="mt-3 grid grid-cols-2 gap-3 min-[621px]:grid-cols-4">
           {spare.map((r) => (
-            <li key={r.type} className="flex items-center justify-between gap-3">
+            <li key={r.type} className="border border-line border-l-[3px] border-l-warn bg-sunken/65 px-3.5 py-3">
               <span className="flex items-center gap-2">
                 <Diamond type={r.type} />
                 <span className="serif-label">{cap(r.type)}</span>
               </span>
-              <span className="tabular font-mono text-sm text-ink">+{fmt(r.overCap)} over cap</span>
+              <span className="tabular mt-2 block font-mono text-3xl leading-none text-ink">+{fmt(r.overCap)}</span>
+              <span className="mt-1.5 block font-mono text-sm text-warn">over cap</span>
             </li>
           ))}
         </ul>
       ) : (
-        <p className="mt-3 text-sm text-ink-dim">No resistance is over its cap, so nothing is spare.</p>
+        <Empty>No resistance is over its cap, so nothing is spare.</Empty>
       )}
       <p className="mt-auto pt-3 text-xs leading-relaxed text-ink-mute">
-        Only resistances over their cap are listed; one under cap is not. Check any trade against all resistances together
-        before you make it.
+        Over-cap points only buffer against map mods that lower resistance. Check every resistance before you trade any away.
       </p>
     </section>
   )
