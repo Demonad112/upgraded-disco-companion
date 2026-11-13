@@ -18,6 +18,7 @@ npm workspaces (`packages/*`, `apps/*`), Node >=22 (`.nvmrc`), TypeScript strict
 npm ci
 npm run typecheck        # builds @poe2/core first, then typechecks every workspace
 npm run lint             # eslint (web)
+npm run check            # typecheck + lint + test, no build
 npm test                 # core + web vitest
 npm run build            # core -> dist, then web static export to apps/web/out
 npm run dev              # Next dev server (builds core and syncs data first)
@@ -50,6 +51,13 @@ Dark palette; uppercase EB Garamond for headings and labels (finding, step and s
 
 - Never restyle the live site directly. Design variants go on `variant/<yyyymmdd>-<slug>` branches and are reviewed on their Cloudflare Pages preview URL (`docs/VARIANT-STRATEGY.md`).
 - Prefer the `:root` tokens in `apps/web/src/app/globals.css` over hex values in components.
+
+## Dependency bumps
+
+- CI green is enough for most bumps; CI runs the full job on every Dependabot PR as the backstop.
+- Run the local quick gate (typecheck, lint, unit tests, build) only for shared tooling: TypeScript, Next, React, vitest, eslint, or root-lockfile-wide changes.
+- Per-workspace checks: core -> `npm run test:coverage -w @poe2/core` + `npm run typecheck`; web -> lint + test + build `-w @poe2/web`; mcp -> `npm run tools -w @poe2/mcp` (builds first) + `npm test -w @poe2/mcp`; packages/data -> web build only (`build:*` refetches upstream, `sync-data` is a web script); services/ninja-proxy -> `npm test` there.
+- Never split CI per workspace (a skipped required check stays pending).
 
 ## Cloudflare Pages
 

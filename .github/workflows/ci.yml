@@ -87,6 +87,15 @@ jobs:
         # league snapshot lookup.
         run: npm test
         working-directory: services/ninja-proxy
+      - name: Cache Next.js build cache
+        if: needs.changes.outputs.code == 'true'
+        uses: actions/cache@v4
+        with:
+          path: apps/web/.next/cache
+          key: next-${{ runner.os }}-${{ hashFiles('package-lock.json') }}-${{ hashFiles('apps/web/src/**', 'apps/web/public/**', 'apps/web/*.ts', 'apps/web/*.mjs', 'packages/core/src/**', 'packages/data/generated/**') }}
+          restore-keys: |
+            next-${{ runner.os }}-${{ hashFiles('package-lock.json') }}-
+            next-${{ runner.os }}-
       - name: Build web
         if: needs.changes.outputs.code == 'true'
         run: npm run build --workspace @poe2/web
