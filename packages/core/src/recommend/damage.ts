@@ -227,7 +227,7 @@ export function highestSocketedTier(setups: SkillSetup[], catalog: SupportCatalo
 }
 
 /** Which modifier text scales this skill. Returns the reason, or null. */
-function scalesSkill(text: string, types: ReadonlySet<string>, dealt: Set<string>, crit: boolean): string | null {
+export function scalesSkill(text: string, types: ReadonlySet<string>, dealt: Set<string>, crit: boolean): string | null {
   const t = text.toLowerCase()
   if (/minion|damage taken|reflect|while you|allies/.test(t)) return null
   const attack = types.has('Attack')
@@ -439,15 +439,15 @@ export function reviewDamage(input: DamageReviewInput): DamageReview | null {
   if (tiers) {
     for (const item of items) {
       if (!item.active || item.corrupted || item.itemLevel === null) continue
-      const per = AFFIX_CAPACITY[item.rarity]
-      if (per === undefined) continue
+      const cap = item.affixCapacity
+      if (!cap) continue
       if (item.mods.some((m: ItemModAnalysis) => OCCUPIES_AFFIX_SLOT.has(m.source) && m.kind === null)) continue
       const raw = rawItems.find((r) => r.slotId === item.slotId)
       const tags = raw ? tiers.tagsForBase(raw.baseType) : null
       if (!tags) continue
       for (const kind of ['prefix', 'suffix'] as const) {
         const used = kind === 'prefix' ? item.affixCounts.prefix : item.affixCounts.suffix
-        if (used >= per) continue
+        if (used >= cap[kind]) continue
         const onItem = new Set(item.mods.map((m) => m.affix))
         const options = tiers
           .available(kind, tags, { maxIlvl: item.itemLevel })

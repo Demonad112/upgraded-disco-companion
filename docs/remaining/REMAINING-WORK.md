@@ -154,7 +154,7 @@ spec: `docs/plans/CF-AUDIT-YYKIUY.md`. Core changes approved in the plan.
 
 | ID | Scope | Depends on | Status |
 |---|---|---|---|
-| CF1 | Element order, affix slots, dead stats, Martial Artist gloves (audit 1–4) | — | open |
+| CF1 | Element order, affix slots, dead stats, Martial Artist gloves (audit 1–4) | — | done, PR open (web gloves and catalog wiring go to CF2: see `docs/carry/CF1.md`) |
 | CF2 | Rubric, ranking, headline, waystone risk, methodology wording (audit 5–19) | CF1 | open |
 
 ### Do not do

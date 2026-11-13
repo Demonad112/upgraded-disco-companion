@@ -232,7 +232,7 @@ export function planReplacement({
 }: ReplacementInput): ReplacementPlan {
   const notes: string[] = []
   const baseTags = tiers.tagsForBase(target.baseType)
-  const capacity = AFFIX_CAPACITY[target.rarity] ?? AFFIX_CAPACITY.Rare!
+  const capacity = target.affixCapacity ?? { prefix: AFFIX_CAPACITY.Rare!, suffix: AFFIX_CAPACITY.Rare! }
 
   if (target.rarity === 'Unique') {
     notes.push(
@@ -267,7 +267,7 @@ export function planReplacement({
   // --- the spec ------------------------------------------------------------
   const spec: SpecLine[] = []
   const dropped: ReplacementPlan['dropped'] = []
-  const slots: Record<AffixKind, number> = { prefix: capacity, suffix: capacity }
+  const slots: Record<AffixKind, number> = { prefix: capacity.prefix, suffix: capacity.suffix }
   // One line per modifier group: two "% increased Energy Shield" lines on one
   // item are two different groups, and each gets its own best tier.
   const usedGroups = new Set<string>()
@@ -452,8 +452,8 @@ export function planReplacement({
       for (const item of items) {
         if (left <= 0) break
         if (item.slotId === target.slotId || !item.active || item.corrupted) continue
-        const per = AFFIX_CAPACITY[item.rarity]
-        if (per === undefined || item.affixCounts.suffix >= per) continue
+        const cap = item.affixCapacity
+        if (!cap || item.affixCounts.suffix >= cap.suffix) continue
         if (item.mods.some((m) => OCCUPIES_AFFIX_SLOT.has(m.source) && m.kind === null)) continue
         const raw = rawItems.find((r) => r.slotId === item.slotId)
         const tags = raw ? tiers.tagsForBase(raw.baseType) : null

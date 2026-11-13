@@ -53,6 +53,26 @@ export const AFFIX_CAPACITY: Readonly<Record<string, number>> = Object.freeze({
   Rare: 3,
 })
 
+const PREFIX_ALLOWED = 'local_maximum_prefixes_allowed_+'
+const SUFFIX_ALLOWED = 'local_maximum_suffixes_allowed_+'
+
+/**
+ * Prefix and suffix capacity of an item: the rarity budget plus every
+ * `local_maximum_(prefixes|suffixes)_allowed_+` stat across its mod groups.
+ * Null when the rarity has no budget.
+ */
+export function affixCapacityOf(item: EquippedItem): { prefix: number; suffix: number } | null {
+  const base = AFFIX_CAPACITY[item.rarity]
+  if (base === undefined) return null
+  let prefix = base
+  let suffix = base
+  for (const m of structuredMods(item)) {
+    prefix += m.stats[PREFIX_ALLOWED] ?? 0
+    suffix += m.stats[SUFFIX_ALLOWED] ?? 0
+  }
+  return { prefix: Math.max(0, prefix), suffix: Math.max(0, suffix) }
+}
+
 /**
  * Mod sources that consume one of those slots.
  *
@@ -139,6 +159,12 @@ export interface ItemAnalysis {
   mods: ItemModAnalysis[]
   /** Affix slots in use, from the mods that are real prefixes/suffixes. */
   affixCounts: { prefix: number; suffix: number }
+  /**
+   * Prefixes and suffixes this item can hold: the rarity budget plus any
+   * `+N Prefix/Suffix Modifier allowed` stats on its mods (Demon Pendant: 4/2).
+   * Null for rarities with no craftable budget (Normal, Unique).
+   */
+  affixCapacity: { prefix: number; suffix: number } | null
   /**
    * Highest tier reachable on this base at this item level, versus what is on
    * it. Null when the item has no tiered mods to compare.
@@ -308,9 +334,12 @@ export function analyzeItem(
   const mods: ItemModAnalysis[] = []
 
   for (const entry of structured) {
-    const raw = tiers.raw(entry.id)
-    const ladder = baseTags ? tiers.ladderFor(entry.id, baseTags) : null
-    const position = ladder?.entries.find((e) => e.id === entry.id) ?? null
+    // Martial Artist gloves: ninja ships the transformed mod; the craftable ladder is the source mod's.
+    const monk = itemClass === 'Gloves' ? tiers.monkGloveSource(entry.id) : null
+    const lookupId = monk?.modId ?? entry.id
+    const raw = tiers.raw(lookupId)
+    const ladder = baseTags ? tiers.ladderFor(lookupId, baseTags) : null
+    const position = ladder?.entries.find((e) => e.id === lookupId) ?? null
 
     const rolled: RolledStat[] = Object.entries(entry.stats).map(([id, value]) => {
       const range = position?.stats.find((s) => s.id === id) ?? raw?.stats.find(([sid]) => sid === id)
@@ -356,7 +385,7 @@ export function analyzeItem(
           tier: better.tier,
           ilvl: better.ilvl,
           affix: better.affix,
-          text: better.text,
+          text: monk ? (tiers.monkGloveText(better.id) ?? better.text) : better.text,
           reachableOnThisItem: item.itemLevel !== null && item.itemLevel >= better.ilvl,
           // Always the size of the improvement, never a signed delta that
           // reads as negative for an inverted ladder.
@@ -371,7 +400,9 @@ export function analyzeItem(
       source: entry.source,
       kind: raw ? (raw.t === 'p' ? 'prefix' : 'suffix') : null,
       affix: raw?.name ?? displayed?.name ?? null,
-      text: stripModMarkup(position?.text ?? raw?.text ?? displayed?.text ?? entry.id),
+      text: stripModMarkup(
+        (monk ? tiers.monkGloveText(lookupId) : null) ?? position?.text ?? raw?.text ?? displayed?.text ?? entry.id,
+      ),
       tier: position?.tier ?? null,
       tiers: ladder?.entries.length ?? null,
       ilvlRequired: raw?.lvl ?? null,
@@ -423,6 +454,8 @@ export function analyzeItem(
     suffix: mods.filter((m) => m.kind === 'suffix' && OCCUPIES_AFFIX_SLOT.has(m.source)).length,
   }
 
+  const affixCapacity = affixCapacityOf(item)
+
   if (item.itemLevel === null) {
     warnings.push('This item has no item level in the payload, so tier reachability cannot be judged.')
   }
@@ -439,6 +472,7 @@ export function analyzeItem(
     active: item.active,
     mods,
     affixCounts,
+    affixCapacity,
     tierProfile: tiered.length
       ? {
           best: Math.min(...tiered),

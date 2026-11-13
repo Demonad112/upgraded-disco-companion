@@ -7,7 +7,7 @@
  * returning empty results.
  */
 
-import { readFileSync } from 'node:fs'
+import { existsSync, readFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import {
@@ -31,6 +31,9 @@ import {
   type ModBaseData,
   type ModData,
   type ModTierData,
+  type MonkGloveEntry,
+  type PobSkillData,
+  SupportCatalog,
   type MonsterStatData,
   type PassiveTreeData,
   type SkillSetup,
@@ -70,6 +73,17 @@ let bases: BaseCatalog | null = null
 let version: DataVersion | null | undefined
 let affixNames: string[] | null = null
 
+let skillCatalogCache: SupportCatalog | null = null
+/** PoB skill and support data (generated/pob-skills.json), read on first use. */
+function skillCatalog(): SupportCatalog | undefined {
+  if (!skillCatalogCache) {
+    const path = join(dataDir, 'pob-skills.json')
+    if (!existsSync(path)) return undefined
+    skillCatalogCache = new SupportCatalog(JSON.parse(readFileSync(path, 'utf8')) as PobSkillData)
+  }
+  return skillCatalogCache
+}
+
 /** Item base catalogue (generated/bases.json), read on first use. */
 export function baseCatalog(): BaseCatalog {
   if (!bases) bases = new BaseCatalog(JSON.parse(readFileSync(join(dataDir, 'bases.json'), 'utf8')) as BaseData)
@@ -108,6 +122,9 @@ export function modTiers(): ModTiers {
   if (!gearTiers) {
     const data = JSON.parse(readFileSync(join(dataDir, 'mod-tiers.json'), 'utf8')) as ModTierData
     gearTiers = new ModTiers(data)
+    // Martial Artist glove transforms (optional: the ladders still work without it).
+    const monkPath = join(dataDir, 'monk-gloves.json')
+    if (existsSync(monkPath)) gearTiers = gearTiers.withMonkGloves(JSON.parse(readFileSync(monkPath, 'utf8')) as MonkGloveEntry[])
   }
   return gearTiers
 }
@@ -190,7 +207,7 @@ export async function loadCharacter(raw: unknown, source: string): Promise<Loade
   // of null", the opaque failure this server exists to avoid, instead of the
   // readable message `unwrapCharModel` raises.
   const model = unwrapCharModel(raw)
-  const analysis = await analyzeCharacter(raw, { tiers, tree, ladder: await ladderFor(model) })
+  const analysis = await analyzeCharacter(raw, { tiers, tree, ladder: await ladderFor(model), catalog: skillCatalog() })
   const setups = parseAllSetups(model.skills)
   current = { model, analysis, setups, supports: indexSupports(setups), source }
   return current

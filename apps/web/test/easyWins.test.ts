@@ -19,7 +19,8 @@ describe('easy wins on the page', () => {
         a.attribution,
       ).ranked
       const { wins } = rankEasyWins({ recommendations: a.recommendations.recommendations, defense: a.defense, replacements })
-      expect(wins.length).toBeGreaterThanOrEqual(3)
+      // Yykiuy has two wins since CF1 removed the phantom open-affix slot on Demon Pendant.
+      expect(wins.length).toBeGreaterThanOrEqual(name.startsWith('yykiuy') ? 2 : 3)
       for (const w of wins.slice(0, 3)) expect(easyWinNote(w)).not.toMatch(/\b(chaos|divine|exalt|price|cost)\b|\d+\s?(ex|div)\b/i)
     })
   }

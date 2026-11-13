@@ -74,12 +74,12 @@ function assess(item: ItemAnalysis, defense: DefenseSummary, attribution: Attrib
     .filter((m) => m.upgrades.length && !m.upgrades.some((u) => u.reachableOnThisItem))
     .map((m) => m.text)
   const tiersBelowTop = item.mods.reduce((n, m) => n + (m.tier !== null && m.tier > 1 ? m.tier - 1 : 0), 0)
-  const capacity = AFFIX_CAPACITY[item.rarity]
+  const capacity = item.affixCapacity
   const unknownAffix = item.mods.some((m) => OCCUPIES_AFFIX_SLOT.has(m.source) && m.kind === null)
   const openSlots =
-    capacity === undefined || unknownAffix
+    !capacity || unknownAffix
       ? null
-      : Math.max(0, capacity - item.affixCounts.prefix) + Math.max(0, capacity - item.affixCounts.suffix)
+      : Math.max(0, capacity.prefix - item.affixCounts.prefix) + Math.max(0, capacity.suffix - item.affixCounts.suffix)
   const unresolved = item.mods.filter((m) => m.unresolved).length
   const removalCost: Record<string, number> = {}
   const removalCostUnknown: string[] = []

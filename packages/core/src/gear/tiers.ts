@@ -85,8 +85,22 @@ function toEntry(id: string, mod: ModTierRaw, tier: number): LadderEntry {
   }
 }
 
+/** One row of `generated/monk-gloves.json`: a source mod and what Martial Artist turns it into. */
+export interface MonkGloveEntry {
+  /** Source mod id, the craftable mod the glove transform starts from. */
+  modId: string
+  /** The untransformed line(s). */
+  source: string
+  /** The line(s) Martial Artist gets instead. */
+  transformed: string[]
+}
+
+/** poe.ninja ids a transformed glove mod as `HandWraps<SourceModId>`. */
+const MONK_GLOVE_PREFIX = 'HandWraps'
+
 export class ModTiers {
   private readonly data: ModTierData
+  private monkGloves: ReadonlyMap<string, MonkGloveEntry> | null = null
   /** group|kind -> ids, cached per base tag set. */
   private readonly ladderCache = new Map<string, Ladder>()
 
@@ -125,7 +139,31 @@ export class ModTiers {
 
   /** A new `ModTiers` over the same data plus display-only text loaded separately (the web splits it out for size). */
   withDisplay(displayOnly: Record<string, DisplayOnlyMod>): ModTiers {
-    return new ModTiers({ ...this.data, displayOnly })
+    const next = new ModTiers({ ...this.data, displayOnly })
+    next.monkGloves = this.monkGloves
+    return next
+  }
+
+  /** A new `ModTiers` that can reverse-map Martial Artist glove mods to their source mod and tier. */
+  withMonkGloves(entries: readonly MonkGloveEntry[]): ModTiers {
+    const next = new ModTiers(this.data)
+    next.monkGloves = new Map(entries.map((e) => [e.modId, e]))
+    return next
+  }
+
+  /**
+   * The source mod behind a Martial Artist glove line, or null when the id is not
+   * a transformed glove mod (or the table was not loaded).
+   */
+  monkGloveSource(modId: string): MonkGloveEntry | null {
+    if (!this.monkGloves || !modId.startsWith(MONK_GLOVE_PREFIX)) return null
+    return this.monkGloves.get(modId.slice(MONK_GLOVE_PREFIX.length)) ?? null
+  }
+
+  /** Transformed text for a source mod id, from the glove table. */
+  monkGloveText(sourceModId: string): string | null {
+    const e = this.monkGloves?.get(sourceModId)
+    return e ? e.transformed.join(' / ') : null
   }
 
   /**

@@ -18,6 +18,10 @@ import { gearRecommendations, mergeGearRecommendations, recommend } from './reco
 import type { RecommendationReport } from './recommend/types.js'
 import { reconcile, type ReconciliationReport } from './reconcile/index.js'
 import type { ModTiers } from './gear/tiers.js'
+import type { SupportCatalog } from './gems/catalog.js'
+import type { MainSkillContext } from './recommend/gear.js'
+import { effectiveCritMultiplier } from './recommend/offence.js'
+import { CRIT_UNINVESTED } from './thresholds.js'
 import { decodePobExport, readPlayerStats } from './pob/export.js'
 import { readPobConfig, type PobConfig } from './pob/config.js'
 import { readPobMainSkill } from './pob/main-skill.js'
@@ -155,6 +159,8 @@ function assertCharModelShape(model: CharModel): void {
  * nobody measured.
  */
 export interface AnalyzeOptions {
+  /** PoB skill data. With it the gear pass flags lines that cannot affect the main skill. */
+  catalog?: SupportCatalog
   tiers?: ModTiers
   tree?: PassiveTree
   ladder?: LadderSummary | null
@@ -174,6 +180,7 @@ function recommendationsFor(
   options: AnalyzeOptions,
   keystones: KeystoneEffects,
   preferredSkill: string | null,
+  skill: MainSkillContext | null,
 ): RecommendationReport {
   const report = recommend(model, keystones, { preferredSkill })
   if (!options.tiers) return report
@@ -182,6 +189,7 @@ function recommendationsFor(
     items: normalizeItems(model),
     defense: analyzeDefense(model),
     tiers: options.tiers,
+    skill,
   })
   if (!gear.length) return report
 
@@ -205,6 +213,19 @@ export function pobDpsAgreement(report: ReconciliationReport | null): boolean | 
   const check = report?.checks.find((c) => c.stat.startsWith('dps:'))
   if (!check || check.severity === 'unresolved') return undefined
   return check.severity === 'match'
+}
+
+/** The main skill's PoB types and damage split, for rules that need to know what the skill can use. */
+function skillContext(dps: DpsSummary, catalog: SupportCatalog | undefined): MainSkillContext | null {
+  const primary = dps.primary
+  const types = primary && catalog ? catalog.activeTypes(primary.name) : null
+  if (!primary || !types) return null
+  return {
+    name: primary.name,
+    types,
+    dealt: new Set(primary.damageSplit.filter((s) => s.percent >= 10).map((s) => s.type)),
+    crit: (effectiveCritMultiplier(primary) ?? 1) >= CRIT_UNINVESTED,
+  }
 }
 
 export async function analyzeCharacter(
@@ -285,7 +306,7 @@ export async function analyzeCharacter(
     attribution: attributeToItems(breakdowns, items, defense),
     keystones,
     model,
-    recommendations: recommendationsFor(model, options, keystones, exportMain),
+    recommendations: recommendationsFor(model, options, keystones, exportMain, skillContext(dps, options.catalog)),
     assessment: assessBuild({
       defense,
       dps,
