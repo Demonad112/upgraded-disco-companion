@@ -177,3 +177,10 @@ test('phone first screen: the Top fixes heading sits above the fold after import
   const box = (await heading.boundingBox())!
   expect(box.y + box.height).toBeLessThan(844)
 })
+
+test('the example button has a verb in its name and fills the URL box', async ({ page }) => {
+  await page.goto('character/')
+  await expect(page.getByText('Paste a poe.ninja URL above and press Analyse.')).toBeVisible()
+  await page.getByRole('button', { name: /^Use this example: https:\/\/poe\.ninja\// }).click()
+  await expect(page.getByRole('textbox').first()).toHaveValue(/^https:\/\/poe\.ninja\/poe2\/profile\//)
+})

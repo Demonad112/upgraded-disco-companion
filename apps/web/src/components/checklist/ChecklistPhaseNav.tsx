@@ -19,7 +19,7 @@ export function ChecklistPhaseNav() {
     <nav
       aria-label="Checklist phases"
       data-surface="data"
-      className="phase-rail sticky top-[var(--nav-h)] z-10 -mx-4 flex items-center gap-2 border-b border-line bg-surface/95 px-4 py-2 sm:mx-0 sm:border"
+      className="phase-rail sticky top-[var(--nav-h)] z-10 -mx-4 flex items-center gap-2 border-b border-line bg-surface px-4 py-2 sm:mx-0 sm:border"
     >
       <ScrollFade className="phase-rail-scroll flex min-w-0 flex-1 items-center gap-1.5">
       {ROADMAP_INDEX.map(({ phase, ids }, i) => {

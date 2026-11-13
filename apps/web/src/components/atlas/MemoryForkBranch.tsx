@@ -24,13 +24,15 @@ export function MemoryForkBranch({ fork }: { fork: MemoryFork }) {
         <path d="M0 1H100" pathLength="1" />
       </svg>
       <div className="flex items-center gap-2">
-        <input
-          type="checkbox"
-          checked={allocated}
-          onChange={() => toggleFork(fork.id)}
-          aria-label={`Allocated ${fork.title}`}
-          className="size-4"
-        />
+        <label className="flex size-6 shrink-0 cursor-pointer items-center justify-center pointer-coarse:size-(--tap-min)">
+          <input
+            type="checkbox"
+            checked={allocated}
+            onChange={() => toggleFork(fork.id)}
+            aria-label={`Allocated ${fork.title}`}
+            className="size-4"
+          />
+        </label>
         <h2 className="title-sentence text-base text-ink">{fork.title}</h2>
         <ProOnly><SourceFlag source={fork.source} /></ProOnly>
         <span className="ml-auto">

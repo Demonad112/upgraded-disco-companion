@@ -69,4 +69,7 @@ Moved from `docs/remaining/REMAINING-WORK.md`. Full results: `docs/carry/PXC.md`
 | PX0 | Screenshot baseline e2e (9 pages x 4 widths, 36 shots) | C | PX-PROGRAMME | Owner commits CI `visual-baselines` PNGs; diffs fail until then | done on branch (PXC); owner step open (PXC carry row 1) |
 | PX10 | Load and render: /trade CLS fix; other candidates measured | C | PERF-PLAN | Sky pause, content-visibility, global CSS split not applied (PXC rows 3–5) | done (partial, PXC): /trade CLS 0.3855 fixed |
 | PX11 | Guardrails: route-weight budgets, import e2e, Lighthouse all 8 routes | C | PERF-PLAN | `/character` lazy-chunk budget line waits for PX9 (PXC row 2) | done (partial, PXC): PX11b landed |
-
+| UXS-2 | Tap boxes under 36 px re-measured, `hit-area` counted | S | UXS | Checklist step buttons and Memory fork checkboxes lacked a target; fixed. Footer links (24 px) meet the utility floor | done (UXS2) |
+| UXS-3 | ImportBar example button has no verb | S | UXS | `aria-label` "Use this example: <url>", visible text unchanged; e2e added | done (UXS2) |
+| UXS-4 | `/character` empty preview box has no next action | S | UXS | Line now reads "Paste a poe.ninja URL above and press Analyse." | done (UXS2) |
+| UXS-5 | 1440 px screenshots read with the critique rubric | S | UXS | Defects in `docs/carry/UXS2.md`; one fixed (see-through sticky tab strips) | done (UXS2) |
