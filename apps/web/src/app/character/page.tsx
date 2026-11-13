@@ -196,8 +196,8 @@ export default function Home() {
 
   const handleResult = useCallback(async (r: ImportResult) => {
     if (!r.ok) {
-      setError(r.error)
-      // Back to the bar, which shows the error next to the URL that failed.
+      // The bar shows the error next to the URL that failed; repeating it here showed it twice.
+      setError(null)
       setBoxOpen(true)
       return
     }

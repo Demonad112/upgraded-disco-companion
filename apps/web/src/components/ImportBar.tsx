@@ -26,6 +26,8 @@ type BusyInfo = { seconds: number; step: number; of: number }
 
 /** Waits between retries when the proxy sends no `Retry-After`. Three steps, then the error shows. */
 export const BACKOFF_SECONDS = [3, 6, 12] as const
+/** Wait before the single retry after a request that got no response. */
+const NETWORK_RETRY_S = 2
 const MAX_RETRY_AFTER_S = 30
 
 /** A poe.ninja PoE2 profile URL in free text (a share sheet's `text` is often "Check this out https://…"). */
@@ -107,12 +109,23 @@ export async function importProfile(
   })
   try {
     let data: unknown
+    let networkRetried = false
     for (let attempt = 0; ; attempt++) {
       busy = null
       try {
         data = await client.fetchCharacter(ref.account, ref.leagueSlug, ref.character)
         break
       } catch (err) {
+        // A phone switching between Wi-Fi and mobile data drops the request with no response at all. One quiet retry
+        // covers that blip; a blocked or dead host still fails the second time and shows the message.
+        if (err instanceof NinjaError && err.reason === 'network' && !networkRetried) {
+          networkRetried = true
+          if (!(await waitSeconds(NETWORK_RETRY_S, opts.signal, () => {}))) {
+            return { ok: false, error: 'Import cancelled.', canPaste: true, cancelled: true }
+          }
+          attempt--
+          continue
+        }
         const hint = busy as { retryAfter: number | null } | null
         if (!hint || attempt >= BACKOFF_SECONDS.length) throw err
         const seconds = Math.min(MAX_RETRY_AFTER_S, Math.ceil(hint.retryAfter ?? BACKOFF_SECONDS[attempt]))

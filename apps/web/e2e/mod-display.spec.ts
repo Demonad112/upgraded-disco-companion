@@ -37,6 +37,14 @@ async function importCharacter(page: Page) {
   await page.evaluate(() => document.querySelectorAll('details').forEach((d) => (d.open = true)))
 }
 
+/** A late re-render (the mod text arriving, a retry) can close the details opened above, so reopen until shown. */
+async function expectShown(page: Page, text: RegExp) {
+  await expect(async () => {
+    await page.evaluate(() => document.querySelectorAll('details').forEach((d) => (d.open = true)))
+    await expect(page.getByText(text)).toBeVisible({ timeout: 1_000 })
+  }).toPass({ timeout: 10_000 })
+}
+
 test('a unique mod shows its text, and still does after a second import in the same tab', async ({ page }) => {
   let fetches = 0
   await page.route(/mod-display\.json/, (r) => {
@@ -45,11 +53,11 @@ test('a unique mod shows its text, and still does after a second import in the s
   })
   await page.goto('character/')
   await importCharacter(page)
-  await expect(page.getByText(TEXT)).toBeVisible()
+  await expectShown(page, TEXT)
   await expect(page.getByText(RAW_ID)).toHaveCount(0)
 
   await importCharacter(page)
-  await expect(page.getByText(TEXT)).toBeVisible()
+  await expectShown(page, TEXT)
   await expect(page.getByText(RAW_ID)).toHaveCount(0)
   expect(fetches, 'the latch fetches the text once, not per import').toBe(1)
 })
@@ -59,11 +67,7 @@ test('a failed mod-text fetch is retried once, so a blip does not leave raw ids'
   await page.route(/mod-display\.json/, (r) => (++fetches === 1 ? r.fulfill({ status: 500, body: 'x' }) : r.fallback()))
   await page.goto('character/')
   await importCharacter(page)
-  // The retry's re-render can close the details opened above, so reopen until shown.
-  await expect(async () => {
-    await page.evaluate(() => document.querySelectorAll('details').forEach((d) => (d.open = true)))
-    await expect(page.getByText(TEXT)).toBeVisible({ timeout: 1_000 })
-  }).toPass({ timeout: 10_000 })
+  await expectShown(page, TEXT)
   expect(fetches).toBe(2)
 })
 
@@ -75,11 +79,7 @@ test('when the mod text stays unavailable, the page falls back to the raw id and
   })
   await page.goto('character/')
   await importCharacter(page)
-  // The raw id renders after the retry fails; that re-render can close the details opened above, so reopen until shown.
-  await expect(async () => {
-    await page.evaluate(() => document.querySelectorAll('details').forEach((d) => (d.open = true)))
-    await expect(page.getByText(RAW_ID)).toBeVisible({ timeout: 1_000 })
-  }).toPass({ timeout: 10_000 })
+  await expectShown(page, RAW_ID)
   await page.waitForTimeout(3_500)
   expect(fetches).toBe(2)
 })
