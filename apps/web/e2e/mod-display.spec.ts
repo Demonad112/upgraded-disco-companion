@@ -34,6 +34,8 @@ async function importCharacter(page: Page) {
   await expect(page.getByRole('heading', { name: /Athrynas/ }).first()).toBeVisible({ timeout: 30_000 })
   // The mod text is fetched when a tab that shows it (Gear, Damage, Advanced) opens, not on import.
   await openTab(page, 'advanced')
+  // The tab body is a lazy chunk: wait for it, or the details below mount after they are opened.
+  await expect(page.getByRole('heading', { name: 'Advanced', level: 2 })).toBeVisible()
   await page.evaluate(() => document.querySelectorAll('details').forEach((d) => (d.open = true)))
 }
 

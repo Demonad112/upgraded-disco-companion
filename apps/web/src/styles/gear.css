@@ -1,0 +1,315 @@
+/* Gear tab: the Waystone thread (route + waystone stones, from variant/20261113-waystone) under the Relic grid, with
+   Ledger-style status blocks. Tokens only. */
+
+
+.route {
+  --stone: 26px;
+  --rail-x: calc(var(--stone) / 2);
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 8px;
+  padding-left: calc(var(--stone) + 14px);
+}
+@media (max-width: 399px) {
+  .route {
+    --stone: 22px;
+  }
+}
+/* The thread: one 1px gold line down the stones' centres, fading out at both ends. */
+.route::before {
+  content: '';
+  position: absolute;
+  top: 14px;
+  bottom: 14px;
+  left: calc(var(--rail-x) - 0.5px);
+  width: 1px;
+  background: linear-gradient(180deg, transparent, var(--accent-line) 24px, var(--accent-line) calc(100% - 24px), transparent);
+  pointer-events: none;
+}
+.route > li {
+  position: relative;
+  min-width: 0;
+}
+
+/* The stone. Sits on the thread, outside the row's box, vertically on the row's first line. */
+.waystone {
+  position: absolute;
+  top: 12px;
+  left: calc(-1 * (var(--stone) + 14px) - 1px); /* -1px: offsets are from inside the row's border */
+  display: grid;
+  place-items: center;
+  width: var(--stone);
+  height: var(--stone);
+}
+.waystone::before {
+  content: '';
+  position: absolute;
+  inset: 4px;
+  transform: rotate(45deg);
+  border: 1px solid var(--accent-line);
+  background: var(--page);
+}
+.waystone > span {
+  position: relative;
+  font-family: var(--font-label);
+  font-size: var(--fs-micro);
+  line-height: 1;
+  color: var(--accent);
+}
+.waystone[data-state='taken']::before {
+  border-color: var(--accent-line);
+  background: color-mix(in srgb, var(--accent) 16%, var(--page));
+}
+.waystone[data-state='taken'] > span {
+  color: var(--accent);
+}
+.waystone[data-state='next']::before {
+  border-color: var(--accent);
+  box-shadow: 0 0 12px -1px color-mix(in srgb, var(--accent) 70%, transparent);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .waystone[data-state='next']::before {
+    animation: waystone-glow 2.4s ease-in-out infinite;
+  }
+}
+@keyframes waystone-glow {
+  50% {
+    box-shadow: 0 0 20px 1px color-mix(in srgb, var(--accent) 55%, transparent);
+  }
+}
+/* The thread is drawn gold up to the next stone: rows before it are "walked". */
+.route > li[data-walked]::after {
+  content: '';
+  position: absolute;
+  top: calc(12px + var(--stone) / 2);
+  bottom: calc(-8px - 12px - var(--stone) / 2);
+  left: calc(-1 * (var(--stone) + 14px) - 1px + var(--rail-x) - 0.5px);
+  width: 1px;
+  background: var(--accent);
+  pointer-events: none;
+}
+
+/* The row next in line gets the accent edge, matching the stone. */
+.route > li[data-next] {
+  border-color: var(--accent-line);
+}
+
+/* Gear: the rank square becomes the stone, so the old one is hidden. */
+.route .gear-rank {
+  display: none;
+}
+
+/* --- Relic grid: top two get the strong frame ------------------------------------------------------------ */
+.relic-slot[data-top] {
+  border: 1px solid var(--accent);
+  background: color-mix(in srgb, var(--accent) 7%, var(--sunken));
+  box-shadow: inset 0 1px 3px #000c;
+}
+.relic-strip {
+  margin: 4px -10px -10px;
+  padding: 3px 6px;
+  white-space: nowrap;
+  background: color-mix(in srgb, var(--accent) 16%, transparent);
+  border-top: 1px solid var(--accent-line);
+  color: var(--accent);
+  font-family: var(--font-label);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+.relic-slot[data-muted] {
+  opacity: 0.55;
+  cursor: default;
+  box-shadow: none;
+}
+.relic-slot[data-muted]:hover {
+  border-color: color-mix(in srgb, var(--edge) 45%, var(--line));
+}
+.relic-why {
+  display: grid;
+  gap: 6px;
+  margin: 14px 0 20px;
+  font-size: 13px;
+  color: var(--ink-dim);
+}
+.relic-why b {
+  color: var(--accent);
+  font-family: var(--font-label);
+  font-weight: 600;
+}
+@media (min-width: 900px) {
+  .relic-grid-wrap {
+    max-width: 560px;
+  }
+}
+
+/* --- Item card ------------------------------------------------------------------------------------------- */
+.gcard {
+  border: 1px solid var(--line);
+  background: var(--sunken);
+}
+.route > li[data-next] > .gcard {
+  border-color: var(--accent-line);
+}
+.gcard-head {
+  display: grid;
+  gap: 6px;
+  width: 100%;
+  padding: 12px 14px;
+  text-align: left;
+  min-height: var(--tap-min);
+}
+.gcard-chips {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 8px;
+}
+.gcard-sum {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px 20px;
+  font-family: var(--font-label);
+  font-size: 13px;
+  color: var(--ink-dim);
+}
+.gcard-sum b {
+  color: var(--ink);
+  font-weight: 600;
+}
+.gcard-body {
+  display: grid;
+  gap: 14px;
+  padding: 0 14px 14px;
+  border-top: 1px solid var(--line);
+}
+.gcard-group > h4 {
+  margin: 12px 0 6px;
+}
+.gline {
+  display: grid;
+  grid-template-columns: 38px minmax(0, 1fr) auto;
+  align-items: baseline;
+  gap: 2px 10px;
+  padding: 6px 8px;
+  border-left: 2px solid transparent;
+  font-size: 14px;
+}
+.gline + .gline {
+  border-top: 1px solid var(--line);
+}
+.gline[data-top] {
+  border-left-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 9%, transparent);
+  color: var(--ink);
+}
+.gline[data-open] {
+  color: var(--ink-mute);
+  font-style: italic;
+}
+.gline-tier {
+  font-family: var(--font-label);
+  font-size: var(--fs-micro);
+  letter-spacing: 0.04em;
+}
+.gline-mark {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-label);
+  font-size: var(--fs-micro);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-dim);
+}
+.gline-mark > i {
+  display: grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  border: 1px solid var(--accent-line);
+  color: var(--accent);
+  font-style: normal;
+}
+.gline[data-top] .gline-mark > i {
+  background: color-mix(in srgb, var(--accent) 16%, transparent);
+  border-color: var(--accent);
+}
+/* Top tier: a hollow gold-edged chip rather than gold text; T2-T3 plain, T4+ muted. */
+.gline-tier[data-t='1'] {
+  color: var(--ink);
+  box-shadow: inset 0 -1px 0 var(--accent);
+}
+@media (max-width: 479px) {
+  .gline {
+    grid-template-columns: 34px minmax(0, 1fr);
+  }
+  .gline-mark {
+    grid-column: 2;
+  }
+}
+
+/* Progress: imports as stops on a horizontal thread. */
+.trail {
+  --stone: 22px;
+  position: relative;
+  display: flex;
+  gap: 0;
+  overflow-x: auto;
+  padding: 4px 2px 2px;
+  scrollbar-width: thin;
+}
+.trail-stop {
+  position: relative;
+  display: flex;
+  flex: 1 0 96px;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  min-width: 96px;
+  text-align: center;
+}
+/* Thread segment from this stop to the next one. */
+.trail-stop:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  top: calc(4px + var(--stone) / 2);
+  left: calc(50% + var(--stone) / 2 + 4px);
+  right: calc(-50% + var(--stone) / 2 + 4px);
+  height: 1px;
+  background: var(--accent);
+}
+.trail-stop[data-ghost]::after,
+.trail-stop:has(+ [data-ghost])::after {
+  background: none;
+  border-top: 1px dashed var(--accent-line);
+}
+.trail-stop .waystone {
+  position: relative;
+  top: 0;
+  left: 0;
+}
+.trail-stop[data-ghost] .waystone::before {
+  border-style: dashed;
+  background: transparent;
+}
+.trail-date {
+  font-family: var(--font-label);
+  font-size: var(--fs-micro);
+  color: var(--ink-mute);
+}
+.trail-stop[data-latest] .trail-date {
+  color: var(--accent);
+}
+.trail-delta {
+  font-family: var(--font-label);
+  font-size: 13px;
+}
+@media (max-width: 639px) {
+  .trail-stop {
+    flex-basis: 72px;
+    min-width: 72px;
+  }
+}

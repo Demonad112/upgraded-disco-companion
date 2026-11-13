@@ -10,7 +10,7 @@ import { Panel } from './Panel'
 import type { PanelProps } from './types'
 import type { CharacterHistory } from '@/lib/useCharacterHistory'
 import { Stat } from '../../ui'
-import { StarChart } from '../StarChart'
+import { ImportTrail } from '../ImportTrail'
 
 /** What moved since the last import, as four tiles. Opens the tab the way Defences opens with its glance card. */
 function SinceLastImport({ history }: { history: CharacterHistory }) {
@@ -26,7 +26,7 @@ function SinceLastImport({ history }: { history: CharacterHistory }) {
         <span className="text-xs text-ink-mute">Saved in this browser</span>
       </div>
       <div className="mt-4">
-        <StarChart snapshots={snapshots} />
+        <ImportTrail history={history} />
       </div>
       <div className="progress-tiles mt-4">
         <Stat label="Imports saved" value={String(snapshots.length)} />

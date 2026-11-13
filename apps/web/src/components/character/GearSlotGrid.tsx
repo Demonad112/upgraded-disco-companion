@@ -1,16 +1,15 @@
 'use client'
 
 /**
- * Variant "relic": the equipped items laid out like an inventory (styles/relic.css). Each slot is a square plate
- * edged in its rarity; a gold notch with a number marks the items worth replacing, in the same order as the list
- * below. Choosing a slot shows its reasons and trade search beside the grid. The ranked list stays underneath for
- * screen readers and as the full view.
+ * The Relic slot grid: the whole kit at a glance. The first two ranked items get a gold frame and a "Replace first"
+ * strip; the rest keep a number, and items with nothing to improve (fine, or unique) are muted. Choosing a tile opens
+ * that item's card in the list below, which is the one source of detail. One line under the grid says why for #1 and
+ * #2; the full why sits behind Pro detail.
  */
 
-import { useState } from 'react'
-import type { EquippedItem, ReplacementPriority } from '@poe2/core'
-import { MapIcon } from '@/components/icons'
-import { StatusChip } from '@/components/shared/Instruments'
+import type { EquippedItem, ItemAnalysis, ReplacementPriority } from '@poe2/core'
+import { ProOnly } from '@/components/shared/ProToggle'
+import { tierSummary } from './gearImprovements'
 
 const AREA: Record<number, string> = {
   1: 'helm',
@@ -33,85 +32,89 @@ const RARITY_EDGE: Record<string, string> = {
   Magic: 'var(--dmg-cold)',
 }
 
+const plural = (n: number, one: string, many = `${one}s`) => `${n} ${n === 1 ? one : many}`
+
+/** One caddy line: "Skull Song: 3 lines below T1, 1 needs a new base". Counts only; nothing is guessed. */
+export function whyLine(a: ItemAnalysis | undefined, r: ReplacementPriority): string {
+  const { top, of } = a ? tierSummary(a) : { top: 0, of: 0 }
+  const parts: string[] = []
+  if (of - top > 0) parts.push(`${plural(of - top, 'line')} below T1`)
+  if (r.needsNewBase.length) parts.push(`${r.needsNewBase.length} ${r.needsNewBase.length === 1 ? 'needs' : 'need'} a new base`)
+  if (r.wasted.length) parts.push(`${r.wasted.length} over cap`)
+  if (r.openSlots) parts.push(`${plural(r.openSlots, 'open slot')}`)
+  if (r.corrupted) parts.push('corrupted')
+  return `${r.itemName}: ${parts.join(', ') || 'worth a look'}`
+}
+
 export function GearSlotGrid({
   items,
   rows,
-  linkFor,
+  analyses,
+  onPick,
 }: {
   items: EquippedItem[]
   rows: ReplacementPriority[]
-  linkFor: (r: ReplacementPriority) => string | null
+  analyses: Map<number, ItemAnalysis>
+  onPick: (slotId: number) => void
 }) {
   const placed = items.filter((i) => i.active && AREA[i.slotId])
-  const rank = new Map(rows.map((r, i) => [r.slotId, i]))
-  const [picked, setPicked] = useState<number | null>(rows[0]?.slotId ?? placed[0]?.slotId ?? null)
-  const item = placed.find((i) => i.slotId === picked) ?? null
-  const row = rows.find((r) => r.slotId === picked) ?? null
-  const link = row ? linkFor(row) : null
-
   if (!placed.length) return null
+  const rank = new Map(rows.map((r, i) => [r.slotId, i]))
+  const top = rows.slice(0, 2)
 
   return (
-    <div className="relic">
+    <div className="relic-grid-wrap">
       <ul className="relic-grid" aria-label="Equipped items">
         {placed.map((i) => {
           const n = rank.get(i.slotId)
+          const ranked = n !== undefined
+          const style = { gridArea: AREA[i.slotId], '--edge': RARITY_EDGE[i.rarity] ?? 'var(--ink-mute)' } as React.CSSProperties
+          const inner = (
+            <>
+              <span className="relic-slot-label">{i.slotLabel}</span>
+              <span className="relic-slot-name">{i.name || i.baseType}</span>
+              {ranked ? (
+                <span className="relic-notch" aria-label={`Worth replacing, number ${n + 1}`}>
+                  {n + 1}
+                </span>
+              ) : null}
+              {ranked && n < 2 ? <span className="relic-strip">Replace first</span> : null}
+            </>
+          )
           return (
             <li key={i.slotId} style={{ gridArea: AREA[i.slotId] }}>
-              <button
-                type="button"
-                className="relic-slot"
-                aria-pressed={picked === i.slotId}
-                onClick={() => setPicked(i.slotId)}
-                style={{ '--edge': RARITY_EDGE[i.rarity] ?? 'var(--ink-mute)' } as React.CSSProperties}
-              >
-                <span className="relic-slot-label">{i.slotLabel}</span>
-                <span className="relic-slot-name">{i.name || i.baseType}</span>
-                {n !== undefined ? (
-                  <span className="relic-notch" aria-label={`Worth replacing, number ${n + 1}`}>
-                    {n + 1}
-                  </span>
-                ) : null}
-              </button>
+              {ranked ? (
+                <button type="button" className="relic-slot" data-top={n < 2 || undefined} style={style} onClick={() => onPick(i.slotId)}>
+                  {inner}
+                </button>
+              ) : (
+                <div className="relic-slot" data-muted style={style}>
+                  {inner}
+                </div>
+              )}
             </li>
           )
         })}
       </ul>
-
-      <section className="relic-detail" aria-live="polite" aria-label="Selected item">
-        {item ? (
-          <>
-            <p className="label-metric">{item.slotLabel}</p>
-            <h4 className="title-sentence mt-1 text-xl text-ink">{item.name || item.baseType}</h4>
-            <p className="mt-1 text-sm text-ink-mute">
-              {item.baseType}
-              {item.itemLevel !== null ? `, item level ${item.itemLevel}` : ''} · {item.rarity}
+      {top.length ? (
+        <div className="relic-why">
+          {top.map((r, i) => (
+            <p key={r.slotId}>
+              <b>#{i + 1}</b> {whyLine(analyses.get(r.slotId), r)}
             </p>
-            {item.corrupted ? (
-              <div className="mt-2">
-                <StatusChip tone="warn">Corrupted</StatusChip>
-              </div>
-            ) : null}
-            {row ? (
-              <>
-                <ul className="gear-reasons mt-3 flex-col">
-                  {row.reasons.map((x) => (
-                    <li key={x}>{x}</li>
-                  ))}
-                </ul>
-                {link ? (
-                  <a href={link} target="_blank" rel="noopener noreferrer" className="btn btn-primary mt-4">
-                    <MapIcon name="trade" size={16} />
-                    Find a replacement
-                  </a>
-                ) : null}
-              </>
-            ) : (
-              <p className="mt-3 text-sm text-ink-dim">Nothing measurable to improve on this one.</p>
-            )}
-          </>
-        ) : null}
-      </section>
+          ))}
+          <ProOnly>
+            <ul className="gear-reasons flex-col" aria-label="Full reasons">
+              {top.flatMap((r) => [
+                ...r.reasons.map((x) => <li key={`${r.slotId}-${x}`}>{`${r.itemName}: ${x}`}</li>),
+                ...Object.entries(r.removalCost).map(([t, v]) => (
+                  <li key={`${r.slotId}-rm-${t}`}>{`${r.itemName}: removing it costs ${Math.ceil(v)}% ${t} resistance`}</li>
+                )),
+              ])}
+            </ul>
+          </ProOnly>
+        </div>
+      ) : null}
     </div>
   )
 }
