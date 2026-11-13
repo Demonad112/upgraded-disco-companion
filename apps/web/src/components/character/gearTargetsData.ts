@@ -24,7 +24,7 @@ export const improvable = (r: Pick<ReplacementPriority, 'reasons'>): boolean => 
 
 /**
  * A prefilled trade2 search (`?q=`) for replacing one item, ranked by a weighted sum: every resistance the
- * character is still short of counts 1 point per point, and the sum must reach the shortfall (at most two
+ * character is still short of (and only those) counts 1 point per point, and the sum must reach the shortfall (at most two
  * rolls' worth). The resistances the item holds up are hard minimums, so the swap does not open a new hole.
  * Null when nothing resistance-related applies, a stat has no trade id, or the link would be too long.
  */
@@ -34,7 +34,7 @@ export function weightedTradeLink(
   map: TradeStatMap,
   league: string,
 ): string | null {
-  const types = TYPES.filter((t) => (gaps[t] ?? 0) > 0 || (row.removalCost[t] ?? 0) > 0)
+  const types = TYPES.filter((t) => (gaps[t] ?? 0) > 0 && statFor(t))
   if (!types.length) return null
   const weights = types.flatMap((t) => (statFor(t) ? [{ statId: statFor(t)!, weight: 1 }] : []))
   const mustKeep = TYPES.flatMap((t) => {
@@ -42,9 +42,8 @@ export function weightedTradeLink(
     return min > 0 && statFor(t) ? [{ statId: statFor(t)!, min }] : []
   })
   const gapSum = types.reduce((n, t) => n + (gaps[t] ?? 0), 0)
-  const keepSum = mustKeep.reduce((n, k) => n + k.min, 0)
   const built = buildWeightedQuery(
-    { baseType: row.baseType, mustKeep, weights, minScore: Math.min(gapSum || keepSum, 2 * 45) },
+    { baseType: row.baseType, mustKeep, weights, minScore: Math.min(gapSum, 2 * 45) },
     map,
   )
   if (!built) return null

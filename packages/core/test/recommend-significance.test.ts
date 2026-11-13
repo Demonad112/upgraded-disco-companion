@@ -28,7 +28,7 @@ describe('significance is derived and bounded', () => {
 
   it('does not add a bonus to free resistance fixes', () => {
     const r = byId.get('res-cold-under-cap')!
-    expect(r.cost.kind).toBe('free')
+    expect(r.cost.kind).toBe('gear')
     // 1 point short of a 75 cap.
     expect(r.impact!.significance).toBeCloseTo(1 / 75, 10)
   })

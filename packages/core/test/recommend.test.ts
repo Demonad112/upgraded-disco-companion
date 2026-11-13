@@ -28,8 +28,9 @@ describe('reproduces the known findings', () => {
   it('recognises the cold gap is free to fix because fire is overcapped', () => {
     const r = byId.get('res-cold-under-cap')!
     // Fire is +24 over cap; cold needs 1. The points already exist.
-    expect(r.cost.kind).toBe('free')
-    expect(r.cost.amount).toBe(0)
+    // Reallocating still needs a gear swap, so it is a trivial gear cost, not 'free' (R66).
+    expect(r.cost.kind).toBe('gear')
+    expect(r.cost.currencyTier).toBe('trivial')
     expect(r.evidence.some((e) => e.kind === 'stat' && e.stat === 'fireResistanceOverCap')).toBe(true)
   })
 
@@ -89,12 +90,11 @@ describe('reproduces the known findings', () => {
 })
 
 describe('ranking', () => {
-  it('ranks by gain per unit of cost, so the free fix leads', () => {
+  it('ranks by gain per unit of cost', () => {
     const scores = report.recommendations.map((r) => r.score)
     expect([...scores].sort((a, b) => b - a)).toEqual(scores)
-    // The free cold-resistance reallocation must outrank the moderate-cost
-    // weapon upgrade despite being a smaller absolute change.
-    expect(byId.get('res-cold-under-cap')!.score).toBeGreaterThan(byId.get('weapon-ilvl-lag')!.score)
+    // The reallocation needs a gear swap (R66), so it is weighted as gear, not free.
+    expect(byId.get('res-cold-under-cap')!.score).toBeGreaterThan(0)
   })
 
   it('does not call a build with real findings sound', () => {

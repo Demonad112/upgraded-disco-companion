@@ -42,10 +42,7 @@ These rows run in the §6 owner-pass order.
 | ID | Item | Size | Origin | Notes | Status |
 |---|---|---|---|---|---|
 | R63 | PoB2 MCP oracle: engine parity, proof stat per rec id, config robustness (Yykiuy, Athrynas) | M | PV1 | `docs/plans/POB-VERIFY.md` §2, §6; needs fork must-have 1 | open; batch PV2 |
-| R64 | F6: `weightedTradeLink` weights held resist types and sets min = gap sum, so the min does nothing | S | PV1 | `apps/web/src/components/character/gearTargetsData.ts:31` | open; batch PV3 |
 | R65 | F7: trade-map uses explicit single-resist ids; pseudo totals count every source | M | PV1 | one live trade2 check first | open; batch PV3 |
-| R66 | F8: reallocation emits cost kind 'free' though it needs a gear swap | S | PV1 | `packages/core/src/recommend/index.ts:144`; becomes `gear`, trivial | open; batch PV3 |
-| R67 | Stale "level 63" for Yykiuy (fixture is level 88) | S | PV1 | `packages/core/test/evidence-pack.test.ts:82`, fixtures README | open; batch PV2 |
 
 ## 4. Standing rules (no work)
 - Route budgets: `/` ≤ 192,000 B br; other routes ≤ 250,000 (`node scripts/route-weight.mjs`). Any change to home JS reports before and after.

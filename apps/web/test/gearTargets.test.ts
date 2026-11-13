@@ -25,7 +25,11 @@ describe('gear targets', () => {
     expect(keep.filters[0].value).toEqual({ min: 20 })
     expect(weight.type).toBe('weight')
     expect(weight.value).toEqual({ min: 15 })
-    expect(weight.filters).toHaveLength(2)
+    expect(weight.filters).toHaveLength(1) // held-up cold is a minimum only, not a weight
+  })
+
+  it('has no link when no resistance is short, even if the item holds some up', () => {
+    expect(weightedTradeLink({ baseType: 'x', removalCost: { cold: 20 } }, {}, map, 'Standard')).toBeNull()
   })
 
   it('has no link when the URL would pass URL_MAX_LENGTH (the row shows Open /trade instead)', () => {
