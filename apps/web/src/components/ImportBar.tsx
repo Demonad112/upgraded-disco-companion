@@ -340,6 +340,7 @@ export function ImportBar({
               <button
                 type="button"
                 onClick={() => setUrl(EXAMPLE)}
+                aria-label={`Use this example: ${EXAMPLE}`}
                 className="text-accent underline underline-offset-2 transition-opacity hover:opacity-80"
               >
                 {EXAMPLE}

@@ -156,15 +156,12 @@ spec: `docs/plans/CF-AUDIT-YYKIUY.md`. Core changes approved in the plan.
 | CF2 | Rubric, ranking, headline, waystone risk, methodology wording (audit 5–19) | CF1 | done, PR open (items 17 and 18 partial; open rows in `docs/carry/CF2.md`) |
 
 ### UXS (2026-11-13)
-Sweeps PXC skipped. Open rows in `docs/carry/UXS.md`.
+Sweeps PXC skipped. UXS-2 to UXS-5 closed in UXS2 (2026-11-13). Open rows in `docs/carry/UXS2.md`.
 
 | ID | Scope | Depends on | Status |
 |---|---|---|---|
-| UXS-1 | Collapse text sizes to about 8, 11 px label floor (M) | — | open |
-| UXS-2 | Re-measure tap boxes under 36 px without `hit-area` (S) | PXC | open |
-| UXS-3 | ImportBar example button label without a verb (S) | — | open |
-| UXS-4 | `/character` empty preview box has no next action (S) | — | open |
-| UXS-5 | Read the 1440 px screenshots with the critique rubric | — | open |
+| UXS-1 | Collapse text sizes to about 8, 11 px label floor (M) | owner | open: moves of 2 px or more, so a `variant/<yyyymmdd>-type-scale` branch (UXS2 row 1) |
+| UXS2-2 | Atlas, farm and checklist layout defects found in the 1440 read (S to M) | — | open (UXS2 rows 2–6) |
 
 ### Do not do
 | Item | Why |

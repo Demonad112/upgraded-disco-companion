@@ -313,7 +313,7 @@ export default function Home() {
 
         {!busy && !a && !pobAnalysis ? (
           <div className="border border-dashed border-line-strong bg-surface-raised/40 px-6 py-16 text-center">
-            <p className="text-sm text-ink-dim">Import a character to see its analysis.</p>
+            <p className="text-sm text-ink-dim">Paste a poe.ninja URL above and press Analyse.</p>
             <p className="mx-auto mt-2 max-w-md text-xs leading-relaxed text-ink-mute">
               Survival is judged by the smallest hit that kills you, because average health figures often overstate safety by 3× or more.
             </p>

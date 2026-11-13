@@ -4,6 +4,7 @@ One line per ID: status, PR. Archived carry files were removed (see Archive belo
 Live rows are tracked in `docs/remaining/REMAINING-WORK.md`.
 
 ## Active
+- [UXS2](UXS2.md): done, PR open (UXS-2 to UXS-5 closed; UXS-1 type scale is Needs owner as a variant branch; layout defects from the 1440 read)
 - [UXS](UXS.md): done, PR open (ux-audit, spacing, empty-states, verbs, a11y sweeps; open rows UXS-1 to UXS-5)
 Each has at least one open row. Owner-side rows are tracked in `../remaining/REMAINING-WORK.md`.
 - [CF2](CF2.md): done, PR open (audit items 5–19; Yykiuy 0.48 C → 0.65 B; open rows for the next batch)
