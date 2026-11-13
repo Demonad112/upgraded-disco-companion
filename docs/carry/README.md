@@ -4,6 +4,7 @@ One line per ID: status, PR. Archived carry files were removed (see Archive belo
 Live rows are tracked in `docs/remaining/REMAINING-WORK.md`.
 
 ## Active
+- [CMP1](CMP1.md): done, draft PR on `variant/20261113-companion` (mock companion head; open rows CMP1-1 to CMP1-5)
 - [UXS](UXS.md): done, PR open (ux-audit, spacing, empty-states, verbs, a11y sweeps; open rows UXS-1 to UXS-5)
 Each has at least one open row. Owner-side rows are tracked in `../remaining/REMAINING-WORK.md`.
 - [CF2](CF2.md): done, PR open (audit items 5–19; Yykiuy 0.48 C → 0.65 B; open rows for the next batch)

@@ -1,0 +1,214 @@
+/* Mock companion (components/companion). Launcher and panel are square like the rest of the site; only the head
+   (CompanionHead.tsx) has curves. Motion only under prefers-reduced-motion: no-preference; otherwise static poses. */
+
+.companion {
+  position: fixed;
+  z-index: 45;
+  right: calc(env(safe-area-inset-right, 0px) + 1rem);
+  bottom: calc(env(safe-area-inset-bottom, 0px) + 1rem);
+}
+/* Phones: clear the bottom tab bar (styles/nav.css), which compact mode hides; same offset as .update-toast. */
+@media (max-width: 720px) {
+  :root:not([data-compact]) .companion {
+    bottom: calc(env(safe-area-inset-bottom, 0px) + var(--tabbar-h) + 1rem);
+  }
+}
+
+.companion-launcher {
+  display: grid;
+  place-items: center;
+  width: var(--tap-min);
+  height: var(--tap-min);
+  padding: 0;
+  background: var(--surface);
+  border: 1px solid var(--line-strong);
+  border-radius: 0;
+  cursor: pointer;
+}
+.companion-launcher:hover,
+.companion-launcher[aria-expanded='true'] {
+  border-color: var(--accent);
+}
+.companion-launcher:focus-visible,
+.companion-x:focus-visible,
+.companion-off:focus-visible,
+.companion-line:focus-visible,
+.companion-panel:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* Solid data panel: nothing legible through it (PX1), hairline gold top edge like the tab bar. */
+.companion-panel {
+  position: absolute;
+  right: 0;
+  bottom: calc(100% + 0.5rem);
+  width: min(20rem, calc(100vw - 2rem));
+  padding: 0.875rem 1rem 0.75rem;
+  background: var(--data-fill);
+  border: 1px solid var(--line-strong);
+  border-top-color: var(--accent);
+  border-radius: 0;
+  box-shadow: 0 12px 32px rgb(0 0 0 / 0.55);
+}
+.companion-panel:focus {
+  outline: none;
+}
+.companion-top {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+.companion-title {
+  flex: 1;
+  margin: 0;
+  font-family: var(--font-heading);
+  font-size: 0.95rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink);
+}
+.companion-x {
+  width: var(--tap-min);
+  height: var(--tap-min);
+  margin: -0.5rem -0.75rem -0.5rem 0;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  font-size: 1.25rem;
+  color: var(--ink-dim);
+  cursor: pointer;
+}
+.companion-x:hover {
+  color: var(--ink);
+}
+.companion-lines {
+  margin: 0.625rem 0 0;
+  padding: 0;
+  list-style: none;
+  border-top: 1px solid var(--line);
+}
+.companion-line {
+  display: block;
+  min-height: var(--tap-min);
+  padding: 0.625rem 0;
+  border-bottom: 1px solid var(--line);
+  font-size: 0.875rem;
+  line-height: 1.4;
+  color: var(--ink);
+  text-decoration: none;
+}
+.companion-line:hover {
+  color: var(--accent);
+}
+.companion-off {
+  min-height: var(--tap-min);
+  margin-top: 0.25rem;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  font-size: 0.75rem;
+  color: var(--ink-mute);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+.companion-off:hover {
+  color: var(--ink);
+}
+
+/* ---- Head poses (hooks from CompanionHead.tsx) ---- */
+.cmp-head {
+  display: block;
+  overflow: visible;
+}
+.cmp-hood {
+  fill: var(--raised);
+  stroke: var(--accent);
+  stroke-width: 1.4;
+  stroke-linejoin: miter;
+  stroke-opacity: 0.7;
+}
+.cmp-face {
+  fill: var(--page);
+}
+.cmp-eye {
+  fill: var(--accent);
+}
+.cmp-glow {
+  fill: var(--accent);
+  opacity: 0.22;
+}
+.cmp-shut,
+.cmp-mouth,
+.cmp-z {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 1.6;
+  stroke-linecap: square;
+}
+.cmp-shut,
+.cmp-mouth,
+.cmp-z {
+  opacity: 0;
+}
+.cmp-tilt,
+.cmp-eyes {
+  transform-box: fill-box;
+  transform-origin: 50% 80%;
+}
+.cmp-mouth,
+.cmp-z {
+  transform-box: fill-box;
+  transform-origin: center;
+}
+[data-pose='asleep'] .cmp-eyes {
+  opacity: 0;
+}
+[data-pose='asleep'] .cmp-shut,
+[data-pose='asleep'] .cmp-z,
+[data-pose='talking'] .cmp-mouth {
+  opacity: 1;
+}
+[data-pose='asleep'] .cmp-hood {
+  stroke-opacity: 0.35;
+}
+[data-pose='pointing'] .cmp-tilt {
+  transform: rotate(6deg);
+}
+[data-pose='pointing'] .cmp-eyes {
+  transform: translate(1.5px, 1px);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .cmp-tilt,
+  .cmp-eyes {
+    transition: transform 220ms ease-out;
+  }
+  [data-pose='idle'] .cmp-glow {
+    animation: cmp-breathe 3.2s ease-in-out infinite;
+  }
+  [data-pose='talking'] .cmp-mouth {
+    animation: cmp-talk 0.24s steps(2, jump-none) infinite alternate;
+  }
+  [data-pose='asleep'] .cmp-z {
+    animation: cmp-drift 2.8s ease-in-out infinite;
+  }
+  /* The one signature moment: the eyes ignite when the panel opens. */
+  .companion-panel .cmp-eyes {
+    animation: cmp-ignite 420ms ease-out;
+  }
+}
+@keyframes cmp-breathe {
+  50% { opacity: 0.45; }
+}
+@keyframes cmp-talk {
+  to { transform: scaleX(0.4); }
+}
+@keyframes cmp-drift {
+  50% { transform: translate(1px, -2px); opacity: 0.5; }
+}
+@keyframes cmp-ignite {
+  from { opacity: 0; }
+}

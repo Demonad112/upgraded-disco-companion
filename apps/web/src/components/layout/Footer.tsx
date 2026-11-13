@@ -9,6 +9,7 @@ import { InstallButton } from "@/components/InstallButton";
 import { usePersistedState } from "@/hooks/usePersistedState";
 import { useResetProgress } from "@/hooks/useResetProgress";
 import { SkyDimToggle } from "@/components/fx/SkySettings";
+import { CompanionToggle } from "@/components/companion/CompanionToggle";
 import { Button } from "@/components/shared/controls";
 
 const TOOLS = [
@@ -97,6 +98,9 @@ export function Footer() {
             <ul>
               <li>
                 <SkyDimToggle />
+              </li>
+              <li>
+                <CompanionToggle />
               </li>
               <li>
                 <label className="hit-area flex cursor-pointer items-center gap-2">

@@ -16,6 +16,8 @@ import { bannerBootstrap } from '@/lib/bannerDismiss'
 import { COMPACT_BOOTSTRAP } from '@/lib/compactMode'
 import { SKY_DIM_BOOTSTRAP } from '@/lib/skyDim'
 import { CURRENT_PATCH } from '@/lib/constants'
+import { CompanionHost } from '@/components/companion/CompanionHost'
+import { companionSeed } from '@/lib/companionSeed'
 
 // EB Garamond for display (headings, grade, skill and resistance labels), Inter
 // for reading, Geist Mono for figures and micro labels. Vendored in ./fonts (the
@@ -131,6 +133,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           </div>
           <CommandPalette />
           <HashHighlight />
+          {/* Mock companion (placeholder art): loads after idle, summon-only. */}
+          <CompanionHost seed={companionSeed()} />
         </PersistedStateProvider>
       </body>
     </html>
