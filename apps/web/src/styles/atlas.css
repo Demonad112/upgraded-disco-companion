@@ -304,3 +304,34 @@
     max-width: none;
   }
 }
+
+/* Focus variant: the "1 of 17" stepper pinned under the map (atlas/AtlasTreeMap.tsx). Solid data fill, square corners. */
+.atlas-stepper {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 12px;
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  background: var(--data-fill);
+}
+.atlas-stepper-count {
+  color: var(--accent);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.atlas-stepper-name {
+  min-width: 0;
+  flex: 1 1 8rem;
+  overflow: hidden;
+  color: var(--ink);
+  font-size: 13px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.atlas-stepper-btns {
+  display: flex;
+  gap: 6px;
+}
