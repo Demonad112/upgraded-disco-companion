@@ -125,6 +125,7 @@ function resistanceRules(ctx: Context): Recommendation[] {
     const partialDonor = donor ?? over.slice().sort((a, b) => b.overCap - a.overCap)[0]
 
     let tradeoff: string | null = null
+    let reallocated = false
     let cost: Cost = {
       kind: 'gear',
       amount: 1,
@@ -141,9 +142,11 @@ function resistanceRules(ctx: Context): Recommendation[] {
         note: `${partialDonor.type[0]!.toUpperCase()}${partialDonor.type.slice(1)} resistance is ${partialDonor.overCap}% above its cap — those points do nothing.`,
       })
       if (covered >= res.underCap) {
+        reallocated = true
         cost = {
-          kind: 'free',
-          amount: 0,
+          kind: 'gear',
+          amount: 1,
+          currencyTier: 'trivial',
           detail: `Move ${covered}% from overcapped ${partialDonor.type} resistance with a gear or affix swap; no extra total resistance is needed.`,
         }
         tradeoff = `${partialDonor.overCap - covered}% of ${partialDonor.type} overcap remains as a buffer against resistance-reducing map modifiers.`
@@ -189,11 +192,11 @@ function resistanceRules(ctx: Context): Recommendation[] {
         category: 'survivability',
         action: `Raise ${res.type} resistance by ${res.underCap}% to reach the ${res.max}% cap.`,
         rationale:
-          cost.kind === 'free'
+          reallocated
             ? `You have spare ${partialDonor!.type} resistance to move here. It needs a gear swap, not extra resistance.`
             : `Uncapped ${res.type} resistance means every ${res.type} hit lands harder.`,
         detail:
-          cost.kind === 'free'
+          reallocated
             ? `${capitalised} resistance is ${res.underCap}% short of cap while ${partialDonor!.type} resistance is ${partialDonor!.overCap}% over it. The points are already on the character — they are in the wrong place.`
             : `${capitalised} resistance is ${res.underCap}% short of the ${res.max}% cap, so every ${res.type} hit lands harder than it needs to.`,
         impact,

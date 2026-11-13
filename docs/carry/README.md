@@ -5,6 +5,7 @@ Live rows are tracked in `docs/remaining/REMAINING-WORK.md`.
 
 ## Active
 Each has at least one open row. Owner-side rows are tracked in `../remaining/REMAINING-WORK.md`.
+- [N4](N4.md): done, PR open (rows R64, R66, R67 closed; no open rows)
 - [N1](N1.md): done, PR open (rows R56, R58 closed; no open rows)
 - [N3](N3.md): done, PR open (row R61 closed; no open rows)
 - [N2](N2.md): done, PR open (row R62 closed; no open rows)

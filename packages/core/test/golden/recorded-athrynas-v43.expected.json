@@ -81,8 +81,8 @@
   "recommendations": [
     "res-chaos-under-cap",
     "one-shot-chaos",
-    "res-cold-under-cap",
     "weapon-ilvl-lag",
+    "res-cold-under-cap",
     "anoint-unused"
   ],
   "pobConfigInputCount": 20,
