@@ -8,14 +8,10 @@ import { useAtlasProgress } from "@/hooks/useAtlasProgress";
 import { Tag } from "@/components/ui";
 import { ShowOnTreeButton } from "./AtlasMapContext";
 
-/** Descriptions longer than this are clamped to two lines until expanded. */
-const LONG = 120;
-
 export function ClusterNode({ cluster }: { cluster: AtlasCluster }) {
   const { isClusterAllocated, toggleCluster } = useAtlasProgress();
   const allocated = isClusterAllocated(cluster.id);
   const [expanded, setExpanded] = useState(false);
-  const long = cluster.description.length > LONG;
 
   return (
     <li
@@ -52,15 +48,15 @@ export function ClusterNode({ cluster }: { cluster: AtlasCluster }) {
             {cluster.killGated ? <Tag>kill-gated</Tag> : null}
             <ProOnly><SourceFlag source={cluster.source} /></ProOnly>
           </div>
-          <p className={`mt-1 text-xs leading-relaxed text-ink-dim ${expanded ? "" : `max-sm:hidden ${long ? "line-clamp-2" : ""}`}`}>
+          <p data-open={expanded || undefined} className={`mt-1 text-xs leading-relaxed text-ink-dim ${expanded ? "" : "max-sm:hidden"}`}>
             {cluster.description}
           </p>
-          {/* Phones: every row's description is one tap away (compact rows); from sm up only the long ones clamp. */}
+          {/* Ledger: every description is one tap away; from sm up the first line shows (styles/ledger.css). */}
           <button
             type="button"
             onClick={() => setExpanded((v) => !v)}
             aria-expanded={expanded}
-            className={`hit-area mt-0.5 !min-h-0 -mb-1 text-[12px] text-accent hover:underline ${long ? "" : "sm:hidden"}`}
+            className="hit-area mt-0.5 !min-h-0 -mb-1 text-[12px] text-accent hover:underline"
           >
             {expanded ? "Less" : "More"}
           </button>

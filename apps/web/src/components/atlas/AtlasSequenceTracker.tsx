@@ -1,16 +1,17 @@
 "use client";
 
-import { Gauge } from "@/components/shared/Gauge";
+import type { CSSProperties } from "react";
 import { Button } from "@/components/shared/controls";
 import { useAtlasProgress } from "@/hooks/useAtlasProgress";
-import { atlasClusters } from "@/data/atlasTree";
+import { atlasClusters, memoryForks } from "@/data/atlasTree";
 import { ShowOnTreeButton } from "./AtlasMapContext";
 
 const path = atlasClusters.filter((c) => c.group === "early-progression").sort((a, b) => a.order - b.order);
+const late = atlasClusters.filter((c) => c.group === "general");
 
 /** "Up next" for the Atlas: the first main-path node not yet ticked, plus the overall gauge. */
 export function AtlasSequenceTracker() {
-  const { allocatedCount, allocationTotal, isClusterAllocated, toggleCluster } = useAtlasProgress();
+  const { allocatedCount, allocationTotal, isClusterAllocated, isForkAllocated, toggleCluster } = useAtlasProgress();
   const next = path.find((c) => !isClusterAllocated(c.id));
   const taken = path.filter((c) => isClusterAllocated(c.id)).length;
 
@@ -41,7 +42,25 @@ export function AtlasSequenceTracker() {
         ) : null}
       </div>
       <div className="atlas-next-gauge">
-        <Gauge done={allocatedCount} total={allocationTotal} label="Tracked clusters allocated" />
+        <ul className="ledger-meters" aria-label="Atlas nodes taken, by section">
+          {[
+            { label: "Path", done: taken, total: path.length },
+            { label: "Memory forks", done: memoryForks.filter((f) => isForkAllocated(f.id)).length, total: memoryForks.length },
+            { label: "Late game", done: late.filter((c) => isClusterAllocated(c.id)).length, total: late.length },
+            { label: "All tracked", done: allocatedCount, total: allocationTotal },
+          ].map((m) => (
+            <li key={m.label}>
+              <span className="text-xs text-ink-dim">{m.label}</span>
+              <span className="ledger-num text-sm">
+                {m.done}
+                <small> / {m.total}</small>
+              </span>
+              <span className="meter" style={{ "--v": m.total ? m.done / m.total : 0 } as CSSProperties} aria-hidden>
+                <i />
+              </span>
+            </li>
+          ))}
+        </ul>
       </div>
     </section>
   );

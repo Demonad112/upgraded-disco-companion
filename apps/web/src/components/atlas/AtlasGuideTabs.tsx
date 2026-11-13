@@ -95,7 +95,7 @@ export function AtlasGuideTabs() {
         />
       </div>
 
-      <div {...tabPanelProps("atlas-guide", tab)}>
+      <div {...tabPanelProps("atlas-guide", tab)} className="ledger-rows">
         {tab === "path" ? (
           <>
             <Intro>

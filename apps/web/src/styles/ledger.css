@@ -1,0 +1,144 @@
+/* Variant "ledger": Atlas, Gear and Progress read as an instrument panel. Figures sit in columns; every quantity
+   has an inset well with a fill (.meter), the same engraved plate as the home "Last character" card. */
+
+/* --- Meter: an inset well with a fill. Width comes from --v (0–1). ---------------------------------------- */
+.meter {
+  position: relative;
+  height: 8px;
+  border: 1px solid var(--line-strong);
+  background: var(--sunken);
+  box-shadow: inset 0 1px 2px #000;
+  overflow: hidden;
+}
+.meter > i {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: calc(var(--v, 0) * 100%);
+  background: var(--gold-gradient);
+}
+.meter[data-tone='good'] > i {
+  background: var(--good);
+}
+.meter[data-tone='danger'] > i {
+  background: var(--danger);
+}
+/* Notched scale: one tick per quarter, cut into the well. */
+.meter::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(90deg, transparent 0 calc(25% - 1px), #0008 calc(25% - 1px) 25%);
+  pointer-events: none;
+}
+
+/* --- Ledger table: a header row of labels and hairline rows of figures. ------------------------------------- */
+.ledger {
+  border: 1px solid var(--line);
+}
+.ledger-head,
+.ledger-row {
+  display: grid;
+  grid-template-columns: var(--ledger-cols);
+  align-items: center;
+  gap: 4px 16px;
+  padding: 10px 14px;
+}
+.ledger-head {
+  border-bottom: 1px solid var(--line);
+  background: var(--sunken);
+}
+.ledger-row + .ledger-row {
+  border-top: 1px solid var(--line);
+}
+.ledger-num {
+  font-family: var(--font-label);
+  font-size: 15px;
+  color: var(--ink);
+  text-align: right;
+}
+.ledger-num small {
+  font-size: var(--fs-micro);
+  color: var(--ink-mute);
+}
+
+/* Gear: rank | item | tiers below top | open slots | trade. */
+.ledger-gear {
+  --ledger-cols: 28px minmax(0, 1.5fr) minmax(120px, 1fr) 56px 9.5rem;
+}
+.ledger-gear .gear-rank {
+  display: inline-flex;
+}
+@media (max-width: 719px) {
+  /* Phones: the figures move under the item and the button takes a line of its own. */
+  .ledger-gear {
+    --ledger-cols: 28px minmax(0, 1fr) 56px;
+  }
+  .ledger-gear .ledger-head > :nth-child(3),
+  .ledger-gear .ledger-head > :nth-child(5) {
+    display: none;
+  }
+  .ledger-gear .ledger-row > .ledger-tiers {
+    grid-column: 2 / -1;
+    grid-row: 2;
+  }
+  .ledger-gear .ledger-row > .gear-trade {
+    grid-column: 1 / -1;
+  }
+}
+
+/* Progress: figure | before | after | change bar | change. */
+.ledger-delta {
+  --ledger-cols: minmax(0, 1.2fr) 72px 72px minmax(80px, 1fr) 96px;
+}
+@media (max-width: 639px) {
+  .ledger-delta {
+    --ledger-cols: minmax(0, 1fr) 64px 80px;
+  }
+  .ledger-delta .ledger-head > :nth-child(2),
+  .ledger-delta .ledger-row > :nth-child(2),
+  .ledger-delta .ledger-head > :nth-child(4) {
+    display: none;
+  }
+  .ledger-delta .ledger-row > .meter {
+    grid-column: 1 / -1;
+    grid-row: 2;
+  }
+}
+
+/* Atlas: one meter per section in the tracker plate. */
+.ledger-meters {
+  display: grid;
+  gap: 10px;
+}
+.ledger-meters > li {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: baseline;
+  gap: 4px 12px;
+}
+.ledger-meters .meter {
+  grid-column: 1 / -1;
+}
+
+/* Atlas rows: one line each from sm up; the description opens with More. */
+@media (min-width: 640px) {
+  .ledger-rows [data-reveal='node'] p {
+    -webkit-line-clamp: 1;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .ledger-rows [data-reveal='node'] p[data-open] {
+    display: block;
+  }
+}
+
+/* Column labels repeated beside the figure once the header row's columns are gone (phones). */
+.ledger-mlabel {
+  display: none;
+}
+@media (max-width: 719px) {
+  .ledger-gear .ledger-mlabel {
+    display: inline;
+  }
+}
