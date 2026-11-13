@@ -32,8 +32,14 @@ export interface Sourced<T> {
   provenance: Provenance
 }
 
-/** Damage type order used by every `damageTypes`-style tuple poe.ninja emits. */
+/** Display order for damage types (physical, then the elements as listed in game, then chaos). */
 export const DAMAGE_TYPES = ['physical', 'fire', 'cold', 'lightning', 'chaos'] as const
+/**
+ * Index order of every `damageTypes`-style tuple poe.ninja emits. It differs
+ * from `DAMAGE_TYPES` (lightning sits before fire), so read tuples with this
+ * constant only.
+ */
+export const NINJA_DAMAGE_ORDER = ['physical', 'lightning', 'cold', 'fire', 'chaos'] as const satisfies readonly (typeof DAMAGE_TYPES)[number][]
 export type DamageType = (typeof DAMAGE_TYPES)[number]
 
 /**

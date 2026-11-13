@@ -239,8 +239,8 @@ export function rankAffixCandidates({
 
 /** Open prefix/suffix slots on an item after the draft. Null when the rarity has no affix budget. */
 export function openSlots(item: ItemAnalysis, draft: GearDraft, tiers: ModTiers): Record<AffixKind, number> | null {
-  const capacity = AFFIX_CAPACITY[item.rarity]
-  if (capacity === undefined || item.corrupted) return null
+  const capacity = item.affixCapacity
+  if (!capacity || item.corrupted) return null
   const used: Record<AffixKind, number> = { prefix: 0, suffix: 0 }
   item.mods.forEach((mod, i) => {
     if (!mod.kind || !OCCUPIES_AFFIX_SLOT.has(mod.source)) return
@@ -252,7 +252,7 @@ export function openSlots(item: ItemAnalysis, draft: GearDraft, tiers: ModTiers)
     const t = tiers.raw(a.modId)?.t
     if (t) used[t === 'p' ? 'prefix' : 'suffix']++
   }
-  return { prefix: Math.max(0, capacity - used.prefix), suffix: Math.max(0, capacity - used.suffix) }
+  return { prefix: Math.max(0, capacity.prefix - used.prefix), suffix: Math.max(0, capacity.suffix - used.suffix) }
 }
 
 /** Number of edits in the draft, for the "n changes" counter. */

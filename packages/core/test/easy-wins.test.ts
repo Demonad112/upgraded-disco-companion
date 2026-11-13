@@ -55,20 +55,14 @@ describe('Yykiuy worked examples', () => {
     expect(w).toMatchObject({ effort: 'gear', gapKind: 'killed-by', gap: 14727, closed: 14727, share: 1, value: 0.5, bound: 'upper', missing: [] })
   })
 
-  it('gear-open-affixes has no axis weight and names the items with unknown slots', () => {
-    const w = win(yk.report, 'gear-open-affixes')
-    expect(w).toMatchObject({ effort: 'currency', gapKind: 'affix-slots', gap: 1, closed: 1, share: 1, value: null, bound: 'point' })
-    expect(w.missing).toContain('no axis weight')
-    expect(w.missing).toContain('open affix slots unknown for Behemoth Band')
-    expect(w.missing).toContain('open affix slots unknown for Mind Keep')
-    expect(yk.report.missing).toContainEqual({ id: 'gear-open-affixes', reason: 'no axis weight' })
+  it('has no open-affix win: Demon Pendant is full once its slot modifiers are applied (CF1 item 2)', () => {
+    expect(yk.report.wins.find((w) => w.id === 'gear-open-affixes')).toBeUndefined()
   })
 
   it('orders by effort, then value', () => {
     expect(yk.report.wins.map((w) => [w.id, w.effort, w.value, w.bound])).toEqual([
       ['one-shot-physical', 'gear', 0.5, 'upper'],
       ['gear-swap-chaos', 'gear', 0.375, 'point'],
-      ['gear-open-affixes', 'currency', null, 'point'],
     ])
   })
 
@@ -151,7 +145,7 @@ describe('missing inputs', () => {
       ...base,
       recommendations: [rec({ category: 'survivability', stat: 'affixSlotsUsed', delta: 1 })],
     })
-    expect(r.wins[0]!.gap).toBe(1)
+    expect(r.wins[0]!.gap).toBe(0)
     expect(r.wins[0]!.missing.filter((m) => m.startsWith('open affix slots unknown'))).toHaveLength(2)
   })
 
@@ -222,7 +216,6 @@ describe('add-only', () => {
     expect(a.analysis.recommendations.recommendations.map((r) => r.id)).toEqual([
       'one-shot-physical',
       'gear-swap-chaos',
-      'gear-open-affixes',
     ])
     expect(typeof recommend).toBe('function')
   })

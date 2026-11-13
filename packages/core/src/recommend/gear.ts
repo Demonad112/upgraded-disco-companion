@@ -120,18 +120,18 @@ function collectOpenAffixes(analysed: ItemAnalysis[]): {
   let counted = 0
 
   for (const analysis of analysed) {
-    const per = AFFIX_CAPACITY[analysis.rarity]
-    if (per === undefined || analysis.corrupted || analysis.itemLevel === null) continue
+    const cap = analysis.affixCapacity
+    if (!cap || analysis.corrupted || analysis.itemLevel === null) continue
 
     if (analysis.mods.some((m) => OCCUPIES_AFFIX_SLOT.has(m.source) && m.kind === null)) {
       unverifiable.push(analysis)
       continue
     }
 
-    capacity += per * 2
+    capacity += cap.prefix + cap.suffix
     counted += 1
-    const prefixes = Math.max(0, per - analysis.affixCounts.prefix)
-    const suffixes = Math.max(0, per - analysis.affixCounts.suffix)
+    const prefixes = Math.max(0, cap.prefix - analysis.affixCounts.prefix)
+    const suffixes = Math.max(0, cap.suffix - analysis.affixCounts.suffix)
     if (prefixes + suffixes > 0) {
       open.push({ analysis, prefixes, suffixes, total: prefixes + suffixes })
     }

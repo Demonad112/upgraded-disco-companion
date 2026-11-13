@@ -53,6 +53,26 @@ export const AFFIX_CAPACITY: Readonly<Record<string, number>> = Object.freeze({
   Rare: 3,
 })
 
+const PREFIX_ALLOWED = 'local_maximum_prefixes_allowed_+'
+const SUFFIX_ALLOWED = 'local_maximum_suffixes_allowed_+'
+
+/**
+ * Prefix and suffix capacity of an item: the rarity budget plus every
+ * `local_maximum_(prefixes|suffixes)_allowed_+` stat across its mod groups.
+ * Null when the rarity has no budget.
+ */
+export function affixCapacityOf(item: EquippedItem): { prefix: number; suffix: number } | null {
+  const base = AFFIX_CAPACITY[item.rarity]
+  if (base === undefined) return null
+  let prefix = base
+  let suffix = base
+  for (const m of structuredMods(item)) {
+    prefix += m.stats[PREFIX_ALLOWED] ?? 0
+    suffix += m.stats[SUFFIX_ALLOWED] ?? 0
+  }
+  return { prefix: Math.max(0, prefix), suffix: Math.max(0, suffix) }
+}
+
 /**
  * Mod sources that consume one of those slots.
  *
@@ -139,6 +159,12 @@ export interface ItemAnalysis {
   mods: ItemModAnalysis[]
   /** Affix slots in use, from the mods that are real prefixes/suffixes. */
   affixCounts: { prefix: number; suffix: number }
+  /**
+   * Prefixes and suffixes this item can hold: the rarity budget plus any
+   * `+N Prefix/Suffix Modifier allowed` stats on its mods (Demon Pendant: 4/2).
+   * Null for rarities with no craftable budget (Normal, Unique).
+   */
+  affixCapacity: { prefix: number; suffix: number } | null
   /**
    * Highest tier reachable on this base at this item level, versus what is on
    * it. Null when the item has no tiered mods to compare.
@@ -423,6 +449,8 @@ export function analyzeItem(
     suffix: mods.filter((m) => m.kind === 'suffix' && OCCUPIES_AFFIX_SLOT.has(m.source)).length,
   }
 
+  const affixCapacity = affixCapacityOf(item)
+
   if (item.itemLevel === null) {
     warnings.push('This item has no item level in the payload, so tier reachability cannot be judged.')
   }
@@ -439,6 +467,7 @@ export function analyzeItem(
     active: item.active,
     mods,
     affixCounts,
+    affixCapacity,
     tierProfile: tiered.length
       ? {
           best: Math.min(...tiered),

@@ -10,7 +10,7 @@
  */
 
 import type { CharModel, DamageType, NinjaSkill, NinjaSkillDps, Provenance } from '../model/types.js'
-import { DAMAGE_TYPES } from '../model/types.js'
+import { NINJA_DAMAGE_ORDER } from '../model/types.js'
 import type { MainSkillNote } from './main-skill.js'
 
 export interface DamageSplit {
@@ -83,8 +83,8 @@ export interface DpsSummary {
 function splitOf(raw: number[] | undefined): DamageSplit[] {
   if (!Array.isArray(raw)) return []
   const out: DamageSplit[] = []
-  for (let i = 0; i < DAMAGE_TYPES.length; i++) {
-    const type = DAMAGE_TYPES[i]
+  for (let i = 0; i < NINJA_DAMAGE_ORDER.length; i++) {
+    const type = NINJA_DAMAGE_ORDER[i]
     const percent = raw[i]
     if (type && typeof percent === 'number' && percent > 0) out.push({ type, percent })
   }
