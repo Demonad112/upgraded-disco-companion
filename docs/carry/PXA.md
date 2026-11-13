@@ -1,8 +1,8 @@
 # PXA carry-over · 2026-11-12
 PR: draft, see branch · Branch: variant/20261112-character · Preview: Cloudflare Pages preview of the branch
 
-Status: **partial**. PX2, PX3, PX4, PX5 are built and committed; PX9 is built but not measured; the e2e specs are
-updated but the last run was not completed; the gate was not run.
+Status: **done** (item 10 fixed in N1). PX2, PX3, PX4, PX5, PX9 built, measured and gated (continuation run, same day). Open items 1-6 are
+closed; 7-8 stay with the owner.
 
 ## Checked (previous wave)
 - PP2/PP1 plans: used as written; gaps measured below.
@@ -18,8 +18,24 @@ updated but the last run was not completed; the gate was not run.
   are in; a late ladder is one extra run (`LADDER_GRACE_MS` in `app/character/page.tsx`).
 - Swipe threshold: 56 px horizontal, and at least 1.5x the vertical travel (`SWIPE_PX`, `CharacterTabs.tsx`).
 - Tab bar: six tabs scroll sideways at 390 px ("Progress" is cut at the edge). Label kept as "Advanced".
-- Not measured: Athrynas numbers, 1440x900 pass, import-to-card timing (`MODE=plain node imp.cjs`, PERF-PLAN Appendix A),
-  keyframe durations, route-weight before/after.
+- Not measured: keyframe durations.
+
+## PX9 import timing (PERF-PLAN Appendix A harness, 390x844, 4x CPU, Fast 4G, proxy 410 ms; median of 3, ms after tap)
+| | main Yykiuy | branch Yykiuy | main Athrynas | branch Athrynas | Target |
+|---|---|---|---|---|---|
+| Build card painted | 1,994 | 1,121 | 2,041 | 1,093 | <= 1,100 |
+| Top 3 rows final | 3,119 (written 3 times) | 1,512 (once) | 3,377 (3 times) | 1,561 (once) | <= 1,500 |
+| TBT after tap | 833 | 233 | 972 | 262 | <= 400 |
+| DOM nodes / page px | 2,092 / 11,785 | 464 / 3,124 | 2,062 / 13,097 | 469 / 2,955 | |
+- Card and Top 3 are 1-4 % over target on Yykiuy. What is left is the ladder wait: the ladder request starts after the
+  card pass and the harness delays it 410 ms, so the fixes pass waits for it (capped by `LADDER_GRACE_MS`, 600 ms).
+- Two fixes in this run: the tree was requested before the card painted (471 vs 503 ms; the idle callback ran while
+  the results chunk was still loading), and Top 3 waited ~600 ms for the tree. Passes are now card, fixes (tiers +
+  ladder, writes Top 3), full (adds the tree; history snapshot). The card pass no longer re-runs per input.
+- Request order (Playwright request log, both viewports, 2 runs): only mod-tiers starts before the card paints;
+  passive-tree after; pob-skills and mod-display on Damage open; monster-stats not on import; trade-map once.
+- Route weight `/character`: 198,068 -> 199,718 B br (+0.8 %, budget 250,000).
+- Screenshots (390x844 and 1440x900, before/after, viewport and full page): not in git, sent to the owner.
 
 ## Answers to open questions (also for the PR body)
 - Tab label "Advanced" (bar scrolls, no overflow of the page).
@@ -30,8 +46,10 @@ updated but the last run was not completed; the gate was not run.
 - Passive tree is fetched when the browser is idle after the card paints, not on tab open: keystones change the card
   pool and the findings, and the history snapshot waits for it. pob-skills loads when Damage opens; mod-display when
   Gear, Damage or Advanced opens; mod-tiers on import (Top 3 needs it).
-- "One analyzeCharacter run per import": two runs (card pass, then full pass with tiers, tree, ladder), plus one more
-  only if the ladder lands after the grace window. Top 3 shows a placeholder until the full pass, so it is written once.
+- "One analyzeCharacter run per import": three cheap runs (3-29 ms each in Node): card (raw only), fixes (tiers +
+  ladder), full (adds the tree), plus one more only if the ladder lands after the grace window. Top 3 shows a
+  placeholder until the fixes pass and is written once on both reference characters; the tree pass can rewrite it
+  only for keystone builds. History records only the full pass.
 - "Find on trade" is the only trade label (Top 3, Easy wins, Gear rows). `data-trade` attributes kept.
 - `DpsMatrix` moved to Damage, `WhatIfPanel` to Defence, `SpareToTrade` to Gear, Findings merged into Top 3 as
   "Show all (n)". The duplicate "Since last import" notice card is gone; the panel shows only when a prior snapshot exists.
@@ -39,29 +57,11 @@ updated but the last run was not completed; the gate was not run.
 ## Open
 | # | Type | For | Item | Recommended answer / action |
 |---|---|---|---|---|
-| 1 | bug | PXA-next | e2e run not finished. Last full run (before the final spec edits): failures in character, features, finishing, history, layout, mod-display, sharing, all from tests that assert content outside Overview without `openTab`. Spec edits since then are untested | Rebuild, run the /character specs, fix test-side only |
-| 2 | follow-up | PXA-next | Not yet done in specs: `a11y.spec.ts` (scan each tab), any remaining `#advanced-fold` summary click in `features.spec.ts` and `finishing.spec.ts` | Replace with `openTab`; remove no assertion |
-| 3 | follow-up | PXA-next | PX9 numbers: run PERF-PLAN harness (`MODE=plain node imp.cjs Yykiuy 3`) before/after; target card <= 1,100 ms, Top 3 <= 1,500 ms, TBT <= 400 ms | Measure, put both tables in the PR |
-| 4 | follow-up | PXA-next | Verify in the network log that no passive-tree / pob-skills / mod-display / monster-stats request starts before the card paints, and that pob-skills starts on Damage open | Playwright request log |
-| 5 | follow-up | PXA-next | Gate: typecheck, lint, test, core coverage, build, `node scripts/route-weight.mjs` (report `/character` br before and after), `/character` e2e with `--trace off` | Run once, summarise |
-| 6 | follow-up | PXA-next | Before/after screenshots at 390x844 and a 1440x900 pass (`shot.cjs` style script: route the proxy to `yykiuy-v51.json`) | Not in git; list in PR |
+| 1-6 | done | - | e2e, a11y per tab, PX9 numbers, request log, gate, screenshots | Closed in the continuation run |
 | 7 | question | owner | Tab bar scrolls at 390 px. Accept, or shorten labels ("Defence" to "Def.")? | Accept; the active tab scrolls into view |
-| 8 | question | owner | Tree fetched at idle (not tab open) is a deviation from "lazy JSON on tab open" | Keep; see answers above |
+| 8 | question | owner | Tree fetched at idle after the card paints (not on tab open) | Keep; Top 3 no longer waits for it |
+| 9 | follow-up | PX10 | Card and Top 3 are 20-60 ms over target; the remaining wait is the ladder | Start the ladder request from the import (league and class are in the raw JSON) instead of after the card pass |
+| 10 | done | - | `character.spec.ts` phone-first screen failed on mobile: the pending and final Top fixes cards share `#top-fixes-title`, and the pending one was swapped out between the visibility check and `boundingBox()` | Fixed in N1: the spec now targets the settled card (`:not([data-pending])`) and polls until the box exists; assertion unchanged |
 
 ## Needs owner
 - PXA-7, PXA-8 above.
-
-## Continuation prompt (paste into a new cloud session, Sonnet · high)
-```
-Follow CLAUDE.md and docs/SESSION-PROTOCOL.md. Continue batch PXA on branch variant/20261112-character (draft PR is
-open). Read docs/carry/PXA.md first, then finish its Open items 1-6 in order. Owner notes (override the protocol): skip
-the start-of-session typecheck and test on main; during work run only npm run typecheck and the vitest or playwright
-file you touched; run the gate once at the end. Do not edit docs/remaining/REMAINING-WORK.md or docs/carry/README.md.
-Do not change CLAUDE.md. One commit per fix area; amend nothing already pushed. Phone first (390x844 then 1440x900).
-Build first: npm ci, npm run build -w @poe2/core, npm run build -w @poe2/web. e2e: cd apps/web && npx playwright test
-<specs> --trace off; do not run the whole suite in one command (it takes about 6 minutes; split by spec).
-Done when: the /character e2e specs pass on mobile and desktop with no assertion removed; the PX9 before/after tables
-are in the PR; the gate table is in the PR; docs/carry/PXA.md is updated (Open items closed or re-assigned); the PR body
-has before/after screenshots at 390x844 of the reference character. No session links or ids on GitHub. Final message:
-PR link, preview URL, gate table, open items. Stop. Do not merge.
-```

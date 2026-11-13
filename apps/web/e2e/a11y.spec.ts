@@ -1,5 +1,5 @@
 import AxeBuilder from '@axe-core/playwright'
-import { PROFILE_URL, expect, test } from './fixtures'
+import { CHARACTER_TABS, type CharacterTabId, PROFILE_URL, expect, openTab, test } from './fixtures'
 
 // Automated WCAG A/AA rules only. This catches missing names, roles and contrast
 // regressions; it is not a substitute for a manual pass (audit I-5).
@@ -24,6 +24,21 @@ for (const [name, path] of pages) {
       await expect(page.getByRole('heading', { name: /Athrynas/ }).first()).toBeVisible({ timeout: 30_000 })
     }
     const results = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa']).analyze()
+    const blocking = results.violations.filter((v) => (v.impact === 'serious' || v.impact === 'critical') && !KNOWN.has(v.id))
+    expect(
+      blocking.map((v) => `${v.id} (${v.impact}): ${v.nodes.slice(0, 3).map((n) => n.target.join(' ')).join(' | ')}`),
+    ).toEqual([])
+  })
+}
+
+// The character page mounts one tab panel at a time, so the scan above sees Overview only. Scan each other tab.
+for (const id of Object.keys(CHARACTER_TABS) as CharacterTabId[]) {
+  if (id === 'overview') continue
+  test(`character ${id} tab has no serious or critical accessibility violations`, async ({ page }) => {
+    await page.goto(`character/?import=${encodeURIComponent(PROFILE_URL)}`)
+    await expect(page.getByRole('heading', { name: /Athrynas/ }).first()).toBeVisible({ timeout: 30_000 })
+    await openTab(page, id)
+    const results = await new AxeBuilder({ page }).include(`#panel-${id}`).withTags(['wcag2a', 'wcag2aa']).analyze()
     const blocking = results.violations.filter((v) => (v.impact === 'serious' || v.impact === 'critical') && !KNOWN.has(v.id))
     expect(
       blocking.map((v) => `${v.id} (${v.impact}): ${v.nodes.slice(0, 3).map((n) => n.target.join(' ')).join(' | ')}`),
