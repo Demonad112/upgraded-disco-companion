@@ -43,12 +43,27 @@ const MAJOR_THRESHOLD = 0.05
 /** Absolute difference treated as integer rounding however small the values are. */
 const ROUNDING_UNITS = 1
 
-function classify(ninja: number | null, other: number | null): { severity: DriftCheck['severity']; relativeDelta: number | null } {
+/**
+ * Capped values (resistances, charges) are compared in absolute points: one
+ * point is a real difference there, so a relative tolerance would hide it
+ * (audit item 19).
+ */
+const ABSOLUTE_STAT = /resist|charge/i
+const ABSOLUTE_TOLERANCE = 1
+
+export function classifyDrift(
+  ninja: number | null,
+  other: number | null,
+  stat = '',
+): { severity: DriftCheck['severity']; relativeDelta: number | null } {
   if (ninja === null || other === null) return { severity: 'unresolved', relativeDelta: null }
   if (ninja === 0 && other === 0) return { severity: 'match', relativeDelta: 0 }
   const denom = Math.abs(ninja) || Math.abs(other)
   const diff = Math.abs(other - ninja)
   const rel = diff / denom
+  if (ABSOLUTE_STAT.test(stat)) {
+    return { severity: diff < ABSOLUTE_TOLERANCE ? 'match' : 'major', relativeDelta: rel }
+  }
   if (rel <= MINOR_THRESHOLD) return { severity: 'match', relativeDelta: rel }
   // Both sides round to whole numbers, so one unit apart is rounding, not a
   // disagreement: 52 against 53 is 1.9% but never "major".
@@ -63,7 +78,7 @@ function check(
   otherSource: DriftCheck['otherSource'],
   note = '',
 ): DriftCheck {
-  const { severity, relativeDelta } = classify(ninja, other)
+  const { severity, relativeDelta } = classifyDrift(ninja, other, stat)
   return {
     stat,
     ninja,

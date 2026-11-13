@@ -10,13 +10,14 @@ describe('ward is unknown, not zero, when the payload omits it', () => {
     expect(analyzeDefense({ defensiveStats: { ward: 0 } }).ward).toBe(0)
   })
 
-  it('leaves the pool total to life and energy shield and does not list ward', () => {
-    const p = effectivePool({ life: 1000, energyShield: 500, ward: null })
+  it('leaves the pool total to life and energy shield and never lists ward (CF2, D2)', () => {
+    const p = effectivePool({ life: 1000, energyShield: 500, ward: null } as never)
     expect(p.total).toBe(1500)
     expect(p.parts).toEqual(['life', 'energy shield'])
-    const q = effectivePool({ life: 1000, energyShield: 500, ward: 200 })
-    expect(q.total).toBe(1700)
-    expect(q.parts).toContain('ward')
+    // Ward is parsed and shown, but it is not a PoE2 pool.
+    const q = effectivePool({ life: 1000, energyShield: 500, ward: 200 } as never)
+    expect(q.total).toBe(1500)
+    expect(q.parts).not.toContain('ward')
   })
 
   it('keeps an unknown pool unknown whatever the ward is', () => {

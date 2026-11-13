@@ -83,8 +83,13 @@ export interface Recommendation {
   tradeoff: string | null
   evidence: Evidence[]
   provenance: Provenance
-  /** impact significance / cost weight. Higher ranks first. */
+  /** impact significance / cost weight. The last tie-break in `compareRecommendations`. */
   score: number
+  /**
+   * Measured gain in the build score's own units (`rank.ts`): Δgrade, Δ lowest
+   * maximum hit, ΔDPS. Each is null when it is not measured.
+   */
+  measured?: { grade: number | null; lowestMaxHit: number | null; dps: number | null }
   /**
    * Ids of other findings this one subsumes as alternatives for the same
    * action, e.g. two resistance shortfalls closable by recrafting one suffix.

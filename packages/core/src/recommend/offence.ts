@@ -36,13 +36,12 @@ import { structuredMods } from '../gear/analyze.js'
 import type { EquippedItem } from '../model/slots.js'
 import { ACCURACY_MIN_GAIN, CRIT_UNINVESTED, DOT_DOMINANT } from '../thresholds.js'
 import type { Cost, Evidence, Impact, Recommendation } from './types.js'
+import { costScore } from './rank.js'
 
-/** Cost weights, mirrored from the engine so ranking stays consistent. */
-const COST_WEIGHT = { free: 1, passive: 2, gear: 4, currency: 5, unknown: 6 } as const
 
 function score(impact: Impact | null, cost: Cost): number {
   if (!impact) return 0
-  return impact.significance / (COST_WEIGHT[cost.kind] * Math.max(1, cost.amount))
+  return costScore(impact.significance, cost)
 }
 
 function make(r: Omit<Recommendation, 'score'>): Recommendation {

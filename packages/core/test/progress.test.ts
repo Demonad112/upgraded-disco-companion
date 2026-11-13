@@ -53,7 +53,7 @@ describe('taking a snapshot', () => {
       ward: 706,
       armour: 207,
       evasion: 6490,
-      pool: 4091,
+      pool: 3385,
       fire: 75,
       cold: 74,
       lightning: 75,
@@ -80,7 +80,7 @@ describe('taking a snapshot', () => {
   it('records the keystone-corrected pool, matching what the assessment used', () => {
     const ci = keystoneEffectsOf([{ name: 'Chaos Inoculation' }], { ...analysis.defense, life: 1 })
     const corrected = toSnapshot(analysis, base.at, ci)
-    expect(corrected.pool).toBe(analysis.defense.energyShield + analysis.defense.ward)
+    expect(corrected.pool).toBe(analysis.defense.energyShield)
     // The raw life figure is still recorded; only the pool is corrected.
     expect(corrected.life).toBe(1448)
   })

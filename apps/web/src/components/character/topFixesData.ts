@@ -2,6 +2,7 @@ import {
   MAPPED_STATS,
   buildTradeQueries,
   buildTradeUrl,
+  gradeGainText,
   type Recommendation,
   type RecommendationCategory,
   type RecommendationReport,
@@ -30,15 +31,17 @@ export function splitAction(action: string): { lead: string; detail: string | nu
  * is whole and only comes back with Pro detail; it is never cut (the old default clipped it with `truncate`).
  */
 export function fixLines(
-  f: Pick<Recommendation, 'action' | 'impact'>,
+  f: Pick<Recommendation, 'action' | 'impact' | 'measured'>,
   pro: boolean,
 ): { lead: string; gain: string | null; detail: string | null } {
   const { lead, detail } = splitAction(f.action)
   const i = f.impact
   const pct = i?.unit === 'percent' ? '%' : ''
+  // The score gain in the grade's own units (core `rank.ts`), so rows compare.
+  const grade = f.measured ? ` · ${gradeGainText(f.measured.grade)}` : ''
   return {
     lead,
-    gain: i ? `${i.label}: ${fmt(i.from)}${pct} → ${fmt(i.to)}${pct}` : null,
+    gain: i ? `${i.label}: ${fmt(i.from)}${pct} → ${fmt(i.to)}${pct}${grade}` : null,
     detail: pro ? detail : null,
   }
 }

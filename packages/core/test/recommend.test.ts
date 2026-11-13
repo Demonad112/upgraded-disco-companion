@@ -10,7 +10,7 @@ import { readFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 
 import { unwrapCharModel } from '../src/analyze.js'
-import { recommend } from '../src/recommend/index.js'
+import { compareRecommendations, recommend } from '../src/recommend/index.js'
 import type { CharModel } from '../src/model/types.js'
 
 const fixturePath = fileURLToPath(new URL('./fixtures/athrynas-v43.json', import.meta.url))
@@ -34,10 +34,14 @@ describe('reproduces the known findings', () => {
     expect(r.evidence.some((e) => e.kind === 'stat' && e.stat === 'fireResistanceOverCap')).toBe(true)
   })
 
-  it('identifies chaos as the one-shot vector', () => {
+  it('identifies chaos as the weakest damage type, with no ceiling claimed', () => {
     const r = byId.get('one-shot-chaos')
     expect(r).toBeDefined()
-    expect(r!.impact!.from).toBe(3808)
+    expect(r!.action).toContain('3,808 is the largest chaos hit you survive')
+    // Chaos is mitigated by resistance and drains ES at 2x, so no single change's
+    // gain can be derived from ninja's figures: not measured (CF2, audit item 7).
+    expect(r!.impact).toBeNull()
+    expect(r!.measured).toEqual({ grade: null, lowestMaxHit: null, dps: null })
     expect(r!.category).toBe('survivability')
   })
 
@@ -90,9 +94,12 @@ describe('reproduces the known findings', () => {
 })
 
 describe('ranking', () => {
-  it('ranks by gain per unit of cost', () => {
-    const scores = report.recommendations.map((r) => r.score)
-    expect([...scores].sort((a, b) => b - a)).toEqual(scores)
+  it('ranks by measured score gain per unit of cost (CF2)', () => {
+    const ids = report.recommendations.map((r) => r.id)
+    expect([...report.recommendations].sort(compareRecommendations).map((r) => r.id)).toEqual(ids)
+    // Unknown cost ranks after every known cost.
+    const firstUnknown = report.recommendations.findIndex((r) => r.cost.kind === 'unknown')
+    if (firstUnknown >= 0) expect(report.recommendations.slice(firstUnknown).every((r) => r.cost.kind === 'unknown')).toBe(true)
     // The reallocation needs a gear swap (R66), so it is weighted as gear, not free.
     expect(byId.get('res-cold-under-cap')!.score).toBeGreaterThan(0)
   })

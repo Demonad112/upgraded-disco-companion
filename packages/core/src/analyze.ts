@@ -14,7 +14,7 @@ import { attributeToItems, type AttributionReport } from './model/attribution.js
 import { normalizePassives, type PassiveAllocation } from './model/passives.js'
 import { inactiveSetReport, normalizeItems, type EquippedItem, type InactiveSetReport } from './model/slots.js'
 import { keystoneEffectsOf, NO_KEYSTONE_EFFECTS, type KeystoneEffects } from './keystones/index.js'
-import { gearRecommendations, mergeGearRecommendations, recommend } from './recommend/index.js'
+import { gearRecommendations, measureRecommendations, mergeGearRecommendations, recommend } from './recommend/index.js'
 import type { RecommendationReport } from './recommend/types.js'
 import { reconcile, type ReconciliationReport } from './reconcile/index.js'
 import type { ModTiers } from './gear/tiers.js'
@@ -190,14 +190,23 @@ function recommendationsFor(
     defense: analyzeDefense(model),
     tiers: options.tiers,
     skill,
+    keystones,
   })
   if (!gear.length) return report
 
-  const recommendations = mergeGearRecommendations(report.recommendations, gear)
+  const recommendations = mergeGearRecommendations(
+    report.recommendations,
+    measureRecommendations(gear, analyzeDefense(model), keystones),
+  )
+  const actionable = recommendations.filter((r) => r.category !== 'question').length
   return {
     ...report,
     recommendations,
     buildIsSound: recommendations.length === 0,
+    // Recounted after the merge: superseded findings are gone from the list.
+    summary: actionable
+      ? `${actionable} actionable ${actionable === 1 ? 'improvement' : 'improvements'} found, ranked by score gain per unit of cost.`
+      : report.summary,
   }
 }
 

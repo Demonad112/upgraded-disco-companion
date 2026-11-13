@@ -33,9 +33,10 @@ describe('significance is derived and bounded', () => {
     expect(r.impact!.significance).toBeCloseTo(1 / 75, 10)
   })
 
-  it('measures the one-shot gap as the share of the safest hit that is missing', () => {
+  it('claims no gain for the chaos finding: the best other max hit is not an outcome', () => {
     const r = byId.get('one-shot-chaos')!
-    expect(r.impact!.significance).toBeCloseTo(1 - r.impact!.from / r.impact!.to, 10)
+    expect(r.impact).toBeNull()
+    expect(r.detail).toContain('not measured')
   })
 
   it('measures the weapon lag as a share of the median item level', () => {

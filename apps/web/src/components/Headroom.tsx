@@ -233,7 +233,7 @@ export function Headroom({ defense, level }: { defense: DefenseSummary | null; l
       <p className="mt-4 max-w-prose border-l-2 border-accent pl-3 text-sm leading-relaxed text-ink-dim">
         {character ? (
           <>
-            Risk is how close a tier is to one-shot territory for your whole character. <b className="font-semibold text-ink">0%</b>: a
+            Risk is how close a tier comes to your lowest maximum hit, against a plain monster. <b className="font-semibold text-ink">0%</b>: a
             plain monster&rsquo;s hit would have to be {COMFORT_THRESHOLDS.comfortable} times harder to kill you, so rares and map mods
             still leave room. <b className="font-semibold text-ink">100%</b>: under {COMFORT_THRESHOLDS.dangerous} times, one rare or a bad
             mod can kill you.

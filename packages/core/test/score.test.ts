@@ -15,7 +15,7 @@ import { analyzeCharacter, unwrapCharModel } from '../src/analyze.js'
 import { analyzeDefense } from '../src/defense/index.js'
 import { analyzeDps } from '../src/dps/index.js'
 import { keystoneEffectsOf } from '../src/keystones/index.js'
-import { assessBuild } from '../src/score/index.js'
+import { assessBuild, defenceParts } from '../src/score/index.js'
 import { bandFor, describeLadderSample, leagueSlugOf, type LadderSummary } from '../src/ninja/ladder.js'
 import { PassiveTree, type PassiveTreeData } from '../src/tree/index.js'
 
@@ -48,24 +48,33 @@ function ladder(over: Partial<LadderSummary['dps']> = {}): LadderSummary {
 describe('the reference character', () => {
   const assessment = assessBuild({ defense, dps })
 
-  it('names the one-shot risks poe.ninja’s own figures expose', () => {
+  it('names the weak damage types poe.ninja’s own figures expose', () => {
     // Both, not just the minimum. Naming only chaos hid the physical gap, which
     // is the more dangerous of the two since physical hits are far more common.
-    const risk = assessment.weaknesses.find((w) => w.text.includes('one-shot'))!
+    // Not called a one-shot: the data has no enemy hit sizes (CF2, audit item 16).
+    const risk = assessment.weaknesses.find((w) => w.text.includes('weak damage types'))!
     expect(risk.text).toContain('Chaos 3,808')
     expect(risk.text).toContain('Physical 4,264')
     expect(risk.text).toContain('14,611')
   })
 
-  it('reports the cold resistance gap as critical', () => {
+  it('sizes the cold resistance gap by damage taken: 1 point short is a warning', () => {
+    // (1 - 0.74) / (1 - 0.75) = 4% more cold damage taken (CF2, audit item 10).
     const uncapped = assessment.weaknesses.find((w) => w.text.startsWith('Uncapped'))!
-    expect(uncapped.text).toContain('Cold 74% of 75%')
-    expect(uncapped.severity).toBe('critical')
+    expect(uncapped.text).toContain('Cold 74% of 75%, 4% more cold damage taken')
+    expect(uncapped.severity).toBe('warning')
   })
 
-  it('sums the pool from life, energy shield and ward', () => {
-    expect(assessment.pool.total).toBe(1448 + 1937 + 706)
-    expect(assessment.pool.label).toBe('combined life + energy shield + ward')
+  it('reports 18% chaos as critical: 228% more chaos damage taken than at the cap', () => {
+    const chaos = assessment.weaknesses.find((w) => w.text.startsWith('Chaos resistance below its cap'))!
+    expect(chaos.text).toContain('Chaos 18% of 75%, 228% more chaos damage taken')
+    expect(chaos.severity).toBe('critical')
+  })
+
+  it('sums the pool from life and energy shield; ward is not a pool', () => {
+    expect(assessment.pool.total).toBe(1448 + 1937)
+    expect(assessment.pool.chaos).toBe(1448 + Math.round(1937 / 2))
+    expect(assessment.pool.label).toBe('combined life + energy shield')
     expect(assessment.pool.excluded).toEqual([])
   })
 })
@@ -82,15 +91,16 @@ describe('offence is never graded against invented thresholds', () => {
 
   it('names the missing sample in the note once defences are not the story', () => {
     // The note names the LIMITING factor, so on this character it leads with
-    // the uncapped cold resistance. Cap it and the unscored offence surfaces.
-    expect(assessBuild({ defense, dps }).note).toContain('Uncapped elemental resistances')
+    // the lowest max hit (chaos 3,808). Even the max hits out and the unscored
+    // offence surfaces.
+    expect(assessBuild({ defense, dps }).note).toContain('Chaos hits are the biggest thing holding this back')
 
     const capped = {
       ...defense,
       resistances: defense.resistances.map((r) =>
         r.type === 'chaos' ? r : { ...r, value: r.max, underCap: 0, capped: true },
       ),
-      life: 5000,
+      maxHits: defense.maxHits.map((h) => ({ ...h, value: 14_000 })),
     }
     const assessment = assessBuild({ defense: capped, dps })
     expect(assessment.note).toContain('depends on damage, which was not graded')
@@ -99,14 +109,14 @@ describe('offence is never graded against invented thresholds', () => {
 
   it('reports a range rather than a point when damage was not graded', () => {
     const unscored = assessBuild({ defense, dps })
-    // Defence alone is 0.15. Damage is worth up to another 0.5 and was not
-    // measured, so the score is somewhere in [0.15, 0.65] and no single figure
-    // is asserted.
-    expect(unscored.defence).toBe(0.15)
+    // Defence alone is 0.30. Damage scores at least 0.15 and at most 0.5 and
+    // was not measured, so the score is somewhere in [0.45, 0.80] and no single
+    // figure is asserted (CF2, audit item 14).
+    expect(unscored.defence).toBe(0.3)
     expect(unscored.score).toBeNull()
     expect(unscored.tier).toBeNull()
-    expect(unscored.scoreRange).toEqual({ min: 0.15, max: 0.65 })
-    expect(unscored.tierRange).toEqual({ worst: 'D', best: 'B' })
+    expect(unscored.scoreRange).toEqual({ min: 0.45, max: 0.8 })
+    expect(unscored.tierRange).toEqual({ worst: 'C', best: 'A' })
   })
 
   it('never lets a missing sample promote a build', () => {
@@ -116,7 +126,7 @@ describe('offence is never graded against invented thresholds', () => {
     // verdict.
     const perfect = {
       ...defense,
-      life: 9000,
+      maxHits: defense.maxHits.map((h) => ({ ...h, value: 9000 })),
       resistances: defense.resistances.map((r) => ({ ...r, value: r.max, underCap: 0, capped: true })),
     }
 
@@ -138,14 +148,14 @@ describe('offence is never graded against invented thresholds', () => {
     // answer: the bottom of the range is what the build scores if its damage is
     // worth nothing at all, which is not a claim being made.
     const unscored = assessBuild({ defense, dps })
-    expect(unscored.scoreRange!.min).toBe(unscored.defence)
+    expect(unscored.scoreRange!.min).toBe(Math.round((unscored.defence + 0.15) * 100) / 100)
     expect(unscored.scoreRange!.max).toBe(Math.round((unscored.defence + 0.5) * 100) / 100)
   })
 
   it('grades against the sample once there is one', () => {
     const strong = assessBuild({ defense, dps, ladder: ladder({ p75: 100_000, median: 50_000, p25: 20_000 }) })
     expect(strong.offence).toBe(0.5)
-    expect(strong.score).toBe(0.65)
+    expect(strong.score).toBe(0.8)
     expect(strong.strengths.some((s) => s.includes('upper quarter of the top 100 Deadeyes'))).toBe(true)
 
     const weak = assessBuild({ defense, dps, ladder: ladder() })
@@ -172,8 +182,8 @@ describe('keystone corrections', () => {
 
   it('excludes life from the pool and labels the total honestly', () => {
     const assessment = assessBuild({ defense: ciDefense, dps, keystones: ci })
-    expect(assessment.pool.total).toBe(1937 + 706)
-    expect(assessment.pool.label).toBe('combined energy shield + ward')
+    expect(assessment.pool.total).toBe(1937)
+    expect(assessment.pool.label).toBe('combined energy shield')
     expect(assessment.pool.excluded).toEqual(['life'])
     expect(assessment.caveats.some((c) => c.includes('converted'))).toBe(true)
   })
@@ -184,18 +194,21 @@ describe('keystone corrections', () => {
     expect(assessment.strengths).toContain('Immune to chaos damage and bleeding — chaos resistance is moot')
   })
 
-  it('drops chaos from the one-shot risks it cannot be', () => {
+  it('drops chaos from the weak damage types it cannot be', () => {
     const assessment = assessBuild({ defense: ciDefense, dps, keystones: ci })
-    const risk = assessment.weaknesses.find((w) => w.text.includes('one-shot'))
+    const risk = assessment.weaknesses.find((w) => w.text.includes('weak spot'))
     expect(risk?.text).not.toContain('Chaos')
-    expect(risk?.text).toContain('Physical 4,264')
+    expect(risk?.text).toContain('largest physical hit you survive is 4,264')
   })
 
   it('credits chaos immunity in the score rather than scoring it as a miss', () => {
     const uncorrected = assessBuild({ defense: ciDefense, dps })
     const corrected = assessBuild({ defense: ciDefense, dps, keystones: ci })
-    // 18% chaos resistance misses the 30% target; immunity is strictly better.
-    expect(corrected.defence).toBe(uncorrected.defence + 0.05)
+    // Immunity earns the full chaos share, and chaos (3,808) stops being the
+    // lowest max hit; 18% resistance earns only part of the share.
+    expect(defenceParts(ciDefense, ci).chaos).toBe(0.05)
+    expect(defenceParts(ciDefense).chaos).toBeCloseTo(0.05 * (0.25 / 0.82), 10)
+    expect(corrected.defence).toBeGreaterThan(uncorrected.defence)
   })
 
   it('surfaces an uncorroborated keystone as a caveat, not a correction', () => {
@@ -290,11 +303,9 @@ describe('ladder helpers', () => {
 describe('through the full analysis', () => {
   it('assesses the character with the same figures the panels show', async () => {
     const analysis = await analyzeCharacter(raw, { tree })
-    expect(analysis.assessment.pool.total).toBe(
-      analysis.defense.life + analysis.defense.energyShield + analysis.defense.ward,
-    )
+    expect(analysis.assessment.pool.total).toBe(analysis.defense.life! + analysis.defense.energyShield!)
     expect(analysis.assessment.tier).toBeNull()
-    expect(analysis.assessment.tierRange).toEqual({ worst: 'D', best: 'B' })
+    expect(analysis.assessment.tierRange).toEqual({ worst: 'C', best: 'A' })
     expect(analysis.assessment.offence).toBeNull()
   })
 

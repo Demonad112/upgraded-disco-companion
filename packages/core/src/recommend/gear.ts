@@ -58,17 +58,18 @@ import {
   type LedgerChange,
   type LedgerStat,
 } from '../constraints/ledger.js'
-import type { Evidence, Recommendation } from './types.js'
+import type { CostKind, Evidence, Recommendation } from './types.js'
+import { compareRecommendations, costScore, defenceAfter, gradeGainText } from './rank.js'
+import { defenceParts } from '../score/index.js'
+import { NO_KEYSTONE_EFFECTS, type KeystoneEffects } from '../keystones/index.js'
 import { scalesSkill } from './damage.js'
 
 /** The resistance cap, and the yardstick significance is measured against. */
 const RESIST_CAP = 75
 
-/** Cost weights, mirrored from the engine so ranking stays consistent. */
-const COST_WEIGHT = { free: 1, passive: 2, gear: 4, currency: 5, unknown: 6 } as const
 
-function score(significance: number, kind: keyof typeof COST_WEIGHT, amount: number): number {
-  return significance / (COST_WEIGHT[kind] * Math.max(1, amount))
+function score(significance: number, kind: CostKind, amount: number): number {
+  return costScore(significance, { kind, amount })
 }
 
 /** What the dead-stat rule needs to know about the main skill. */
@@ -87,6 +88,8 @@ export interface GearRecommendationInput {
   tiers: ModTiers
   /** Main skill and its types. Without it the dead-stat rule is skipped. */
   skill?: MainSkillContext | null
+  /** Keystone corrections, so options are measured on the same rubric as the score. */
+  keystones?: KeystoneEffects
 }
 
 /** One item with room left on it. */
@@ -362,29 +365,47 @@ export interface SameLineSwap {
 /**
  * Fold findings that recraft the same line into one decision.
  *
- * A suffix is recrafted once, so "recraft it into cold" and "recraft it into
- * chaos" are alternatives. Options are ordered by what they can close: one that
- * fully closes its own gap first (a 6-point cold gap is closable), then the one
- * that closes the most (a 59-point chaos gap is not, with a single line).
- * Returns the finding that carries the merged decision; the rest are redundant.
+ * A suffix is recrafted once, so "recraft it into lightning" and "recraft it
+ * into chaos" are alternatives. Every option is measured on the build score
+ * (`defenceAfter` + `defenceParts`) and the best leads: Δgrade, then Δ lowest
+ * maximum hit, then the old closes-its-own-gap order as the tie-break (audit
+ * item 6). Returns the finding that carries the merged decision.
  */
-export function mergeSameLineSwaps(entries: SameLineSwap[]): Recommendation {
-  const ordered = entries
+export function mergeSameLineSwaps(
+  entries: SameLineSwap[],
+  defense?: DefenseSummary,
+  keystones: KeystoneEffects = NO_KEYSTONE_EFFECTS,
+): Recommendation {
+  const base = defense ? defenceParts(defense, keystones).total : 0
+  const gradeOf = (o: SameLineSwap): number | null => {
+    if (!defense) return null
+    const after = defenceAfter(o.rec, defense)
+    return after ? defenceParts(after, keystones).total - base : null
+  }
+  const measured = entries.map((o) => ({ o, grade: gradeOf(o) }))
+  const ordered = measured
     .slice()
-    .sort((a, b) => Number(b.closes >= b.gap) - Number(a.closes >= a.gap) || b.closes - a.closes)
-  const primary = ordered[0]!
+    .sort(
+      (a, b) =>
+        (b.grade ?? -Infinity) - (a.grade ?? -Infinity) ||
+        Number(b.o.closes >= b.o.gap) - Number(a.o.closes >= a.o.gap) ||
+        b.o.closes - a.o.closes,
+    )
+  const primary = ordered[0]!.o
   const others = ordered.slice(1)
-  const describe = (o: SameLineSwap) =>
-    `${o.option}: closes ${o.closes} of the ${o.gap}% ${o.type} shortfall` +
-    (o.closes >= o.gap ? '' : ', which this line cannot close on its own')
+  const describe = ({ o, grade }: { o: SameLineSwap; grade: number | null }) => {
+    const i = o.rec.impact
+    const move = i ? `${o.type} ${i.from}% → ${i.to}%` : `${o.type} +${o.closes}%`
+    return `${o.option}: ${move}, ${gradeGainText(grade)}`
+  }
   primary.rec.action = `${primary.rec.action} This is one line, so it is one choice: ${ordered.map(describe).join('; or ')}.`
-  primary.rec.alsoCovers = others.map((o) => o.coverId)
-  for (const o of others) {
+  primary.rec.alsoCovers = others.map(({ o }) => o.coverId)
+  for (const { o, grade } of others) {
     primary.rec.evidence.push({
       kind: 'stat',
       stat: `${o.type}Resistance`,
       value: o.gap,
-      note: `The same line could instead close ${o.closes} of the ${o.gap}% ${o.type} shortfall.`,
+      note: `The same line could instead raise ${o.type} resistance by ${o.closes}% (${gradeGainText(grade)}).`,
     })
   }
   return primary.rec
@@ -396,7 +417,13 @@ export function mergeSameLineSwaps(entries: SameLineSwap[]): Recommendation {
  * Returns an empty list when the affix data resolves nothing useful — a caller
  * merging these keeps its original findings, which are never wrong, only vague.
  */
-export function gearRecommendations({ items, defense, tiers, skill }: GearRecommendationInput): Recommendation[] {
+export function gearRecommendations({
+  items,
+  defense,
+  tiers,
+  skill,
+  keystones = NO_KEYSTONE_EFFECTS,
+}: GearRecommendationInput): Recommendation[] {
   const active = items.filter((i) => i.active)
   if (!active.length) return []
 
@@ -451,6 +478,7 @@ export function gearRecommendations({ items, defense, tiers, skill }: GearRecomm
     ]
 
     const id = `gear-swap-${shortfall.type}`
+    const resNow = defense.resistances.find((r) => r.type === shortfall.type)
     const deltas: LedgerChange['deltas'] = {}
     for (const lost of best.removes) {
       if (lost.value === null) {
@@ -489,8 +517,11 @@ export function gearRecommendations({ items, defense, tiers, skill }: GearRecomm
       impact: {
         stat: `${shortfall.type}Resistance`,
         label: `${shortfall.type[0]!.toUpperCase()}${shortfall.type.slice(1)} resistance`,
-        from: RESIST_CAP - shortfall.shortfall,
-        to: Math.min(RESIST_CAP, RESIST_CAP - shortfall.shortfall + candidate.closesShortfall),
+        // ninja's own value and cap: a 76% lightning cap is not 75.
+        from: resNow?.value ?? RESIST_CAP - shortfall.shortfall,
+        to: resNow?.value != null
+          ? Math.min(resNow.max, resNow.value + candidate.closesShortfall)
+          : Math.min(RESIST_CAP, RESIST_CAP - shortfall.shortfall + candidate.closesShortfall),
         delta: candidate.closesShortfall,
         unit: 'percent',
         // Absolute points closed, against the full resistance bar — NOT against
@@ -529,7 +560,7 @@ export function gearRecommendations({ items, defense, tiers, skill }: GearRecomm
   for (const group of groups.values()) {
     if (group.length < 2) continue
     const entries = group.map((id) => ({ rec: out.find((r) => r.id === id)!, ...meta.get(id)! }))
-    const primary = mergeSameLineSwaps(entries)
+    const primary = mergeSameLineSwaps(entries, defense, keystones)
     for (const e of entries) {
       if (e.rec === primary) continue
       out.splice(out.indexOf(e.rec), 1)
@@ -607,5 +638,5 @@ export function mergeGearRecommendations(
     ...gear.flatMap((g) => g.alsoCovers ?? []),
   ])
 
-  return [...base.filter((r) => !superseded.has(r.id)), ...gear].sort((a, b) => b.score - a.score)
+  return [...base.filter((r) => !superseded.has(r.id)), ...gear].sort(compareRecommendations)
 }

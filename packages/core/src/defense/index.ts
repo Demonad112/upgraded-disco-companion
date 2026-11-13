@@ -45,7 +45,7 @@ export interface DefenseSummary {
   lowestMaximumHitType: DamageType | null
   /** poe.ninja's averaged pool. Reported, but never led with. */
   effectiveHealthPool: number | null
-  /** How much EHP overstates the true one-shot threshold. */
+  /** How much EHP overstates the lowest maximum hit taken. */
   ehpOverstatementRatio: number | null
 
   maxHits: MaxHit[]
@@ -60,8 +60,13 @@ export interface DefenseSummary {
   life: number | null
   /** Null when the payload did not report it. */
   energyShield: number | null
-  /** Null when the payload did not report it (0.5 mechanic; absent is not the same as zero). */
+  /**
+   * Null when the payload did not report it. Parsed and shown, but not part of
+   * the defensive pool (ward is not a PoE2 pool; it is a base-name mechanic).
+   */
   ward: number | null
+  /** Null when the payload did not report it. Counts toward the pool only under Mind Over Matter. */
+  mana: number | null
   /** Pool against chaos: chaos drains ES at 2x, so ES counts half. Null when life or ES is unknown. */
   chaosRawPool: number | null
 
@@ -203,6 +208,7 @@ export function analyzeDefense(model: Pick<CharModel, 'defensiveStats'>): Defens
     life,
     energyShield,
     ward: num(s, 'ward'),
+    mana: num(s, 'mana'),
     chaosRawPool: life === null || energyShield === null ? null : chaosRawPool(life, energyShield),
 
     armour: num(s, 'armour') ?? 0,

@@ -202,7 +202,7 @@ function Pools({ d }: { d: DefenseSummary }) {
       <div className="pools mt-4">
         <PoolTile label="Life" value={fmt(d.life)} />
         <PoolTile label="Energy shield" value={fmt(d.energyShield)} />
-        <PoolTile label="Ward" value={fmt(d.ward)} hint="0.5 mechanic" />
+        {d.ward ? <PoolTile label="Ward" value={fmt(d.ward)} hint="not part of the pool" /> : null}
         <PoolTile label="Evasion" value={fmt(d.evasion)} hint={d.evadeChance === null ? 'evade chance not reported' : `${fmt(d.evadeChance)}% evade`} />
         <PoolTile
           label="Armour"

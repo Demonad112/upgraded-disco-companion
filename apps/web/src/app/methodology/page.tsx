@@ -64,18 +64,18 @@ export default function MethodologyPage() {
         <Section id="grade">
           {/* packages/core/src/score/index.ts (assessBuild), packages/core/src/thresholds.ts */}
           <p>
-            The grade has two equal halves, defence and damage, each worth up to 0.5. Keystones are applied first because they can change a verdict: a Chaos Inoculation build is not “short on chaos resistance”.
+            The grade has two equal halves, defence and damage, each worth up to 0.5. Keystones are applied first because they can change a verdict: a Chaos Inoculation build is not “short on chaos resistance”. Chaos Inoculation, Eldritch Battery, Mind Over Matter, Iron Reflexes, Resolute Technique, Avatar of Fire and Necromantic Talisman change the reading; Blood Magic, Eternal Youth, Zealot’s Oath, Glancing Blows, Hollow Palm Technique, Blackflame Covenant and a few others add a note.
           </p>
           <p>The defensive half adds up:</p>
           <Rows
             rows={[
-              ['0.30', 'Combined pool (life + energy shield + ward) above 6,000. Between 4,000 and 6,000 earns 0.15.'],
-              ['0.15', 'All three elemental resistances at the character’s own maximum, as poe.ninja reports it.'],
-              ['0.05', 'Chaos resistance at or above 30 %, or immunity to chaos damage.'],
+              ['0.30', 'Your lowest maximum hit across the five damage types: nothing at 2,000 or less, full at 6,000 or more, linear between.'],
+              ['0.15', 'Each elemental resistance on damage taken, (1 − cap) ÷ (1 − resistance), against the character’s own maximum as poe.ninja reports it. Two points short scores most of its share.'],
+              ['0.05', 'Chaos resistance the same way, toward its cap. Chaos Inoculation or chaos immunity earns it outright.'],
             ]}
           />
           <p>
-            Damage compares your best hitting skill with the ladder for your league and ascendancy. It scores 0.50 at the 75th percentile or above, 0.40 from the median up, 0.28 from the 25th percentile up and 0.15 below that.
+            Damage compares your best hitting skill with the ladder for your league and ascendancy. It scores 0.50 at the sample’s upper quarter or above, 0.40 from its median up, 0.28 from its lower quarter up and 0.15 below that.
           </p>
           <Rows
             rows={[
@@ -86,22 +86,22 @@ export default function MethodologyPage() {
             ]}
           />
           <p>
-            When damage can’t be graded (no ladder sample or no hitting skill), the score runs from the defence half alone to that plus 0.5, and the grade shows as a range such as{' '}
+            When damage can’t be graded (no ladder sample or no hitting skill), the score runs from the defence half plus 0.15 (the lowest damage score) to the defence half plus 0.5, and the grade shows as a range such as{' '}
             <span className="font-mono text-ink">D–B</span>. Guessing would invent a damage score, and scoring zero would punish the build for missing data.
           </p>
           <p>
-            The pool and resistance bands are this project’s judgement, not game constants.
+            The maximum-hit and resistance scales are this project’s judgement, not game constants. Your pool (life + energy shield, plus mana under Mind Over Matter) is shown but not graded.
           </p>
         </Section>
 
         <Section id="largest-hit">
-          {/* packages/core/src/defense/index.ts (analyzeDefense), packages/core/src/thresholds.ts (ONE_SHOT_RATIO),
+          {/* packages/core/src/defense/index.ts (analyzeDefense), packages/core/src/thresholds.ts (WEAK_HIT_RATIO),
               packages/core/src/defense/implied.ts, packages/core/src/defense/whatif.ts */}
           <p>
             Survival is led by the smallest hit that kills you. poe.ninja reports the biggest hit you survive for each damage type, and the lowest one is the headline.
           </p>
           <p>
-            Any type below 40 % of your best maximum hit is named as a one-shot risk, not just the lowest.
+            Any type below 40 % of your best maximum hit is named as a weak spot, not just the lowest. That compares your types with each other; the data has no enemy hit sizes, so it is not a one-shot claim.
           </p>
           <p>
             For a hit mitigated only by resistance, the largest survivable hit is{' '}
@@ -124,10 +124,10 @@ export default function MethodologyPage() {
         </Section>
 
         <Section id="findings-ranking">
-          {/* packages/core/src/recommend/index.ts (COST_WEIGHT, score), packages/core/src/recommend/focus.ts,
+          {/* packages/core/src/recommend/rank.ts (COST_WEIGHT, compareRecommendations), packages/core/src/recommend/focus.ts,
               packages/core/src/thresholds.ts (FOCUS_CATEGORY_WEIGHTS), components/Recommendations.tsx */}
           <p>
-            Findings are ranked by gain for cost, so a free fix beats an equal-sized fix that costs currency.
+            Findings are ranked by score gain for cost, so a free fix beats an equal-sized fix that costs currency. Ties go to the bigger gain in lowest maximum hit, then damage.
           </p>
           <Rows
             rows={[
@@ -135,14 +135,13 @@ export default function MethodologyPage() {
               ['Passive', '2'],
               ['Gear', '4'],
               ['Currency', '5'],
-              ['Unknown', '6'],
             ]}
           />
           <p>
-            A cost with an amount multiplies the weight. A finding with no measured gain ranks last among actionable ones.
+            Gear means owned or swappable; currency means bought or crafted. A cost with an amount multiplies the weight. A finding with no measured gain, or an unknown cost, ranks after the rest.
           </p>
           <p>
-            Every number comes from the imported data. Anything that can’t be confirmed is listed under “Could not be determined”, and findings a keystone rules out are listed separately.
+            Every number comes from the imported data or is derived from it (What-if and score-gain figures are derived). Anything that can’t be confirmed is listed under “Could not be determined”, and findings a keystone rules out are listed separately.
           </p>
           <p>
             The optional Mapping and Bossing views reorder the same list: Mapping weights damage and efficiency × 1.25 and survivability × 0.85; Bossing weights survivability × 1.25, damage × 1.1 and efficiency × 0.85. The default view applies no weighting.
@@ -163,7 +162,7 @@ export default function MethodologyPage() {
             ]}
           />
           <p>
-            Where Path of Building or the app’s formulas disagree with poe.ninja, it is flagged: within 0.5 % is a match, within 5 % (or one unit of rounding) is minor, and anything larger is major.
+            Where Path of Building or the app’s formulas disagree with poe.ninja, it is flagged: within 0.5 % is a match, within 5 % (or one unit of rounding) is minor, and anything larger is major. Resistances and charges are capped, so for them a 1-point difference is major.
           </p>
           <p>
             Reference content on the Checklist and Atlas pages is flagged{' '}
@@ -183,7 +182,7 @@ export default function MethodologyPage() {
             <strong className="text-ink">Computed here:</strong> the grade, the finding order, implied resistances, What-if projections and the ladder comparison. The app’s own formulas are only used to project and to cross-check poe.ninja.
           </p>
           <p>
-            <strong className="text-ink">Ladder sample:</strong> poe.ninja’s builds search gives the top 100 rows, nearly all level 100. It can say “the best builds of your class run X”, but never “you are in the Nth percentile”.
+            <strong className="text-ink">Ladder sample:</strong> poe.ninja’s builds search gives the top 100 rows, nearly all level 100. It can say “the best builds of your class run X”, so the damage grade places you within that sample, never in the whole ladder.
           </p>
           <p>
             Character data over 24 hours old is marked out of date, since newer gear changes won’t show. The browser can’t call poe.ninja directly, so reads go through this project’s proxy.
@@ -228,7 +227,7 @@ export default function MethodologyPage() {
             <strong className="text-ink">No DPS thresholds.</strong> Damage is only compared with figures seen on the ladder, never made-up targets. Without a sample, the damage half stays unscored.
           </p>
           <p>
-            <strong className="text-ink">Missing is not zero.</strong> A resistance that wasn’t reported is unknown, neither credited nor listed as short. Incomplete pools aren’t graded, and a missing update time reads “unknown”.
+            <strong className="text-ink">Missing is not zero.</strong> A resistance that wasn’t reported is unknown, neither credited nor listed as short. An unreported maximum hit isn’t graded, and a missing update time reads “unknown”.
           </p>
           <p>
             <strong className="text-ink">Unconfirmed keystones are not applied.</strong> A keystone that is allocated

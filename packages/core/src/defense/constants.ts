@@ -48,7 +48,7 @@ export const MITIGATION_ORDER = ['evasion', 'block', 'armour', 'resistance'] as 
  * DR = armour / (armour + 10 * rawHit), capped at 90%.
  * Hit-size dependent: armour that trivialises small hits does little against
  * big ones, which is why a low armour value can look adequate on a damage-taken
- * average and still leave a thin one-shot vector.
+ * average and still leave a thin maximum hit.
  */
 export function armourDamageReduction(armour: number, rawHit: number): number {
   if (armour <= 0 || rawHit <= 0) return 0
