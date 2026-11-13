@@ -57,15 +57,16 @@ export function CompareCharacters({ currentKey, currentName, bare = false }: { c
               </Select>
             </label>
           ) : null}
-          <table className="tabular w-full text-xs">
-            <thead>
-              <tr className="text-left text-[11px] text-ink-mute">
-                <th scope="col" className="py-1 font-normal" />
-                <th scope="col" className="py-1 text-right font-medium text-ink-dim">
+          <div className="overflow-x-auto border border-line">
+          <table className="tabular w-full text-sm">
+            <thead className="border-b border-line bg-surface-sunken">
+              <tr className="text-left text-xs text-ink-mute">
+                <th scope="col" className="px-3 py-2 font-normal" />
+                <th scope="col" className="px-3 py-2 text-right font-medium text-ink-dim">
                   {currentName}
                   <span className="block font-normal text-ink-mute">{when(mine.at)}</span>
                 </th>
-                <th scope="col" className="py-1 text-right font-medium text-ink-dim">
+                <th scope="col" className="px-3 py-2 text-right font-medium text-ink-dim">
                   {other.name}
                   <span className="block font-normal text-ink-mute">{when(theirs.at)}</span>
                 </th>
@@ -75,13 +76,13 @@ export function CompareCharacters({ currentKey, currentName, bare = false }: { c
               {compareSnapshots(mine, theirs).map((row) => {
                 const unit = PERCENT.has(row.metric) ? '%' : ''
                 const cell = (v: number | null, side: 'a' | 'b') => (
-                  <td className={`py-1 text-right ${row.ahead === side ? 'font-semibold text-ink' : 'text-ink-dim'}`}>
+                  <td className={`px-3 py-1.5 text-right ${row.ahead === side ? 'font-semibold text-ink' : 'text-ink-dim'}`}>
                     {v === null ? '—' : `${fmt(v)}${unit}`}
                   </td>
                 )
                 return (
-                  <tr key={row.metric} className="border-t border-line">
-                    <th scope="row" className="py-1 text-left font-normal text-ink-mute">
+                  <tr key={row.metric} className="border-t border-line first:border-t-0">
+                    <th scope="row" className="px-3 py-1.5 text-left font-normal text-ink-mute">
                       {row.label}
                     </th>
                     {cell(row.a, 'a')}
@@ -91,7 +92,8 @@ export function CompareCharacters({ currentKey, currentName, bare = false }: { c
               })}
             </tbody>
           </table>
-          <p className="mt-2 text-[11px] text-ink-mute">
+          </div>
+          <p className="mt-2 text-xs text-ink-mute">
             Higher is better on every row; the stronger figure is in bold. &ldquo;—&rdquo; means poe.ninja did not report it.
           </p>
         </>

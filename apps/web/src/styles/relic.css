@@ -1,0 +1,205 @@
+/* Variant "relic": gear as an inventory, imports as a star chart, the Atlas tracker as a ring.
+   Rarity edges reuse the damage-type tokens (unique = fire, rare = accent, magic = cold); no new token names. */
+
+/* --- Gear: inventory grid + detail ------------------------------------------------------------------------ */
+.relic {
+  display: grid;
+  gap: 20px;
+  margin-bottom: 20px;
+}
+@media (min-width: 900px) {
+  .relic {
+    grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+    align-items: start;
+  }
+}
+.relic-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-auto-rows: minmax(84px, auto);
+  grid-template-areas:
+    'weapon helm amulet'
+    'weapon body offhand'
+    'ring1 body ring2'
+    'gloves belt boots';
+  gap: 8px;
+}
+.relic-grid > li {
+  display: flex;
+  min-width: 0;
+}
+.relic-slot {
+  --edge: var(--ink-mute);
+  position: relative;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: 4px;
+  min-height: 84px;
+  padding: 10px;
+  border: 1px solid color-mix(in srgb, var(--edge) 45%, var(--line));
+  border-bottom: 2px solid var(--edge);
+  background:
+    radial-gradient(120% 80% at 50% 0%, color-mix(in srgb, var(--edge) 10%, transparent), transparent 70%),
+    var(--sunken);
+  box-shadow: inset 0 1px 3px #000c;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.relic-slot:hover {
+  border-color: var(--edge);
+}
+.relic-slot[aria-pressed='true'] {
+  border-color: var(--accent);
+  box-shadow:
+    inset 0 1px 3px #000c,
+    0 0 0 1px var(--accent),
+    0 0 18px -6px var(--accent);
+}
+.relic-slot-label {
+  font-family: var(--font-label);
+  font-size: var(--fs-micro);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-mute);
+}
+.relic-slot-name {
+  font-family: var(--font-heading);
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.2;
+  color: var(--ink);
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+/* The notch: a gold corner flag with the slot's place in the list. */
+.relic-notch {
+  position: absolute;
+  top: -1px;
+  right: -1px;
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  background: var(--gold-gradient);
+  color: var(--on-accent);
+  font-family: var(--font-label);
+  font-size: var(--fs-micro);
+  font-weight: 700;
+}
+.relic-detail {
+  padding: 16px 18px;
+  border: 1px solid var(--accent-line);
+  background: var(--sunken);
+}
+.relic-detail .gear-reasons {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+/* --- Progress: imports as stars -------------------------------------------------------------------------- */
+.starchart {
+  width: 100%;
+  max-width: 720px;
+  margin-inline: auto;
+  height: auto;
+  display: block;
+  overflow: visible;
+}
+.starchart-line {
+  stroke: var(--accent-line);
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+}
+.starchart-star {
+  fill: var(--accent);
+}
+.starchart-halo {
+  fill: color-mix(in srgb, var(--accent) 22%, transparent);
+}
+.starchart-pick {
+  cursor: pointer;
+}
+.starchart-pick:focus-visible {
+  outline: none;
+}
+.starchart-pick:focus-visible .starchart-ring,
+.starchart-pick[aria-pressed='true'] .starchart-ring {
+  stroke: var(--accent);
+}
+.starchart-ring {
+  fill: transparent;
+  stroke: transparent;
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .starchart-latest .starchart-halo {
+    animation: star-breathe 3.2s ease-in-out infinite;
+    transform-box: fill-box;
+    transform-origin: center;
+  }
+}
+@keyframes star-breathe {
+  50% {
+    transform: scale(1.35);
+    opacity: 0.6;
+  }
+}
+.starchart-read {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+/* --- Atlas: the tracker as a ring around the next node ---------------------------------------------------- */
+.relic-ring {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 112px;
+  height: 112px;
+  flex: none;
+}
+.relic-ring svg {
+  position: absolute;
+  inset: 0;
+  transform: rotate(-90deg);
+}
+.relic-ring-track {
+  fill: none;
+  stroke: var(--line);
+  stroke-width: 6;
+}
+.relic-ring-fill {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 6;
+  transition: stroke-dashoffset 0.4s ease;
+}
+@media (prefers-reduced-motion: reduce) {
+  .relic-ring-fill {
+    transition: none;
+  }
+}
+.relic-ring-gem {
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  transform: rotate(45deg);
+  border: 1px solid var(--accent);
+  background: var(--gold-gradient);
+}
+.relic-ring-gem > span {
+  transform: rotate(-45deg);
+  font-family: var(--font-label);
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--on-accent);
+}

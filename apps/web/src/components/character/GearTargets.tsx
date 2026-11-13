@@ -9,12 +9,14 @@
 import { useMemo } from 'react'
 import { analyzeItem, rankReplacements, type AttributionReport, type DefenseSummary, type EquippedItem } from '@poe2/core'
 import { StatusChip } from '@/components/shared/Instruments'
+import { Empty } from '../ui'
 import { BASE_PATH } from '@/lib/basePath'
 import { TRADE_LEAGUE } from '@/lib/constants'
 import type { ModTiersState } from '@/lib/useModTiers'
 import { improvable, resistGaps, weightedTradeLink } from './gearTargetsData'
 import { useTradeMap } from './TopFixes'
 import { MapIcon } from '@/components/icons'
+import { GearSlotGrid } from './GearSlotGrid'
 
 export function GearTargets({
   items,
@@ -37,44 +39,80 @@ export function GearTargets({
   const gaps = resistGaps(defense)
   const map = useTradeMap(!!rows?.length && Object.keys(gaps).length + (rows?.length ?? 0) > 0)
 
-  if (state.status === 'error') return <p className="text-sm text-ink-dim">Affix tier data unavailable, so gear can&apos;t be checked.</p>
-  if (!rows) return <p className="text-sm text-ink-dim">Checking gear…</p>
-  if (!rows.length) return <p className="text-sm text-ink-dim">Nothing measurable to improve on your equipped gear.</p>
+  const body =
+    state.status === 'error' ? (
+      <Empty>Affix tier data unavailable, so gear can&apos;t be checked.</Empty>
+    ) : !rows ? (
+      <Empty>Checking gear…</Empty>
+    ) : !rows.length ? (
+      <Empty>Nothing measurable to improve on your equipped gear.</Empty>
+    ) : (
+      <ol className="gear-rows" data-gear-targets>
+        {rows.map((r, i) => {
+          const link = map ? weightedTradeLink(r, gaps, map, league || TRADE_LEAGUE) : null
+          return (
+            <li key={r.slotId} className="gear-row">
+              <span className="gear-rank tabular" aria-hidden>
+                {i + 1}
+              </span>
+              <div className="min-w-0 flex-1">
+                <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                  <p className="label-metric">{r.slotLabel}</p>
+                  {r.corrupted ? <StatusChip tone="warn">Corrupted</StatusChip> : null}
+                </div>
+                <p className="title-sentence mt-0.5 truncate text-lg text-ink" title={r.itemName}>
+                  {r.itemName}
+                </p>
+                <ul className="gear-reasons" aria-label={`Why ${r.itemName} is worth replacing`}>
+                  {r.reasons.map((x) => (
+                    <li key={x}>{x}</li>
+                  ))}
+                </ul>
+              </div>
+              {link ? (
+                <a href={link} target="_blank" rel="noopener noreferrer" className="btn btn-secondary btn-sm gear-trade" data-trade="weighted">
+                  <MapIcon name="trade" size={16} />
+                  Find on trade
+                </a>
+              ) : (
+                <a
+                  href={`${BASE_PATH}/trade/`}
+                  className="btn btn-secondary btn-sm gear-trade"
+                  aria-label={`Find on trade: open the trade page for ${r.slotLabel.toLowerCase()}`}
+                  data-trade="page"
+                >
+                  Find on trade
+                </a>
+              )}
+            </li>
+          )
+        })}
+      </ol>
+    )
 
   return (
-    <ol className="space-y-2" data-gear-targets>
-      {rows.map((r) => {
-        const link = map ? weightedTradeLink(r, gaps, map, league || TRADE_LEAGUE) : null
-        return (
-          <li key={r.slotId} data-surface="data" className="card flex flex-wrap items-center gap-x-4 gap-y-2">
-            <div className="min-w-0 flex-1">
-              <p className="label-metric">{r.slotLabel}</p>
-              <p className="truncate text-sm font-medium text-ink" title={r.itemName}>{r.itemName}</p>
-              <ul className="mt-1 text-xs text-ink-dim">
-                {r.reasons.map((x) => (
-                  <li key={x}>{x}</li>
-                ))}
-              </ul>
-            </div>
-            {r.corrupted ? <StatusChip tone="warn">Corrupted</StatusChip> : null}
-            {link ? (
-              <a href={link} target="_blank" rel="noopener noreferrer" className="btn btn-secondary btn-sm" data-trade="weighted">
-                <MapIcon name="trade" size={16} />
-                Find on trade
-              </a>
-            ) : (
-              <a
-                href={`${BASE_PATH}/trade/`}
-                className="btn btn-secondary btn-sm"
-                aria-label={`Find on trade: open the trade page for ${r.slotLabel.toLowerCase()}`}
-                data-trade="page"
-              >
-                Find on trade
-              </a>
-            )}
-          </li>
-        )
-      })}
-    </ol>
+    <section data-surface="data" className="card min-w-0" aria-labelledby="gear-targets-title">
+      <header className="mb-4 flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 border-b border-line pb-3">
+        <div className="min-w-0">
+          <h3 id="gear-targets-title" className="h3">
+            Worth replacing
+          </h3>
+          <p className="mt-1 text-xs text-ink-dim">Worst first. Each search weighs the resistances you&apos;re short of.</p>
+        </div>
+        {rows?.length ? (
+          <span className="tabular text-xs text-ink-mute">
+            {rows.length} of {items.filter((i) => i.active).length} items
+          </span>
+        ) : null}
+      </header>
+      {rows ? (
+        <GearSlotGrid
+          items={items}
+          rows={rows}
+          linkFor={(r) => (map ? weightedTradeLink(r, gaps, map, league || TRADE_LEAGUE) : null)}
+        />
+      ) : null}
+      {body}
+    </section>
   )
 }

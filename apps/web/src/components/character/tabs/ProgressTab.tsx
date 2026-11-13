@@ -8,10 +8,43 @@ import { Progress } from '@/components/Progress'
 import { CompareCharacters } from '../CompareCharacters'
 import { Panel } from './Panel'
 import type { PanelProps } from './types'
+import type { CharacterHistory } from '@/lib/useCharacterHistory'
+import { Stat } from '../../ui'
+import { StarChart } from '../StarChart'
+
+/** What moved since the last import, as four tiles. Opens the tab the way Defences opens with its glance card. */
+function SinceLastImport({ history }: { history: CharacterHistory }) {
+  const { snapshots, diff } = history
+  const better = diff?.changes.filter((c) => c.improved).length ?? 0
+  const worse = diff ? diff.changes.length - better : 0
+  return (
+    <section data-surface="data" className="card min-w-0" aria-labelledby="since-last-title">
+      <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+        <h3 id="since-last-title" className="h3">
+          Since last import
+        </h3>
+        <span className="text-xs text-ink-mute">Saved in this browser</span>
+      </div>
+      <div className="mt-4">
+        <StarChart snapshots={snapshots} />
+      </div>
+      <div className="progress-tiles mt-4">
+        <Stat label="Imports saved" value={String(snapshots.length)} />
+        <Stat label="Figures moved" value={diff ? String(diff.changes.length) : '—'} />
+        <Stat label="Got better" value={diff ? String(better) : '—'} tone={better ? 'good' : 'default'} />
+        <Stat label="Got worse" value={diff ? String(worse) : '—'} tone={worse ? 'danger' : 'default'} />
+      </div>
+      {!diff ? (
+        <p className="mt-3 text-sm text-ink-dim">Play a while, then import again to see what moved.</p>
+      ) : null}
+    </section>
+  )
+}
 
 export default function ProgressTab({ analysis: a, history }: PanelProps) {
   return (
     <Panel id="progress" title="Progress">
+      <SinceLastImport history={history} />
       <Accordion
         id="progress-history"
         title="Trends across imports"

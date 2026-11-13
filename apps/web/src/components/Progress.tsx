@@ -29,20 +29,20 @@ function DeltaRow({ change }: { change: MetricDelta }) {
   const sign = change.delta > 0 ? '+' : ''
 
   return (
-    <li className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5 px-2 py-1.5 odd:bg-surface-sunken/40">
-      <span className="min-w-0 flex-1 text-xs text-ink">{change.label}</span>
-      <span className="tabular text-[11px] text-ink-mute">
+    <li className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5 border-b border-line px-3 py-2 last:border-b-0">
+      <span className="min-w-0 flex-1 text-sm text-ink">{change.label}</span>
+      <span className="tabular text-xs text-ink-mute">
         {fmt(change.before)}
         {suffix}
       </span>
-      <span aria-hidden className="text-[11px] text-ink-mute">
+      <span aria-hidden className="text-xs text-ink-mute">
         →
       </span>
-      <span className="tabular text-[11px] font-semibold text-ink-dim">
+      <span className="tabular text-xs font-semibold text-ink-dim">
         {fmt(change.after)}
         {suffix}
       </span>
-      <span className={`tabular w-20 text-right text-[11px] ${change.improved ? 'text-good' : 'text-danger'}`}>
+      <span className={`tabular w-20 text-right text-xs ${change.improved ? 'text-good' : 'text-danger'}`}>
         {sign}
         {fmt(change.delta)}
         {suffix}
@@ -60,7 +60,7 @@ export function Progress({ history, bare = false }: { history: CharacterHistory;
       title="Progress"
       subtitle="Kept locally, in this browser only. One row per import, and only when a figure actually moved."
       action={
-        <span className="text-[11px] text-ink-mute">
+        <span className="text-xs text-ink-mute">
           {snapshots.length} {snapshots.length === 1 ? 'snapshot' : 'snapshots'}
         </span>
       }
@@ -75,7 +75,7 @@ export function Progress({ history, bare = false }: { history: CharacterHistory;
         </p>
       ) : (
         <>
-          <p className="text-[11px] text-ink-mute">
+          <p className="text-xs text-ink-mute">
             Comparing {when(diff.from.at)} with {when(diff.to.at)}.
           </p>
 
@@ -95,7 +95,7 @@ export function Progress({ history, bare = false }: { history: CharacterHistory;
           ) : null}
 
           {diff.changes.length ? (
-            <ul className="mt-3 space-y-0.5">
+            <ul className="mt-3 border border-line bg-surface-sunken">
               {diff.changes.map((c) => (
                 <DeltaRow key={c.field} change={c} />
               ))}

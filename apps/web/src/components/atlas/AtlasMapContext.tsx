@@ -57,7 +57,8 @@ export function useAtlasMap(): AtlasMapContextValue {
 }
 
 /** The pin button every guide row carries when it names real tree nodes. */
-export function ShowOnTreeButton({ names, label }: { names?: string[]; label: string }) {
+/** `ariaLabel` overrides the accessible name where the same node has a second Map button (the Up next card). */
+export function ShowOnTreeButton({ names, label, ariaLabel }: { names?: string[]; label: string; ariaLabel?: string }) {
   const { focus } = useAtlasMap()
   if (!names?.length) return null
   return (
@@ -69,7 +70,7 @@ export function ShowOnTreeButton({ names, label }: { names?: string[]; label: st
         focus(names, label)
       }}
       title="Show on the Atlas tree"
-      aria-label={`Show ${label} on the Atlas tree`}
+      aria-label={ariaLabel ?? `Show ${label} on the Atlas tree`}
       className="shrink-0"
     >
       <svg viewBox="0 0 20 20" fill="none" aria-hidden="true" className="size-3.5">
