@@ -1,5 +1,5 @@
 # PRO1 carry-over · 2026-11-14
-Branch: claude/pro1-process-hardening · Owns: `docs/SESSION-PROTOCOL.md`, `CLAUDE.md`, `docs/carry/README.md`, `docs/remaining/*`, `docs/plans/*`, `docs/COPY.md`, `docs/VARIANT-STRATEGY.md`, `docs/DEPENDENCY-BUMPS.md`, `docs/design-decisions.md`, `.claude/**`, `.github/pull_request_template.md` · Preview: https://claude-pro1-process-hardening.upgraded-disco-companion.pages.dev/
+Branch: claude/pro1-process-hardening · Owns: `docs/SESSION-PROTOCOL.md`, `CLAUDE.md`, `docs/carry/README.md`, `docs/remaining/*`, `docs/plans/*`, `docs/COPY.md`, `docs/VARIANT-STRATEGY.md`, `docs/DEPENDENCY-BUMPS.md`, `docs/design-decisions.md`, `.claude/**`, `.github/pull_request_template.md` · Preview: https://claude-pro1-process-hardenin.upgraded-disco-companion.pages.dev/
 
 ## Checked (previous wave)
 - WQA1: PR is **#173** (WQA1.md still says `#TBD`; not edited here). Merged 2026-11-14 with its last `test` check **red**: e2e
