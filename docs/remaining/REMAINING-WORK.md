@@ -172,6 +172,11 @@ Web quality audit. Fixes landed in WQA1; open rows in `docs/carry/WQA1.md`.
 | WQA1-2 | LHCI: gate accessibility, SEO and best-practices scores (S) | a few runs on `main` | open |
 | WQA1-3 | Perf headroom: 24 KB near-unused chunk on `/`, render-blocking CSS, TBT on checklist and trade (M) | measure first, ≥ 5 % br | open |
 | WQA1-4 | Sync the route-budget text in this file with `scripts/route-weight.mjs` (S) | — | open |
+| WQA3-A | Scroll fix: sky scroll pause lost on resize, phone cadence, composited Astrolabe, scroll guard (S–M) | — | open (`docs/carry/WQA3.md` batch A) |
+| WQA3-B | CI made real: ruleset bypass, visual baselines, flaky interactions test, LHCI asserts (S) | owner for bypass + baselines | open (batch B) |
+| WQA3-C | `/checklist` CLS 0.25 under reduced motion, 404 metadata, font preloads (S) | — | open (batch C) |
+| WQA3-D | Bundle diet: route data in the shared floor, per-route CSS, budgets text (M) | ≥ 5 % br | open (batch D) |
+| WQA3-E | Layer and DOM diet (M) | real-device trace | open (batch E) |
 
 ### Do not do
 | Item | Why |
