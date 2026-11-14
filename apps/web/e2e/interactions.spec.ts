@@ -4,6 +4,9 @@ import { expect, test } from './fixtures'
 
 test('an Atlas "Map" button focuses that node on the tree', async ({ page }) => {
   await page.goto('atlas/')
+  // The button is in the static HTML, so a click can land before React attaches its handler and do nothing. The
+  // tree canvas renders only after a client fetch that starts once the page has hydrated: wait for it first.
+  await expect(page.getByRole('img', { name: /^Atlas passive tree:/ })).toBeVisible()
   await page.getByRole('button', { name: 'Show Trapped Subordinate on the Atlas tree' }).click()
   await expect(page.getByText('Showing Trapped Subordinate')).toBeVisible()
 })

@@ -22,6 +22,7 @@ jobs:
     # tests; the jobs still run and pass, so the required checks are reported. fetch-depth 2: HEAD is the PR merge
     # commit, HEAD^1 its base.
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     outputs:
       code: ${{ steps.scope.outputs.code }}
       # Draft PRs run typecheck, lint and unit tests only; e2e and Lighthouse wait until the PR is marked ready.
@@ -89,7 +90,7 @@ jobs:
         working-directory: services/ninja-proxy
       - name: Cache Next.js build cache
         if: needs.changes.outputs.code == 'true'
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: apps/web/.next/cache
           key: next-${{ runner.os }}-${{ hashFiles('package-lock.json') }}-${{ hashFiles('apps/web/src/**', 'apps/web/public/**', 'apps/web/*.ts', 'apps/web/*.mjs', 'packages/core/src/**', 'packages/data/generated/**') }}
@@ -101,7 +102,7 @@ jobs:
         run: npm run build --workspace @poe2/web
       - name: Cache Playwright browsers
         if: needs.changes.outputs.heavy == 'true'
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ~/.cache/ms-playwright
           key: playwright-${{ runner.os }}-${{ hashFiles('package-lock.json') }}

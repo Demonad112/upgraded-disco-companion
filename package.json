@@ -19,7 +19,7 @@
     "typecheck": "npm run build --workspace @poe2/core && npm run typecheck --workspaces --if-present",
     "lint": "npm run lint --workspaces --if-present",
     "check": "npm run typecheck && npm run lint && npm test",
-    "test:scripts": "node --test scripts/check-pr-body.test.mjs",
+    "test:scripts": "node --test scripts/check-pr-body.test.mjs .claude/hooks/*.test.mjs",
     "dev": "npm run dev --workspace @poe2/web"
   },
   "devDependencies": {
