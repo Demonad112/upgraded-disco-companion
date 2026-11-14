@@ -124,7 +124,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               <PatchVersionBanner />
               <NavBar />
             </header>
-            <main id="main" className="shell relative flex-1 py-8 sm:py-12">
+            <main id="main" tabIndex={-1} className="shell relative flex-1 py-8 focus:outline-none sm:py-12">
               {children}
             </main>
             {/* Fixed to the bottom on phones; after main so focus goes header, main, tab bar. */}

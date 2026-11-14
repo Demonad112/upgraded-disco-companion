@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { pageMeta } from '@/lib/pageMeta'
 import { commonMistakes } from "@/data/commonMistakes";
 import { FarmPlanner } from "@/components/farm/FarmPlanner";
 import { DashboardTabs } from "@/components/dashboard/DashboardTabs";
@@ -6,9 +7,7 @@ import { WarningPanel } from "@/components/shared/WarningPanel";
 import { SectionTitle } from "@/components/shared/SectionTitle";
 import { PageHeader } from "@/components/layout/PageHeader";
 
-export const metadata: Metadata = {
-  title: "Farming Dashboard — PoE2 Endgame Companion",
-};
+export const metadata: Metadata = pageMeta('Farming Dashboard', 'What to farm, what bosses need, and which builds are strong right now.')
 
 export default function DashboardPage() {
   return (

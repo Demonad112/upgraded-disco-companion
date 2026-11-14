@@ -1,11 +1,9 @@
 import type { Metadata } from 'next'
+import { pageMeta } from '@/lib/pageMeta'
 import { PageHeader } from '@/components/layout/PageHeader'
 import { CHANGELOG, KIND_LABEL } from '@/data/changelog'
 
-export const metadata: Metadata = {
-  title: 'What’s new — PoE2 Endgame Companion',
-  description: 'Every app change and data regeneration, newest first, with what was not checked against the current patch.',
-}
+export const metadata: Metadata = pageMeta('What’s new', 'Every app change and data regeneration, newest first, with what was not checked against the current patch.')
 
 /** Newest first by date; entries on the same date keep their file order. */
 const entries = CHANGELOG.map((entry, i) => ({ entry, i }))

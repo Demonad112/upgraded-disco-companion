@@ -77,7 +77,7 @@ export function ShowOnTreeButton({ names, label, ariaLabel }: { names?: string[]
         focus(names, label)
       }}
       title="Show on the Atlas tree"
-      aria-label={ariaLabel ?? `Show ${label} on the Atlas tree`}
+      aria-label={ariaLabel ?? `Map, show ${label} on the Atlas tree`}
       className="shrink-0"
     >
       <svg viewBox="0 0 20 20" fill="none" aria-hidden="true" className="size-3.5">
