@@ -1,6 +1,6 @@
 # Remaining work register
 
-Run order from 2026-11-12: [`docs/plans/NEXT.md`](../plans/NEXT.md).
+Owner decisions waiting: § Owner queue below. Session process: `docs/SESSION-PROTOCOL.md`; batch index: `docs/carry/README.md`.
 
 Snapshot 2026-11-08: L1–L3 are done and PR #119 is merged. On main the gate passes, e2e passes (347 passed, 3 skipped) and coverage is 92.04 % statements / 81.01 % branches. Next batches are in §6.
 This file lists what is still unfinished. Closed rows (`done` · `answered` · `parked`) are in `archive/REGISTER-CLOSED.md`. Steps only the owner can do are in `OWNER-STEPS.md`.
@@ -15,6 +15,27 @@ Class codes:
 | **W** | Waiting on an external event |
 | **P** | Parked |
 
+## Owner queue
+One row per Needs-owner item, with the recommended answer. Answer by ID in a prompt's `Owner notes`; carry files link here.
+
+| ID | Question | Recommended answer | Source |
+|---|---|---|---|
+| PRO1-1 | Branch protection on `main`: #173 merged with `test` red. Require `test`, `lighthouse`, `guard`, `secrets`, branch up to date, no bypass for admins? | Yes. Steps in `docs/carry/PRO1.md` § Settings steps | PRO1 |
+| PXC-1 | Commit the 36 `visual-baselines` PNGs from a green CI run into `apps/web/e2e/visual.spec.ts-snapshots/` | Yes, from the next green `main` run's artifact; until then the 36 screenshot tests pass by writing new files | `docs/carry/PXC.md` |
+| PRO1-2 | After PXC-1: make CI fail on a missing baseline (`playwright.config.ts` `updateSnapshots: process.env.CI ? 'none' : 'missing'`) | Yes, in the same PR as PXC-1 (WQA4 can carry it) | PRO1 |
+| PRO1-3 | Label font: CLAUDE.md says "uppercase EB Garamond for headings and labels", but `.label-metric` / `--font-label` is Geist Mono (tokens.css, design-decisions.md) | Amend CLAUDE.md to "headings in uppercase EB Garamond; metric labels in uppercase Geist Mono", matching the shipped code | PRO1 |
+| PRO1-4 | `ci.yml`: `actions/cache@v4` runs on deprecated Node 20 (warning on every run) | Bump to `actions/cache@v5`; add `timeout-minutes: 5` to the `changes` job | PRO1 |
+| PRO1-5 | Nothing in CI runs `.claude/hooks/*.test.mjs` | Add `node --test .claude/hooks/*.test.mjs` to the `pr-body-guard.yml` self-test step | PRO1 |
+| WQA1-1 | Drop `'unsafe-inline'` from `script-src` by hashing the three bootstrap scripts | Yes, as its own batch with a live-header check on the preview | `docs/carry/WQA1.md` |
+| UXS-1 | Collapse ~22 text sizes to an 8-step scale (11, 12, 14, 16, 18, 22, 36, 64 px) | Yes, on `variant/<yyyymmdd>-type-scale`, reviewed on its preview | `docs/carry/UXS2.md` row 1 |
+| R60 | Character fixtures: Yykiuy files exist (`yykiuy-v51/v80.json`); Athrynas level 94 is still missing | Send the Athrynas account, or let F2 go live on Yykiuy only | §2, `docs/carry/OC1.md` row 3 |
+| CMP1-1 | Final look of the companion head | 4–6 heads on one preview page, pick one, swap `CompanionHead.tsx` | `docs/carry/CMP1.md` |
+| PXA-7 | Character tab bar scrolls at 390 px | Accept (labels stay readable) | `docs/carry/PXA.md` |
+| PXA-8 | Passive tree fetched at idle after the card paints | Keep | `docs/carry/PXA.md` |
+| CF1-1 | `.claude/settings.json` denies reading `packages/data/generated/**` and versioned fixtures | Keep the deny (saves context; regen scripts still work) | `docs/carry/CF2.md` |
+| WQA1-5 | Manifest `lang`, HSTS preload, CORP | Add `lang: "en"` next time the manifest is touched; skip the rest | `docs/carry/WQA1.md` |
+| WQA1-6 | JSON-LD `WebApplication` | Skip | `docs/carry/WQA1.md` |
+
 ## 1. Decisions
 | ID | Question | Recommended | Origin | Status |
 |---|---|---|---|---|
@@ -27,10 +48,6 @@ These rows run in the §6 owner-pass order.
 | ID | Action | Owner step | Origin | Status |
 |---|---|---|---|---|
 | R40 | 50-map run log for danger calibration; feeds R10. Format: `R40-RUN-LOG.md` | 6 | FP1-1 | parked (P): owner skipped manual checks 2026-11-08 |
-| R59 | Check that the live CSP header has `api.anthropic.com` and `generativelanguage.googleapis.com` | 2 | PR #111 | done 2026-11-08: live CSP has both hosts, header set matches `_headers` (OC1) |
-| R49 | Confirm that the first Lighthouse run on main is green now that the job is set to error | 3 | L1-2 | done 2026-11-08: latest main run (PR #116) green, 0 NO_NAVSTART (OC1) |
-| R54 | Lighthouse `NO_NAVSTART` on `/character/`: none in 3 local and 5 CI runs; the owner confirms | 3 | U13b-4 | parked (P): owner skipped manual checks 2026-11-08 |
-| R42 | Open one "Find better gear" link on live trade2 and confirm the weighted group prefills. It returns 403 from the cloud sandbox | 4 | CH6-1 | done 2026-11-08: weighted group prefilled in Chrome, resistances stayed minimums (OC1) |
 | R44 | Real-device pass: keyboard hides the tab bar on iOS Safari and Android Chrome; Install / Add to Home Screen; Safari 17; rotation; VoiceOver. The emulated e2e passes | 7 | U13b-1 | parked (P): owner skipped manual checks 2026-11-08 |
 | R45 | Android share target on a real device. The emulated e2e passes | 8 | L1-3 | parked (P): owner skipped manual checks 2026-11-08 |
 | R46 | Real display and Safari: sky over 30 s, hover pulse, hero draw-in, lantern, foil, route transitions, glyphs | 9 | A5-4, W15-pulse-1, MP1-4, LS1-4 | parked (P): owner skipped manual checks 2026-11-08 |
@@ -81,79 +98,25 @@ These rows run in the §6 owner-pass order.
   Docs-only batches skip the gate.
 
 ### Order
-N1, N2 and N3 are independent and can run in parallel. The owner pass (OP) runs alongside them. F1 waits for R40, F2 waits for R60, and F3 follows the owner report.
+N1 (#122), N2 (#124) and N3 (#125) are merged; their rows are archived. The PX programme (PXA #136/#142, PXB #137, PXC #154/#169, PXD #138) and CF1/CF2 (#162, #163) are merged; their rows moved to `archive/REGISTER-CLOSED.md` (PRO1). Still waiting:
 
-| ID | Branch | Model · effort | Scope | Benefit | Risk | Depends on |
-|---|---|---|---|---|---|---|
-| N1 | `perf/<yyyymmdd>-links-canvas` | Sonnet 5.5 · medium | R56, R58 | Phone canvas 390×4337 → ~390×1941 (−55 % px; ~6.8 → ~3.0 MP at DPR 2). Desktop −60 % | Low: link geometry has to stay aligned. e2e plus a screenshot check | — |
-| N2 | `ci/<yyyymmdd>-e2e-trace` | Sonnet 5.5 · low | R62 | ~60 s off the 7.5 min test job, plus 7–11 s from the duplicate run | Low: no traces on CI failure, so re-run locally | — |
-| N3 | `test/<yyyymmdd>-core-gaps` | Sonnet 5.5 · medium | R61 | Live ladder decode gets tested; more coverage margin | Low: tests only | — |
-| OP | none | Owner | Owner pass below | Unblocks R10; closes R42–R47, R49, R54, R59, R60 | — | — |
-| F1 | `data/<yyyymmdd>-danger-calibration` | Sonnet 5.5 · medium | R10 | Calibrated danger; Net can be ranked | Medium: data weights. Follow `R40-RUN-LOG.md` exactly | R40 CSV |
-| F2 | `test/<yyyymmdd>-evidence-fixtures` | Sonnet 5.5 · medium | R60 | Two skipped evidence-pack suites go live; 3 `it.todo` filled | Low | R60 files |
-| F3 | `docs/<yyyymmdd>-owner-report` | Sonnet 5.5 · low | Tick the register from the owner's report | Register current | — | OP |
-
-### N1 Links canvas + dead exports
-1. `apps/web/src/components/fx/useCanvas.ts`: add an optional root element or ref. Without one, it keeps today's `#fx-root` behaviour, so other callers don't change.
-2. `apps/web/src/components/fx/CardLinksCanvas.tsx`: size the canvas to the `main [data-links]` block's bounding box and position it at the block's offset. Draw coordinates become block-relative.
-3. `apps/web/src/data/sourceMeta.ts`: delete `SOURCE_DOCS` and `KNOWN_CONFLICTS`. Confirm first that `grep -rn "SOURCE_DOCS\|KNOWN_CONFLICTS" apps packages` finds only the definitions.
-- Gate: the full code gate above, plus the canvas height (Playwright `canvas.height` on `/checklist` at 390×844 and 1440×900), before and after.
-- Done when: the canvas height is about the `[data-links]` block height (±1 card), links render the same in screenshots, and e2e is green.
-- Review: one `/code-review low` on this branch. No other review session.
-
-### N2 CI e2e trace + duplicate test run
-1. `.github/workflows/ci.yml`: change the "Smoke-test the built site" step to `npm run e2e --workspace @poe2/web -- --trace off`.
-2. Remove the duplicate core run. "Test core and web" (`npm test`) and "Core coverage floor" both run the core suite, so run core once, under coverage. Keep the 90 % / 75 % floors enforced.
-- Gate: `npm run lint`, then the CI run on the PR.
-- Done when: the PR's CI is green, the test job is ≥ 60 s faster than run 42445987468, and the coverage floor is still enforced.
-
-### N3 Core test gaps
-1. Add tests in `packages/core/test/` only, with no `src` change: `ninja/ladder.ts` lines 119–142, and the uncovered branches in `damage.ts`, `export.ts`, `replace.ts`, `catalog.ts`.
-2. Don't loosen any assertion or threshold.
-- Gate: `npm test -w @poe2/core`, `npm run test:coverage -w @poe2/core`, `npm run typecheck`.
-- Done when: ladder.ts lines are ≥ 85 %, each named file's branches are ≥ 75 %, and the totals don't drop.
-
-### Owner pass (do in this order; details in `OWNER-STEPS.md`)
-- [ ] R40: start the 50-map log (longest lead time; unblocks R10 / F1)
-- [ ] R59: CSP curl (1 min)
-- [ ] R49 / R54: Lighthouse green on main, no `NO_NAVSTART` (1 min)
-- [ ] R42: one "Find better gear" link (5 min)
-- [ ] R44: phone check (10 min)
-- [ ] R45: Android share (3 min)
-- [ ] R46: real display + Safari (5 min)
-- [ ] R47: farm picker on phone and Xbox (5 min)
-- [ ] R60: two character fixtures (5 min)
-- [ ] R43: trade extras (optional, 10 min)
-- [ ] Say OK or no to N3 and F2 (tests under `packages/core/test`)
-
-### PX programme (2026-11-12)
-Plan, owner vision and batch sections: `docs/plans/PX-PROGRAMME.md`. Run order, sessions (PXA, PXB, PXC) and prompts:
-`docs/plans/PX-MASTER.md`. Core changes are allowed add-only with tests (owner, 2026-11-12).
-
-| ID | Scope | Depends on | Status |
+| ID | Branch | Scope | Depends on |
 |---|---|---|---|
-| PP1 | Performance plan (writes PX9–PX11) | — | partial, merged PR #134; gaps go to PXC |
-| PP2 | Character page spec: build card, tabs, easy wins | — | partial, merged PR #133; gaps go to PXA |
-| PP3 | Design and accessibility audit (writes PX8 rows) | — | partial, merged PR #132; gaps go to PXB, PXC |
-| PX1 | Solid bars and data panels | — | open (PXB) |
-| PX2 | Fix cards: new vs Pro, one trade label | — | open (PXA) |
-| PX3 | Build card hero | PP2 | open (PXA) |
-| PX4 | Character tabs | PX3 | open (PXA) |
-| PX5 | Easy wins (core ranking + UI) | PP2 | open (PXA) |
-| PX6 | Home for returning players; bottom bar order | — | open (PXB) |
-| PX7 | Farm and atlas on phone | — | open (PXB) |
-| PX8 | Type, contrast, spacing | PP3 | open (PXB) |
-| PX9 | Performance batch: import path (lazy-chunk budget line waits here) | PP1, PX4 | open (PXA) |
-| PX12 | Final QA | all | partial (PXC): scripted audit and CI gate done; ux-audit, spacing, empty-states, verbs not run (skills missing); touch-target list open. See `docs/carry/PXC.md` |
+| F1 | `data/<yyyymmdd>-danger-calibration` | R10: calibrated danger (follow `R40-RUN-LOG.md` exactly) | R40 (parked) |
+| F2 | `test/<yyyymmdd>-evidence-fixtures` | R60: skipped evidence-pack suites go live | R60 (Owner queue) |
 
-### CF programme (2026-11-13)
-Character-analysis correctness fixes from the Yykiuy PoB2 audit. Plan and decisions: `docs/plans/CF-PLAN.md`;
-spec: `docs/plans/CF-AUDIT-YYKIUY.md`. Core changes approved in the plan.
+Owner-only steps: § Owner queue and §2 (every §2 row is done or parked).
 
-| ID | Scope | Depends on | Status |
-|---|---|---|---|
-| CF1 | Element order, affix slots, dead stats, Martial Artist gloves (audit 1–4) | — | done, PR open (web gloves and catalog wiring go to CF2: see `docs/carry/CF1.md`) |
-| CF2 | Rubric, ranking, headline, waystone risk, methodology wording (audit 5–19) | CF1 | done, PR open (items 17 and 18 partial; open rows in `docs/carry/CF2.md`) |
+### CF follow-ups (2026-11-13)
+Open rows from CF2 (`docs/carry/CF2.md`); spec `docs/plans/CF-AUDIT-YYKIUY.md`.
+
+| ID | Scope | Status |
+|---|---|---|
+| CF2-1 | Patch label is a hand-kept `CURRENT_PATCH`; import it from `version.json` (S) | open (next-A) |
+| CF2-2 | Item 17: monster physical damage has no second source; cross-check before trusting "LOW RISK" (S) | open (next-A) |
+| CF2-3 | Web does not load `monk-gloves.json` (S) | open (next-A) |
+| CF2-4 | Dead-stat rule covers only the attack/spell split (M) | open (next-A) |
+| CF2-5 | ΔDPS is always null; fill `measured.dps` from ninja figures only (S) | open (next-A) |
 
 ### UXS (2026-11-13)
 Sweeps PXC skipped. UXS-2 to UXS-5 closed in UXS2 (2026-11-13). Open rows in `docs/carry/UXS2.md`.
@@ -162,16 +125,18 @@ Sweeps PXC skipped. UXS-2 to UXS-5 closed in UXS2 (2026-11-13). Open rows in `do
 |---|---|---|---|
 | UXS-1 | Collapse text sizes to about 8, 11 px label floor (M) | owner | open: moves of 2 px or more, so a `variant/<yyyymmdd>-type-scale` branch (UXS2 row 1) |
 | UXS2-2 | Atlas, farm and checklist layout defects found in the 1440 read (S to M) | — | open (UXS2 rows 2–6) |
+| UXS2-7 | Methodology and character tab strips bleed 20 px; confirm intended or align (S) | — | open (UXS2 row 7) |
 
 ### WQA (2026-11-14)
 Web quality audit. Fixes landed in WQA1; open rows in `docs/carry/WQA1.md`.
 
 | ID | Scope | Depends on | Status |
 |---|---|---|---|
-| WQA1-1 | Drop `'unsafe-inline'` from `script-src` by hashing the three bootstrap scripts (M) | owner | open: Needs owner (WQA1) |
+| WQA1-1 | Drop `'unsafe-inline'` from `script-src` by hashing the three bootstrap scripts (M) | owner | open: Owner queue |
 | WQA1-2 | LHCI: gate accessibility, SEO and best-practices scores (S) | a few runs on `main` | open |
 | WQA1-3 | Perf headroom: 24 KB near-unused chunk on `/`, render-blocking CSS, TBT on checklist and trade (M) | measure first, ≥ 5 % br | open |
-| WQA1-4 | Sync the route-budget text in this file with `scripts/route-weight.mjs` (S) | — | open |
+| WQA1-4 | Sync the route-budget text in this file with `scripts/route-weight.mjs` (S) | — | open (WQA4; also §4, §5, R50 and `VARIANT-STRATEGY.md` perf baseline) |
+| WQA1-5, WQA1-6 | Manifest/HSTS extras, JSON-LD | owner | open: Owner queue |
 | WQA3-A | Scroll fix: sky scroll pause lost on resize, phone cadence, composited Astrolabe, scroll guard (S–M) | — | open (`docs/carry/WQA3.md` batch A) |
 | WQA3-B | CI made real: ruleset bypass, visual baselines, flaky interactions test, LHCI asserts (S) | owner for bypass + baselines | open (batch B) |
 | WQA3-C | `/checklist` CLS 0.25 under reduced motion, 404 metadata, font preloads (S) | — | open (batch C) |

@@ -1,30 +1,26 @@
 # Carry index
 
-One line per ID: status, PR. Archived carry files were removed (see Archive below).
-Live rows are tracked in `docs/remaining/REMAINING-WORK.md`.
+One line per session ID: PR state, then open rows. This index is shared (any session updates it); carry files are not.
+The PR number lives here only. Live rows are tracked in `docs/remaining/REMAINING-WORK.md`; owner decisions in its
+§ Owner queue. Session IDs: prefix + next free number for that prefix (Active and Archive below).
 
 ## Active
 - [WQA3](WQA3.md): done, docs-only PR (scroll + quality audit: sky loses its scroll pause on resize, 17–34 % janky frames on phone; open rows WQA3-1 to WQA3-21 in batches A–F)
-- [WQA1](WQA1.md): done, PR open (web quality audit: Lighthouse 100 on a11y, BP, SEO on all 8 routes; fixed Atlas "Map" label mismatch, robots.txt, per-route descriptions and OG, data-version hash gap; open rows WQA1-1 to WQA1-6)
-- [CMP1](CMP1.md): done, PR #172 on `variant/20261113-companion` (mock companion head; open rows CMP1-1 to CMP1-5)
-- [UXS2](UXS2.md): done, PR open (UXS-2 to UXS-5 closed; UXS-1 type scale is Needs owner as a variant branch; layout defects from the 1440 read)
-- [UXS](UXS.md): done, PR open (ux-audit, spacing, empty-states, verbs, a11y sweeps; open rows UXS-1 to UXS-5)
-Each has at least one open row. Owner-side rows are tracked in `../remaining/REMAINING-WORK.md`.
-- [CF2](CF2.md): done, PR open (audit items 5–19; Yykiuy 0.48 C → 0.65 B; open rows for the next batch)
-- [CF1](CF1.md): done, merged PR #162 (audit items 1–4; CF1-2 to CF1-4 resolved in CF2, CF1-1 and CF1-5 carried in CF2)
-- [ATLAS-MAP](ATLAS-MAP.md): done, merged (#164, Focus variant #166; Route #165 closed; Route-only visuals optional for next-U)
-- [PXV](PXV.md): parity plus three design variants, draft PRs open
-- [N4](N4.md): done, PR open (rows R64, R66, R67 closed; no open rows)
-- [N1](N1.md): done, PR open (rows R56, R58 closed; no open rows)
-- [N3](N3.md): done, PR open (row R61 closed; no open rows)
-- [N2](N2.md): done, PR open (row R62 closed; no open rows)
-- [PL1](PL1.md): active, this branch (plan 2026-11-08; open rows are register batches N1–N3)
-- [PV1](PV1.md): done, merged (PoB2 verification done by the owner 2026-11-13; plan doc removed; R65 still open)
-- [PXC](PXC.md): draft PR on `claude/pxc-perf-qa` (PX10, PX11, PX0, PX12 partial; open rows: visual baseline commit (owner), lazy-chunk line, content-visibility, SW check, items 1b/1c, skills sweeps, touch targets, perf-diff.mjs)
-- [PX](PX.md): active (plan 2026-11-12; run order in `docs/plans/PX-MASTER.md`; open rows are register batches PX0–PX12, run as PXA, PXB, PXC)
-- [PP1](PP1.md): partial, merged PR #134 (items 4–8 go to PXC as "measure first"; continuation prompt not run)
-- [PP2](PP2.md): partial, merged PR #133 (gaps go to PXA as "measure first"; continuation prompt not run)
-- [PP3](PP3.md): partial, merged PR #132 (open items 1–6 answered in PX-MASTER "Plan-doc gaps"; continuation prompt not run)
+- [PRO1](PRO1.md): open, PR pending (process hardening; open rows for WQA4 and the owner queue)
+- [WQA1](WQA1.md): merged #173, `test` red at merge (e2e flake; `main` green after). Open rows WQA1-2 to WQA1-6; WQA1-1 in Owner queue
+- [CMP1](CMP1.md): merged #172 (mock companion head; open rows CMP1-2 to CMP1-5; CMP1-1 in Owner queue)
+- [UXS2](UXS2.md): merged #171 (layout defects UXS2-2 to UXS2-7; UXS-1 type scale in Owner queue)
+- [CF2](CF2.md): merged #163 (follow-ups CF2-1 to CF2-5; CF1-1 settings deny in Owner queue)
+- [PXC](PXC.md): merged #154, #169 (open rows 2–7 and 11; PXC-1 visual baselines in Owner queue)
+- [PXV](PXV.md): merged #155, #158 (waystone #156 and ledger #157 closed; open row PXV-5)
+- [PXA](PXA.md): merged #136, #142 (open row PXA-9; PXA-7, PXA-8 in Owner queue)
+- [PXB](PXB.md): merged #137 (open row PXB-2, home hero CLS)
+- [PV1](PV1.md): merged #128 (open row PV1-4 = register R65, batch PV3)
+- [OC1](OC1.md): merged #121, #127 (open row 3 = register R60, in Owner queue)
 
 ## Archive
-Archived carry files were removed 2026-11-12; see git history.
+Carry files removed; see git history.
+- 2026-11-14 (PRO1): UXS #170, CF1 #162, N1 #122, N2 #124, N3 #125, N4 #153, PL1 #120/#123, PX #135/#131, PP1 #134,
+  PP2 #133, PP3 #132, ATLAS-MAP #164/#166 (#165 closed), PXD #138, PXA-followups #151, ATLAS-MAP-PLAN and
+  GEAR-DESIGN-PROMPT (prompts, built in #160 and #164–#166). Rows they still had are resolved in `PRO1.md`.
+- 2026-11-12: earlier batches.

@@ -1,6 +1,6 @@
 # PERF-PLAN (PP1) · 2026-11-12 · PARTIAL (items 4–8 measured in PXC 2026-11-13)
 
-Status: **partial**. Items 1–3 measured; items 4–8 measured in PXC (1b and 1c still not run). The PX10/PX11 status is in their sections below. PX9 is written
+Status: **mostly done** (PRO1, 2026-11-14: only items 1b/1c remain, tracked as PXC-7 in `docs/carry/PXC.md`). Was: **partial**. Items 1–3 measured; items 4–8 measured in PXC (1b and 1c still not run). The PX10/PX11 status is in their sections below. PX9 is written
 from measurements; PX10 and PX11 are drafts that the continuation run (prompt in `docs/carry/PP1.md`) must finish
 after measuring items 4–8. No number in this file is a guess; unmeasured rows say so and give the command.
 

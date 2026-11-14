@@ -1,4 +1,4 @@
-# 06 — Design variant strategy
+# Design variant strategy
 
 Goal: build design variants as **separate copies** that never change the live site, preview each on its own URL,
 and compare them side by side.
@@ -12,11 +12,11 @@ So every variant gets a stable URL with no infrastructure work, and production (
 | Item | Convention |
 |---|---|
 | Branch | `variant/<yyyymmdd>-<slug>`, e.g. `variant/20261101-ember-glass` |
-| Preview URL | `https://variant-20261101-ember-glass.upgraded-disco-companion.pages.dev/` (Pages lowercases and turns `/` into `-`; aliases are cut to 28 chars, so keep slugs short) |
+| Preview URL | `https://variant-20261101-ember-glass.upgraded-disco-companion.pages.dev/` (Pages lowercases and turns `/` into `-`; aliases are cut to 28 chars, so keep `<yyyymmdd>-<slug>` within 28: `variant/20261113-gear-combined` (30) got a truncated alias) |
 | Commit-pinned URL | the `<hash>.upgraded-disco-companion.pages.dev` URL from the Pages deployment, for "exactly this build" links |
-| Scope rule | a variant branch may change `apps/web/src/app/tokens.css` (after T19), `globals.css`, `components/fx/*` and presentational components. It must not change `packages/*`, `services/*`, `apps/mcp`, data, or tests' assertions about behaviour |
+| Scope rule | a variant branch may change `apps/web/src/app/tokens.css` (after T19), `globals.css`, `components/fx/*` and presentational components. Work that needs `packages/*` goes on a `claude/*` branch instead. It must not change `packages/*`, `services/*`, `apps/mcp`, data, or tests' assertions about behaviour |
 | Screenshots | taken with `node scripts/screenshot.mjs` against the preview URL, stored **outside git** (e.g. `C:\Dev\data\poe2-variants\<slug>\`) or attached to the PR |
-| Promotion | open a PR from the variant branch to `main`; production deploys on merge |
+| Promotion | open a PR from the variant branch to `main` and mark it ready (SESSION-PROTOCOL Finish 5). The owner reviews the preview and merges; sessions never merge. Production deploys on merge |
 | Retirement | close the PR and keep the branch (cheap); delete only with owner confirmation |
 
 Why not copies inside the repo (`variants/<name>/` or `apps/web-<name>/`):
@@ -79,9 +79,9 @@ Recorded from the 2026-10-22 audit (D1–D10 accepted 2026-10-22; D11–D15 acce
 - D1 (2026-10-22): chat CSP allows the three provider origins in `connect-src` (bring-your-own-key).
 - D2 (2026-10-22): sky dim via CSS instead of canvas, gated on a screenshot match.
 - D3 (2026-10-22): quantised twinkle with 8 alpha levels (16 if stepping is visible).
-- D4 (2026-10-22): Dependabot grouped, weekly, max 5 open PRs, plus the CI `npm audit` step.
+- D4 (2026-10-22): Dependabot grouped, weekly, max 5 open PRs, plus the CI `npm audit` step. Version updates paused since #152 (`open-pull-requests-limit: 0`); the `npm audit` step stays.
 - D5 (2026-10-22): branch-per-variant with Pages previews; tokens.css split; no new screenshots in git; no history rewrite.
-- D6 (2026-10-22): keep Cloudflare's managed robots.txt; add sitemap.xml; no in-repo robots.txt.
+- D6 (2026-10-22): keep Cloudflare's managed robots.txt; add sitemap.xml; no in-repo robots.txt. Superseded by WQA1 (#173): `apps/web/src/app/robots.ts` now ships one.
 - D7 (2026-10-22): the CLAUDE.md Design / Cloudflare Pages additions (applied).
 - D8 (2026-10-22): ninja-proxy CORS allowlist (production, pages.dev previews, localhost); owner deploys on Vercel.
 - D9 (2026-10-22): remove HSTS `includeSubDomains` before attaching a custom domain; no `preload`.
@@ -94,7 +94,7 @@ Recorded from the 2026-10-22 audit (D1–D10 accepted 2026-10-22; D11–D15 acce
 
 ## Perf baseline
 
-Headline numbers from the 2026-10-22 audit and the 2026-11-01 Lighthouse baseline (U13b). Full tables are in git history.
+Historical: headline numbers from the 2026-10-22 audit and the 2026-11-01 Lighthouse baseline (U13b). The current route budgets are the ones pinned in `scripts/route-weight.mjs` (it exits 1 when a route is over); the byte budgets below are superseded (WQA1-4).
 
 - Build output `apps/web/out`: 7.4 MB; all JS chunks 1,494,131 B raw / 378,331 B brotli (2026-10-22).
 - Route JS+CSS brotli, first load: `/` 223 KB, `/checklist/` 239 KB, `/character/` 263 KB, `/atlas/` 234 KB (2026-10-22). `/` HTML brotli 13.5 KB.

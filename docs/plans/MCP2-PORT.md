@@ -1,5 +1,7 @@
 # MCP2 port plan (sessions M1, M2)
 
+Status: **done** (PRO1, 2026-11-14). The ported tools and `packages/core/src/provenance` are on `main`; kept for the provenance comment that cites it.
+
 **Owner-approved 2026-11-03.** This plan explicitly authorises M1 to change `packages/core` and to add the small
 `packages/data/generated/version.json`. Treat those changes as approved, not as "Needs owner" items under
 `docs/SESSION-PROTOCOL.md`. The source repo is `demonad112/poe2-mcp2` (MIT licence; credit it in `apps/mcp/README.md`).
