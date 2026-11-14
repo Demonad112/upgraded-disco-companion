@@ -1,7 +1,29 @@
-## What
+Preview: <!-- https://<branch-slug>.upgraded-disco-companion.pages.dev/ -->
+
+## Summary
 
 <!-- One or two sentences, action first. -->
 
-## Limits / left to CI
+## Previous wave check
 
-<!-- What this does not cover, and checks left to CI (e2e, Lighthouse). -->
+<!-- Each batch since the last check: merged #n, checks green at merge, latest main run green; or the breakage and what was done. -->
+
+## Carry-over handled
+
+<!-- <source ID>-<#>: answer chosen / what was implemented / re-assigned to. -->
+
+## Gate
+
+<!-- One line per command with its result. Docs-only: "skipped (docs only)". No `writing actual`; skipped count vs last batch. -->
+
+## Screenshots
+
+<!-- List them (images stay out of git), or "none". -->
+
+## Limits
+
+<!-- What this does not cover, and checks left to CI. -->
+
+## Needs owner
+
+<!-- Owner queue row IDs (docs/remaining/REMAINING-WORK.md § Owner queue), or "none". -->

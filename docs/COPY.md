@@ -9,3 +9,10 @@ The site talks like a golf caddy to a new player: what to do, and one short reas
 - Tooltips (glossary `short`, primer `short`): about 80–90 characters.
 - Long text lives only behind **Pro detail** (`ProOnly`, `ProSwap`, finding `detail`).
 - Caps are enforced in `apps/web/test/shortCopy.test.ts` (caddy caps) and the core "caddy copy" test.
+
+## Case
+- Write all copy in sentence case in the source: headings, buttons, tabs, labels, toasts, titles ("Find on trade", not "Find On Trade").
+- Uppercase comes from CSS only (h1–h4 and labels, per CLAUDE.md Design). Never type caps into the string.
+- Finding, step and strategy titles render in sentence case (`.title-sentence`).
+- Proper nouns and game terms keep their own case (Atlas, Waystone, Martial Artist, poe.ninja).
+- Why: one source string serves both looks, screen readers don't spell typed caps letter by letter, and text-based tests stay stable.

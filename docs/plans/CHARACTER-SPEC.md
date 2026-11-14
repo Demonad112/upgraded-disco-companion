@@ -1,6 +1,6 @@
 # Character page spec (PP2) · 2026-11-12
 
-Status: **partial draft**. Sections marked "to finish" are for the follow-up chat (prompt in `docs/carry/PP2.md`).
+Status: **done, reference only** (PRO1, 2026-11-14). Built in PXA (#136, #142); the "to finish" sections were not continued. Kept because `buildcard.css` cites it.
 Anything not measured is written "not verified". Owner vision (`PX-PROGRAMME.md`) is decided and not reopened.
 
 ## 0. Measured today (build of `main` @ 471a32a, served with `apps/web/e2e/serve.mjs`)

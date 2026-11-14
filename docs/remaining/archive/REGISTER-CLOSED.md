@@ -7,7 +7,7 @@ Status is `done`, `answered` or `parked`. A parked row comes back only if the ow
 ## 1. Unstarted planned work
 | ID | Item | Class | Origin | Recommended / notes | Status |
 |---|---|---|---|---|---|
-| R02 | IMG-1 design brief (owner, Claude chat, no repo); picks saved to `docs/ui/img/` (doesn't exist yet) | A | LAUNCH-PLAN | Brief text is in LAUNCH-PLAN. Blocks R03 | done: bars B picked (`docs/ui/img/img1-bars-b.html`); share card unchanged |
+| R02 | IMG-1 design brief (owner, Claude chat, no repo); picks saved to `docs/ui/img/` (doesn't exist yet) | A | LAUNCH-PLAN | Brief text is in LAUNCH-PLAN. Blocks R03 | done: bars B picked (`docs/design/img1-bars-b.html`); share card unchanged |
 | R03 | IMG-2 visual build: chosen bar style in `DpsMatrix`, `DefensePanel`, `Instruments`, `Showcase`; 12-icon set in `components/icons/*` (doesn't exist); share-card art; diagram/ring/stamp restyle (CH1-2, V1-2); use `--dmg-lightning-core` and `--dmg-chaos-edge` (R30) | C | LAUNCH-PLAN | Picks in `docs/ui/img/`; share-card art excluded (owner: done) | done (B4b, #110): engraved bars in `DefensePanel` (resists, largest hit) and `DpsMatrix` (split + per-skill), grade-stamp bevel, 12-icon set in `components/icons/` (checklist primer, Atlas mechanic tabs), diagram plates; `Instruments` has no bar (chips only); share card unchanged. R45/R46: emulated parts in `docs/carry/IMG2.md`, real devices owner |
 | R04 | QA sweep after R03's PR: 390×844 and 360×780 shots of `/`, `/checklist`, `/atlas`, `/dashboard`, `/character`, share card both sizes; e2e; Lighthouse mobile; report as one PR comment | C | LAUNCH-PLAN | Also covers H1-2 and V1-1 (R25) | done |
 
@@ -73,3 +73,24 @@ Moved from `docs/remaining/REMAINING-WORK.md`. Full results: `docs/carry/PXC.md`
 | UXS-3 | ImportBar example button has no verb | S | UXS | `aria-label` "Use this example: <url>", visible text unchanged; e2e added | done (UXS2) |
 | UXS-4 | `/character` empty preview box has no next action | S | UXS | Line now reads "Paste a poe.ninja URL above and press Analyse." | done (UXS2) |
 | UXS-5 | 1440 px screenshots read with the critique rubric | S | UXS | Defects in `docs/carry/UXS2.md`; one fixed (see-through sticky tab strips) | done (UXS2) |
+
+## Batches closed in PRO1 (2026-11-14)
+Moved from `docs/remaining/REMAINING-WORK.md` §6 after checking each PR on GitHub.
+
+| ID | Item | Status |
+|---|---|---|
+| PP1 / PP2 / PP3 | Perf plan, character spec, design audit | merged #134 / #133 / #132 (partial; gaps done in PXA–PXC and UXS) |
+| PX1, PX6, PX7, PX8 | Solid bars, home, farm/atlas phone, type/contrast | merged in PXB #137 |
+| PX2–PX5, PX9 | Fix cards, build card, tabs, easy wins, import path | merged in PXA #136, #142, #139 |
+| PX12 | Final QA | partial in PXC #169; skipped sweeps ran in UXS #170 / UXS2 #171 |
+| CF1 | Element order, affix slots, dead stats, gloves | merged #162 |
+| CF2 | Rubric, ranking, headline, waystone risk, wording | merged #163 (follow-ups CF2-1..5 stay open in the register) |
+
+Owner rows moved from §2 (PRO1); R54 closed as done (OWNER-STEPS step 3 ticked; R49 shows 0 NO_NAVSTART on main):
+
+| ID | Action | Owner step | Origin | Status |
+|---|---|---|---|---|
+| R59 | Check that the live CSP header has `api.anthropic.com` and `generativelanguage.googleapis.com` | 2 | PR #111 | done 2026-11-08: live CSP has both hosts, header set matches `_headers` (OC1) |
+| R49 | Confirm that the first Lighthouse run on main is green now that the job is set to error | 3 | L1-2 | done 2026-11-08: latest main run (PR #116) green, 0 NO_NAVSTART (OC1) |
+| R54 | Lighthouse `NO_NAVSTART` on `/character/`: none in 3 local and 5 CI runs; the owner confirms | 3 | U13b-4 | parked (P): owner skipped manual checks 2026-11-08 |
+| R42 | Open one "Find better gear" link on live trade2 and confirm the weighted group prefills. It returns 403 from the cloud sandbox | 4 | CH6-1 | done 2026-11-08: weighted group prefilled in Chrome, resistances stayed minimums (OC1) |

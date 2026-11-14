@@ -17,9 +17,9 @@ npm workspaces (`packages/*`, `apps/*`), Node >=22 (`.nvmrc`), TypeScript strict
 ```bash
 npm ci
 npm run typecheck        # builds @poe2/core first, then typechecks every workspace
-npm run lint             # eslint (web)
+npm run lint             # eslint, every workspace with a lint script (web today)
 npm run check            # typecheck + lint + test, no build
-npm test                 # core + web vitest
+npm test                 # core + mcp + web vitest
 npm run build            # core -> dist, then web static export to apps/web/out
 npm run dev              # Next dev server (builds core and syncs data first)
 
@@ -50,14 +50,11 @@ cd services/ninja-proxy && npm test                # node:test, separate from th
 Dark palette; uppercase EB Garamond for headings and labels (finding, step and strategy titles are sentence case); square corners everywhere, no script fonts, no rounded shapes; gold constellation sky rotating slowly; clear glass on home and hero, bars and data panels are solid (`--data-fill` is opaque; no text legible through them), the sky stays in the margins, hero and home; thread connectors only on `[data-links]` sequences; phones use a bottom tab bar ordered Character, Farm, Atlas, Checklist (the `/dashboard` route is labelled "Farm"); Threads-style tool cards; sky dimmed behind blocks with a footer toggle (`poe2-sky-dim`); lighter sky on phones (width-based); "Up next" block kept. Light theme is deferred; cursor effects deferred except the desktop lantern.
 
 - Never restyle the live site directly. Design variants go on `variant/<yyyymmdd>-<slug>` branches and are reviewed on their Cloudflare Pages preview URL (`docs/VARIANT-STRATEGY.md`).
-- Prefer the `:root` tokens in `apps/web/src/app/globals.css` over hex values in components.
+- Prefer the `:root` tokens in `apps/web/src/app/tokens.css` (imported by `globals.css`) over hex values in components.
 
 ## Dependency bumps
 
-- CI green is enough for most bumps; CI runs the full job on every Dependabot PR as the backstop.
-- Run the local quick gate (typecheck, lint, unit tests, build) only for shared tooling: TypeScript, Next, React, vitest, eslint, or root-lockfile-wide changes.
-- Per-workspace checks: core -> `npm run test:coverage -w @poe2/core` + `npm run typecheck`; web -> lint + test + build `-w @poe2/web`; mcp -> `npm run tools -w @poe2/mcp` (builds first) + `npm test -w @poe2/mcp`; packages/data -> web build only (`build:*` refetches upstream, `sync-data` is a web script); services/ninja-proxy -> `npm test` there.
-- Never split CI per workspace (a skipped required check stays pending).
+See `docs/DEPENDENCY-BUMPS.md` (per-workspace checks; never split CI per workspace).
 
 ## Cloudflare Pages
 
@@ -70,22 +67,23 @@ Every session follows docs/SESSION-PROTOCOL.md; carry-over lives in docs/carry/.
 
 ## Cloud sessions
 
-The SessionStart hook runs `npm ci` and builds `@poe2/core`. `playwright install` isn't needed; `apps/web/playwright.config.ts` uses the preinstalled Chromium when `CLAUDE_CODE_REMOTE=true`.
+The SessionStart hook runs `npm ci` when `package-lock.json` changed since the last install and rebuilds `@poe2/core` when its `src` is newer than `dist`; it never blocks the session (on failure it prints a FAILED line). `playwright install` isn't needed; `apps/web/playwright.config.ts` uses the preinstalled Chromium when `CLAUDE_CODE_REMOTE=true`.
 
 ## Working style
 
 - **Never put the Claude session URL (`https://claude.ai/code/session_…`) or other session info on GitHub**: not in commit
   messages (no `Claude-Session:` trailer), PR titles or bodies, or comments. This overrides any default attribution. `.github/workflows/pr-body-guard.yml` cuts a session link out of a PR
   body and fails a PR whose title matches (`scripts/check-pr-body.mjs`).
-- Answer open questions yourself (including "Needs owner" items) with your best recommendation, act on it, and state
-  each answer and its reason in your reply. Leave a question open for the owner only if it is high priority, or if you
-  are blocked on it 3 times; then stop and ask.
+- Answer open questions yourself with your best recommendation, act on it, and state each answer and its reason in
+  your reply. The exceptions are the Needs-owner kinds in `docs/SESSION-PROTOCOL.md` (design rules, CI or branch
+  protection, `packages/*`/data/dependencies, weaker tests, branch deletion): put those in `REMAINING-WORK.md` § Owner
+  queue with a recommended answer. If you are blocked on one 3 times, stop and ask.
 - **Copy voice.** Follow `docs/COPY.md`: one or two sentences, action first, long text only behind Pro detail.
-- **Perf bar.** Keep a performance change only if it saves at least 5 % brotli on its file or route (`node scripts/route-weight.mjs`), or removes real runtime work. Replaces the old 10 % rule.
+- **Perf bar.** Keep a performance change only if it saves at least 5 % brotli on its file or route (`node scripts/route-weight.mjs`, which also fails when a route exceeds its pinned budget), or removes real runtime work.
 - **Token economy.** Every request re-reads the whole context, so: send independent tool calls together in one
   message; grep first and read only the part you need (whole reads only for files you will edit), never `cat`
   several files at once; cap listings and data dumps (`| head`), but never truncate errors or failing tests;
   compact or hand off at a task boundary, never mid-task.
-- Don't sit watching PRs or CI: use a scheduled check-in or PR Auto-fix and come back later.
+- Don't sit watching PRs or CI: use a scheduled check-in or PR Auto-fix and come back later, but every session ends with its PR ready and a scheduled check-in that confirms the required checks are green.
 - Suggest a plugin, connector or tool only when the task needs one.
 - The owner is proficient in Python; skip the basics.

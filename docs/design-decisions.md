@@ -1,5 +1,7 @@
 # Design decisions — Character Analysis redesign
 
+Status (PRO1, 2026-11-14): font, glass and square-corner entries still stand. The seven-section accordion layout and ScrollSpyNav entries are superseded by the PX4 tabs (`docs/plans/CHARACTER-SPEC.md`). CLAUDE.md "Design" wins on any conflict.
+
 Source spec: *PoE2 Endgame Companion — Design System and Character Page Spec* (2026-10-21).
 
 **Repo used:** `Demonad112/upgraded-disco-companion` (`apps/web`). The character page (`/character/`) lives here, so `POE2-V3.0` was not touched.

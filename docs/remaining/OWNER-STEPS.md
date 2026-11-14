@@ -28,7 +28,7 @@ The rest are independent. The step numbers stay the same so old reports still ma
 
 ## When you play
 
-- [ ] **4. Test one "Find better gear" link** (R42) (5 min)
+- [x] **4. Test one "Find better gear" link** (R42) (done 2026-11-08: weighted group prefilled)
   - Import a character on `/character/`, scroll to Gear targets, click "Find better gear".
   - Passes if the official trade site opens with the stat filters already filled in, and shows results.
   - If it opens empty, copy the address bar URL into a note for the next session.
@@ -56,8 +56,8 @@ The rest are independent. The step numbers stay the same so old reports still ma
 
 ## Send to a session
 
-- [ ] **11. Two character files for pending tests** (R60) (5 min)
-  - Needed: a poe.ninja export of the level 63 Martial Artist ("Yykiuy") and of the level 94 Athrynas.
+- [ ] **11. One character file for pending tests** (R60) (5 min; Yykiuy is done: `yykiuy-v51/v80.json`)
+  - Needed: a poe.ninja export of the level 94 Athrynas (the Yykiuy files are in `packages/core/test/fixtures/`).
   - Save them as `packages/core/test/fixtures/yykiuy-v<version>.json` and `athrynas-94-v<version>.json`, or attach
     them in a chat and ask a session to add them. The tests switch on by themselves once the files exist (batch F2).
 
@@ -66,7 +66,7 @@ The rest are independent. The step numbers stay the same so old reports still ma
 
 ## Optional
 
-- [ ] **5. Trade site extras** (R43) (10 min; you skipped this before)
+- [ ] **5. Trade site extras** (R43) (done 2026-11-08 except the console realm; only that check is left)
   - On `/trade/`, build a long search (many stats) and open it. Passes if trade loads it, not an error.
   - Change the listing status (online / any) and open it again. Passes if trade shows the same status.
   - If you play on console: say whether trade links work for your realm.
