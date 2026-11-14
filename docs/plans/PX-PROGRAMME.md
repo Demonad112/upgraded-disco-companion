@@ -1,5 +1,7 @@
 # PoE2 Endgame Companion: presentation, UX and performance programme (PX)
 
+Status: **done, reference only** (PRO1, 2026-11-14). All waves merged (PXA #136/#142, PXB #137, PXC #154/#169, PXD #138). "Owner vision" below is still the decided reference; the prompts and wave tables are history.
+
 ## Context
 
 The app is a PoE2 character analyser and endgame companion: poe.ninja import → graded verdict, ranked fixes, defences,

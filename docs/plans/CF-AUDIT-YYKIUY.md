@@ -1,5 +1,7 @@
 # Character-analysis site: what's wrong and what to fix (Yykiuy audit)
 
+Status: **done** (PRO1, 2026-11-14). CF1 #162 and CF2 #163 merged; the open follow-ups are CF2-1 to CF2-5 in `docs/carry/CF2.md`, which cite this file's item numbers.
+
 ## Context
 I audited the site's output for Yykiuy (Monk / Martial Artist L88, Falling Thunder, poe.ninja snapshot 2026-11-12T23:34Z) against ground truth. This list covers correctness only; the site's design and presentation stay as they are. Ranking changes are included because they decide which fixes appear.
 
