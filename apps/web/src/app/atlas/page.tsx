@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { pageMeta } from '@/lib/pageMeta'
 import { AtlasSequenceTracker } from "@/components/atlas/AtlasSequenceTracker";
 import { WarningPanel } from "@/components/shared/WarningPanel";
 import { BiomePanel } from "@/components/atlas/BiomePanel";
@@ -11,9 +12,7 @@ import { AtlasMapSheet, OpenMapButton } from "@/components/atlas/AtlasMapSheet";
 import { AtlasGuideTabs } from "@/components/atlas/AtlasGuideTabs";
 import { commonMistakes } from "@/data/commonMistakes";
 
-export const metadata: Metadata = {
-  title: "Atlas Tree Planner — PoE2 Endgame Companion",
-};
+export const metadata: Metadata = pageMeta('Atlas Tree Planner', 'Which Atlas nodes to take, in order. Tap Map to find one on the tree.')
 
 export default function AtlasPage() {
   return (

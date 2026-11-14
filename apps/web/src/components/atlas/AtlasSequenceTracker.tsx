@@ -38,7 +38,7 @@ export function AtlasSequenceTracker() {
             <Button variant="primary" onClick={() => toggleCluster(next.id)}>
               ✓ Mark taken
             </Button>
-            <ShowOnTreeButton names={next.treeNodes} label={next.name} ariaLabel={`Show the next node, ${next.name}, on the Atlas tree`} />
+            <ShowOnTreeButton names={next.treeNodes} label={next.name} ariaLabel={`Map, show the next node, ${next.name}, on the Atlas tree`} />
           </div>
         ) : null}
       </div>

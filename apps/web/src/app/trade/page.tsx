@@ -1,11 +1,9 @@
 import type { Metadata } from 'next'
+import { pageMeta } from '@/lib/pageMeta'
 import { PageHeader } from '@/components/layout/PageHeader'
 import { ManualPriceCheck } from '@/components/trade/ManualPriceCheck'
 
-export const metadata: Metadata = {
-  title: 'Manual price check — PoE2 Endgame Companion',
-  description: 'Build a trade-site search link from a base type and mod filters. Nothing is priced here.',
-}
+export const metadata: Metadata = pageMeta('Manual price check', 'Build a trade-site search link from a base type and mod filters. Nothing is priced here.')
 
 export default function TradePage() {
   return (

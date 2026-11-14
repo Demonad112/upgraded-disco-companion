@@ -163,6 +163,16 @@ Sweeps PXC skipped. UXS-2 to UXS-5 closed in UXS2 (2026-11-13). Open rows in `do
 | UXS-1 | Collapse text sizes to about 8, 11 px label floor (M) | owner | open: moves of 2 px or more, so a `variant/<yyyymmdd>-type-scale` branch (UXS2 row 1) |
 | UXS2-2 | Atlas, farm and checklist layout defects found in the 1440 read (S to M) | — | open (UXS2 rows 2–6) |
 
+### WQA (2026-11-14)
+Web quality audit. Fixes landed in WQA1; open rows in `docs/carry/WQA1.md`.
+
+| ID | Scope | Depends on | Status |
+|---|---|---|---|
+| WQA1-1 | Drop `'unsafe-inline'` from `script-src` by hashing the three bootstrap scripts (M) | owner | open: Needs owner (WQA1) |
+| WQA1-2 | LHCI: gate accessibility, SEO and best-practices scores (S) | a few runs on `main` | open |
+| WQA1-3 | Perf headroom: 24 KB near-unused chunk on `/`, render-blocking CSS, TBT on checklist and trade (M) | measure first, ≥ 5 % br | open |
+| WQA1-4 | Sync the route-budget text in this file with `scripts/route-weight.mjs` (S) | — | open |
+
 ### Do not do
 | Item | Why |
 |---|---|

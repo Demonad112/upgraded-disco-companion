@@ -43,6 +43,8 @@ const dataVersion = (() => {
   for (const file of ['passive-tree.json', 'mod-tiers.json', 'monster-stats.json', 'atlas-tree.json', 'bases.json', 'pob-skills.json']) {
     hash.update(readFileSync(join(__dirname, '..', '..', 'packages', 'data', 'generated', file)))
   }
+  // trade2-stats.json sits beside generated/ (recorded by hand) and feeds trade2-stats.json and trade-map.json.
+  hash.update(readFileSync(join(__dirname, '..', '..', 'packages', 'data', 'trade2-stats.json')))
   return hash.digest('hex').slice(0, 12)
 })()
 

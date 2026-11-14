@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { pageMeta } from '@/lib/pageMeta'
 import { benchmarkGates } from "@/data/benchmarks";
 import { commonMistakes } from "@/data/commonMistakes";
 import { ChecklistSection } from "@/components/checklist/ChecklistSection";
@@ -16,9 +17,7 @@ import { PageHeader } from "@/components/layout/PageHeader";
 import { stepsByPhase } from "@/lib/roadmapOrder";
 import { stepSummaries } from "@/lib/stepSummary";
 
-export const metadata: Metadata = {
-  title: "Progression Checklist — PoE2 Endgame Companion",
-};
+export const metadata: Metadata = pageMeta('Progression Checklist', 'What to do next, from campaign end to your farming loop. Tick steps as you go.')
 
 export default function ChecklistPage() {
   return (

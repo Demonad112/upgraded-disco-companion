@@ -4,6 +4,7 @@ One line per ID: status, PR. Archived carry files were removed (see Archive belo
 Live rows are tracked in `docs/remaining/REMAINING-WORK.md`.
 
 ## Active
+- [WQA1](WQA1.md): done, PR open (web quality audit: Lighthouse 100 on a11y, BP, SEO on all 8 routes; fixed Atlas "Map" label mismatch, robots.txt, per-route descriptions and OG, data-version hash gap; open rows WQA1-1 to WQA1-6)
 - [CMP1](CMP1.md): done, PR #172 on `variant/20261113-companion` (mock companion head; open rows CMP1-1 to CMP1-5)
 - [UXS2](UXS2.md): done, PR open (UXS-2 to UXS-5 closed; UXS-1 type scale is Needs owner as a variant branch; layout defects from the 1440 read)
 - [UXS](UXS.md): done, PR open (ux-audit, spacing, empty-states, verbs, a11y sweeps; open rows UXS-1 to UXS-5)

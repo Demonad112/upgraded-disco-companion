@@ -1,15 +1,12 @@
 import type { Metadata } from 'next'
+import { pageMeta } from '@/lib/pageMeta'
 import type { ReactNode } from 'react'
 import { PageHeader } from '@/components/layout/PageHeader'
 import { ScrollSpyNav } from '@/components/shared/ScrollSpyNav'
 import { AnchorLink } from '@/components/shared/AnchorLink'
 import { METHODOLOGY_SECTIONS } from '@/data/methodology'
 
-export const metadata: Metadata = {
-  title: 'Methodology — PoE2 Endgame Companion',
-  description:
-    'How the Character page grades a build, ranks findings and labels numbers, and what it refuses to guess.',
-}
+export const metadata: Metadata = pageMeta('Methodology', 'How the Character page grades a build, ranks findings and labels numbers, and what it refuses to guess.')
 
 /*
  * Every statement on this page restates code in packages/core/src or copy the
