@@ -153,6 +153,18 @@
     }
   }
 
+  /* Effects tier (lib/fxTier): lite drops the hover pulse (focus keeps it); still drops both. */
+  @media (hover: hover) {
+    :root[data-fx='lite'] [data-pulse]:hover:not(:focus-visible),
+    :root[data-fx='lite'] [data-pulse]:hover:not(:focus-visible)::after {
+      animation: none;
+    }
+  }
+  :root[data-fx='still'] [data-pulse]:is(:hover, :focus-visible),
+  :root[data-fx='still'] [data-pulse]:is(:hover, :focus-visible)::after {
+    animation: none;
+  }
+
   /* Hero: the headline and copy rise in, the triad's diamonds pop and its line draws, once on load. Transform and
      opacity only. `backwards` holds the start state during the delay; the resting state is the plain styles. */
   /* Not 0: Chrome skips opacity-0 text for LCP, so the big phone title would count only once the rise ends. */

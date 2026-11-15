@@ -33,11 +33,13 @@ export function startSky(canvas: HTMLCanvasElement, kick: { current: () => void 
   let field: Field | null = null
   let ticks: Ticks[] = []
   let dpr = 1
-  // Lite (data saver, <=4 cores or GB): half the stars, 15fps.
-  const nav = navigator as Navigator & { connection?: { saveData?: boolean }; deviceMemory?: number }
-  const lite = !!nav.connection?.saveData || (nav.hardwareConcurrency || 8) <= 4 || (nav.deviceMemory ?? 8) <= 4
+  // Effects tier (lib/fxTier, <html data-fx>): lite is half the stars at 15fps, DPR 1 and no lantern; still is the
+  // reduced-motion frame. The tier can change at any time (detection, the footer), so these are read live.
+  const isLite = () => root.dataset.fx === 'lite'
+  const still = () => motion.matches || root.dataset.fx === 'still'
+  let lite = isLite()
   // WQA3-2a: touch screens get the lite cadence too; the drift is ~0.2 px a frame, so 15fps looks the same and frees scroll.
-  const interval = lite || !fine ? 1000 / 15 - 2 : 1000 / 24 - 2
+  const interval = () => (lite || !fine ? 1000 / 15 - 2 : 1000 / 24 - 2)
   let scrolling = false
   let scrollTimer = 0
   let raf = 0
@@ -62,8 +64,9 @@ export function startSky(canvas: HTMLCanvasElement, kick: { current: () => void 
     const w = window.innerWidth
     const h = window.innerHeight
     // Very wide screens paint at 1x: the stars are sprites, and the pixel count dominates the frame.
-    const ratio = Math.min(window.devicePixelRatio || 1, w > 1600 ? 1 : 1.5)
-    if (field && w === builtW && h <= builtH && ratio === dpr) return
+    const ratio = Math.min(window.devicePixelRatio || 1, w > 1600 || isLite() ? 1 : 1.5)
+    if (field && w === builtW && h <= builtH && ratio === dpr && lite === isLite()) return
+    lite = isLite()
     builtW = w
     builtH = h
     dpr = ratio
@@ -81,7 +84,7 @@ export function startSky(canvas: HTMLCanvasElement, kick: { current: () => void 
     const go = () => {
       void import('./living').then(({ createLiving }) => {
         if (idle < 0) return
-        layer = createLiving({ ctx, palette, sprites, canvas, still: () => motion.matches, onChange: () => kick.current() })
+        layer = createLiving({ ctx, palette, sprites, canvas, still, onChange: () => kick.current() })
         if (field) layer.prepare(field)
         kick.current()
       })
@@ -92,7 +95,7 @@ export function startSky(canvas: HTMLCanvasElement, kick: { current: () => void 
 
   const draw = (t: number) => {
     if (!field || hidden()) return
-    painter.paint(field, ticks, dpr, t, motion.matches, lamp.a > 0 ? lamp : null, layer)
+    painter.paint(field, ticks, dpr, t, still(), lamp.a > 0 ? lamp : null, layer)
     if (!idle) loadLayer()
   }
 
@@ -121,8 +124,8 @@ export function startSky(canvas: HTMLCanvasElement, kick: { current: () => void 
     raf = requestAnimationFrame(frame)
     // 24fps (lite and touch 15): the drift is slow, and the dense sky is the page's biggest per-frame cost.
     // No repaint while scrolling or while the tab is hidden.
-    if (scrolling || document.hidden || now - last < interval) return
-    if (fine) stepLamp(now, Math.min(100, now - last))
+    if (scrolling || document.hidden || now - last < interval()) return
+    if (fine && !lite) stepLamp(now, Math.min(100, now - last))
     last = now
     draw((now - start) / 1000)
   }
@@ -133,7 +136,7 @@ export function startSky(canvas: HTMLCanvasElement, kick: { current: () => void 
     if (stillQueued) return
     stillQueued = requestAnimationFrame(() => {
       stillQueued = 0
-      draw(motion.matches ? 0 : (pausedAt - start) / 1000)
+      draw(still() ? 0 : (pausedAt - start) / 1000)
     })
   }
 
@@ -141,7 +144,7 @@ export function startSky(canvas: HTMLCanvasElement, kick: { current: () => void 
     cancelAnimationFrame(raf)
     raf = 0
     setRunning(false)
-    if (motion.matches) {
+    if (still()) {
       douse()
       paintStill()
     } else if (paused) {
@@ -163,10 +166,10 @@ export function startSky(canvas: HTMLCanvasElement, kick: { current: () => void 
       start += now - pausedAt
       last = now
     }
-    if (!motion.matches) run()
+    if (!still()) run()
   })
   kick.current = () => {
-    if (motion.matches || paused) paintStill()
+    if (still() || paused) paintStill()
   }
 
   rebuild()
@@ -180,7 +183,7 @@ export function startSky(canvas: HTMLCanvasElement, kick: { current: () => void 
     scrolling = false
     debounce = window.setTimeout(() => {
       rebuild()
-      if (motion.matches || paused) paintStill()
+      if (still() || paused) paintStill()
     }, 120)
   }
   const onScroll = () => {
@@ -206,8 +209,13 @@ export function startSky(canvas: HTMLCanvasElement, kick: { current: () => void 
     window.addEventListener('pointermove', onPointer, { passive: true })
     window.addEventListener('pointerout', onOut, { passive: true })
   }
-  const rootMo = new MutationObserver(run)
-  rootMo.observe(root, { attributes: true, attributeFilter: ['data-compact', 'data-theme'] })
+  const rootMo = new MutationObserver(() => {
+    // A tier change can halve the stars or change the pixel ratio: rebuild first (a no-op otherwise).
+    rebuild()
+    if (lite) douse()
+    run()
+  })
+  rootMo.observe(root, { attributes: true, attributeFilter: ['data-compact', 'data-theme', 'data-fx'] })
   window.addEventListener('resize', onResize)
   motion.addEventListener('change', onMotion)
 

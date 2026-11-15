@@ -10,6 +10,7 @@ import { usePersistedState } from "@/hooks/usePersistedState";
 import { useResetProgress } from "@/hooks/useResetProgress";
 import { SkyDimToggle } from "@/components/fx/SkySettings";
 import { CompanionToggle } from "@/components/companion/CompanionToggle";
+import { FxTierControl } from "@/components/fx/FxTierControl";
 import { Button } from "@/components/shared/controls";
 
 const TOOLS = [
@@ -101,6 +102,10 @@ export function Footer() {
               </li>
               <li>
                 <CompanionToggle />
+              </li>
+              {/* Full row: a select beside a checkbox in the phone grid breaks the 24px target spacing. */}
+              <li className="col-span-full">
+                <FxTierControl />
               </li>
               <li>
                 <label className="hit-area flex cursor-pointer items-center gap-2">
