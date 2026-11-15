@@ -6,9 +6,10 @@ Branch: claude/wqa4-ci-noise · Owns: `.github/workflows/ci.yml`, `.github/workf
 
 ## Resolved from earlier carry files
 - PRO1-W1: cause was a click before hydration (the Map button is in the static HTML; a pre-hydration click does nothing).
-  The test now waits for the tree canvas (`img` "Atlas passive tree: …"), which renders only after a client fetch that
-  starts post-hydration. Before: 1 failed / 40 (`--repeat-each=40 --workers=4`). After: file `--repeat-each=20
-  --project=desktop` 200/200; the test alone ×100 at 4 workers 100/100. No retries, no skip.
+  The test now waits for the tree canvas (`[aria-label^="Atlas passive tree:"]`) to be attached; it renders only after a
+  client fetch that starts post-hydration (attached, not visible: on phones it sits in the closed map sheet). Before:
+  1 failed / 40 (`--repeat-each=40 --workers=4`). After: file `--repeat-each=20 --project=desktop` 200/200; the test
+  ×50 on desktop and mobile 100/100. No retries, no skip.
 - PRO1-W2: declined by owner with PXC-1 / PRO1-2 (screenshot tests stay report-only; `updateSnapshots` unchanged).
 - PRO1-W3 / WQA1-4: REMAINING §4 and R50 use the `scripts/route-weight.mjs` budgets; §5 marked "2026-11-08, polyfill
   included, not comparable"; `VARIANT-STRATEGY.md` § Perf baseline points at the script. Script not added to CI.
@@ -25,3 +26,14 @@ None. PRO1-W7 (For next-A) stays in `PRO1.md`.
 
 ## Needs owner
 - None new.
+
+## Handoff (2026-11-15, next chat continues)
+- CI run 43655813672 (`test` red) failed only on [mobile] `interactions.spec.ts:5` with the first version of the W1
+  fix (`getByRole(...).toBeVisible()` on the canvas, hidden in the phone sheet). Fixed in the follow-up commit; re-check
+  the new run on #177.
+- Still to do: full local e2e with the fixed spec (last full run before the fix: 420 passed / 1 failed / 41 skipped);
+  confirm no Node 20 warning in the `test` job log (cache v5); fill PR **Gate**; mark #177 ready if a draft; book the
+  check-in; never merge.
+- Gate so far: typecheck 0, lint 0, `npm test` core 876 / mcp 44 / web 331, `test:scripts` 28/28, build ok,
+  route-weight all under budget (no route touched).
+- Separate owner request: remove the companion mascot (#172) on branch `claude/remove-companion` (own PR, not WQA4).
