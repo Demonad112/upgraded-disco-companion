@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { Wraith } from './Wraith'
 import { next, nodeFor, type Choice, type NodeId } from '@/lib/companionTree'
+import { isIdle, subscribeIdle } from '@/lib/idle'
 import { importPath, recentCharacters } from '@/lib/recentCharacters'
 
 /** Set once the visitor has opened the tip, so the hop stops for this session. */
@@ -90,22 +91,8 @@ export default function Companion({ hasNextStep }: { hasNextStep: boolean }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [node])
 
-  // Dozes after two quiet minutes with the bubble shut; any input wakes it.
-  useEffect(() => {
-    let t = 0
-    const wake = () => {
-      setAsleep(false)
-      window.clearTimeout(t)
-      t = window.setTimeout(() => setAsleep(true), DOZE_MS)
-    }
-    wake()
-    const events = ['pointerdown', 'keydown', 'scroll'] as const
-    events.forEach((e) => window.addEventListener(e, wake, { passive: true }))
-    return () => {
-      window.clearTimeout(t)
-      events.forEach((e) => window.removeEventListener(e, wake))
-    }
-  }, [])
+  // Dozes after two quiet minutes (the shared idle signal, lib/idle) with the bubble shut; any input wakes it.
+  useEffect(() => subscribeIdle(DOZE_MS, setAsleep), [])
 
   // Leaves the screen edge and arcs back, at most every two minutes, never
   // while open, hopping or asleep (CSS drops it under reduced motion).
@@ -113,7 +100,7 @@ export default function Companion({ hasNextStep }: { hasNextStep: boolean }) {
     if (open || hop || asleep) return
     let done = 0
     const id = window.setInterval(() => {
-      if (document.hidden) return
+      if (document.hidden || isIdle(10_000)) return
       setWander(true)
       done = window.setTimeout(() => setWander(false), WANDER_MS)
     }, WANDER_EVERY_MS)
