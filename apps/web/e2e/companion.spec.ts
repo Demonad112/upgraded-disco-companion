@@ -74,3 +74,24 @@ test.describe('companion', () => {
     })
   }
 })
+
+test.describe('companion motion', () => {
+  test('hops three times and rests; after 11 s idle every loop under it is paused', async ({ page }) => {
+    test.setTimeout(45_000)
+    await page.goto('')
+    await expect(launcher(page)).toHaveAccessibleName('Companion: you have a tip')
+    // Finite (3 iterations), so it reaches finished instead of looping.
+    const hop = await launcher(page).evaluate(async (el) => {
+      const a = el.getAnimations().find((x) => (x as CSSAnimation).animationName === 'wraith-hop')
+      if (!a) return 'missing'
+      await a.finished
+      return a.playState
+    })
+    expect(hop).toBe('finished')
+    await expect(page.locator('html')).toHaveAttribute('data-idle', '', { timeout: 15_000 })
+    await page.waitForTimeout(1000)
+    const states = await page.locator('.wraith').evaluate((el) => el.getAnimations({ subtree: true }).map((a) => a.playState))
+    expect(states.length).toBeGreaterThan(0)
+    expect(states.filter((s) => s !== 'paused')).toEqual([])
+  })
+})

@@ -45,7 +45,6 @@
   border: 0;
   background: none;
   cursor: pointer;
-  filter: drop-shadow(0 6px 10px rgb(0 0 0 / 0.6));
 }
 .wraith-launcher:focus-visible {
   outline: var(--focus-ring);
@@ -119,9 +118,9 @@
   40% { transform: translate(0, -6px) rotate(-3deg); }
 }
 
-/* Hop until clicked: it has a tip. */
+/* Hop: it has a tip. Three hops, then it rests until clicked. */
 .is-hop {
-  animation: wraith-hop 2.4s ease-in-out infinite;
+  animation: wraith-hop 2.4s ease-in-out 3;
 }
 @keyframes wraith-hop {
   0%, 30%, 100% { transform: translateY(0); }
@@ -130,7 +129,7 @@
   24% { transform: translateY(-4px); }
 }
 
-/* Asleep: droop, eyes almost shut and dimmed, slower float. */
+/* Asleep: one 600 ms droop (the body transition), eyes almost shut and dimmed, then still. */
 .is-asleep .wr-body {
   transform: translateY(3px) rotate(4deg);
 }
@@ -144,7 +143,12 @@
   opacity: 0.3;
 }
 .is-asleep .wraith-float {
-  animation-duration: 9s;
+  animation: none;
+}
+
+/* Idle (lib/idle, 10 s without input or the window left): every loop holds where it is. */
+:root[data-idle] .wraith * {
+  animation-play-state: paused;
 }
 
 /* Wander: out past the screen edge and an arc back. */

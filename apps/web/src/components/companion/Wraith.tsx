@@ -3,7 +3,8 @@
  * master drawing in a 120×180 box, hand-kept so layer classes survive (Figma's
  * export renames them). Blue eyes only; asleep dims them in CSS. The rim is a
  * touch brighter than the board, so the figure still reads at 56px on the dark
- * page. Motion lives in styles/companion.css (transform and opacity only).
+ * page. A static radial halo stands in for a drop shadow (no filters). Motion
+ * lives in styles/companion.css (transform and opacity only).
  * Gradient ids are fixed: the site draws one wraith at a time.
  */
 export function Wraith({ className }: { className?: string }) {
@@ -23,11 +24,19 @@ export function Wraith({ className }: { className?: string }) {
           <stop offset=".55" stopColor="#000" />
           <stop offset="1" stopColor="#08080b" />
         </radialGradient>
+        <radialGradient id="wr-halo" cx=".5" cy=".5" r=".5">
+          <stop offset="0" stopColor="#000" stopOpacity=".55" />
+          <stop offset=".6" stopColor="#000" stopOpacity=".3" />
+          <stop offset="1" stopColor="#000" stopOpacity="0" />
+        </radialGradient>
         <radialGradient id="wr-glow">
           <stop className="wr-gs" offset="0" stopOpacity=".6" />
           <stop className="wr-gs" offset="1" stopOpacity="0" />
         </radialGradient>
       </defs>
+      {/* Static shadow halo behind the figure, in place of a CSS drop-shadow filter (a per-frame raster on software
+          compositing). Outside .wr-body, so the doze droop leaves it put. */}
+      <ellipse cx="60" cy="100" rx="62" ry="88" fill="url(#wr-halo)" />
       <g className="wr-body">
         <path fill="url(#wr-hem)" d="M34 128L30 176L38 150L44 181L50 152L58 178L64 152L72 183L78 150L86 173L90 128Z" />
         <path
