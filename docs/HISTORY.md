@@ -18,3 +18,4 @@ Finished batches and plans, 1–2 sentences each. Carry files are retired here w
 - **N1–N3** (#122, #124, #125): earlier register batches; rows archived.
 - **FINISH-PLAN Batch 1** (2026-11-15): this consolidation. Plan in `docs/plans/FINISH-PLAN.md`.
 - **FINISH-PLAN Batch 2** (2026-11-15, partial): LHCI gates a11y/SEO/best-practices (error, 0.95) and TBT (warn); 404 metadata; patch label from `version.json`; `monk-gloves.json` on web; dead-stat rule covers Projectile/Melee; Chat settings toggle is a `Button`. Layout/CLS rows (2b) and R65 stay open.
+- **FINISH-PLAN Batch 2b** (2026-11-15): checklist CLS 0.44 → 0 (card-links canvas moved by transform), home returning-player CLS 0.13 → 0 (pre-paint flag plus reserved plate slot), Up next alignment, Checklist Pro detail in the heading row, "Lightning" label, 44 px targets; content-visibility and font preload changes measured and not kept. R65 stays open.

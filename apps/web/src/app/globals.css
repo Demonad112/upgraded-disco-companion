@@ -891,3 +891,19 @@ details.drow[open] .chev {
     font-size: 0.95rem;
   }
 }
+
+/* UXS2-5: resistance names spelled out when the row is wide enough (ResName). */
+.res-row {
+  container-type: inline-size;
+}
+.res-abbr {
+  display: none;
+}
+@container (max-width: 26rem) {
+  .res-full {
+    display: none;
+  }
+  .res-abbr {
+    display: inline;
+  }
+}

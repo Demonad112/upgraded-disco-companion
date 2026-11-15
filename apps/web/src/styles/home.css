@@ -9,7 +9,17 @@
   min-height: var(--tap-min);
 }
 /* A saved character (LastCharacterCard rendered): the hero is the title only. */
+:root[data-returning] .home-bento .hero-extra,
 .home-bento:has(.lc-plate) .hero-extra {
+  display: none;
+}
+
+/* PXB-2: reserve the plate's slot before hydration (378 px with two figures; 396-473 px with four) so it does not push the cards below. */
+:root[data-returning] .home-last {
+  min-height: 378px;
+}
+/* UXS2-3: an empty slot (first visit) would still add one flex gap above "Up next". */
+:root:not([data-returning]) .home-last:empty {
   display: none;
 }
 

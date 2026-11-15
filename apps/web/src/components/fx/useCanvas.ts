@@ -55,13 +55,11 @@ export function useCanvas(
       if (target) {
         const a = target.getBoundingClientRect()
         const b = parent.getBoundingClientRect()
-        const left = `${a.left - b.left}px`
-        const top = `${a.top - b.top}px`
-        if (canvas.style.left !== left) canvas.style.left = left
-        if (canvas.style.top !== top) canvas.style.top = top
-      } else {
-        if (canvas.style.left) canvas.style.left = ''
-        if (canvas.style.top) canvas.style.top = ''
+        // transform, not left/top: moving an out-of-flow canvas through layout props is scored as a layout shift (WQA3-4).
+        const shift = `translate(${a.left - b.left}px, ${a.top - b.top}px)`
+        if (canvas.style.transform !== shift) canvas.style.transform = shift
+      } else if (canvas.style.transform) {
+        canvas.style.transform = ''
       }
       const w = root.clientWidth
       const h = Math.min(root.clientHeight, maxHeight ?? Infinity)

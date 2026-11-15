@@ -15,6 +15,7 @@ import { PersistedStateProvider } from '@/hooks/usePersistedState'
 import { bannerBootstrap } from '@/lib/bannerDismiss'
 import { COMPACT_BOOTSTRAP } from '@/lib/compactMode'
 import { SKY_DIM_BOOTSTRAP } from '@/lib/skyDim'
+import { RETURNING_BOOTSTRAP } from '@/lib/returning'
 import { CURRENT_PATCH } from '@/lib/constants'
 
 // EB Garamond for display (headings, grade, skill and resistance labels), Inter
@@ -97,6 +98,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <script dangerouslySetInnerHTML={{ __html: bannerBootstrap(CURRENT_PATCH) }} />
         <script dangerouslySetInnerHTML={{ __html: COMPACT_BOOTSTRAP }} />
         <script dangerouslySetInnerHTML={{ __html: SKY_DIM_BOOTSTRAP }} />
+        <script dangerouslySetInnerHTML={{ __html: RETURNING_BOOTSTRAP }} />
       </head>
       <body className="antialiased">
         <ServiceWorker />
