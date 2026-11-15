@@ -94,10 +94,12 @@ Recorded from the 2026-10-22 audit (D1–D10 accepted 2026-10-22; D11–D15 acce
 
 ## Perf baseline
 
-Historical: headline numbers from the 2026-10-22 audit and the 2026-11-01 Lighthouse baseline (U13b). The current route budgets are the ones pinned in `scripts/route-weight.mjs` (it exits 1 when a route is over); the byte budgets below are superseded (WQA1-4).
+Route budgets: run `node scripts/route-weight.mjs` after `npm run build`. It is the source of truth: per-route brotli budgets, first load, the `noModule` polyfill chunk excluded, and it exits 1 when a route is over. Variants report its output before and after. It is not part of CI.
+
+Historical, not comparable (polyfill included, older budgets): headline numbers from the 2026-10-22 audit and the 2026-11-01 Lighthouse baseline (U13b).
 
 - Build output `apps/web/out`: 7.4 MB; all JS chunks 1,494,131 B raw / 378,331 B brotli (2026-10-22).
 - Route JS+CSS brotli, first load: `/` 223 KB, `/checklist/` 239 KB, `/character/` 263 KB, `/atlas/` 234 KB (2026-10-22). `/` HTML brotli 13.5 KB.
 - Lighthouse `/` (U13b, i5-8250U laptop, median of 3): mobile score 62, LCP 4.3 s, TBT 1,050 ms; desktop score 97, LCP 0.9 s, TBT 120 ms; CLS 0.
-- Budgets: `/` JS+CSS ≤ 192 KB br, any route ≤ 250 KB br, `/` HTML ≤ 16 KB br, phone canvas ≤ 3 MP, sky draw calls ≤ 75 per frame.
+- Other budgets: `/` HTML ≤ 16 KB br, phone canvas ≤ 3 MP, sky draw calls ≤ 75 per frame. Route JS+CSS budgets: `scripts/route-weight.mjs`.
 - Timing budgets are relative: ≤ +25 % over unmodified `main`, same session, same machine (D12).

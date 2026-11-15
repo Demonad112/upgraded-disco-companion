@@ -20,12 +20,7 @@ One row per Needs-owner item, with the recommended answer. Answer by ID in a pro
 
 | ID | Question | Recommended answer | Source |
 |---|---|---|---|
-| PRO1-1 | Branch protection on `main`: #173 merged with `test` red. Require `test`, `lighthouse`, `guard`, `secrets`, branch up to date, no bypass for admins? | Yes. Steps in `docs/carry/PRO1.md` § Settings steps | PRO1 |
-| PXC-1 | Commit the 36 `visual-baselines` PNGs from a green CI run into `apps/web/e2e/visual.spec.ts-snapshots/` | Yes, from the next green `main` run's artifact; until then the 36 screenshot tests pass by writing new files | `docs/carry/PXC.md` |
-| PRO1-2 | After PXC-1: make CI fail on a missing baseline (`playwright.config.ts` `updateSnapshots: process.env.CI ? 'none' : 'missing'`) | Yes, in the same PR as PXC-1 (WQA4 can carry it) | PRO1 |
 | PRO1-3 | Label font: CLAUDE.md says "uppercase EB Garamond for headings and labels", but `.label-metric` / `--font-label` is Geist Mono (tokens.css, design-decisions.md) | Amend CLAUDE.md to "headings in uppercase EB Garamond; metric labels in uppercase Geist Mono", matching the shipped code | PRO1 |
-| PRO1-4 | `ci.yml`: `actions/cache@v4` runs on deprecated Node 20 (warning on every run) | Bump to `actions/cache@v5`; add `timeout-minutes: 5` to the `changes` job | PRO1 |
-| PRO1-5 | Nothing in CI runs `.claude/hooks/*.test.mjs` | Add `node --test .claude/hooks/*.test.mjs` to the `pr-body-guard.yml` self-test step | PRO1 |
 | WQA1-1 | Drop `'unsafe-inline'` from `script-src` by hashing the three bootstrap scripts | Yes, as its own batch with a live-header check on the preview | `docs/carry/WQA1.md` |
 | UXS-1 | Collapse ~22 text sizes to an 8-step scale (11, 12, 14, 16, 18, 22, 36, 64 px) | Yes, on `variant/<yyyymmdd>-type-scale`, reviewed on its preview | `docs/carry/UXS2.md` row 1 |
 | R60 | Character fixtures: Yykiuy files exist (`yykiuy-v51/v80.json`); Athrynas level 94 is still missing | Send the Athrynas account, or let F2 go live on Yykiuy only | §2, `docs/carry/OC1.md` row 3 |
@@ -61,14 +56,16 @@ These rows run in the §6 owner-pass order.
 | R65 | F7: trade-map uses explicit single-resist ids; pseudo totals count every source | M | PV1 | one live trade2 check first | open; batch PV3 |
 
 ## 4. Standing rules (no work)
-- Route budgets: `/` ≤ 192,000 B br; other routes ≤ 250,000 (`node scripts/route-weight.mjs`). Any change to home JS reports before and after.
+- Route budgets live in `scripts/route-weight.mjs` (source of truth; brotli, first load, the `noModule` polyfill chunk excluded; exits 1 when a route is over): `/` 158,000 · `/checklist` 167,000 · `/character` 209,000 · `/atlas` 177,000 · `/dashboard` 188,000 · `/trade` 162,000 · `/methodology` 156,000 · `/whats-new` 154,000 B; any other route 190,000. Raise one only on purpose, with the reason in the PR. Not run in CI. Any change to home JS reports before and after.
 - Perf bar: keep a change only if it saves ≥ 5 % br on its file or route, or removes real runtime work.
 - New tokens go in `tokens.css`. Canvas code reads only colours from tokens.
 - A bare `.card` outside home needs `data-surface="data"`.
 - SB1-1: add a proxy lockfile, `npm ci` and audit only if `services/ninja-proxy` gains runtime deps.
 - Never put session URLs on GitHub (commits, PRs, comments).
 
-## 5. Measured baseline (2026-11-08, main 763b2bb)
+## 5. Measured baseline (2026-11-08, polyfill included, not comparable)
+main 763b2bb. These totals include Next's 35,158 B br polyfill chunk, which `scripts/route-weight.mjs` skips; compare current sizes against the script's budgets in §4, not this table.
+
 | Route | br B |
 |---|---|
 | `/` | 190,285 (1,715 headroom) |
@@ -135,7 +132,6 @@ Web quality audit. Fixes landed in WQA1; open rows in `docs/carry/WQA1.md`.
 | WQA1-1 | Drop `'unsafe-inline'` from `script-src` by hashing the three bootstrap scripts (M) | owner | open: Owner queue |
 | WQA1-2 | LHCI: gate accessibility, SEO and best-practices scores (S) | a few runs on `main` | open |
 | WQA1-3 | Perf headroom: 24 KB near-unused chunk on `/`, render-blocking CSS, TBT on checklist and trade (M) | measure first, ≥ 5 % br | open |
-| WQA1-4 | Sync the route-budget text in this file with `scripts/route-weight.mjs` (S) | — | open (WQA4; also §4, §5, R50 and `VARIANT-STRATEGY.md` perf baseline) |
 | WQA1-5, WQA1-6 | Manifest/HSTS extras, JSON-LD | owner | open: Owner queue |
 | WQA3-A | Scroll fix: sky scroll pause lost on resize, phone cadence, composited Astrolabe, scroll guard (S–M) | — | open (`docs/carry/WQA3.md` batch A) |
 | WQA3-B | LHCI asserts TBT and a11y/SEO/BP; reduced-motion CLS check (S) | a few runs on `main` | open (batch B; bypass and baselines declined in WQA4) |
@@ -148,7 +144,7 @@ Web quality audit. Fixes landed in WQA1; open rows in `docs/carry/WQA1.md`.
 |---|---|
 | R31 / R33 / R34: MCP schemas, footer, stamps | Owner: keep MCP as is |
 | R39: sky id index | ~15 KB on an idle cached chunk; not worth it |
-| R50: lazy core on `/character` | Only if the route goes over 250,000 B br (now 232,777) |
+| R50: lazy core on `/character` | Only if the route goes over its `scripts/route-weight.mjs` budget (209,000 B br; 208,064 on 2026-11-14) |
 | R51 / R52: blur drop, checks chip | Decided: keep / leave out |
 | R53: 280 px determinism test | Only if CI flakes |
 | Minify `trade2-stats.json` | 2.4 %, under the 5 % bar (L2) |
