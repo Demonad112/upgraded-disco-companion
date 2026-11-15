@@ -78,7 +78,7 @@ export default function Home() {
   const [treeWanted, setTreeWanted] = useState(false)
   const [tiersBase, setTiersBase] = useState(false)
   const displayTab = opened.has('gear') || opened.has('damage') || opened.has('advanced')
-  const tiersState = useModTiers(raw !== null, tiersBase && displayTab)
+  const tiersState = useModTiers(raw !== null, tiersBase && displayTab, analysis?.identity.className === 'Martial Artist')
   const treeState = usePassiveTree(treeWanted)
   const catalogState = useSupportCatalog(opened.has('damage'))
   const wantsDisplay = useMemo(() => analysisNeedsDisplay(analysis, tiersState), [analysis, tiersState])

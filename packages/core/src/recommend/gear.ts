@@ -250,11 +250,11 @@ function openAffixRule(analysed: ItemAnalysis[]): Recommendation[] {
 /**
  * Why this line can do nothing for the skill, or null when it can (or we cannot tell).
  *
- * Deliberately narrow: only the attack/spell split, which PoB's skill types state
- * outright. "Skill speed" affects both, and a skill that is both attack and spell
- * is never called dead.
+ * Deliberately narrow: only tags PoB's skill types state outright (attack/spell,
+ * Projectile, Melee). "Skill speed" affects both, and a skill that is both attack
+ * and spell is never called dead.
  */
-function deadReason(text: string, skill: MainSkillContext): string | null {
+export function deadReason(text: string, skill: MainSkillContext): string | null {
   const t = text.toLowerCase()
   if (/skill speed|level of/.test(t)) return null
   const attack = skill.types.has('Attack')
@@ -264,6 +264,15 @@ function deadReason(text: string, skill: MainSkillContext): string | null {
   }
   if (spell && !attack && (/attack speed/.test(t) || /attack damage/.test(t))) {
     return `${skill.name} is a spell, so this attack line never applies to it`
+  }
+  // Delivery tags the skills data states outright (Projectile, Melee). Only when the skill's types are known at all.
+  if (skill.types.size > 0) {
+    if (!skill.types.has('Projectile') && /projectile (damage|speed)|projectiles? (pierce|chain|fork)|chain an additional time/.test(t)) {
+      return `${skill.name} does not fire projectiles, so this projectile line never applies to it`
+    }
+    if (!skill.types.has('Melee') && /\bmelee (damage|strike|attack)|melee weapon range/.test(t)) {
+      return `${skill.name} is not a melee skill, so this melee line never applies to it`
+    }
   }
   return null
 }

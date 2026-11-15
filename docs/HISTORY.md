@@ -17,3 +17,4 @@ Finished batches and plans, 1–2 sentences each. Carry files are retired here w
 - **OC1** (#121, #127): owner-checks batch (trade links, statuses, weight-group prefill); real-device passes stay parked on owner hardware.
 - **N1–N3** (#122, #124, #125): earlier register batches; rows archived.
 - **FINISH-PLAN Batch 1** (2026-11-15): this consolidation. Plan in `docs/plans/FINISH-PLAN.md`.
+- **FINISH-PLAN Batch 2** (2026-11-15, partial): LHCI gates a11y/SEO/best-practices (error, 0.95) and TBT (warn); 404 metadata; patch label from `version.json`; `monk-gloves.json` on web; dead-stat rule covers Projectile/Melee; Chat settings toggle is a `Button`. Layout/CLS rows (2b) and R65 stay open.

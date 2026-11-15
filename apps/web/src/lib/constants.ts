@@ -1,4 +1,7 @@
-export const CURRENT_PATCH = "0.5.5";
+import dataVersion from "../../../../packages/data/generated/version.json";
+
+/** The game patch the shipped data was extracted from (generated/version.json), so the label cannot drift from the data. */
+export const CURRENT_PATCH: string = (dataVersion as { gameVersion?: string }).gameVersion ?? "0.5.5";
 /**
  * Patch-day switch. Set to true when a new patch is live but the data has not been updated yet: the banner then says
  * "New patch: some data may be outdated" and links to What's new. Ships as false.

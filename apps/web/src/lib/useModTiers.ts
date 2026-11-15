@@ -12,11 +12,12 @@
  * matrix should not pay 260 KB gzipped for affix data they never see.
  */
 
-import { useEffect, useState } from 'react'
-import { analyzeItem, analyzeJewels, ModTiers, type Analysis, type DisplayOnlyMod, type ModTierData } from '@poe2/core'
+import { useEffect, useRef, useState } from 'react'
+import { analyzeItem, analyzeJewels, ModTiers, type Analysis, type DisplayOnlyMod, type ModTierData, type MonkGloveEntry } from '@poe2/core'
 import { dataUrl } from '@/lib/basePath'
 
 const DATA_URL = dataUrl('mod-tiers.json')
+const MONK_URL = dataUrl('monk-gloves.json')
 const DISPLAY_URL = dataUrl('mod-display.json')
 const DISPLAY_RETRY_MS = 1500
 
@@ -31,8 +32,13 @@ export type ModTiersState =
  * `needsDisplay`: some mod has no craftable ladder, so fetch the implicit/corrupted/unique text (mod-display.json).
  * Latched: once asked for, it stays loaded even if the analysis stops asking.
  */
-export function useModTiers(enabled: boolean, needsDisplay = false): ModTiersState {
+export function useModTiers(enabled: boolean, needsDisplay = false, martialArtist = false): ModTiersState {
   const [state, setState] = useState<ModTiersState>({ status: 'idle' })
+  // Read when a load starts, so the ascendancy turning up later does not reload the ladders.
+  const monkRef = useRef(martialArtist)
+  useEffect(() => {
+    monkRef.current = martialArtist
+  }, [martialArtist])
   const [displayAsked, setDisplayAsked] = useState(false)
   const [displayDone, setDisplayDone] = useState(false)
 
@@ -74,14 +80,24 @@ export function useModTiers(enabled: boolean, needsDisplay = false): ModTiersSta
     // A reload swaps in a lean ModTiers, so the display text must be fetched again.
     setDisplayDone(false)
 
+    // Martial Artist gloves ship transformed mods; the table maps them back to the source ladder. Optional: a failed
+    // fetch leaves those lines unresolved, as before, and never blocks the ladders.
+    const monk: Promise<MonkGloveEntry[] | null> = monkRef.current
+      ? fetch(MONK_URL)
+          .then((res) => (res.ok ? (res.json() as Promise<MonkGloveEntry[]>) : null))
+          .catch(() => null)
+      : Promise.resolve(null)
+
     fetch(DATA_URL)
       .then(async (res) => {
         if (!res.ok) throw new Error(`the affix data returned ${res.status}`)
         return (await res.json()) as ModTierData
       })
-      .then((data) => {
+      .then(async (data) => [data, await monk] as const)
+      .then(([data, monkEntries]) => {
         if (!cancelled) {
-          const tiers = new ModTiers(data)
+          const loaded = new ModTiers(data)
+          const tiers = monkEntries ? loaded.withMonkGloves(monkEntries) : loaded
           setState({ status: 'ready', tiers, base: tiers })
         }
       })
