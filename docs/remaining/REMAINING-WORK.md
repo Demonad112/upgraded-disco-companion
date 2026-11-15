@@ -103,6 +103,7 @@ Batches are in `docs/plans/FINISH-PLAN.md`. Rows keep their carry IDs. One line 
 | ID | Row | Batch |
 |---|---|---|
 | R65 | See §3 (trade-map pseudo-resist ids); blocked on the live trade2 check and read access to `packages/data/trade2-stats.json` | 2b (out of scope for b2b; needs the live check) |
+| LHCI-A11Y | Lighthouse accessibility scores 0.92–0.94 on all 8 URLs; gate set at 0.90, target 0.95. Find the failing audits (CI keeps no LHCI reports; run LHCI in the cloud, or upload `.lighthouseci`), fix, raise the gate | 2b (cloud) |
 | WQA3-10/11/20 (D) | Bundle diet: route data in the shared floor, per-route CSS; keep only if ≥ 5 % br | 3 |
 | WQA3-15 (E) | DOM diet; WQA3-14 (scrim into canvas) dropped with the OffscreenCanvas idea unless a device trace asks for it | 3 |
 | WQA1-3 | Perf headroom: ~24 KB near-unused chunk on `/` (`39k23z46rmox0.js`), render-blocking CSS, TBT on checklist and trade | 3 (measure first) |
