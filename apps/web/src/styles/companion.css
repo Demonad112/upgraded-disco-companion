@@ -162,6 +162,15 @@
   80% { transform: translate(-10px, 6px); opacity: 1; }
 }
 
+/* Effects tier (lib/fxTier, <html data-fx>). Lite: no float or flicker. Still: a fixed pose, no loops or reactions. */
+:root[data-fx='lite'] .wraith-float,
+:root[data-fx='lite'] .wraith-art .wr-glow {
+  animation: none;
+}
+:root[data-fx='still'] .wraith * {
+  animation: none !important;
+}
+
 /* --- Speech bubble -------------------------------------------------------- */
 .wraith-bubble {
   order: 1;

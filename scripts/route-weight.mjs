@@ -20,7 +20,7 @@ const DEFAULT_BUDGET = 190_000
 // PXC-2: chunks that no route's first-load HTML references (the /character tab and results chunks, the Farm and Atlas
 // lazy panels). They load after first paint, so they sit outside the route budgets above; this pins their total.
 // Same rule: measured size rounded up to the next 2,000 B.
-const LAZY_BUDGET = 186_000 // CMP2: +2,753 B br, the companion chunk; P1: +5,180 B br, the sky painter moved out of first load (every route -4,605 B)
+const LAZY_BUDGET = 188_000 // CMP2: +2,753 B br, the companion chunk; P1: +5,180 B br, the sky painter moved out of first load (every route -4,605 B); P3: +1,051 B br, the effects-tier probe (renderer and frame checks)
 const ROUTES = ['index.html', 'checklist/index.html', 'character/index.html', 'atlas/index.html', 'dashboard/index.html', 'trade/index.html', 'methodology/index.html', 'whats-new/index.html']
 const CHUNK_RE = /\/_next\/static\/chunks\/[^"']+\.(?:js|css)/g
 let over = 0

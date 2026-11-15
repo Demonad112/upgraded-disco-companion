@@ -17,6 +17,7 @@ import { orderedSteps } from '@/lib/roadmapOrder'
 import { bannerBootstrap } from '@/lib/bannerDismiss'
 import { COMPACT_BOOTSTRAP } from '@/lib/compactMode'
 import { SKY_DIM_BOOTSTRAP } from '@/lib/skyDim'
+import { FX_TIER_BOOTSTRAP } from '@/lib/fxTier'
 import { RETURNING_BOOTSTRAP } from '@/lib/returning'
 import { CURRENT_PATCH } from '@/lib/constants'
 
@@ -100,6 +101,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <script dangerouslySetInnerHTML={{ __html: bannerBootstrap(CURRENT_PATCH) }} />
         <script dangerouslySetInnerHTML={{ __html: COMPACT_BOOTSTRAP }} />
         <script dangerouslySetInnerHTML={{ __html: SKY_DIM_BOOTSTRAP }} />
+        <script dangerouslySetInnerHTML={{ __html: FX_TIER_BOOTSTRAP }} />
         <script dangerouslySetInnerHTML={{ __html: RETURNING_BOOTSTRAP }} />
       </head>
       <body className="antialiased">

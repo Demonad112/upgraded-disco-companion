@@ -73,6 +73,9 @@
     animation: waystone-glow 2.4s ease-in-out infinite;
   }
 }
+:root[data-fx='still'] .waystone[data-state='next']::before {
+  animation: none;
+}
 @keyframes waystone-glow {
   50% {
     box-shadow: 0 0 20px 1px color-mix(in srgb, var(--accent) 55%, transparent);

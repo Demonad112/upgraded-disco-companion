@@ -145,6 +145,9 @@
     transform-origin: center;
   }
 }
+:root[data-fx='still'] .starchart-latest .starchart-halo {
+  animation: none;
+}
 @keyframes star-breathe {
   50% {
     transform: scale(1.35);

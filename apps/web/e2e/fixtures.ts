@@ -58,6 +58,13 @@ export const test = base.extend<{ errors: string[] }>({
           await route.abort()
         }
       })
+      // Headless Chromium renders with SwiftShader, which auto effects read as Still; pin Full so every spec sees the
+      // full site. Only when nothing is stored, so a spec's own pick (and a reload after it) wins. See fx-tier.spec.
+      await page.addInitScript(() => {
+        try {
+          if (!localStorage.getItem('poe2-fx-tier')) localStorage.setItem('poe2-fx-tier', JSON.stringify({ v: 1, choice: 'full', auto: 'full' }))
+        } catch {}
+      })
       await use(errors)
       expect(errors, 'console errors').toEqual([])
     },
