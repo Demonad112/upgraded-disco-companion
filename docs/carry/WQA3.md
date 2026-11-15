@@ -53,8 +53,8 @@ Sorted by (impact × confidence) ÷ effort. Evidence: **Measured** (numbers abov
 |---|---|---|---|---|---|---|
 | 1 | WQA3-1 | Critical | Scroll | **Measured.** `apps/web/src/components/fx/ConstellationSky.tsx:162-163`: `onResize` clears `scrollTimer` and removes the scroll listener for good. Resize while idle → sky paints mid-scroll, 16.7–34.4 % janky frames, p95 33.4 ms on all 9 cases. Resize mid-scroll → `scrolling` stuck `true`, sky frozen. Cleanup (`:197-211`) also never removes the scroll listener or clears `scrollTimer`. | Delete both lines from `onResize`; add `removeEventListener('scroll', onScroll, { capture: true })` and `clearTimeout(scrollTimer)` to cleanup. Add an e2e test: resize, then scroll, then assert 0 sky paints while scrolling and > 0 after. Gain: back to the 0–1.2 % baseline (~13 ms per frame on throttled phone). Risk: low. **S** | no |
 | 2 | WQA3-4 | High | Load (CLS) | **Measured.** `/checklist` CLS **0.251** at desktop with reduced motion (0.558 on phone, there flagged as after-input). Source: the `[data-links]` canvas (`CardLinksCanvas` via `useCanvas.ts:60-61`), whose `style.left/top` move after first paint. Not seen with motion on. Lighthouse doesn't emulate reduced motion, so CI can't see it. | Place the canvas with `transform: translate(x, y)` instead of `left/top` (transforms are not layout shifts). Add a Playwright CLS check under `reducedMotion: 'reduce'` on `/checklist`. Gain: CLS 0.25 → ~0. Risk: low. **S** | no |
-| 3 | WQA3-5 | High | CI | **Observed.** Ruleset "main: required checks" (`guard`, `test`, `secrets`) has bypass actor RepositoryRole 5 (Admin) in `pull_request` mode, so an admin can merge red. That is how #173 merged with a red `test`. `lighthouse` is not a required check. | Repo settings: remove the bypass, or set it to "Never"; add `lighthouse` to required checks. Makes the gate real. Risk: none. **S** | **yes**: repo settings |
-| 4 | WQA3-6 | High | CI | **Observed.** Visual tests check nothing: 0 committed baselines, `playwright.config.ts:52` `updateSnapshots: 'missing'` writes new ones and passes. | In CI: `updateSnapshots: process.env.CI ? 'none' : 'missing'`. Commit the Linux baselines from the `visual-baselines` artifact of a green `main` run. Makes the check real. Risk: first run fails until baselines land. **S** | **yes**: approve baselines (PXC open row) |
+| 3 | WQA3-5 | High | CI | **Observed.** Ruleset "main: required checks" (`guard`, `test`, `secrets`) has bypass actor RepositoryRole 5 (Admin) in `pull_request` mode, so an admin can merge red. That is how #173 merged with a red `test`. `lighthouse` is not a required check. | Repo settings: remove the bypass, or set it to "Never"; add `lighthouse` to required checks. Makes the gate real. Risk: none. **S** | declined by owner (WQA4) |
+| 4 | WQA3-6 | High | CI | **Observed.** Visual tests check nothing: 0 committed baselines, `playwright.config.ts:52` `updateSnapshots: 'missing'` writes new ones and passes. | In CI: `updateSnapshots: process.env.CI ? 'none' : 'missing'`. Commit the Linux baselines from the `visual-baselines` artifact of a green `main` run. Makes the check real. Risk: first run fails until baselines land. **S** | declined by owner (WQA4) |
 | 5 | WQA3-2 | High | Scroll | **Measured.** Sky is ~13.5 ms main thread per frame on throttled phone at 24 fps: 30 % of idle main thread, and it shares the 150 ms after every flick with scroll. `ConstellationSky.tsx:51` (`interval`). Rotation is 1°/s, ≈ 0.2 px per frame at r = 300 px. | (a) Coarse-pointer cadence 24 → 15 fps (the existing `lite` cadence): −37 % sky cost, motion visually the same. **S.** (b) Later: move drawing to `OffscreenCanvas` in a worker (`transferControlToOffscreen`, Safari 16.4+): sky script leaves the main thread. **L.** Risk: (a) low; (b) medium (sprites, lantern, living layer). | (a) no: same look, check on preview; (b) no |
 | 6 | WQA3-3 | Medium | Scroll | **Measured.** Astrolabe `.astro-dial` (`styles/motion.css:142-160`) runs `rotate` on an SVG `<g>` with `animation-timeline: scroll(root)`. SVG transforms aren't composited, so every scroll frame repaints it on the main thread: 70–100 % of scroll Paint. | Render the dial as its own `<svg>` inside an HTML `<div class="astro-dial">` and animate the div; the ring stays put. Scroll-driven `rotate` on an HTML element runs on the compositor. Same look. Gain: ~90–190 ms main-thread Paint per scroll pass on phone. Risk: low (section squares stay on the ring). **S–M** | no |
 | 7 | WQA3-7 | Medium | CI | **Observed** (carried). `apps/web/e2e/interactions.spec.ts:5` flaky at the 5 s default `expect` timeout. Not reproduced here. | Wait for the tree's ready state (the `PassiveTreeView` / Atlas map `data-ready` or first node) before clicking; per-assertion `{ timeout: 15_000 }`. **S** | no |
@@ -88,9 +88,9 @@ Sorted by (impact × confidence) ÷ effort. Evidence: **Measured** (numbers abov
 | `globals.css` `.card` | `text-shadow: var(--halo)` + 2 box-shadows on every card | Isolation shows no scroll cost | Keep |
 | `globals.css` `body::after` grain | Fixed, z 60, SVG turbulence | No measured cost alone; one of 3 full-viewport layers (WQA3-14) | Keep for now |
 | `lighthouserc.json` | perf preset, LCP + CLS only, 2 runs on PRs | Misses TBT, weight, a11y/SEO/BP, reduced motion (WQA3-8, WQA3-4) | Add asserts |
-| `playwright.config.ts:52` | `updateSnapshots: 'missing'` | Visual tests vacuous (WQA3-6) | `'none'` in CI |
+| `playwright.config.ts:52` | `updateSnapshots: 'missing'` | Visual tests vacuous (WQA3-6) | keep (owner: informational) |
 | `ci.yml` `heavy` | e2e + Lighthouse skipped on drafts; run on `ready_for_review` | — | Keep |
-| Ruleset "main: required checks" | guard, test, secrets; Admin bypass in PR mode | Red merges possible; `lighthouse` not required (WQA3-5) | No bypass; add `lighthouse` |
+| Ruleset "main: required checks" | guard, test, secrets; Admin bypass in PR mode | Red merges possible; `lighthouse` not required (WQA3-5) | keep (owner declined) |
 | `layout.tsx` inline bootstraps | 3 tiny sync scripts (banner, compact, sky dim) | No measurable blocking cost | Keep (hash them, WQA3-17) |
 | Fonts | 3 preloads, `display: swap` | Mono preload not needed (WQA3-13) | `preload: false` on mono |
 | `manifest.webmanifest`, `robots.ts`, `sitemap.ts`, `pageMeta.ts` | Valid (Lighthouse SEO 100) | 404 canonical/noindex dup (WQA3-18) | Fix not-found metadata |
@@ -98,19 +98,17 @@ Sorted by (impact × confidence) ÷ effort. Evidence: **Measured** (numbers abov
 ## 5. Quick wins (≤ 30 min each, in order)
 1. WQA3-1: fix `ConstellationSky` resize/cleanup and add the resize-then-scroll e2e test.
 2. WQA3-4: canvas offset via `transform` in `useCanvas.ts` and a reduced-motion CLS check.
-3. WQA3-5: ruleset bypass off, `lighthouse` required (owner, settings only).
-4. WQA3-6: `updateSnapshots: 'none'` in CI, then commit baselines from the CI artifact.
-5. WQA3-2a: coarse-pointer cadence 15 fps.
-6. WQA3-13: mono `preload: false`, one Garamond face.
-7. WQA3-18 + WQA3-19: not-found metadata; refresh register §5.
+3. WQA3-2a: coarse-pointer cadence 15 fps.
+4. WQA3-13: mono `preload: false`, one Garamond face.
+5. WQA3-18: not-found metadata.
 
 ## 6. Batches
 | Batch | Items | Done when | Gate |
 |---|---|---|---|
 | **A. Scroll fix** | WQA3-1, WQA3-2a, WQA3-3, WQA3-9 | Harness on preview, phone after resize: sky paints while scrolling = 0, % > 16.7 ms within 1.5 pts of no-resize. Sky still animates after a mid-scroll resize. Astrolabe Paint during scroll < 10 ms per pass. Look unchanged at 390 and 1440. | Full Finish gate + harness on all 9 cases |
-| **B. CI made real** | WQA3-5 (owner), WQA3-6, WQA3-7, WQA3-8, WQA3-4 test | Visual tests fail on a 1 px change; `interactions.spec.ts` 10/10 green with `--repeat-each=10`; LHCI asserts TBT and a11y/SEO/BP; red PRs can't merge | Full gate; one deliberate-failure check per new assert |
+| **B. LHCI asserts** | WQA3-8, WQA3-4 test (WQA3-5/6 declined, WQA3-7 done in WQA4) | LHCI asserts TBT and a11y/SEO/BP; reduced-motion CLS check in e2e | Full gate; one deliberate-failure check per new assert |
 | **C. CLS + metadata** | WQA3-4 fix, WQA3-18, WQA3-13 | `/checklist` CLS < 0.01 with reduced motion on both profiles; 404 has one noindex and no canonical | Full gate |
-| **D. Bundle diet** | WQA3-10, WQA3-11, WQA3-20, WQA3-19 | Each kept change ≥ 5 % br on its route (`route-weight.mjs` before/after); budgets lowered to new size + 2 KB; §5 current | Full gate + `perf-chunks.mjs` diff |
+| **D. Bundle diet** | WQA3-10, WQA3-11, WQA3-20 (WQA3-19 done in WQA4) | Each kept change ≥ 5 % br on its route (`route-weight.mjs` before/after); budgets lowered to new size + 2 KB; §5 current | Full gate + `perf-chunks.mjs` diff |
 | **E. Layer diet** (after §7 device check) | WQA3-14, WQA3-15, WQA3-2b | Device trace shows fewer GPU ms per frame; look identical in side-by-side screenshots | Full gate + device trace; a variant branch if anything visible changes |
 | **F. CSP** (owner) | WQA3-17 | No `'unsafe-inline'` in `script-src`; 0 CSP violations across the 8 routes + import | Full gate + live console sweep |
 
@@ -126,19 +124,18 @@ Sorted by (impact × confidence) ÷ effort. Evidence: **Measured** (numbers abov
 - WQA1-4: answered: `route-weight.mjs` is the source of truth; §5 rewrite queued as WQA3-19 (batch D).
 - WQA1-2: folded into WQA3-8 (batch B).
 - WQA1-3: folded into WQA3-10 / WQA3-20 (batch D).
+- WQA4 (2026-11-14): owner declined WQA3-5 (ruleset bypass, = PRO1-1) and WQA3-6 (visual baselines, = PXC-1 / PRO1-2; screenshot tests stay informational). WQA4 fixed WQA3-7 (Atlas Map click waits for hydration) and WQA3-19 (budget text points at `route-weight.mjs`).
 
 ## Open
 | # | Type | For | Item | Recommended answer / action |
 |---|---|---|---|---|
 | 1 | bug | next-A | WQA3-1 sky scroll pause lost on resize | Batch A |
 | 2 | bug | next-A | WQA3-4 `/checklist` CLS 0.25 under reduced motion | Batch C |
-| 3 | follow-up | next-A | WQA3-6/7/8/9 CI checks that pass vacuously or flake | Batch B |
+| 3 | follow-up | next-A | WQA3-8 LHCI asserts; WQA3-9 scroll guard | Batch B; WQA3-9 in batch A |
 | 4 | recommendation | next-A | WQA3-2, WQA3-3 sky cadence and Astrolabe compositing | Batch A |
-| 5 | recommendation | next-A | WQA3-10/11/19/20 shared-floor data and global CSS | Batch D |
+| 5 | recommendation | next-A | WQA3-10/11/20 shared-floor data and global CSS | Batch D |
 | 6 | recommendation | owner | WQA3-14/15 layer and DOM diet after a device trace | Batch E |
 
 ## Needs owner
-- WQA3-5: let admins merge PRs with failing required checks? Recommended: no; remove the Admin bypass and add `lighthouse` to required checks, because #173 merged red through it.
-- WQA3-6: approve the first committed visual baselines (from the CI `visual-baselines` artifact). Recommended: yes, so the visual tests check something.
 - WQA3-17 (= WQA1-1): per-route CSP hashes. Recommended: do it as batch F after A–D, because it touches every route's headers.
 - WQA3-2b / WQA3-14: OffscreenCanvas sky and merging the scrim into the canvas. Recommended: wait for a real-device trace (§7) before spending effort.
