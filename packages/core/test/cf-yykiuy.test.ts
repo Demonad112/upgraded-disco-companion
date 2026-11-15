@@ -13,6 +13,7 @@ import { SupportCatalog, type PobSkillData } from '../src/gems/catalog.js'
 import { analyzeItem } from '../src/gear/analyze.js'
 import { ModTiers, type ModTierData, type MonkGloveEntry } from '../src/gear/tiers.js'
 import { normalizeItems } from '../src/model/slots.js'
+import { deadReason } from '../src/recommend/gear.js'
 
 const here = dirname(fileURLToPath(import.meta.url))
 const tiers = new ModTiers(
@@ -102,6 +103,16 @@ describe('CF1 item 3: dead stats', () => {
     expect(rec.action).toContain('Demon Pendant')
     expect(rec.detail).toContain('DPS gain not measured')
     expect(rec.evidence.some((e) => e.kind === 'item' && e.itemName === 'Demon Pendant')).toBe(true)
+  })
+
+  it('CF2-4: flags projectile and melee lines only when the skill lacks that tag', () => {
+    const ctx = (types: string[]) => ({ name: 'Skill', types: new Set(types), dealt: new Set<string>(), crit: false })
+    expect(deadReason('20% increased Projectile Damage', ctx(['Attack', 'Melee']))).toContain('projectile')
+    expect(deadReason('20% increased Projectile Damage', ctx(['Attack', 'Projectile']))).toBeNull()
+    expect(deadReason('20% increased Melee Damage', ctx(['Spell', 'Projectile']))).toContain('melee')
+    expect(deadReason('20% increased Melee Damage', ctx(['Attack', 'Melee']))).toBeNull()
+    // Types unknown: never called dead.
+    expect(deadReason('20% increased Projectile Damage', ctx([]))).toBeNull()
   })
 
   it('is skipped without the skills catalog', () => {

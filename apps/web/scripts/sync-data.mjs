@@ -17,7 +17,7 @@ const here = dirname(fileURLToPath(import.meta.url))
 const from = join(here, '..', '..', '..', 'packages', 'data', 'generated')
 const to = join(here, '..', 'public')
 
-const FILES = ['passive-tree.json', 'monster-stats.json', 'pob-skills.json', 'bases.json', 'atlas-tree.json']
+const FILES = ['monk-gloves.json', 'passive-tree.json', 'monster-stats.json', 'pob-skills.json', 'bases.json', 'atlas-tree.json']
 
 // Trade stat snapshot: lives beside generated/ because the owner records it by hand.
 const TRADE_STATS = join(here, '..', '..', '..', 'packages', 'data', 'trade2-stats.json')

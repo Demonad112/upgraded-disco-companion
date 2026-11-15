@@ -124,14 +124,9 @@ export function Chat({ analysis, pob }: { analysis?: Analysis; pob?: PobAnalysis
       title="Ask about this build"
       subtitle="Optional. The AI only sees the figures above and can still be wrong."
       action={
-        <button
-          type="button"
-          onClick={() => setShowSettings((v) => !v)}
-          className="px-2 py-1 text-[11px] text-ink-mute hover:text-ink-dim"
-          aria-expanded={showSettings}
-        >
+        <Button size="sm" onClick={() => setShowSettings((v) => !v)} aria-expanded={showSettings}>
           {configured ? `${spec.label} ▾` : 'Set up ▾'}
-        </button>
+        </Button>
       }
     >
       {showSettings ? (

@@ -115,3 +115,14 @@ Owner queue rows, answered in WQA4's Owner notes:
 |---|---|---|
 | WQA1-4 | Sync route-budget text with `scripts/route-weight.mjs` | done in WQA4: §4 and R50 use the script's budgets, §5 marked not comparable, `VARIANT-STRATEGY.md` § Perf baseline points at the script |
 | WQA3-A | Scroll fix: sky scroll pause on resize, touch cadence, composited Astrolabe, scroll guard | done in #179: WQA3-1, 2a, 3, 9; checks in git history (WQA3 carry, § Batch A result |
+
+### Closed in FINISH-PLAN Batch 2 (2026-11-15)
+| WQA3-8 | LHCI asserts TBT and a11y/SEO/BP | 2 |
+| WQA1-2 | LHCI: gate accessibility, SEO and best-practices (default preset, `minScore`; all score 100 today) | 2 |
+| WQA3-18 | 404 metadata | 2 |
+| PXC-9 | `/dashboard` `#farm-tab-setup` "Set up" contrast 2.21:1 at 390 px (exempt only if the tab is disabled) | 2 |
+| PXV-5 | Chat settings toggle is still a plain text button (`components/Chat.tsx`) | 2 |
+| CF2-1 | Patch label: import from `version.json` instead of hand-kept `CURRENT_PATCH` | 2 |
+| CF2-3 | Web does not load `monk-gloves.json`; copy in `sync-data`, fetch lazily in `useModTiers` for Martial Artist | 2 |
+| CF2-4 | Dead-stat rule covers only the attack/spell split; extend only with tags the skills data has | 2 |
+| CF2-5 | ΔDPS stays null (poe.ninja-as-given rule): document it, fill `measured.dps` only from ninja figures | 2 (doc note) |
