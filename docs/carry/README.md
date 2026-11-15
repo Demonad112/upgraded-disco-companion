@@ -7,6 +7,7 @@ The PR number lives here only. Live rows are tracked in `docs/remaining/REMAININ
 ## Active
 - [PRO1](PRO1.md): open, PR pending (process hardening; open rows for WQA4 and the owner queue)
 - [WQA1](WQA1.md): merged #173, `test` red at merge (e2e flake; `main` green after). Open rows WQA1-2 to WQA1-6; WQA1-1 in Owner queue
+- [WQA3](WQA3.md): done, docs-only PR (scroll + quality audit: sky loses its scroll pause on resize, 17–34 % janky frames on phone; open rows in batches A, C–F; WQA3-5/6 declined and WQA3-7/19 done in WQA4)
 - [CMP1](CMP1.md): merged #172 (mock companion head; open rows CMP1-2 to CMP1-5; CMP1-1 in Owner queue)
 - [UXS2](UXS2.md): merged #171 (layout defects UXS2-2 to UXS2-7; UXS-1 type scale in Owner queue)
 - [CF2](CF2.md): merged #163 (follow-ups CF2-1 to CF2-5; CF1-1 settings deny in Owner queue)

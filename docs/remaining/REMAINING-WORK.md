@@ -137,6 +137,11 @@ Web quality audit. Fixes landed in WQA1; open rows in `docs/carry/WQA1.md`.
 | WQA1-3 | Perf headroom: 24 KB near-unused chunk on `/`, render-blocking CSS, TBT on checklist and trade (M) | measure first, ≥ 5 % br | open |
 | WQA1-4 | Sync the route-budget text in this file with `scripts/route-weight.mjs` (S) | — | open (WQA4; also §4, §5, R50 and `VARIANT-STRATEGY.md` perf baseline) |
 | WQA1-5, WQA1-6 | Manifest/HSTS extras, JSON-LD | owner | open: Owner queue |
+| WQA3-A | Scroll fix: sky scroll pause lost on resize, phone cadence, composited Astrolabe, scroll guard (S–M) | — | open (`docs/carry/WQA3.md` batch A) |
+| WQA3-B | LHCI asserts TBT and a11y/SEO/BP; reduced-motion CLS check (S) | a few runs on `main` | open (batch B; bypass and baselines declined in WQA4) |
+| WQA3-C | `/checklist` CLS 0.25 under reduced motion, 404 metadata, font preloads (S) | — | open (batch C) |
+| WQA3-D | Bundle diet: route data in the shared floor, per-route CSS (M) | ≥ 5 % br | open (batch D) |
+| WQA3-E | Layer and DOM diet (M) | real-device trace | open (batch E) |
 
 ### Do not do
 | Item | Why |
