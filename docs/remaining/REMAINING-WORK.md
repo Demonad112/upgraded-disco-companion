@@ -103,6 +103,7 @@ Batches are in `docs/plans/FINISH-PLAN.md`. Rows keep their carry IDs. One line 
 | ID | Row | Batch |
 |---|---|---|
 | WQA3-4 | `/checklist` CLS 0.25 under reduced motion | 2b (needs a trace; CI/cloud) |
+| LHCI-A11Y | Lighthouse accessibility scores 0.92–0.94 on all 8 URLs; gate set at 0.90, target 0.95. Find the failing audits (CI keeps no LHCI reports; run LHCI in the cloud, or upload `.lighthouseci`), fix, raise the gate | 2b (cloud) |
 | WQA3-13 | Font preloads | 2b (needs a trace) |
 | PXB-2 | Home hero collapses after hydration for returning players (CLS, `:has(.lc-plate)`); consider a pre-paint flag | 2b (needs browser at the stated viewport) |
 | PXC-3 | `/checklist` content-visibility (85 % below fold; needs per-section intrinsic sizes, CLS risk) | 2b (needs browser at the stated viewport) |
