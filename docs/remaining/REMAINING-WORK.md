@@ -23,6 +23,7 @@ Answers of 2026-11-15 (`docs/plans/FINISH-PLAN.md`) are applied and the rows cle
 |---|---|---|---|
 | PXV-4 | Pick one chat-settings variant (waystone, ledger, relic) or merge parity alone | Merge parity now; choose a variant after viewing the three previews | PXV (#155, #158) |
 | LHCI-A11Y | CI Lighthouse reports accessibility 0.92–0.94 (trade and whats-new 0.92, dashboard and methodology 0.93, atlas 0.94); cloud Chromium scores 1.0 on all 8 routes in 24 runs, also on the #181 merge commit and under 6× CPU throttling. Add an `actions/upload-artifact` step for `.lighthouseci` (`if: always()`) to the `lighthouse` job, or warn-level audit assertions in `lighthouserc.json`, so the next CI run names the failing audits | Add the upload step (reports stay off the repo); fix the named audits next session, then raise the gate to 0.95 | Batch 3 |
+| FX-GRAIN | Grain (`body::after`) still rasters as its own layer in Full: ~11 ms over a trace-fx run on software compositing (SwiftShader). Promote it to a static layer (one pre-rendered tile, `will-change: transform`, no repaint), or drop it in Full as Lite and Still already do | Promote to a static layer and re-trace; drop it only if the layer still re-rasters | P4 (`scripts/trace-fx.mjs`) |
 | PV1-1 | PoB2 MCP fork with must-haves 1–6 (blocks PV1-2 engine-parity checks) | Build with mcp-builder; local stdio; return `MeasuredDelta`-shaped results | PV1 |
 
 ## 1. Decisions

@@ -6,7 +6,7 @@
  * then scroll to the element.
  */
 
-import { useCallback, useState, useSyncExternalStore } from 'react'
+import { startTransition, useCallback, useEffect, useState } from 'react'
 
 export const TAB_IDS = ['overview', 'defences', 'damage', 'gear', 'progress', 'advanced'] as const
 export type TabId = (typeof TAB_IDS)[number]
@@ -56,22 +56,20 @@ export function targetForHash(hash: string): string | null {
   return id
 }
 
-const EVENT = 'poe2-character-tab'
-const subscribe = (cb: () => void) => {
-  window.addEventListener('hashchange', cb)
-  window.addEventListener(EVENT, cb)
-  return () => {
-    window.removeEventListener('hashchange', cb)
-    window.removeEventListener(EVENT, cb)
-  }
+type TabState = { hash: string; opened: ReadonlySet<TabId> }
+
+/** The next state for a hash: the same object when nothing changes, so React skips the render. */
+export function withHash(prev: TabState, hash: string): TabState {
+  if (hash === prev.hash) return prev
+  const tab = tabForHash(hash)
+  return { hash, opened: prev.opened.has(tab) ? prev.opened : new Set([...prev.opened, tab]) }
 }
-const getHash = () => window.location.hash
-const getServerHash = () => ''
 
 /**
  * The open tab, the hash target to scroll to, and the tabs opened so far (lazy data hooks key off the last).
  * Changing tab uses `replaceState`, so tab clicks do not fill the back stack; `hashchange` (a link, the address bar)
- * drives the panel as well.
+ * drives the panel as well. P4: one state update inside one transition per switch, so a switch is one render and the
+ * old panel stays up while a lazy tab loads (no fallback commit in between).
  */
 export function useCharacterTab(): {
   tab: TabId
@@ -79,14 +77,16 @@ export function useCharacterTab(): {
   opened: ReadonlySet<TabId>
   select: (id: TabId) => void
 } {
-  const hash = useSyncExternalStore(subscribe, getHash, getServerHash)
-  const tab = tabForHash(hash)
-  const [opened, setOpened] = useState<ReadonlySet<TabId>>(() => new Set<TabId>(['overview']))
-  // Adjusting state while rendering is React's pattern for state derived from other state.
-  if (!opened.has(tab)) setOpened(new Set([...opened, tab]))
+  const [state, setState] = useState<TabState>(() => ({ hash: '', opened: new Set<TabId>(['overview']) }))
+  useEffect(() => {
+    const sync = () => startTransition(() => setState((prev) => withHash(prev, window.location.hash)))
+    sync()
+    window.addEventListener('hashchange', sync)
+    return () => window.removeEventListener('hashchange', sync)
+  }, [])
   const select = useCallback((id: TabId) => {
     window.history.replaceState(window.history.state, '', `${window.location.pathname}${window.location.search}#${id}`)
-    window.dispatchEvent(new Event(EVENT))
+    startTransition(() => setState((prev) => withHash(prev, `#${id}`)))
   }, [])
-  return { tab, target: targetForHash(hash), opened, select }
+  return { tab: tabForHash(state.hash), target: targetForHash(state.hash), opened: state.opened, select }
 }

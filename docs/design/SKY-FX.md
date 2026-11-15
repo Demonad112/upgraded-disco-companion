@@ -37,3 +37,27 @@ Auto (`lib/fxProbe.ts`, a lazy chunk started in idle time after first paint):
 - Auto never rises within a visit; a new detection is stored for the next one. Once `lowered`, detection never raises
   Auto past the lowered tier.
 - e2e: headless Chromium reports SwiftShader, so `e2e/fixtures.ts` pins Full when nothing is stored.
+
+## Raster (P4)
+`node scripts/trace-fx.mjs` (serves `apps/web/out`, imports the fixture character, idles 10 s, switches four tabs,
+re-imports; GPU as found and `--disable-gpu`). It reports busy % per step for the compositor, Viz, main and GPU
+threads, raster ms per layer with the owning element, and cc and React commits per tab switch.
+- The scrim is baked once per size into an offscreen canvas (`sky/scrim.ts`) and drawn as the sky's last step; the
+  `.sky-scrim` div and its CSS are gone. Same two gradients of `--page`.
+- Character tabs: one state update in one transition per switch (`lib/characterTab.ts`); the old panel stays up while
+  a lazy tab loads.
+- `content-visibility: auto` on long panels was tried and reverted: raster moved within run-to-run noise.
+- Grain in Full: Owner queue `FX-GRAIN`.
+
+Trace, cloud Chromium on SwiftShader (no GPU in the container), one run each, GPU-as-found pass:
+
+| Measure | main | P3 | P4 |
+|---|---|---|---|
+| Idle: compositor / Viz / main busy | 8.0 / 18.8 / 17.9 % | 5.7 / 8.1 / 5.6 % | 5.4 / 6.7 / 6.5 % |
+| Tab switch Viz busy (Defence, Damage, Gear, Overview) | 39 / 36 / 25 / 37 % | 34 / 34 / 23 / 37 % | 24 / 27 / 15 / 33 % |
+| Re-import raster busy | 14.0 % | 18.1 % | 13.4 % |
+| React commits per switch | 4 / 5 / 3 / 3 | 4 / 6 / 3 / 3 | 3 / 6 / 2 / 3 |
+| `.sky-scrim` raster | 24 ms | 21 ms | gone |
+
+The top raster layer is still `div#fx-root` (~186 ms over the run): the sky canvas itself, which only paints while
+the loop runs. The owner's ~4.6 s layer on the laptop trace could not be reproduced here.
