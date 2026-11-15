@@ -14,6 +14,7 @@ import { Tag } from '@/components/ui'
 import { DMG_VAR, cap } from './dmg'
 import '@/styles/buildcard.css'
 import { gradeText } from '@/lib/grade'
+import { ResName } from '@/components/shared/ResName'
 
 let mountedAt: number | null = null
 const subscribeNever = () => () => {}
@@ -119,7 +120,7 @@ function Figure({ value, delay }: { value: number | null; delay: number }) {
 }
 
 const RES_TONE = { fire: 'var(--dmg-fire)', cold: 'var(--dmg-cold)', lightning: 'var(--dmg-lightning)', chaos: 'var(--dmg-chaos)' } as const
-const RES_LABEL = { fire: 'Fire', cold: 'Cold', lightning: 'Light.', chaos: 'Chaos' } as const
+const RES_LABEL = { fire: 'Fire', cold: 'Cold', lightning: 'Lightning', chaos: 'Chaos' } as const
 
 export function Showcase({ analysis, children }: { analysis: Analysis; children?: ReactNode }) {
   const { identity, assessment, defense, dps } = analysis
@@ -206,13 +207,13 @@ export function Showcase({ analysis, children }: { analysis: Analysis; children?
           ))}
         </dl>
 
-        <ul className="bc-res" aria-label="Resistances">
+        <ul className="bc-res res-row" aria-label="Resistances">
           {resists.map((r, i) => {
             const type = (['fire', 'cold', 'lightning', 'chaos'] as const)[i]!
             const short = r?.underCap != null && r.underCap > 0
             return (
               <li key={type} data-short={short || undefined} style={{ '--c': RES_TONE[type] } as CSSProperties}>
-                {RES_LABEL[type]}
+                <ResName label={RES_LABEL[type]} />
                 <b>
                   {r?.value == null ? 'unknown' : r.value}
                   {r?.value != null && r.max != null ? <em>/{r.max}</em> : null}

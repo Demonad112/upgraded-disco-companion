@@ -54,6 +54,10 @@
   .site-footer label.hit-area {
     min-height: var(--tap-min);
   }
+  /* PXC-10: a short link name ("Farm") is 29 px wide in its column. */
+  .footer-link:not(.inline) {
+    min-width: var(--tap-min);
+  }
 }
 .footer-link.inline {
   display: inline;

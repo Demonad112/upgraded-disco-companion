@@ -9,10 +9,11 @@ export function ChecklistProgressHeader() {
 
   return (
     <div data-surface="data" className="card p-4">
-      <Gauge done={completedCount} total={totalSteps} label="Overall progression" />
-      <div className="mt-3 flex justify-end">
+      <div className="mb-1 flex items-center justify-between gap-3">
+        <span className="label-field">Overall progression</span>
         <ProToggle />
       </div>
+      <Gauge done={completedCount} total={totalSteps} label="Overall progression" hideLabel />
     </div>
   );
 }

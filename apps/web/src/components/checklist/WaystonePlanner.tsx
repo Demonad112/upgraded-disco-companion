@@ -85,7 +85,7 @@ export function WaystonePlanner() {
               <a
                 href={`#${gate.stepId}`}
                 title={gate.label}
-                className={`inline-flex items-center gap-1 border px-2 py-1 text-xs transition-colors ${
+                className={`inline-flex items-center gap-1 border px-2 py-1 text-xs transition-colors pointer-coarse:min-h-(--tap-min) ${
                   passed
                     ? "border-good/30 bg-good/10 text-[var(--good)]"
                     : "border-[var(--accent)]/50 bg-accent-soft text-[var(--accent)]"

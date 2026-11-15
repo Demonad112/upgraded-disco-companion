@@ -6,11 +6,12 @@ import type { CharacterSnapshot } from "@poe2/core";
 import { usePersistedState } from "@/hooks/usePersistedState";
 import { importPath, recentCharacters } from "@/lib/recentCharacters";
 import { useLocalStore } from "@/lib/localStore";
+import { ResName } from "@/components/shared/ResName";
 
 const RES = [
   ["fire", "Fire", "var(--dmg-fire)"],
   ["cold", "Cold", "var(--dmg-cold)"],
-  ["lightning", "Light.", "var(--dmg-lightning)"],
+  ["lightning", "Lightning", "var(--dmg-lightning)"],
   ["chaos", "Chaos", "var(--dmg-chaos)"],
 ] as const;
 
@@ -172,7 +173,7 @@ export function CharacterCard({
             ))}
         </dl>
 
-        <ul className="mt-3 grid grid-cols-4 gap-1.5" aria-label="Resistances">
+        <ul className="res-row mt-3 grid grid-cols-4 gap-1.5" aria-label="Resistances">
           {RES.map(([type, label, tone]) => {
             const value = resists[type];
             // 75 is the base cap; a value below it is under cap whatever the maximum.
@@ -181,7 +182,7 @@ export function CharacterCard({
               <li key={type} className="lc-pip px-2 pt-1.5 pb-2 text-xs text-ink-dim" style={{ "--c": tone } as CSSProperties}>
                 <span className="flex items-center gap-1.5">
                   <span aria-hidden className="size-1.5 rotate-45 bg-(--c)" />
-                  {label}
+                  <ResName label={label} />
                 </span>
                 <span className={`tabular mt-0.5 block text-base font-semibold ${short ? "text-danger" : "text-ink"}`}>
                   {value === null ? "unknown" : `${value}%`}

@@ -57,7 +57,7 @@ export function ChecklistPhaseNav() {
         );
       })}
       </ScrollFade>
-      <label className="phase-rail-hide ml-auto flex shrink-0 cursor-pointer items-center gap-1.5 px-1 text-xs text-ink-mute">
+      <label className="phase-rail-hide ml-auto flex shrink-0 cursor-pointer items-center gap-1.5 px-1 text-xs text-ink-mute pointer-coarse:min-h-(--tap-min)">
         <input
           type="checkbox"
           checked={hideCompleted}
