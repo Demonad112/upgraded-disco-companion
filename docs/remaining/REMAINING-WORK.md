@@ -29,7 +29,6 @@ One row per Needs-owner item, with the recommended answer. Answer by ID in a pro
 | WQA1-1 | Drop `'unsafe-inline'` from `script-src` by hashing the three bootstrap scripts | Yes, as its own batch with a live-header check on the preview | `docs/carry/WQA1.md` |
 | UXS-1 | Collapse ~22 text sizes to an 8-step scale (11, 12, 14, 16, 18, 22, 36, 64 px) | Yes, on `variant/<yyyymmdd>-type-scale`, reviewed on its preview | `docs/carry/UXS2.md` row 1 |
 | R60 | Character fixtures: Yykiuy files exist (`yykiuy-v51/v80.json`); Athrynas level 94 is still missing | Send the Athrynas account, or let F2 go live on Yykiuy only | §2, `docs/carry/OC1.md` row 3 |
-| CMP1-1 | Final look of the companion head | 4–6 heads on one preview page, pick one, swap `CompanionHead.tsx` | `docs/carry/CMP1.md` |
 | PXA-7 | Character tab bar scrolls at 390 px | Accept (labels stay readable) | `docs/carry/PXA.md` |
 | PXA-8 | Passive tree fetched at idle after the card paints | Keep | `docs/carry/PXA.md` |
 | CF1-1 | `.claude/settings.json` denies reading `packages/data/generated/**` and versioned fixtures | Keep the deny (saves context; regen scripts still work) | `docs/carry/CF2.md` |
