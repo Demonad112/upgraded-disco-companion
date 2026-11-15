@@ -19,6 +19,8 @@
     "typecheck": "npm run build --workspace @poe2/core && npm run typecheck --workspaces --if-present",
     "lint": "npm run lint --workspaces --if-present",
     "check": "npm run typecheck && npm run lint && npm test",
+    "//check:all": "check plus the two suites CI runs outside the root test script: the hook/PR-body script tests and the separately installed ninja-proxy.",
+    "check:all": "npm run check && npm run test:scripts && npm --prefix services/ninja-proxy test",
     "test:scripts": "node --test scripts/check-pr-body.test.mjs .claude/hooks/*.test.mjs",
     "dev": "npm run dev --workspace @poe2/web"
   },

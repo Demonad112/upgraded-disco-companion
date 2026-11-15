@@ -30,9 +30,11 @@ const strings = (v: unknown): string[] =>
   Array.isArray(v) ? v.filter((x): x is string => typeof x === "string") : [];
 
 /**
- * Keep whatever a payload from another top-level version still holds, slice by
- * slice, each checked against the shape this version reads. A slice that does
- * not fit falls back to its default; the rest of the player's progress survives.
+ * Keep whatever a stored payload still holds, slice by slice, each checked
+ * against the shape this version reads. A slice that does not fit falls back to
+ * its default; the rest of the player's progress survives. Used for every
+ * payload, current version included, so a hand-edited or half-written value
+ * cannot hand the app a wrong shape.
  */
 function salvage(parsed: Record<string, unknown>): PersistedState {
   const checklist = isRecord(parsed.checklist) ? parsed.checklist : {};
@@ -62,6 +64,7 @@ function salvage(parsed: Record<string, unknown>): PersistedState {
     ...(isRecord(parsed.farm) && isRecord(parsed.farm.loadouts) ? { farm: parsed.farm as unknown as NonNullable<PersistedState["farm"]> } : {}),
     ...(isRecord(parsed.gems) ? { gems: parsed.gems as NonNullable<PersistedState["gems"]> } : {}),
     ...(isRecord(parsed.prefs) ? { prefs: readPrefs(parsed.prefs) } : {}),
+    ...(typeof parsed.updatedAt === "string" ? { updatedAt: parsed.updatedAt } : {}),
   };
 }
 
@@ -87,8 +90,8 @@ export function getPrefs(state: PersistedState): Prefs {
 /**
  * Parse a stored payload. Pure, so it can be tested without a window.
  *
- * A payload from a different top-level version is salvaged slice by slice
- * rather than discarded, so a version bump never costs the player their
+ * Every payload is salvaged slice by slice rather than trusted or discarded, so
+ * neither a version bump nor one malformed slice costs the player their
  * checklist, Atlas or history. Only unreadable or non-object payloads reset.
  * Character snapshots are versioned on their own and migrated here.
  */
@@ -97,16 +100,7 @@ export function parsePersisted(raw: string | null): PersistedState {
   try {
     const parsed: unknown = JSON.parse(raw);
     if (!isRecord(parsed)) return DEFAULT_STATE;
-    if (parsed.version !== STORAGE_VERSION) return salvage(parsed);
-    const state = parsed as unknown as PersistedState;
-    return {
-      ...DEFAULT_STATE,
-      ...state,
-      character: {
-        ...state.character,
-        snapshots: migrateSnapshots(state.character?.snapshots).snapshots,
-      },
-    };
+    return salvage(parsed);
   } catch {
     return DEFAULT_STATE;
   }

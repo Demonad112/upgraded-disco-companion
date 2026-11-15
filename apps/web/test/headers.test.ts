@@ -24,6 +24,13 @@ describe('Cloudflare _headers', () => {
     for (const origin of origins) expect(connect).toContain(origin)
   })
 
+  // Cloudflare Web Analytics: Pages injects the beacon script, which then posts to cloudflareinsights.com.
+  it('allows the Cloudflare Web Analytics beacon', () => {
+    const scriptSrc = /script-src ([^;]+)/.exec(csp ?? '')?.[1].split(/\s+/) ?? []
+    expect(scriptSrc).toContain('https://static.cloudflareinsights.com')
+    expect(connect).toContain('https://cloudflareinsights.com')
+  })
+
   // WQA1-1: inline scripts are allowed by hash only; scripts/csp-hashes.mjs appends the hashes to out/_headers at build.
   it("does not allow 'unsafe-inline' scripts", () => {
     const scriptSrc = /script-src ([^;]+)/.exec(csp ?? '')?.[1].split(/\s+/) ?? []

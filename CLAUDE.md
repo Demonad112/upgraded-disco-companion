@@ -19,6 +19,7 @@ npm ci
 npm run typecheck        # builds @poe2/core first, then typechecks every workspace
 npm run lint             # eslint, every workspace with a lint script (web today)
 npm run check            # typecheck + lint + test, no build
+npm run check:all        # check + script tests + ninja-proxy tests (every CI suite except build/e2e/MCP/Lighthouse)
 npm test                 # core + mcp + web vitest
 npm run build            # core -> dist, then web static export to apps/web/out
 npm run dev              # Next dev server (builds core and syncs data first)
@@ -60,7 +61,7 @@ See `docs/DEPENDENCY-BUMPS.md` (per-workspace checks; never split CI per workspa
 
 - Build `npm run build`, output `apps/web/out`, Node 22. No Functions or wrangler config; headers live in `apps/web/public/_headers`.
 - `npm run build` ends with `apps/web/scripts/csp-hashes.mjs`, which writes the inline-script hashes into `out/_headers` (`script-src` has no `'unsafe-inline'`). A new inline `<script>` needs no edit, but a page served without that step has no scripts.
-- Local parity check: `npx wrangler@4 pages dev apps/web/out`.
+- Local parity check: `npm run preview -w @poe2/web` (`wrangler@4 pages dev out`). There is no `next start`: the app is a static export.
 - Open work: `docs/remaining/REMAINING-WORK.md`.
 
 ## Sessions

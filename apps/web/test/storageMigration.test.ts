@@ -45,6 +45,37 @@ describe("parsePersisted", () => {
     expect(out.character.snapshots).toHaveLength(1);
   });
 
+  it("validates a current-version payload slice by slice", () => {
+    const stored = {
+      ...defaultState(),
+      version: STORAGE_VERSION,
+      checklist: "corrupt",
+      atlas: { allocatedClusterIds: ["c1", null], allocatedForkIds: ["f1"] },
+      dashboard: { lastQuizAnswers: { q1: "a", q2: 3 }, pinnedStrategyId: 9 },
+      character: { snapshots: [row] },
+      updatedAt: "2026-11-15T00:00:00.000Z",
+    };
+    const out = parsePersisted(JSON.stringify(stored));
+    expect(out.checklist).toEqual({ completedStepIds: [], completedActionItemKeys: [] });
+    expect(out.atlas).toEqual({ allocatedClusterIds: ["c1"], allocatedForkIds: ["f1"] });
+    expect(out.dashboard).toEqual({ lastQuizAnswers: { q1: "a" } });
+    expect(out.character.snapshots).toHaveLength(1);
+    expect(out.updatedAt).toBe("2026-11-15T00:00:00.000Z");
+  });
+
+  it("round-trips a well-formed current-version payload unchanged", () => {
+    const stored: PersistedState = {
+      ...defaultState(),
+      checklist: { completedStepIds: ["s1"], completedActionItemKeys: ["k"], hideCompleted: true, highestTier: 12 },
+      atlas: { allocatedClusterIds: ["c1"], allocatedForkIds: ["f1"] },
+      dashboard: { lastQuizAnswers: { q1: "a" }, pinnedStrategyId: "abyss" },
+      gems: { maxSupportTier: null },
+      prefs: { homeStart: "character", proDetail: true },
+      updatedAt: "2026-11-15T00:00:00.000Z",
+    };
+    expect(parsePersisted(JSON.stringify(stored))).toEqual(stored);
+  });
+
   it("still resets a payload that is not an object", () => {
     expect(parsePersisted("[1,2]")).toBe(defaultState());
     expect(parsePersisted("42")).toBe(defaultState());
