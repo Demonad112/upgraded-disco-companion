@@ -1,4 +1,4 @@
-// PERF-PLAN items 4-8. Usage: node scripts/perf-serve.cjs & ; MODE=<vitals|canvas|dom|fonts|sw> node scripts/perf-measure.cjs
+// Perf items 4-8 (PX11, docs/HISTORY.md). Usage: node scripts/perf-serve.cjs & ; MODE=<vitals|canvas|dom|fonts|sw> node scripts/perf-measure.cjs
 // Same profile as perf-import.cjs: 390x844 mobile, 4x CPU, ~1.6 Mbps / 165 ms. Prints JSON.
 const { chromium } = require('playwright')
 const MODE = process.env.MODE || 'vitals', BASE = process.env.BASE || 'http://localhost:4400'

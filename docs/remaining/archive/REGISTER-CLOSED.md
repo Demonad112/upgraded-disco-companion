@@ -62,7 +62,7 @@ Status is `done`, `answered` or `parked`. A parked row comes back only if the ow
 | R63 | PoB2 MCP oracle: engine parity, proof stat per rec id, config robustness (Yykiuy, Athrynas) | M | PV1 | Closed 2026-11-13: the owner ran the PoB2 verification; `docs/plans/POB-VERIFY.md` removed |
 
 ## PX programme closed in PXC (2026-11-13)
-Moved from `docs/remaining/REMAINING-WORK.md`. Full results: `docs/carry/PXC.md`, `docs/plans/PERF-PLAN.md` ("4–8", PX10, PX11).
+Moved from `docs/remaining/REMAINING-WORK.md`. Full results: git history (PXC, PERF-PLAN items 4–8, PX10, PX11).
 
 | ID | Item | Class | Origin | Recommended / notes | Status |
 |---|---|---|---|---|---|
@@ -72,7 +72,7 @@ Moved from `docs/remaining/REMAINING-WORK.md`. Full results: `docs/carry/PXC.md`
 | UXS-2 | Tap boxes under 36 px re-measured, `hit-area` counted | S | UXS | Checklist step buttons and Memory fork checkboxes lacked a target; fixed. Footer links (24 px) meet the utility floor | done (UXS2) |
 | UXS-3 | ImportBar example button has no verb | S | UXS | `aria-label` "Use this example: <url>", visible text unchanged; e2e added | done (UXS2) |
 | UXS-4 | `/character` empty preview box has no next action | S | UXS | Line now reads "Paste a poe.ninja URL above and press Analyse." | done (UXS2) |
-| UXS-5 | 1440 px screenshots read with the critique rubric | S | UXS | Defects in `docs/carry/UXS2.md`; one fixed (see-through sticky tab strips) | done (UXS2) |
+| UXS-5 | 1440 px screenshots read with the critique rubric | S | UXS | Defects in `git history (UXS2)`; one fixed (see-through sticky tab strips) | done (UXS2) |
 
 ## Companion removed (2026-11-14)
 | ID | Item | Status |
@@ -114,4 +114,4 @@ Owner queue rows, answered in WQA4's Owner notes:
 | ID | Scope | Status |
 |---|---|---|
 | WQA1-4 | Sync route-budget text with `scripts/route-weight.mjs` | done in WQA4: §4 and R50 use the script's budgets, §5 marked not comparable, `VARIANT-STRATEGY.md` § Perf baseline points at the script |
-| WQA3-A | Scroll fix: sky scroll pause on resize, touch cadence, composited Astrolabe, scroll guard | done in #179: WQA3-1, 2a, 3, 9; checks in `docs/carry/WQA3.md` § Batch A result |
+| WQA3-A | Scroll fix: sky scroll pause on resize, touch cadence, composited Astrolabe, scroll guard | done in #179: WQA3-1, 2a, 3, 9; checks in git history (WQA3 carry, § Batch A result |

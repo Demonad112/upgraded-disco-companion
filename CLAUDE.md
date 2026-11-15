@@ -47,7 +47,7 @@ cd services/ninja-proxy && npm test                # node:test, separate from th
 
 ## Design (decided; change only with the owner)
 
-Dark palette; uppercase EB Garamond for headings and labels (finding, step and strategy titles are sentence case); square corners everywhere, no script fonts, no rounded shapes; gold constellation sky rotating slowly; clear glass on home and hero, bars and data panels are solid (`--data-fill` is opaque; no text legible through them), the sky stays in the margins, hero and home; thread connectors only on `[data-links]` sequences; phones use a bottom tab bar ordered Character, Farm, Atlas, Checklist (the `/dashboard` route is labelled "Farm"); Threads-style tool cards; sky dimmed behind blocks with a footer toggle (`poe2-sky-dim`); lighter sky on phones (width-based); "Up next" block kept. Light theme is deferred; cursor effects deferred except the desktop lantern.
+Dark palette; headings in uppercase EB Garamond, metric labels in uppercase Geist Mono (finding, step and strategy titles are sentence case); square corners everywhere, no script fonts, no rounded shapes; gold constellation sky rotating slowly; clear glass on home and hero, bars and data panels are solid (`--data-fill` is opaque; no text legible through them), the sky stays in the margins, hero and home; thread connectors only on `[data-links]` sequences; phones use a bottom tab bar ordered Character, Farm, Atlas, Checklist (the `/dashboard` route is labelled "Farm"); Threads-style tool cards; sky dimmed behind blocks with a footer toggle (`poe2-sky-dim`); lighter sky on phones (width-based); "Up next" block kept. Light theme is deferred; cursor effects deferred except the desktop lantern.
 
 - Never restyle the live site directly. Design variants go on `variant/<yyyymmdd>-<slug>` branches and are reviewed on their Cloudflare Pages preview URL (`docs/VARIANT-STRATEGY.md`).
 - Prefer the `:root` tokens in `apps/web/src/app/tokens.css` (imported by `globals.css`) over hex values in components.
@@ -63,7 +63,7 @@ See `docs/DEPENDENCY-BUMPS.md` (per-workspace checks; never split CI per workspa
 - Open work: `docs/remaining/REMAINING-WORK.md`.
 
 ## Sessions
-Every session follows docs/SESSION-PROTOCOL.md; carry-over lives in docs/carry/.
+Every session follows docs/SESSION-PROTOCOL.md; finished work in docs/HISTORY.md, open rows in docs/remaining/REMAINING-WORK.md.
 
 ## Cloud sessions
 
@@ -78,6 +78,7 @@ The SessionStart hook runs `npm ci` when `package-lock.json` changed since the l
   your reply. The exceptions are the Needs-owner kinds in `docs/SESSION-PROTOCOL.md` (design rules, CI or branch
   protection, `packages/*`/data/dependencies, weaker tests, branch deletion): put those in `REMAINING-WORK.md` § Owner
   queue with a recommended answer. If you are blocked on one 3 times, stop and ask.
+- **Data shapes.** When a data shape changes, grep `apps/web/e2e` for the old path and update specs in the same commit.
 - **Copy voice.** Follow `docs/COPY.md`: one or two sentences, action first, long text only behind Pro detail.
 - **Perf bar.** Keep a performance change only if it saves at least 5 % brotli on its file or route (`node scripts/route-weight.mjs`, which also fails when a route exceeds its pinned budget), or removes real runtime work.
 - **Token economy.** Every request re-reads the whole context, so: send independent tool calls together in one

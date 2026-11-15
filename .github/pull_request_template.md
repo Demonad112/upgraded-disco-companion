@@ -8,7 +8,7 @@ Preview: <!-- https://<branch-slug>.upgraded-disco-companion.pages.dev/ -->
 
 <!-- Each batch since the last check: merged #n, checks green at merge, latest main run green; or the breakage and what was done. -->
 
-## Carry-over handled
+## Open rows handled
 
 <!-- <source ID>-<#>: answer chosen / what was implemented / re-assigned to. -->
 
