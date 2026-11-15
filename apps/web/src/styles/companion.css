@@ -26,9 +26,11 @@
   :root[data-compact] .wraith {
     bottom: calc(env(safe-area-inset-bottom, 0px) + 12px);
   }
-  /* Room under the last row, so the figure never covers its buttons. */
-  body:has(.wraith) #main {
-    padding-bottom: calc(var(--wraith-size, 56px) + 3rem);
+  /* Room under the last row, so the figure never covers its buttons. Always reserved (not keyed on .wraith): the
+     companion mounts after idle, and a late padding change would grow the page after the user (or a test) had
+     already scrolled to the end, leaving the footer under the tab bar. */
+  #main {
+    padding-bottom: calc(56px + 3rem);
   }
 }
 
