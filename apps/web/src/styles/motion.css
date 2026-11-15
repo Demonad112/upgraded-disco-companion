@@ -139,8 +139,14 @@ h1.hero-title span.text-gradient-gold {
 .astrolabe .astro-section[data-current] {
   fill: var(--astro-gold);
 }
+.astrolabe svg,
 .astro-dial {
-  transform-box: view-box;
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.astro-dial {
   transform-origin: 50% 50%;
 }
 @keyframes astro-turn {

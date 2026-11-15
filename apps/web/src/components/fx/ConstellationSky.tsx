@@ -48,7 +48,8 @@ export function ConstellationSky() {
     // Lite (data saver, <=2 cores/GB): half the stars, 15fps.
     const nav = navigator as Navigator & { connection?: { saveData?: boolean }; deviceMemory?: number }
     const lite = !!nav.connection?.saveData || (nav.hardwareConcurrency || 8) <= 2 || (nav.deviceMemory ?? 8) <= 2
-    const interval = lite ? 1000 / 15 - 2 : 1000 / 24 - 2
+    // WQA3-2a: touch screens get the lite cadence too; the drift is ~0.2 px a frame, so 15fps looks the same and frees scroll.
+    const interval = lite || !fine ? 1000 / 15 - 2 : 1000 / 24 - 2
     let scrolling = false
     let scrollTimer = 0
     let raf = 0
@@ -123,7 +124,7 @@ export function ConstellationSky() {
         return
       }
       raf = requestAnimationFrame(frame)
-      // 24fps (lite 15): the drift is slow, and the dense sky is the page's biggest per-frame cost.
+      // 24fps (lite and touch 15): the drift is slow, and the dense sky is the page's biggest per-frame cost.
       // No repaint while scrolling or while the tab is hidden.
       if (scrolling || document.hidden || now - last < interval) return
       if (fine) stepLamp(now, Math.min(100, now - last))
@@ -160,7 +161,8 @@ export function ConstellationSky() {
     const onResize = () => {
       window.clearTimeout(debounce)
       window.clearTimeout(scrollTimer)
-      window.removeEventListener('scroll', onScroll, { capture: true })
+      // Keep the scroll listener (WQA3-1); only reset the pause so a cleared timer can't leave it stuck on.
+      scrolling = false
       debounce = window.setTimeout(() => {
         rebuild()
         if (motion.matches) paintStill()

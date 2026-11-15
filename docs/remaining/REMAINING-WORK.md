@@ -27,6 +27,7 @@ One row per Needs-owner item, with the recommended answer. Answer by ID in a pro
 | PXA-7 | Character tab bar scrolls at 390 px | Accept (labels stay readable) | `docs/carry/PXA.md` |
 | PXA-8 | Passive tree fetched at idle after the card paints | Keep | `docs/carry/PXA.md` |
 | CF1-1 | `.claude/settings.json` denies reading `packages/data/generated/**` and versioned fixtures | Keep the deny (saves context; regen scripts still work) | `docs/carry/CF2.md` |
+| WQA3-9b | Wire `scripts/scroll-audit.cjs` into CI (it would be a new check) | Yes, report-only first (`continue-on-error`, not required); make it blocking only after a few clean runs on `main` | `docs/carry/WQA3.md` |
 | WQA1-5 | Manifest `lang`, HSTS preload, CORP | Add `lang: "en"` next time the manifest is touched; skip the rest | `docs/carry/WQA1.md` |
 | WQA1-6 | JSON-LD `WebApplication` | Skip | `docs/carry/WQA1.md` |
 
@@ -132,7 +133,6 @@ Web quality audit. Fixes landed in WQA1; open rows in `docs/carry/WQA1.md`.
 | WQA1-2 | LHCI: gate accessibility, SEO and best-practices scores (S) | a few runs on `main` | open |
 | WQA1-3 | Perf headroom: 24 KB near-unused chunk on `/`, render-blocking CSS, TBT on checklist and trade (M) | measure first, ≥ 5 % br | open |
 | WQA1-5, WQA1-6 | Manifest/HSTS extras, JSON-LD | owner | open: Owner queue |
-| WQA3-A | Scroll fix: sky scroll pause lost on resize, phone cadence, composited Astrolabe, scroll guard (S–M) | — | open (`docs/carry/WQA3.md` batch A) |
 | WQA3-B | LHCI asserts TBT and a11y/SEO/BP; reduced-motion CLS check (S) | a few runs on `main` | open (batch B; bypass and baselines declined in WQA4) |
 | WQA3-C | `/checklist` CLS 0.25 under reduced motion, 404 metadata, font preloads (S) | — | open (batch C) |
 | WQA3-D | Bundle diet: route data in the shared floor, per-route CSS (M) | ≥ 5 % br | open (batch D) |
