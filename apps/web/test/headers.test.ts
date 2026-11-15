@@ -24,6 +24,13 @@ describe('Cloudflare _headers', () => {
     for (const origin of origins) expect(connect).toContain(origin)
   })
 
+  // WQA1-1: inline scripts are allowed by hash only; scripts/csp-hashes.mjs appends the hashes to out/_headers at build.
+  it("does not allow 'unsafe-inline' scripts", () => {
+    const scriptSrc = /script-src ([^;]+)/.exec(csp ?? '')?.[1].split(/\s+/) ?? []
+    expect(scriptSrc).toContain("'self'")
+    expect(scriptSrc).not.toContain("'unsafe-inline'")
+  })
+
   // CF-01: unhashed images and icons get a day of caching. The manifest and HTML stay on revalidate; data JSON is immutable (versioned URL).
   describe('cache rules', () => {
     const rules = new Map<string, string[]>()
