@@ -1,6 +1,6 @@
 import { PROFILE_URL, expect, test } from './fixtures'
 
-// PX11b: import-to-card timing. Mobile profile (4x CPU, ~1.6 Mbps / 165 ms) through CDP, as PERF-PLAN's harness.
+// PX11b: import-to-card timing. Mobile profile (4x CPU, ~1.6 Mbps / 165 ms) through CDP, as the PX11 harness (docs/HISTORY.md).
 // Measured in this suite (Pixel 7 emulation, fixture proxy, workers=1): the character heading is visible 2.8-2.9 s
 // after navigation (3 runs). The limit is that plus 30 % for CI noise, so only a real regression fails. This is
 // not the harness's card-paint time (0.8-1.1 s from scripts/perf-import.cjs, which uses a different clock).

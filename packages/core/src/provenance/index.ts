@@ -35,7 +35,7 @@ const TIER_NOTE: Readonly<Partial<Record<Tier, string>>> = Object.freeze({
 
 /**
  * Which tier each of the site's sources maps to. Owner-approved mapping
- * (docs/plans/MCP2-PORT.md).
+ * (docs/HISTORY.md, MCP2).
  */
 export const SOURCE_TIER = Object.freeze({
   /** Fields read from a poe.ninja character payload. */

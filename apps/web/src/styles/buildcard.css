@@ -1,4 +1,4 @@
-/* Build card (PX3, CHARACTER-SPEC §1): the first screen after an import. Component variables are defined here from
+/* Build card (PX3, docs/HISTORY.md, PX3): the first screen after an import. Component variables are defined here from
    existing :root tokens; nothing is added to tokens.css. Square corners, solid data fill. */
 .bc {
   --bc-fill: var(--surface);

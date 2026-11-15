@@ -1,6 +1,6 @@
 # Remaining work register
 
-Owner decisions waiting: § Owner queue below. Session process: `docs/SESSION-PROTOCOL.md`; batch index: `docs/carry/README.md`.
+Owner decisions waiting: § Owner queue below. Session process: `docs/SESSION-PROTOCOL.md`; finished work: `docs/HISTORY.md`; plan: `docs/plans/FINISH-PLAN.md`.
 
 Snapshot 2026-11-08: L1–L3 are done and PR #119 is merged. On main the gate passes, e2e passes (347 passed, 3 skipped) and coverage is 92.04 % statements / 81.01 % branches. Next batches are in §6.
 This file lists what is still unfinished. Closed rows (`done` · `answered` · `parked`) are in `archive/REGISTER-CLOSED.md`. Steps only the owner can do are in `OWNER-STEPS.md`.
@@ -16,20 +16,13 @@ Class codes:
 | **P** | Parked |
 
 ## Owner queue
-One row per Needs-owner item, with the recommended answer. Answer by ID in a prompt's `Owner notes`; carry files link here.
+One row per Needs-owner item, with the recommended answer. Answer by ID in a prompt's `Owner notes`.
+Answers of 2026-11-15 (`docs/plans/FINISH-PLAN.md`) are applied and the rows cleared: PRO1-3, WQA3-9b, WQA1-1 (do in Batch 3), UXS-1 (variant branch, Batch 3), R60 (Yykiuy only), PXA-7 accept, PXA-8 keep, CF1-1 keep the deny, WQA1-5 (`lang: "en"` only), WQA1-6 skip. PRO1-1, PRO1-2, PRO1-4 and PRO1-5 are closed by the same plan.
 
 | ID | Question | Recommended answer | Source |
 |---|---|---|---|
-| PRO1-3 | Label font: CLAUDE.md says "uppercase EB Garamond for headings and labels", but `.label-metric` / `--font-label` is Geist Mono (tokens.css, design-decisions.md) | Amend CLAUDE.md to "headings in uppercase EB Garamond; metric labels in uppercase Geist Mono", matching the shipped code | PRO1 |
-| WQA1-1 | Drop `'unsafe-inline'` from `script-src` by hashing the three bootstrap scripts | Yes, as its own batch with a live-header check on the preview | `docs/carry/WQA1.md` |
-| UXS-1 | Collapse ~22 text sizes to an 8-step scale (11, 12, 14, 16, 18, 22, 36, 64 px) | Yes, on `variant/<yyyymmdd>-type-scale`, reviewed on its preview | `docs/carry/UXS2.md` row 1 |
-| R60 | Character fixtures: Yykiuy files exist (`yykiuy-v51/v80.json`); Athrynas level 94 is still missing | Send the Athrynas account, or let F2 go live on Yykiuy only | §2, `docs/carry/OC1.md` row 3 |
-| PXA-7 | Character tab bar scrolls at 390 px | Accept (labels stay readable) | `docs/carry/PXA.md` |
-| PXA-8 | Passive tree fetched at idle after the card paints | Keep | `docs/carry/PXA.md` |
-| CF1-1 | `.claude/settings.json` denies reading `packages/data/generated/**` and versioned fixtures | Keep the deny (saves context; regen scripts still work) | `docs/carry/CF2.md` |
-| WQA3-9b | Wire `scripts/scroll-audit.cjs` into CI (it would be a new check) | Yes, report-only first (`continue-on-error`, not required); make it blocking only after a few clean runs on `main` | `docs/carry/WQA3.md` |
-| WQA1-5 | Manifest `lang`, HSTS preload, CORP | Add `lang: "en"` next time the manifest is touched; skip the rest | `docs/carry/WQA1.md` |
-| WQA1-6 | JSON-LD `WebApplication` | Skip | `docs/carry/WQA1.md` |
+| PXV-4 | Pick one chat-settings variant (waystone, ledger, relic) or merge parity alone | Merge parity now; choose a variant after viewing the three previews | PXV (#155, #158) |
+| PV1-1 | PoB2 MCP fork with must-haves 1–6 (blocks PV1-2 engine-parity checks) | Build with mcp-builder; local stdio; return `MeasuredDelta`-shaped results | PV1 |
 
 ## 1. Decisions
 | ID | Question | Recommended | Origin | Status |
@@ -47,13 +40,13 @@ These rows run in the §6 owner-pass order.
 | R45 | Android share target on a real device. The emulated e2e passes | 8 | L1-3 | parked (P): owner skipped manual checks 2026-11-08 |
 | R46 | Real display and Safari: sky over 30 s, hover pulse, hero draw-in, lantern, foil, route transitions, glyphs | 9 | A5-4, W15-pulse-1, MP1-4, LS1-4 | parked (P): owner skipped manual checks 2026-11-08 |
 | R47 | Phone and Xbox sizing for the quick-pick sheet and sticky strip; reduced-motion fade; picker states; diagram labels. The emulated part is done | 10 | QP1-1, FP1-5, H1-2, V1-1 | parked (P): owner skipped manual checks 2026-11-08 |
-| R60 | Two character fixtures: `packages/core/test/fixtures/yykiuy-v<version>.json` and `athrynas-94-v<version>.json` | 11 | evidence-pack tests | parked (P): owner skipped manual checks 2026-11-08 |
+| R60 | Two character fixtures: `packages/core/test/fixtures/yykiuy-v<version>.json` and `athrynas-94-v<version>.json` | 11 | evidence-pack tests | answered 2026-11-15: F2 goes live on Yykiuy only; Athrynas dropped |
 | R43 | TT1 live trade2 checks: filter shapes, link length at 6k/8k/9k, `TradeStatus` via `?q=`, console realm. Optional | 5 | TT1 #2–#5 | done except console realm, 2026-11-08: 6k/8k/9k links load, four statuses show correctly, weight group prefills (OC1) |
 
 ## 3. Code and CI follow-ups (class C)
 | ID | Item | Size | Origin | Notes | Status |
 |---|---|---|---|---|---|
-| R65 | F7: trade-map uses explicit single-resist ids; pseudo totals count every source | M | PV1 | one live trade2 check first | open; batch PV3 |
+| R65 | F7: trade-map uses explicit single-resist ids; pseudo totals count every source | M | PV1 | one live trade2 check first | open; Batch 2 (needs one live trade2 check first) |
 
 ## 4. Standing rules (no work)
 - Route budgets live in `scripts/route-weight.mjs` (source of truth; brotli, first load, the `noModule` polyfill chunk excluded; exits 1 when a route is over): `/` 158,000 · `/checklist` 167,000 · `/character` 209,000 · `/atlas` 177,000 · `/dashboard` 188,000 · `/trade` 162,000 · `/methodology` 156,000 · `/whats-new` 154,000 B; any other route 190,000. Raise one only on purpose, with the reason in the PR. Not run in CI. Any change to home JS reports before and after.
@@ -100,47 +93,61 @@ N1 (#122), N2 (#124) and N3 (#125) are merged; their rows are archived. The PX p
 | ID | Branch | Scope | Depends on |
 |---|---|---|---|
 | F1 | `data/<yyyymmdd>-danger-calibration` | R10: calibrated danger (follow `R40-RUN-LOG.md` exactly) | R40 (parked) |
-| F2 | `test/<yyyymmdd>-evidence-fixtures` | R60: skipped evidence-pack suites go live | R60 (Owner queue) |
+| F2 | `test/<yyyymmdd>-evidence-fixtures` | R60: skipped evidence-pack suites go live | none (R60 answered: Yykiuy fixtures only) |
 
 Owner-only steps: § Owner queue and §2 (every §2 row is done or parked).
 
-### CF follow-ups (2026-11-13)
-Open rows from CF2 (`docs/carry/CF2.md`); spec `docs/plans/CF-AUDIT-YYKIUY.md`.
+### Open rows (moved from the carry files, 2026-11-15)
+Batches are in `docs/plans/FINISH-PLAN.md`. Rows keep their carry IDs. One line each.
 
-| ID | Scope | Status |
+| ID | Row | Batch |
 |---|---|---|
-| CF2-1 | Patch label is a hand-kept `CURRENT_PATCH`; import it from `version.json` (S) | open (next-A) |
-| CF2-2 | Item 17: monster physical damage has no second source; cross-check before trusting "LOW RISK" (S) | open (next-A) |
-| CF2-3 | Web does not load `monk-gloves.json` (S) | open (next-A) |
-| CF2-4 | Dead-stat rule covers only the attack/spell split (M) | open (next-A) |
-| CF2-5 | ΔDPS is always null; fill `measured.dps` from ninja figures only (S) | open (next-A) |
+| WQA3-8 | LHCI asserts TBT and a11y/SEO/BP | 2 |
+| WQA1-2 | LHCI: gate accessibility, SEO and best-practices (default preset, `minScore`; all score 100 today) | 2 |
+| WQA3-4 | `/checklist` CLS 0.25 under reduced motion | 2 |
+| WQA3-13 | Font preloads | 2 |
+| WQA3-18 | 404 metadata | 2 |
+| PXB-2 | Home hero collapses after hydration for returning players (CLS, `:has(.lc-plate)`); consider a pre-paint flag | 2 |
+| PXC-3 | `/checklist` content-visibility (85 % below fold; needs per-section intrinsic sizes, CLS risk) | 2 |
+| UXS2-2 | Farm: "FARM PLANNER" label (~20 px) smaller than "QUICK PICKS" heading (~34 px) | 2 |
+| UXS2-3 | Home: "Up next" card top 20 px lower than the Progress card | 2 |
+| UXS2-4 | Atlas and Checklist: "Pro detail" toggle on its own row; move into the heading row | 2 |
+| UXS2-5 | Imported character: "Light." abbreviated, "114 d ago · re-import" at 10 px | 2 |
+| UXS2-6 | Checklist phase strip clipped by the "Hide completed" box at 1440 | 2 |
+| UXS2-7 | Methodology and character tab strips bleed 20 px each side; confirm or align | 2 |
+| PXC-9 | `/dashboard` `#farm-tab-setup` "Set up" contrast 2.21:1 at 390 px (exempt only if the tab is disabled) | 2 |
+| PXC-10 | Touch targets under 44 px at 390 (skip link, "About patch data", "Dismiss patch notice", two checkbox labels, footer "Farm") | 2 |
+| PXV-5 | Chat settings toggle is still a plain text button (`components/Chat.tsx`) | 2 |
+| CF2-1 | Patch label: import from `version.json` instead of hand-kept `CURRENT_PATCH` | 2 |
+| CF2-3 | Web does not load `monk-gloves.json`; copy in `sync-data`, fetch lazily in `useModTiers` for Martial Artist | 2 |
+| CF2-4 | Dead-stat rule covers only the attack/spell split; extend only with tags the skills data has | 2 |
+| CF2-5 | ΔDPS stays null (poe.ninja-as-given rule): document it, fill `measured.dps` only from ninja figures | 2 (doc note) |
+| R65 | See §3 (trade-map pseudo-resist ids) | 2 |
+| WQA3-10/11/20 (D) | Bundle diet: route data in the shared floor, per-route CSS; keep only if ≥ 5 % br | 3 |
+| WQA3-15 (E) | DOM diet; WQA3-14 (scrim into canvas) dropped with the OffscreenCanvas idea unless a device trace asks for it | 3 |
+| WQA1-3 | Perf headroom: ~24 KB near-unused chunk on `/` (`39k23z46rmox0.js`), render-blocking CSS, TBT on checklist and trade | 3 (measure first) |
+| PXC-2 | `/character` lazy-chunk budget line in `scripts/route-weight.mjs` | 3 |
+| PXC-5 | Global CSS split: re-measure with `CSS.startRuleUsageTracking` before any split | 3 |
+| PXC-6 | Service worker: headless run registered no controller; re-run with a real profile | 3 |
+| PXC-7 | PERF 1b (import trace split) and 1c (live ladder timing; needs the proxy) | 3 |
+| PXA-9 | Card and Top 3 are 20–60 ms over target; start the ladder request from the import instead of after the card pass | 3 |
+| WQA1-1 / WQA3-17 | Hash the three inline bootstrap scripts, drop `'unsafe-inline'` from `script-src` in `_headers`; verify on the preview headers | 3 (after the diet) |
+| UXS-1 | Collapse ~22 text sizes to 8 (11, 12, 14, 16, 18, 22, 36, 64 px) on `variant/<yyyymmdd>-type-scale`; merge only on owner OK | 3, PR B |
+| WQA3-9b | `scripts/scroll-audit.cjs` runs in CI report-only (`continue-on-error`); make it blocking only after a few clean runs on `main` | done in Batch 1 |
+| PV1-2 | Engine parity, proof stats, config robustness (R63) | parked on PV1-1 |
+| CF2-2 | Monster physical damage per area level has no second source | parked (no second source) |
+| OC1-2 | Local-only Lighthouse medians, visualViewport and share-target specs | CI / cloud when wanted |
 
-### UXS (2026-11-13)
-Sweeps PXC skipped. UXS-2 to UXS-5 closed in UXS2 (2026-11-13). Open rows in `docs/carry/UXS2.md`.
-
-| ID | Scope | Depends on | Status |
-|---|---|---|---|
-| UXS-1 | Collapse text sizes to about 8, 11 px label floor (M) | owner | open: moves of 2 px or more, so a `variant/<yyyymmdd>-type-scale` branch (UXS2 row 1) |
-| UXS2-2 | Atlas, farm and checklist layout defects found in the 1440 read (S to M) | — | open (UXS2 rows 2–6) |
-| UXS2-7 | Methodology and character tab strips bleed 20 px; confirm intended or align (S) | — | open (UXS2 row 7) |
-
-### WQA (2026-11-14)
-Web quality audit. Fixes landed in WQA1; open rows in `docs/carry/WQA1.md`.
-
-| ID | Scope | Depends on | Status |
-|---|---|---|---|
-| WQA1-1 | Drop `'unsafe-inline'` from `script-src` by hashing the three bootstrap scripts (M) | owner | open: Owner queue |
-| WQA1-2 | LHCI: gate accessibility, SEO and best-practices scores (S) | a few runs on `main` | open |
-| WQA1-3 | Perf headroom: 24 KB near-unused chunk on `/`, render-blocking CSS, TBT on checklist and trade (M) | measure first, ≥ 5 % br | open |
-| WQA1-5, WQA1-6 | Manifest/HSTS extras, JSON-LD | owner | open: Owner queue |
-| WQA3-B | LHCI asserts TBT and a11y/SEO/BP; reduced-motion CLS check (S) | a few runs on `main` | open (batch B; bypass and baselines declined in WQA4) |
-| WQA3-C | `/checklist` CLS 0.25 under reduced motion, 404 metadata, font preloads (S) | — | open (batch C) |
-| WQA3-D | Bundle diet: route data in the shared floor, per-route CSS (M) | ≥ 5 % br | open (batch D) |
-| WQA3-E | Layer and DOM diet (M) | real-device trace | open (batch E) |
+Closed in this consolidation: PV1-6 / R67, PRO1-1, PRO1-2, PRO1-4, PRO1-5 (owner decision 2026-11-15), PXA-7, PXA-8, PXC-4 (see Do not do), PXB-1, PXB-3, PXB-4.
 
 ### Do not do
 | Item | Why |
 |---|---|
+| WQA1-6 JSON-LD; HSTS preload; CORP | Owner 2026-11-15: skip (`lang: "en"` only, done) |
+| WQA3-2b / WQA3-14 OffscreenCanvas sky | Wait for a real-device trace |
+| PXC-4 sky rAF pause when covered | Sky stays visible in the margins; revisit only if a route is fully covered |
+| PXC-8 skipped sweeps, hooded mascot / CMP1, analytics idea, PRO1 W7 | Dropped by owner 2026-11-15 |
+| R40 (→F1, R10), R44–R47, R57, console realm | Parked on owner hardware; no session |
 | R31 / R33 / R34: MCP schemas, footer, stamps | Owner: keep MCP as is |
 | R39: sky id index | ~15 KB on an idle cached chunk; not worth it |
 | R50: lazy core on `/character` | Only if the route goes over its `scripts/route-weight.mjs` budget (209,000 B br; 208,064 on 2026-11-14) |

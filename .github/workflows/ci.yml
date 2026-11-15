@@ -116,6 +116,15 @@ jobs:
         # it offline with the captured fixture character. No traces on CI; to debug a failure, re-run that test
         # locally with `--trace on`.
         run: npm run e2e --workspace @poe2/web -- --trace off
+      - name: Scroll guard (report-only)
+        if: needs.changes.outputs.heavy == 'true'
+        # WQA3-9b: functional sky checks on the built site. Not required; make it blocking only after clean runs on main.
+        continue-on-error: true
+        run: |
+          BASE="/${GITHUB_REPOSITORY#*/}"
+          E2E_BASE_PATH="$BASE" node apps/web/e2e/serve.mjs &
+          sleep 3
+          node scripts/scroll-audit.cjs "http://localhost:4321$BASE/"
       - name: Upload the smoke-test report
         if: failure() && needs.changes.outputs.heavy == 'true'
         uses: actions/upload-artifact@v6

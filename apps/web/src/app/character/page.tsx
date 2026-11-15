@@ -101,7 +101,7 @@ export default function Home() {
   }, [tiersIn, ladderSettled])
   // Which pass the inputs allow: the card pass (raw data alone); the fixes pass once the tiers are in (and the ladder,
   // if it answered in time), which writes Top 3; the full pass once the tree is in too. The tree changes Top 3 only for
-  // keystone builds, so it is not worth holding Top 3 for (PERF-PLAN: identical rows with and without it on both
+  // keystone builds, so it is not worth holding Top 3 for (PX9 measurement, docs/HISTORY.md: identical rows with and without it on both
   // reference characters).
   const want: 'card' | 'fixes' | 'full' = tiersIn && (ladderSettled || grace) ? (treeSettled ? 'full' : 'fixes') : 'card'
 

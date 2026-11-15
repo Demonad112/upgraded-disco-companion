@@ -1,5 +1,6 @@
 {
   "name": "PoE2 Endgame Companion",
+  "lang": "en",
   "short_name": "Endgame",
   "description": "Path of Exile 2 endgame companion: character analysis grounded in poe.ninja's own computed data, plus a progression checklist, Atlas planner and farming dashboard.",
   "id": "./",
