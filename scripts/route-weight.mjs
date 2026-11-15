@@ -7,10 +7,10 @@ const out = 'apps/web/out'
 // polyfill chunk) is skipped. Pinned per route in PXC (PX11b) to the measured size rounded up to the next 2,000 B, so
 // a route that grows by more than ~2 KB fails and the budget is raised on purpose, with the reason in the PR.
 const BUDGET = {
-  'index.html': 158_000,
+  'index.html': 160_000, // CMP2: +1,140 B br on every route (companion host shell and CSS)
   'checklist/index.html': 167_000,
   'character/index.html': 209_000,
-  'atlas/index.html': 177_000,
+  'atlas/index.html': 179_000, // CMP2 (as index)
   'dashboard/index.html': 188_000,
   'trade/index.html': 162_000,
   'methodology/index.html': 156_000,
@@ -20,7 +20,7 @@ const DEFAULT_BUDGET = 190_000
 // PXC-2: chunks that no route's first-load HTML references (the /character tab and results chunks, the Farm and Atlas
 // lazy panels). They load after first paint, so they sit outside the route budgets above; this pins their total.
 // Same rule: measured size rounded up to the next 2,000 B.
-const LAZY_BUDGET = 178_000
+const LAZY_BUDGET = 182_000 // CMP2: +2,753 B br, the companion chunk
 const ROUTES = ['index.html', 'checklist/index.html', 'character/index.html', 'atlas/index.html', 'dashboard/index.html', 'trade/index.html', 'methodology/index.html', 'whats-new/index.html']
 const CHUNK_RE = /\/_next\/static\/chunks\/[^"']+\.(?:js|css)/g
 let over = 0

@@ -12,6 +12,8 @@ import { FxLayer } from '@/components/fx/FxLayer'
 import { ConstellationSky } from '@/components/fx/ConstellationSky'
 import { Astrolabe } from '@/components/fx/Astrolabe'
 import { PersistedStateProvider } from '@/hooks/usePersistedState'
+import { CompanionHost } from '@/components/companion/CompanionHost'
+import { orderedSteps } from '@/lib/roadmapOrder'
 import { bannerBootstrap } from '@/lib/bannerDismiss'
 import { COMPACT_BOOTSTRAP } from '@/lib/compactMode'
 import { SKY_DIM_BOOTSTRAP } from '@/lib/skyDim'
@@ -132,6 +134,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <Footer />
           </div>
           <CommandPalette />
+          {/* The wraith: loads after idle; footer toggle turns it off. */}
+          <CompanionHost stepCount={orderedSteps.length} />
           <HashHighlight />
         </PersistedStateProvider>
       </body>

@@ -107,6 +107,10 @@
   --tabbar-h: 3.5rem; /* phone tab bar, without the safe-area inset (styles/nav.css) */
   --focus-ring: 2px solid var(--accent);
 
+  /* Wraith companion eyes (blue only; docs/design/WRAITH.md) */
+  --wraith-eye: #cdeeff;
+  --wraith-eye-glow: #6fbfff;
+
   /* Canvases */
   --constellation-density: 0.64;
   --line-strength: 0.44;
