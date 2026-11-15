@@ -120,6 +120,14 @@ Sorted by (impact × confidence) ÷ effort. Evidence: **Measured** (numbers abov
 - **bfcache** in a real browser profile.
 - **Lighthouse** not re-run (WQA2 numbers stand).
 
+## Batch A result (2026-11-15)
+Done: WQA3-1 (scroll listener kept on resize), WQA3-2a (touch sky 15 fps), WQA3-3 (Astrolabe dial is an HTML div with its own svg), WQA3-9 (`scripts/scroll-audit.cjs`, manual; 10/10 ok, fails on the old sky code).
+
+Checks (local `npm run build` of this branch vs the same tree with `main`'s three fx files; headless Chromium 153, software rendering):
+- **Look.** Astrolabe crop at 390 and 1440 on `/` and `/methodology`, sky hidden: identical at the top of the page (0 px differ). After scrolling it differs on purpose: on `main` the dial turns about the wrong point (`transform-box: view-box` with a `-100 -100` viewBox puts the pivot at the box corner), so it swings off-centre and leaves the ring as you scroll. The PR's dial turns in place, as MP1 intended.
+- **Astrolabe Paint**, phone (390×844, DPR 3, 4× CPU), page reduced to the Astrolabe, one 3000 px pass down and back, 3 runs: `main` 44–57 ms (480 Paint events), PR 0 ms (0 events). Full page: Paint events per pass 629 → 302 on `/methodology` and 366 → 110 on `/`.
+- **Sky frames**, phone 4× CPU, `/`, idle 5 s after a scroll, 8 runs each: % rAF frames > 16.7 ms median 19.6 % without a resize and 18.9 % after one (0.7 pts; 5-run batch medians 19.6 vs 17.6). Sky draw calls the same (~6,040 per 5 s), so it still animates after a resize.
+
 ## Resolved from earlier carry files
 - WQA1-4: answered: `route-weight.mjs` is the source of truth; §5 rewrite queued as WQA3-19 (batch D).
 - WQA1-2: folded into WQA3-8 (batch B).
@@ -129,10 +137,10 @@ Sorted by (impact × confidence) ÷ effort. Evidence: **Measured** (numbers abov
 ## Open
 | # | Type | For | Item | Recommended answer / action |
 |---|---|---|---|---|
-| 1 | bug | next-A | WQA3-1 sky scroll pause lost on resize | Batch A |
+| 1 | bug | next-A | WQA3-1 sky scroll pause lost on resize | done (batch A) |
 | 2 | bug | next-A | WQA3-4 `/checklist` CLS 0.25 under reduced motion | Batch C |
-| 3 | follow-up | next-A | WQA3-8 LHCI asserts; WQA3-9 scroll guard | Batch B; WQA3-9 in batch A |
-| 4 | recommendation | next-A | WQA3-2, WQA3-3 sky cadence and Astrolabe compositing | Batch A |
+| 3 | follow-up | next-A | WQA3-8 LHCI asserts; WQA3-9 scroll guard | WQA3-8: batch B. WQA3-9 done (batch A); CI wiring in Owner queue (WQA3-9b) |
+| 4 | recommendation | next-A | WQA3-2, WQA3-3 sky cadence and Astrolabe compositing | WQA3-2a and WQA3-3 done (batch A); WQA3-2b in batch E |
 | 5 | recommendation | next-A | WQA3-10/11/20 shared-floor data and global CSS | Batch D |
 | 6 | recommendation | owner | WQA3-14/15 layer and DOM diet after a device trace | Batch E |
 

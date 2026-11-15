@@ -8,7 +8,7 @@ The PR number lives here only. Live rows are tracked in `docs/remaining/REMAININ
 - [WQA4](WQA4.md): merged #177.
 - [PRO1](PRO1.md): merged #175 (W1–W6 closed in WQA4; open row W7 for next-A; PRO1-3 in Owner queue)
 - [WQA1](WQA1.md): merged #173, `test` red at merge (e2e flake; `main` green after). Open rows WQA1-2 to WQA1-6; WQA1-1 in Owner queue
-- [WQA3](WQA3.md): done, docs-only PR (scroll + quality audit: sky loses its scroll pause on resize, 17–34 % janky frames on phone; open rows in batches A, C–F; WQA3-5/6 declined and WQA3-7/19 done in WQA4)
+- [WQA3](WQA3.md): audit merged; batch A (WQA3-1, 2a, 3, 9) in #179. Open rows in batches B–F; WQA3-9b (scroll-audit in CI) in Owner queue; WQA3-5/6 declined and WQA3-7/19 done in WQA4
 - [UXS2](UXS2.md): merged #171 (layout defects UXS2-2 to UXS2-7; UXS-1 type scale in Owner queue)
 - [CF2](CF2.md): merged #163 (follow-ups CF2-1 to CF2-5; CF1-1 settings deny in Owner queue)
 - [PXC](PXC.md): merged #154, #169 (open rows 2–7 and 11; PXC-1 declined by owner in WQA4)

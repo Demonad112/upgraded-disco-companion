@@ -114,3 +114,4 @@ Owner queue rows, answered in WQA4's Owner notes:
 | ID | Scope | Status |
 |---|---|---|
 | WQA1-4 | Sync route-budget text with `scripts/route-weight.mjs` | done in WQA4: §4 and R50 use the script's budgets, §5 marked not comparable, `VARIANT-STRATEGY.md` § Perf baseline points at the script |
+| WQA3-A | Scroll fix: sky scroll pause on resize, touch cadence, composited Astrolabe, scroll guard | done in #179: WQA3-1, 2a, 3, 9; checks in `docs/carry/WQA3.md` § Batch A result |
