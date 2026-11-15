@@ -5,7 +5,7 @@ The PR number lives here only. Live rows are tracked in `docs/remaining/REMAININ
 § Owner queue. Session IDs: prefix + next free number for that prefix (Active and Archive below).
 
 ## Active
-- [WQA4](WQA4.md): open, PR pending (CI noise: Atlas Map flake, cache v5, hook tests in CI, budget text; no open rows)
+- [WQA4](WQA4.md): merged #177.
 - [PRO1](PRO1.md): merged #175 (W1–W6 closed in WQA4; open row W7 for next-A; PRO1-3 in Owner queue)
 - [WQA1](WQA1.md): merged #173, `test` red at merge (e2e flake; `main` green after). Open rows WQA1-2 to WQA1-6; WQA1-1 in Owner queue
 - [WQA3](WQA3.md): done, docs-only PR (scroll + quality audit: sky loses its scroll pause on resize, 17–34 % janky frames on phone; open rows in batches A, C–F; WQA3-5/6 declined and WQA3-7/19 done in WQA4)

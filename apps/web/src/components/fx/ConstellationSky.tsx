@@ -160,7 +160,8 @@ export function ConstellationSky() {
     const onResize = () => {
       window.clearTimeout(debounce)
       window.clearTimeout(scrollTimer)
-      window.removeEventListener('scroll', onScroll, { capture: true })
+      // Keep the scroll listener (WQA3-1); only reset the pause so a cleared timer can't leave it stuck on.
+      scrolling = false
       debounce = window.setTimeout(() => {
         rebuild()
         if (motion.matches) paintStill()

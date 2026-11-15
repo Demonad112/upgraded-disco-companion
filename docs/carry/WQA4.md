@@ -27,13 +27,3 @@ None. PRO1-W7 (For next-A) stays in `PRO1.md`.
 ## Needs owner
 - None new.
 
-## Handoff (2026-11-15, next chat continues)
-- CI run 43655813672 (`test` red) failed only on [mobile] `interactions.spec.ts:5` with the first version of the W1
-  fix (`getByRole(...).toBeVisible()` on the canvas, hidden in the phone sheet). Fixed in the follow-up commit; re-check
-  the new run on #177.
-- Still to do: full local e2e with the fixed spec (last full run before the fix: 420 passed / 1 failed / 41 skipped);
-  confirm no Node 20 warning in the `test` job log (cache v5); fill PR **Gate**; mark #177 ready if a draft; book the
-  check-in; never merge.
-- Gate so far: typecheck 0, lint 0, `npm test` core 876 / mcp 44 / web 331, `test:scripts` 28/28, build ok,
-  route-weight all under budget (no route touched).
-- Separate owner request: remove the companion mascot (#172) on branch `claude/remove-companion` (own PR, not WQA4).
