@@ -89,11 +89,11 @@ test.describe('MP1 motion polish', () => {
 
   test('the astrolabe dial turns with the page scroll, in square brass ticks', async ({ page }) => {
     await page.goto('')
-    const dial = page.locator('svg[data-fx="astrolabe"] .astro-dial')
+    const dial = page.locator('[data-fx="astrolabe"] .astro-dial')
     await expect(dial).toHaveCount(1)
     const scrollDriven = await page.evaluate(() => CSS.supports('animation-timeline: scroll()'))
     expect(await animationOf(dial)).toBe(scrollDriven ? 'astro-turn' : 'none')
-    expect(await page.locator('svg[data-fx="astrolabe"] circle').first().evaluate((el) => getComputedStyle(el).strokeLinecap)).toBe('butt')
+    expect(await page.locator('[data-fx="astrolabe"] circle').first().evaluate((el) => getComputedStyle(el).strokeLinecap)).toBe('butt')
   })
 
   test('the astrolabe marks one tick per section where a page has a section bar', async ({ page }) => {
