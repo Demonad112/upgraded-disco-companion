@@ -74,6 +74,11 @@ Moved from `docs/remaining/REMAINING-WORK.md`. Full results: `docs/carry/PXC.md`
 | UXS-4 | `/character` empty preview box has no next action | S | UXS | Line now reads "Paste a poe.ninja URL above and press Analyse." | done (UXS2) |
 | UXS-5 | 1440 px screenshots read with the critique rubric | S | UXS | Defects in `docs/carry/UXS2.md`; one fixed (see-through sticky tab strips) | done (UXS2) |
 
+## Companion removed (2026-11-14)
+| ID | Item | Status |
+|---|---|---|
+| CMP1-1 to CMP1-5 | Mock companion head (#172): final look and follow-ups | withdrawn: owner removed the companion |
+
 ## Batches closed in PRO1 (2026-11-14)
 Moved from `docs/remaining/REMAINING-WORK.md` §6 after checking each PR on GitHub.
 
