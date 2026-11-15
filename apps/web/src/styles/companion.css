@@ -1,0 +1,265 @@
+/* Wraith companion (components/companion). Fixed top-right under the nav on desktop, bottom-right above the tab bar on
+   phones. Motion is transform and opacity only; under reduced motion the figure is static and text appears whole.
+   Timings: docs/design/WRAITH.md (carry files are retired). */
+
+.wraith {
+  --wraith-size: 56px;
+  position: fixed;
+  z-index: 30;
+  top: calc(var(--nav-h) + 12px);
+  right: max(16px, env(safe-area-inset-right, 0px));
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  pointer-events: none;
+}
+.wraith > * {
+  pointer-events: auto;
+}
+
+@media (max-width: 720px) {
+  .wraith {
+    top: auto;
+    bottom: calc(var(--tabbar-h) + env(safe-area-inset-bottom, 0px) + 12px);
+    align-items: flex-end;
+  }
+  :root[data-compact] .wraith {
+    bottom: calc(env(safe-area-inset-bottom, 0px) + 12px);
+  }
+  /* Room under the last row, so the figure never covers its buttons. Always reserved (not keyed on .wraith): the
+     companion mounts after idle, and a late padding change would grow the page after the user (or a test) had
+     already scrolled to the end, leaving the footer under the tab bar. */
+  #main {
+    padding-bottom: calc(56px + 3rem);
+  }
+}
+
+/* --- Figure ------------------------------------------------------------- */
+.wraith-launcher {
+  order: 2;
+  display: grid;
+  place-items: center;
+  width: var(--wraith-size);
+  height: var(--wraith-size);
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  filter: drop-shadow(0 6px 10px rgb(0 0 0 / 0.6));
+}
+.wraith-launcher:focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: 2px;
+}
+.wraith-float {
+  display: block;
+  height: 100%;
+}
+.wraith-art {
+  display: block;
+  height: 100%;
+  width: auto;
+  overflow: visible;
+}
+.wraith-art .wr-gold {
+  stroke: var(--accent);
+}
+.wraith-art .wr-gs {
+  stop-color: var(--wraith-eye-glow);
+}
+.wraith-art .wr-eyes {
+  fill: var(--wraith-eye);
+  transform-box: view-box;
+  transform-origin: 60px 49.5px;
+  transition: transform 180ms ease, opacity 150ms ease;
+  animation: wraith-blink 6.5s infinite;
+}
+.wraith-art .wr-glow {
+  opacity: 0.8;
+  transition: opacity 150ms ease;
+  animation: wraith-flicker 3.2s ease-in-out infinite alternate;
+}
+.wraith-art .wr-body {
+  transform-box: view-box;
+  transform-origin: 60px 140px;
+  transition: transform 600ms ease-in-out;
+}
+
+/* Idle: slow float. */
+.wraith-float {
+  animation: wraith-float 5s ease-in-out infinite alternate;
+}
+@keyframes wraith-float {
+  from { transform: translateY(1px); }
+  to { transform: translateY(-3px); }
+}
+@keyframes wraith-blink {
+  0%, 93%, 97%, 100% { transform: scaleY(1); }
+  95% { transform: scaleY(0.1); }
+}
+@keyframes wraith-flicker {
+  from { opacity: 0.7; }
+  to { opacity: 1; }
+}
+
+/* Talking: squint, brighter glow. */
+.is-talking .wr-eyes {
+  animation: none;
+  transform: scaleY(0.6);
+}
+.is-talking .wr-glow {
+  animation: wraith-flicker 450ms ease-in-out infinite alternate;
+}
+
+/* Startle on click. */
+.is-startle {
+  animation: wraith-startle 300ms ease-out;
+}
+@keyframes wraith-startle {
+  40% { transform: translate(0, -6px) rotate(-3deg); }
+}
+
+/* Hop until clicked: it has a tip. */
+.is-hop {
+  animation: wraith-hop 2.4s ease-in-out infinite;
+}
+@keyframes wraith-hop {
+  0%, 30%, 100% { transform: translateY(0); }
+  10% { transform: translateY(-9px); }
+  18% { transform: translateY(0); }
+  24% { transform: translateY(-4px); }
+}
+
+/* Asleep: droop, eyes almost shut and dimmed, slower float. */
+.is-asleep .wr-body {
+  transform: translateY(3px) rotate(4deg);
+}
+.is-asleep .wr-eyes {
+  animation: none;
+  transform: scaleY(0.25);
+  opacity: 0.45;
+}
+.is-asleep .wr-glow {
+  animation: none;
+  opacity: 0.3;
+}
+.is-asleep .wraith-float {
+  animation-duration: 9s;
+}
+
+/* Wander: out past the screen edge and an arc back. */
+.is-wander {
+  animation: wraith-wander 5s ease-in-out;
+}
+@keyframes wraith-wander {
+  0%, 100% { transform: translate(0, 0); opacity: 1; }
+  30% { transform: translate(calc(var(--wraith-size) + 24px), -12px); opacity: 0; }
+  55% { transform: translate(calc(var(--wraith-size) + 24px), 24px); opacity: 0; }
+  80% { transform: translate(-10px, 6px); opacity: 1; }
+}
+
+/* --- Speech bubble -------------------------------------------------------- */
+.wraith-bubble {
+  order: 1;
+  position: relative;
+  width: min(20rem, calc(100vw - var(--wraith-size) - 44px));
+  padding: 14px 16px 12px;
+  background: var(--data-fill, var(--surface));
+  border: 1px solid var(--accent-line);
+  box-shadow: 0 10px 30px rgb(0 0 0 / 0.55);
+  animation: wraith-bubble-in 150ms ease-out;
+}
+/* Square tail pointing at the figure. */
+.wraith-bubble::after {
+  content: '';
+  position: absolute;
+  top: 20px;
+  right: -7px;
+  width: 12px;
+  height: 12px;
+  background: inherit;
+  border: solid var(--accent-line);
+  border-width: 1px 1px 0 0;
+  transform: rotate(45deg);
+}
+@media (max-width: 720px) {
+  .wraith-bubble::after {
+    top: auto;
+    bottom: 20px;
+  }
+}
+@keyframes wraith-bubble-in {
+  from { opacity: 0; }
+}
+.wraith-line {
+  font-size: 0.9375rem;
+  line-height: 1.45;
+  color: var(--ink);
+  cursor: default;
+}
+.wraith-type > span {
+  animation: wraith-char 120ms ease-out both;
+}
+.wraith-type.is-skip > span {
+  animation: none;
+}
+@keyframes wraith-char {
+  from { opacity: 0; }
+}
+.wraith-choices {
+  display: grid;
+  gap: 6px;
+  margin-top: 12px;
+}
+.wraith-choice {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  min-height: 44px;
+  padding: 8px 12px;
+  border: 1px solid var(--line-strong);
+  background: var(--raised);
+  color: var(--ink);
+  font-size: 0.875rem;
+  text-align: left;
+  text-decoration: none;
+  cursor: pointer;
+}
+.wraith-choice:hover {
+  border-color: var(--accent-line);
+  color: var(--accent);
+}
+.wraith-choice:focus-visible,
+.wraith-close:focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: 2px;
+}
+.wraith-close {
+  display: block;
+  min-height: 44px;
+  margin: 4px 0 0 auto;
+  padding: 0 4px;
+  border: 0;
+  background: none;
+  color: var(--ink-mute);
+  font-family: var(--font-geist-mono), ui-monospace, monospace;
+  font-size: 0.6875rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+.wraith-close:hover {
+  color: var(--ink);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wraith *,
+  .wraith-launcher {
+    animation: none !important;
+    transition-duration: 0ms !important;
+  }
+  .wraith-art .wr-eyes,
+  .wraith-art .wr-glow {
+    transition: opacity 150ms ease !important;
+  }
+}

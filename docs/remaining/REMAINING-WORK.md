@@ -119,7 +119,7 @@ Closed in this consolidation: PV1-6 / R67, PRO1-1, PRO1-2, PRO1-4, PRO1-5 (owner
 | WQA1-6 JSON-LD; HSTS preload; CORP | Owner 2026-11-15: skip (`lang: "en"` only, done) |
 | WQA3-2b / WQA3-14 OffscreenCanvas sky | Wait for a real-device trace |
 | PXC-4 sky rAF pause when covered | Sky stays visible in the margins; revisit only if a route is fully covered |
-| PXC-8 skipped sweeps, hooded mascot / CMP1, analytics idea, PRO1 W7 | Dropped by owner 2026-11-15 |
+| PXC-8 skipped sweeps, analytics idea, PRO1 W7 | Dropped by owner 2026-11-15 (the hooded mascot came back as the wraith companion, docs/design/WRAITH.md) |
 | R40 (→F1, R10), R44–R47, R57, console realm | Parked on owner hardware; no session |
 | R31 / R33 / R34: MCP schemas, footer, stamps | Owner: keep MCP as is |
 | R39: sky id index | ~15 KB on an idle cached chunk; not worth it |

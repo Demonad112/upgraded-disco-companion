@@ -23,6 +23,8 @@ for (const [name, path] of pages) {
     if (name === 'character') {
       await expect(page.getByRole('heading', { name: /Athrynas/ }).first()).toBeVisible({ timeout: 30_000 })
     }
+    // The wraith loads after idle; scan it too.
+    await page.getByRole('button', { name: /^Companion/ }).waitFor()
     const results = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa']).analyze()
     const blocking = results.violations.filter((v) => (v.impact === 'serious' || v.impact === 'critical') && !KNOWN.has(v.id))
     expect(

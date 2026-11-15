@@ -12,7 +12,7 @@ Owner answers recorded here count as owner approval for the Needs-owner kinds li
 - WQA3-9b: wire scripts/scroll-audit.cjs into CI as report-only (continue-on-error, not required).
 - WQA1-1/WQA3-17 CSP hashes: yes (Batch 3). UXS-1 type scale: yes, variant branch (Batch 3).
 - R60: F2 goes live on Yykiuy only. PXA-7 accept. PXA-8 keep. CF1-1 keep the deny. WQA1-5: add lang "en" only. WQA1-6 skip.
-- Dropped: hooded mascot/CMP1, OffscreenCanvas (WQA3-2b/14, wait for a device trace), PXC-8 sweeps, analytics idea, PRO1 W7.
+- Dropped: OffscreenCanvas (WQA3-2b/14, wait for a device trace), PXC-8 sweeps, analytics idea, PRO1 W7.
 - CF2-2 parked (no second source). CF2-5: document that ΔDPS stays null (poe.ninja-as-given rule).
 - Parked on owner hardware (no session): R40 (→F1, R10), R44–R47, OC1-3, console realm, R57.
 

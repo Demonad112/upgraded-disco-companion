@@ -14,6 +14,7 @@ Finished batches and plans, 1–2 sentences each. Carry files are retired here w
 - **WQA4** (#177): closed PRO1 W1–W6; declined PXC-1 baselines and the WQA3-5/6 changes; WQA3-7/19 done.
 - **PV1 / N4** (#128): PoB-verify findings; N4 closed F6 weighted minimum, F8 `free` cost kind and the stale "level 63" text. R65 (pseudo resist ids) is open.
 - **CMP1** (#172): the mock companion was removed by the owner; rows closed as withdrawn.
+- **CMP2 wraith companion** (2026-11-15, variant/20261115-wraith): original hooded wraith (v2 art from Figma) with a decision tree to the site tools in a speech bubble; loads after idle, footer toggle "Show companion". Spec in `docs/design/WRAITH.md`.
 - **OC1** (#121, #127): owner-checks batch (trade links, statuses, weight-group prefill); real-device passes stay parked on owner hardware.
 - **N1–N3** (#122, #124, #125): earlier register batches; rows archived.
 - **FINISH-PLAN Batch 1** (2026-11-15): this consolidation. Plan in `docs/plans/FINISH-PLAN.md`.
