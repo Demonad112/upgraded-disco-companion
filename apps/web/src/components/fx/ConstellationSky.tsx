@@ -35,10 +35,5 @@ export function ConstellationSky() {
     }
   }, [])
 
-  return (
-    <>
-      <canvas ref={canvasRef} aria-hidden className="sky-canvas" data-fx="sky" />
-      <div aria-hidden className="sky-scrim" data-fx="sky-scrim" />
-    </>
-  )
+  return <canvas ref={canvasRef} aria-hidden className="sky-canvas" data-fx="sky" />
 }

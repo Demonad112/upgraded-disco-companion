@@ -3,6 +3,7 @@ import { buildField, type Field } from './field'
 import { buildTicks, createPainter, type Lantern, type Ticks } from './draw'
 import type { Living } from './living'
 import { readPalette } from './palette'
+import { bakeScrim } from './scrim'
 import { makeSprites } from './sprites'
 
 /** Lantern timing (MP1): idle this long and it fades; in and out over these. */
@@ -33,6 +34,7 @@ export function startSky(canvas: HTMLCanvasElement, kick: { current: () => void 
   let field: Field | null = null
   let ticks: Ticks[] = []
   let dpr = 1
+  let scrim: HTMLCanvasElement | null = null
   // Effects tier (lib/fxTier, <html data-fx>): lite is half the stars at 15fps, DPR 1 and no lantern; still is the
   // reduced-motion frame. The tier can change at any time (detection, the footer), so these are read live.
   const isLite = () => root.dataset.fx === 'lite'
@@ -77,6 +79,7 @@ export function startSky(canvas: HTMLCanvasElement, kick: { current: () => void 
     field = buildField(w, h, lite)
     ticks = buildTicks(field)
     painter.prepare(field, dpr)
+    scrim = bakeScrim(w, h)
     layer?.prepare(field)
   }
 
@@ -96,6 +99,10 @@ export function startSky(canvas: HTMLCanvasElement, kick: { current: () => void 
   const draw = (t: number) => {
     if (!field || hidden()) return
     painter.paint(field, ticks, dpr, t, still(), lamp.a > 0 ? lamp : null, layer)
+    if (scrim) {
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
+      ctx.drawImage(scrim, 0, 0, builtW, builtH)
+    }
     if (!idle) loadLayer()
   }
 

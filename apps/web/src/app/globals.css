@@ -560,7 +560,6 @@ main [id] {
 :root[data-compact] footer,
 :root[data-compact] .patch-banner,
 :root[data-compact] canvas[data-fx],
-:root[data-compact] .sky-scrim,
 :root[data-compact] .nav-search,
 :root[data-compact] .nav-label,
 :root[data-compact] body::after {
@@ -695,8 +694,7 @@ main [id] {
     background-color: var(--sky-dim-fill);
   }
 }
-.sky-canvas,
-.sky-scrim {
+.sky-canvas {
   position: fixed;
   inset: 0;
   z-index: 0;
@@ -709,13 +707,7 @@ main [id] {
   height: 100vh;
   height: 100lvh;
 }
-.sky-scrim {
-  background:
-    radial-gradient(ellipse 55% 50% at 22% 26%, color-mix(in srgb, var(--page) 45%, transparent), transparent 72%),
-    radial-gradient(ellipse 120% 120% at 50% 50%, transparent 55%, color-mix(in srgb, var(--page) 55%, transparent) 100%);
-}
-:root[data-theme='light'] .sky-canvas,
-:root[data-theme='light'] .sky-scrim {
+:root[data-theme='light'] .sky-canvas {
   display: none;
 }
 

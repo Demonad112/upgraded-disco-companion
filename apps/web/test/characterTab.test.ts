@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { TAB_IDS, hashId, tabForHash, targetForHash } from '@/lib/characterTab'
+import { TAB_IDS, hashId, tabForHash, targetForHash, withHash } from '@/lib/characterTab'
 
 describe('character tab hash', () => {
   it('opens Overview with no hash or an unknown one', () => {
@@ -26,5 +26,17 @@ describe('character tab hash', () => {
   })
   it('survives a malformed escape', () => {
     expect(hashId('#%E0%A4%A')).toBe('%E0%A4%A')
+  })
+})
+
+describe('withHash', () => {
+  const first = { hash: '', opened: new Set(['overview'] as const) }
+  it('keeps the same state for the same hash, so React skips the render', () => {
+    expect(withHash(first, '')).toBe(first)
+  })
+  it('opens the tab an alias belongs to and remembers it', () => {
+    const next = withHash(first, '#headroom')
+    expect([...next.opened]).toEqual(['overview', 'defences'])
+    expect(withHash(next, '#defences').opened).toBe(next.opened)
   })
 })

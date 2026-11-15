@@ -33,7 +33,7 @@ export const SILVER = 4
 export const COLOURS = 5
 
 /** Resolves any CSS colour to sRGB channels, so sprites can build their own alpha ramps. */
-function rgbOf(color: string): Rgb {
+export function rgbOf(color: string): Rgb {
   const c = document.createElement('canvas')
   c.width = c.height = 1
   const g = c.getContext('2d', { willReadFrequently: true })
