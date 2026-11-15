@@ -99,3 +99,18 @@ Owner rows moved from §2 (PRO1); R54 closed as done (OWNER-STEPS step 3 ticked;
 | R49 | Confirm that the first Lighthouse run on main is green now that the job is set to error | 3 | L1-2 | done 2026-11-08: latest main run (PR #116) green, 0 NO_NAVSTART (OC1) |
 | R54 | Lighthouse `NO_NAVSTART` on `/character/`: none in 3 local and 5 CI runs; the owner confirms | 3 | U13b-4 | parked (P): owner skipped manual checks 2026-11-08 |
 | R42 | Open one "Find better gear" link on live trade2 and confirm the weighted group prefills. It returns 403 from the cloud sandbox | 4 | CH6-1 | done 2026-11-08: weighted group prefilled in Chrome, resistances stayed minimums (OC1) |
+
+## Closed in WQA4 (2026-11-14)
+Owner queue rows, answered in WQA4's Owner notes:
+
+| ID | Question | Status |
+|---|---|---|
+| PRO1-1 | Branch protection on `main` | declined by owner (no branch protection or required-check changes) |
+| PXC-1 | Commit the 36 visual baselines | declined: visual tests stay informational so design changes never fail CI |
+| PRO1-2 | CI fails on a missing baseline | declined: visual tests stay informational so design changes never fail CI |
+| PRO1-4 | `actions/cache@v5`, `timeout-minutes: 5` on `changes` | done in WQA4 |
+| PRO1-5 | Run `.claude/hooks/*.test.mjs` in CI | done in WQA4: root `test:scripts` and the `pr-body-guard.yml` self-test run `node --test scripts/check-pr-body.test.mjs .claude/hooks/*.test.mjs` |
+
+| ID | Scope | Status |
+|---|---|---|
+| WQA1-4 | Sync route-budget text with `scripts/route-weight.mjs` | done in WQA4: §4 and R50 use the script's budgets, §5 marked not comparable, `VARIANT-STRATEGY.md` § Perf baseline points at the script |
