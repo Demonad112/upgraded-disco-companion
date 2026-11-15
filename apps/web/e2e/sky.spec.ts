@@ -68,6 +68,24 @@ test('stops animating while hidden by compact mode, and resumes after', async ({
   await expect.poll(count).toBeGreaterThan(hidden)
 })
 
+test('stops on its last frame after 5 s without input, and runs again on a mouse move', async ({ page }) => {
+  await page.goto('')
+  const sky = page.locator('canvas[data-fx="sky"]')
+  await expect(sky).toHaveAttribute('data-running', '')
+  await page.waitForTimeout(6000)
+  await expect(sky).not.toHaveAttribute('data-running')
+  // Held, not cleared: the canvas still has stars on it.
+  const lit = await sky.evaluate((c: HTMLCanvasElement) => {
+    const d = c.getContext('2d')!.getImageData(0, 0, c.width, c.height).data
+    for (let i = 3; i < d.length; i += 4) if (d[i]) return true
+    return false
+  })
+  expect(lit).toBe(true)
+  await page.mouse.move(200, 200)
+  await page.mouse.move(220, 240)
+  await expect(sky).toHaveAttribute('data-running', '')
+})
+
 test('the footer toggle dims behind blocks without a reload, and a reload keeps it off before paint', async ({ page }) => {
   // Records, as <body> arrives, whether the dim was already off.
   await page.addInitScript(() => {
