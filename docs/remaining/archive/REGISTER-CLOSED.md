@@ -126,3 +126,21 @@ Owner queue rows, answered in WQA4's Owner notes:
 | CF2-3 | Web does not load `monk-gloves.json`; copy in `sync-data`, fetch lazily in `useModTiers` for Martial Artist | 2 |
 | CF2-4 | Dead-stat rule covers only the attack/spell split; extend only with tags the skills data has | 2 |
 | CF2-5 | ΔDPS stays null (poe.ninja-as-given rule): document it, fill `measured.dps` only from ninja figures | 2 (doc note) |
+
+## Finish plan batch 2b (2026-11-15)
+Measured at 390×844, 4× CPU, ~1.6 Mbps / 165 ms, local brotli server, reduced motion where stated; 3 runs (5 for layout time).
+
+| ID | Item | Status |
+|---|---|---|
+| WQA3-4 | `/checklist` CLS under reduced motion | done: the card-links canvas was repositioned with `left`/`top`; now `transform`. CLS 0.4423 ×3 → 0 ×3 |
+| PXB-2 | Home hero collapse for returning players | done: `data-returning` set in `<head>` (`lib/returning.ts`) and a reserved 378 px plate slot. 1440: 0.1269 ×3 → 0 ×3; 390: 0,0,0.2589 → 0 ×3 (a 4-figure plate still shifts 0.03 at 390) |
+| PXC-3 | `/checklist` content-visibility | done, not kept: layout+style 124+91 ms → 131+91 ms (median of 5), page height +75 px |
+| WQA3-13 | Font preloads | done, no change: all three preloaded files load on every route (`MODE=fonts`), so none is wasted |
+| UXS2-2 | Farm "FARM PLANNER" label vs "QUICK PICKS" heading | closed: label above a step heading is the Farm design (CLAUDE.md Design); a size change is the owner's |
+| UXS2-3 | Home "Up next" 20 px lower than Progress | done: an empty `.home-last` still added a flex gap; hidden when empty. Tops 639/619 → 619/619 |
+| UXS2-4 | "Pro detail" on its own row | done on Checklist (now in the "Overall progression" heading row). Atlas not moved: the tab strip is 531 px wide in its column and a toggle there clips "Late game" |
+| UXS2-5 | "Light." abbreviation, 10 px age | done: "Lightning" when the row is at least 26 rem (container query, `ResName`), "Light." below; `bc-age` 11 → 12 px |
+| UXS2-6 | Phase strip clipped by "Hide completed" | closed: eight named chips need 1714 px against at most 977 px, so the strip is a scroller with an edge fade by design |
+| UXS2-7 | Tab strips bleed 20 px | closed: Methodology has no tab strip; the Character tabs sit inside their card; Atlas bleeds to the page edge on phones only (sticky bar), no horizontal overflow |
+| PXC-10 | Touch targets under 44 px at 390 | done: "About patch data" and "Dismiss patch notice" already measure 44 (`hit-area`); fixed "Hide completed", the waystone tier link and footer "Farm" (29 px wide → 44). Remaining under 44: inline glossary terms (inline text) |
+

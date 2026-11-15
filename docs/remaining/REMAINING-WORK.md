@@ -102,18 +102,7 @@ Batches are in `docs/plans/FINISH-PLAN.md`. Rows keep their carry IDs. One line 
 
 | ID | Row | Batch |
 |---|---|---|
-| WQA3-4 | `/checklist` CLS 0.25 under reduced motion | 2b (needs a trace; CI/cloud) |
-| WQA3-13 | Font preloads | 2b (needs a trace) |
-| PXB-2 | Home hero collapses after hydration for returning players (CLS, `:has(.lc-plate)`); consider a pre-paint flag | 2b (needs browser at the stated viewport) |
-| PXC-3 | `/checklist` content-visibility (85 % below fold; needs per-section intrinsic sizes, CLS risk) | 2b (needs browser at the stated viewport) |
-| UXS2-2 | Farm: "FARM PLANNER" label (~20 px) smaller than "QUICK PICKS" heading (~34 px) | 2b (needs browser at the stated viewport) |
-| UXS2-3 | Home: "Up next" card top 20 px lower than the Progress card | 2b (needs browser at the stated viewport) |
-| UXS2-4 | Atlas and Checklist: "Pro detail" toggle on its own row; move into the heading row | 2b (needs browser at the stated viewport) |
-| UXS2-5 | Imported character: "Light." abbreviated, "114 d ago · re-import" at 10 px | 2b (needs browser at the stated viewport) |
-| UXS2-6 | Checklist phase strip clipped by the "Hide completed" box at 1440 | 2b (needs browser at the stated viewport) |
-| UXS2-7 | Methodology and character tab strips bleed 20 px each side; confirm or align | 2b (needs browser at the stated viewport) |
-| PXC-10 | Touch targets under 44 px at 390 (skip link, "About patch data", "Dismiss patch notice", two checkbox labels, footer "Farm") | 2b (needs browser at the stated viewport) |
-| R65 | See §3 (trade-map pseudo-resist ids); blocked on the live trade2 check and read access to `packages/data/trade2-stats.json` | 2b |
+| R65 | See §3 (trade-map pseudo-resist ids); blocked on the live trade2 check and read access to `packages/data/trade2-stats.json` | 2b (out of scope for b2b; needs the live check) |
 | WQA3-10/11/20 (D) | Bundle diet: route data in the shared floor, per-route CSS; keep only if ≥ 5 % br | 3 |
 | WQA3-15 (E) | DOM diet; WQA3-14 (scrim into canvas) dropped with the OffscreenCanvas idea unless a device trace asks for it | 3 |
 | WQA1-3 | Perf headroom: ~24 KB near-unused chunk on `/` (`39k23z46rmox0.js`), render-blocking CSS, TBT on checklist and trade | 3 (measure first) |
