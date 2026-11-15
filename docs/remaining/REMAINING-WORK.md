@@ -22,6 +22,7 @@ Answers of 2026-11-15 (`docs/plans/FINISH-PLAN.md`) are applied and the rows cle
 | ID | Question | Recommended answer | Source |
 |---|---|---|---|
 | PXV-4 | Pick one chat-settings variant (waystone, ledger, relic) or merge parity alone | Merge parity now; choose a variant after viewing the three previews | PXV (#155, #158) |
+| LHCI-A11Y | CI Lighthouse reports accessibility 0.92–0.94 (trade and whats-new 0.92, dashboard and methodology 0.93, atlas 0.94); cloud Chromium scores 1.0 on all 8 routes in 24 runs, also on the #181 merge commit and under 6× CPU throttling. Add an `actions/upload-artifact` step for `.lighthouseci` (`if: always()`) to the `lighthouse` job, or warn-level audit assertions in `lighthouserc.json`, so the next CI run names the failing audits | Add the upload step (reports stay off the repo); fix the named audits next session, then raise the gate to 0.95 | Batch 3 |
 | PV1-1 | PoB2 MCP fork with must-haves 1–6 (blocks PV1-2 engine-parity checks) | Build with mcp-builder; local stdio; return `MeasuredDelta`-shaped results | PV1 |
 
 ## 1. Decisions
@@ -49,7 +50,7 @@ These rows run in the §6 owner-pass order.
 | R65 | F7: trade-map uses explicit single-resist ids; pseudo totals count every source | M | PV1 | one live trade2 check first | open; Batch 2 (needs one live trade2 check first) |
 
 ## 4. Standing rules (no work)
-- Route budgets live in `scripts/route-weight.mjs` (source of truth; brotli, first load, the `noModule` polyfill chunk excluded; exits 1 when a route is over): `/` 158,000 · `/checklist` 167,000 · `/character` 209,000 · `/atlas` 177,000 · `/dashboard` 188,000 · `/trade` 162,000 · `/methodology` 156,000 · `/whats-new` 154,000 B; any other route 190,000. Raise one only on purpose, with the reason in the PR. Not run in CI. Any change to home JS reports before and after.
+- Route budgets live in `scripts/route-weight.mjs` (source of truth; brotli, first load, the `noModule` polyfill chunk excluded; exits 1 when a route is over): `/` 158,000 · `/checklist` 167,000 · `/character` 209,000 · `/atlas` 177,000 · `/dashboard` 188,000 · `/trade` 162,000 · `/methodology` 156,000 · `/whats-new` 154,000 B; any other route 190,000. Raise one only on purpose, with the reason in the PR. Also pins the lazy chunks (none named by any route HTML) at 178,000 B br. Not run in CI. Any change to home JS reports before and after.
 - Perf bar: keep a change only if it saves ≥ 5 % br on its file or route, or removes real runtime work.
 - New tokens go in `tokens.css`. Canvas code reads only colours from tokens.
 - A bare `.card` outside home needs `data-surface="data"`.
@@ -103,12 +104,8 @@ Batches are in `docs/plans/FINISH-PLAN.md`. Rows keep their carry IDs. One line 
 | ID | Row | Batch |
 |---|---|---|
 | R65 | See §3 (trade-map pseudo-resist ids); blocked on the live trade2 check and read access to `packages/data/trade2-stats.json` | 2b (out of scope for b2b; needs the live check) |
-| LHCI-A11Y | Lighthouse accessibility scores 0.92–0.94 on all 8 URLs; gate set at 0.90, target 0.95. Find the failing audits (CI keeps no LHCI reports; run LHCI in the cloud, or upload `.lighthouseci`), fix, raise the gate | 2b (cloud) |
-| WQA3-10/11/20 (D) | Bundle diet: route data in the shared floor, per-route CSS; keep only if ≥ 5 % br | 3 |
-| WQA3-15 (E) | DOM diet; WQA3-14 (scrim into canvas) dropped with the OffscreenCanvas idea unless a device trace asks for it | 3 |
-| WQA1-3 | Perf headroom: ~24 KB near-unused chunk on `/` (`39k23z46rmox0.js`), render-blocking CSS, TBT on checklist and trade | 3 (measure first) |
-| PXC-2 | `/character` lazy-chunk budget line in `scripts/route-weight.mjs` | 3 |
-| PXC-5 | Global CSS split: re-measure with `CSS.startRuleUsageTracking` before any split | 3 |
+| LHCI-A11Y | Cloud Lighthouse (24 runs, 8 routes × 3) scores accessibility 1.0 and CI scores 0.92–0.94 on the same tree, so the failing audit is not visible from the cloud. Waiting on CI reports (see Owner queue LHCI-A11Y); gate stays 0.90 | 3, blocked on owner |
+| PXC-5 | Global CSS split: WQA3-11 bounds it at 4.7 % br; `CSS.startRuleUsageTracking` still unmeasured | 3 (not in this wave) |
 | PXC-6 | Service worker: headless run registered no controller; re-run with a real profile | 3 |
 | PXC-7 | PERF 1b (import trace split) and 1c (live ladder timing; needs the proxy) | 3 |
 | PXA-9 | Card and Top 3 are 20–60 ms over target; start the ladder request from the import instead of after the card pass | 3 |

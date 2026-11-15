@@ -1,6 +1,6 @@
 // First-load JS/CSS weight per route (raw and brotli), from the static export.
 // Run from the repo root after `npm run build`. See docs/VARIANT-STRATEGY.md#perf-baseline.
-import { existsSync, readFileSync } from 'node:fs'
+import { existsSync, readdirSync, readFileSync } from 'node:fs'
 import { brotliCompressSync } from 'node:zlib'
 const out = 'apps/web/out'
 // Brotli budgets (bytes), counting only what a modern browser downloads: `<script noModule>` (Next's 35,158 B br
@@ -17,14 +17,34 @@ const BUDGET = {
   'whats-new/index.html': 154_000,
 }
 const DEFAULT_BUDGET = 190_000
+// PXC-2: chunks that no route's first-load HTML references (the /character tab and results chunks, the Farm and Atlas
+// lazy panels). They load after first paint, so they sit outside the route budgets above; this pins their total.
+// Same rule: measured size rounded up to the next 2,000 B.
+const LAZY_BUDGET = 178_000
+const ROUTES = ['index.html', 'checklist/index.html', 'character/index.html', 'atlas/index.html', 'dashboard/index.html', 'trade/index.html', 'methodology/index.html', 'whats-new/index.html']
+const CHUNK_RE = /\/_next\/static\/chunks\/[^"']+\.(?:js|css)/g
 let over = 0
-for (const p of ['index.html', 'checklist/index.html', 'character/index.html', 'atlas/index.html', 'dashboard/index.html', 'trade/index.html', 'methodology/index.html', 'whats-new/index.html']) {
+for (const p of ROUTES) {
   if (!existsSync(`${out}/${p}`)) continue
   const html = readFileSync(`${out}/${p}`, 'utf8')
-  const files = new Set([...html.replace(/<script\b[^>]*\bnoModule\b[^>]*>/gi, '').matchAll(/\/_next\/static\/chunks\/[^"']+\.(?:js|css)/g)].map((m) => m[0]))
+  const files = new Set([...html.replace(/<script\b[^>]*\bnoModule\b[^>]*>/gi, '').matchAll(CHUNK_RE)].map((m) => m[0]))
   let raw = 0, br = 0
   for (const f of files) { const d = readFileSync(out + f); raw += d.length; br += brotliCompressSync(d).length }
   console.log(p.padEnd(24), String(files.size).padStart(3), 'files', String(raw).padStart(9), 'raw', String(br).padStart(8), 'br',
     br > (BUDGET[p] ?? DEFAULT_BUDGET) ? (over++, 'OVER ' + (BUDGET[p] ?? DEFAULT_BUDGET)) : '')
+}
+
+// Lazy chunks: everything in chunks/ that no route's HTML names (noModule scripts count as named, so the polyfill is not lazy).
+const named = new Set()
+for (const p of ROUTES) if (existsSync(`${out}/${p}`)) for (const m of readFileSync(`${out}/${p}`, 'utf8').matchAll(CHUNK_RE)) named.add(m[0])
+if (named.size) {
+  let lazyRaw = 0, lazyBr = 0, lazyFiles = 0
+  for (const f of readdirSync(`${out}/_next/static/chunks`)) {
+    const url = `/_next/static/chunks/${f}`
+    if (!/\.(?:js|css)$/.test(f) || named.has(url)) continue
+    const d = readFileSync(out + url); lazyFiles++; lazyRaw += d.length; lazyBr += brotliCompressSync(d).length
+  }
+  console.log('lazy (no HTML names them)'.padEnd(24), String(lazyFiles).padStart(3), 'files', String(lazyRaw).padStart(9), 'raw', String(lazyBr).padStart(8), 'br',
+    lazyBr > LAZY_BUDGET ? (over++, 'OVER ' + LAZY_BUDGET) : '')
 }
 if (over) process.exit(1)
