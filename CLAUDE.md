@@ -59,6 +59,7 @@ See `docs/DEPENDENCY-BUMPS.md` (per-workspace checks; never split CI per workspa
 ## Cloudflare Pages
 
 - Build `npm run build`, output `apps/web/out`, Node 22. No Functions or wrangler config; headers live in `apps/web/public/_headers`.
+- `npm run build` ends with `apps/web/scripts/csp-hashes.mjs`, which writes the inline-script hashes into `out/_headers` (`script-src` has no `'unsafe-inline'`). A new inline `<script>` needs no edit, but a page served without that step has no scripts.
 - Local parity check: `npx wrangler@4 pages dev apps/web/out`.
 - Open work: `docs/remaining/REMAINING-WORK.md`.
 

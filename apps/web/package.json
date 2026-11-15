@@ -7,7 +7,7 @@
     "dev": "next dev",
     "//prebuild": "The core is consumed as built output, so it must exist before Next resolves @poe2/core. Building it here keeps `npm run build -w @poe2/web` working standalone.",
     "prebuild": "npm run build -w @poe2/core && npm run sync-data",
-    "build": "next build",
+    "build": "next build && node scripts/csp-hashes.mjs",
     "sync-data": "node scripts/sync-data.mjs",
     "start": "next start",
     "typecheck": "tsc --noEmit",
