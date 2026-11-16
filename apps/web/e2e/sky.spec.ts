@@ -123,16 +123,30 @@ test.describe('lantern', () => {
   test('lights near a fine pointer and fades once it rests', async ({ page, isMobile }) => {
     await page.goto('')
     await expect(page.locator('canvas[data-fx="sky"]')).not.toHaveAttribute('width', '300')
+    // The lit state is a window of about 2.4 s after the last move (2 s idle + 400 ms fade). Polling for it can start
+    // after it has closed when the machine is loaded, so record every change of the attribute from the page instead
+    // and assert on the recorded sequence: lit, then unlit.
+    await page.locator('canvas[data-fx="sky"]').evaluate((c) => {
+      const seen: boolean[] = []
+      ;(window as unknown as { __lantern: boolean[] }).__lantern = seen
+      new MutationObserver(() => {
+        const on = c.hasAttribute('data-lantern')
+        if (seen[seen.length - 1] !== on) seen.push(on)
+      }).observe(c, { attributes: true, attributeFilter: ['data-lantern'] })
+    })
+    const trail = () => page.evaluate(() => (window as unknown as { __lantern: boolean[] }).__lantern)
     await page.mouse.move(400, 300)
     await page.mouse.move(420, 320)
     if (isMobile) {
       await page.waitForTimeout(500)
       expect(await lit(page)).toBe(false)
+      expect(await trail()).toEqual([])
       return
     }
-    await expect.poll(() => lit(page)).toBe(true)
-    // 2 s idle, then a 400 ms fade.
-    await expect.poll(() => lit(page), { timeout: 5000 }).toBe(false)
+    await expect.poll(trail).toContain(true)
+    // Once it has rested it fades: the trail ends unlit. The timeout is a ceiling for a loaded machine, not a delay.
+    await expect.poll(trail, { timeout: 15_000 }).toEqual([true, false])
+    expect(await lit(page)).toBe(false)
   })
 
   test('stays off under reduced motion', async ({ page }) => {

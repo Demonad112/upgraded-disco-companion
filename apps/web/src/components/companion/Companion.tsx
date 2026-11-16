@@ -7,13 +7,15 @@ import { Wraith } from './Wraith'
 import { nextStepTitle } from '@/data/stepTitles'
 import { usePersistedState } from '@/hooks/usePersistedState'
 import { BASE_PATH } from '@/lib/basePath'
-import { next, nodeFor, sameRoute, shouldHop, type Choice, type NodeContext, type NodeId } from '@/lib/companionTree'
+import { hopKind, next, nodeFor, sameRoute, type Choice, type NodeContext, type NodeId } from '@/lib/companionTree'
 import { CURRENT_PATCH } from '@/lib/constants'
 import { isIdle, subscribeIdle } from '@/lib/idle'
 import { importPath, recentCharacters } from '@/lib/recentCharacters'
 
 /** Set once the visitor has opened the tip, so the hop stops for this session. */
 const TIP_SEEN = 'poe2-companion-tip-seen'
+/** Set once the visitor has opened the stale-patch notice, so that hop stops for this session. */
+const STALE_SEEN = 'poe2-companion-stale-seen'
 /** Set once the first-visit tour has been opened, for good. */
 export const TOURED = 'poe2-companion-toured'
 /** Quick type: each letter fades in this many ms after the one before it. */
@@ -22,6 +24,12 @@ const DOZE_MS = 120_000
 const WANDER_EVERY_MS = 120_000
 const WANDER_MS = 5_000
 const STARTLE_MS = 300
+/** Phones: scrolling down past this many px slides the figure away (COMP-1). */
+const AWAY_PX = 48
+/** It comes back this long after scrolling stops, or at once on scroll up. */
+const BACK_MS = 1000
+/** Scroll up by at least this much counts as a change of direction (ignores momentum jitter). */
+const UP_PX = 4
 
 function flag(store: 'local' | 'session', key: string): boolean {
   try {
@@ -48,7 +56,9 @@ function setFlag(store: 'local' | 'session', key: string): void {
  * returns to the figure. First visit: it hops and the click opens a three-line
  * tour (once, ever). After that it hops only when there is a next step and the
  * visitor has started the checklist or imported a character; the click opens
- * "Next: {step}." (once per session).
+ * "Next: {step}." (once per session); when the recent character was last read on another patch it hops once per
+ * session too and opens the fix node with the patch notice. On phones it slides off the edge while the page scrolls
+ * down and returns on scroll up or a second after scrolling stops.
  */
 export default function Companion() {
   const [node, setNode] = useState<NodeId | null>(null)
@@ -60,6 +70,8 @@ export default function Companion() {
   const [startle, setStartle] = useState(false)
   const [asleep, setAsleep] = useState(false)
   const [wander, setWander] = useState(false)
+  const [staleDone, setStaleDone] = useState(() => flag('session', STALE_SEEN))
+  const [away, setAway] = useState(false)
   const launcher = useRef<HTMLButtonElement>(null)
   const root = useRef<HTMLElement>(null)
   const firstChoice = useRef<HTMLElement | null>(null)
@@ -71,8 +83,19 @@ export default function Companion() {
   const step = nextStepTitle(completed)
   const recent = recentCharacters.get()[0]
 
-  const tipHop = shouldHop({ hasNextStep: step !== null, completed: completed.length, hasRecent: Boolean(recent), tipSeen: tipDone })
-  const hop = !toured || tipHop
+  // The latest snapshot of the recent character (snapshots are oldest first) and whether it is from another patch.
+  const snap = recent ? [...state.character.snapshots].reverse().find((s) => s.key === recent.key) : undefined
+  const was = snap?.gameVersion
+  const stale = Boolean(recent && was && was !== CURRENT_PATCH)
+  const kind = hopKind({
+    hasNextStep: step !== null,
+    completed: completed.length,
+    hasRecent: Boolean(recent),
+    tipSeen: tipDone,
+    stalePatch: stale,
+    staleSeen: staleDone,
+  })
+  const hop = !toured || kind !== null
 
   /** Open a node: the line types out again, with the squint. */
   const show = (id: NodeId) => {
@@ -105,16 +128,13 @@ export default function Companion() {
 
   let ctx: NodeContext = { path, step }
   if (recent) {
-    // The latest snapshot of that character; snapshots are oldest first.
-    const snap = [...state.character.snapshots].reverse().find((s) => s.key === recent.key)
-    const was = snap?.gameVersion
     ctx = {
       ...ctx,
       recent: {
         name: recent.name,
         href: importPath(recent.url),
         topFix: recent.topFix ?? null,
-        stalePatch: was && was !== CURRENT_PATCH ? { was, now: CURRENT_PATCH } : null,
+        stalePatch: stale && was ? { was, now: CURRENT_PATCH } : null,
       },
     }
   }
@@ -152,6 +172,43 @@ export default function Companion() {
 
   useEffect(() => () => window.clearTimeout(startleTimer.current), [])
 
+  // Phones: slide off the edge while the page scrolls down, back on scroll up or BACK_MS after it stops. Passive,
+  // rAF-throttled, and the only thing read is scrollY. Never while the bubble is open, it hops, or the figure has focus.
+  const block = useRef(false)
+  useEffect(() => {
+    block.current = open || hop
+  }, [open, hop])
+  useEffect(() => {
+    const phone = window.matchMedia('(max-width: 720px)')
+    let last = window.scrollY
+    let frame = 0
+    let back = 0
+    const show = () => {
+      window.clearTimeout(back)
+      setAway(false)
+    }
+    const onFrame = () => {
+      frame = 0
+      const y = window.scrollY
+      const dy = y - last
+      last = y
+      if (!phone.matches || block.current) return show()
+      if (dy <= -UP_PX) return show()
+      if (dy > 0 && y > AWAY_PX && !root.current?.contains(document.activeElement)) setAway(true)
+      window.clearTimeout(back)
+      back = window.setTimeout(show, BACK_MS)
+    }
+    const onScroll = () => {
+      if (!frame) frame = window.requestAnimationFrame(onFrame)
+    }
+    window.addEventListener('scroll', onScroll, { passive: true })
+    return () => {
+      window.removeEventListener('scroll', onScroll)
+      window.cancelAnimationFrame(frame)
+      window.clearTimeout(back)
+    }
+  }, [])
+
   // Sit under the nav, which the patch banner pushes down (one or two lines, or gone once dismissed).
   useEffect(() => {
     const banner = document.querySelector<HTMLElement>('.patch-banner')
@@ -172,7 +229,12 @@ export default function Companion() {
       setFlag('local', TOURED)
       return show('tour1')
     }
-    if (tipHop) {
+    if (kind === 'stale') {
+      setStaleDone(true)
+      setFlag('session', STALE_SEEN)
+      return show('fix')
+    }
+    if (kind === 'tip') {
       setTipDone(true)
       setFlag('session', TIP_SEEN)
       return show('tip')
@@ -208,7 +270,7 @@ export default function Companion() {
     .join(' ')
 
   return (
-    <aside ref={root} aria-label="Companion guide" className="wraith">
+    <aside ref={root} aria-label="Companion guide" className={away && !open ? 'wraith is-away' : 'wraith'}>
       {current && (
         <div id="wraith-bubble" role="dialog" aria-modal="false" aria-labelledby="wraith-line" className="wraith-bubble">
           <p className="wraith-line" aria-live="polite" onClick={() => setSkip(true)}>
@@ -250,7 +312,7 @@ export default function Companion() {
         ref={launcher}
         type="button"
         className={`wraith-launcher ${pose}`}
-        aria-label={!toured ? 'Companion guide: take the tour' : tipHop ? 'Companion guide: you have a tip' : 'Companion guide'}
+        aria-label={!toured ? 'Companion guide: take the tour' : kind ? 'Companion guide: you have a tip' : 'Companion guide'}
         aria-expanded={open}
         aria-controls={open ? 'wraith-bubble' : undefined}
         onClick={onLauncher}

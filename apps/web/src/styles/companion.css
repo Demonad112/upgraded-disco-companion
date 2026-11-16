@@ -33,6 +33,29 @@
   }
 }
 
+/* Phones, scrolling down (Companion.tsx): slides off the right edge and fades, back on scroll up or 1 s after the
+   scroll stops. Transform and opacity only; visibility drops it from the tab order once it has gone. Reduced motion
+   and data-fx=still: a fade, no slide. */
+@media (max-width: 720px) {
+  .wraith {
+    transition: transform 200ms ease-out, opacity 200ms ease-out, visibility 0s;
+  }
+  .wraith.is-away {
+    transform: translateX(calc(var(--wraith-size) + 24px));
+    opacity: 0;
+    visibility: hidden;
+    transition: transform 200ms ease-in, opacity 200ms ease-in, visibility 0s linear 200ms;
+  }
+  :root[data-fx='still'] .wraith.is-away {
+    transform: none;
+  }
+}
+@media (max-width: 720px) and (prefers-reduced-motion: reduce) {
+  .wraith.is-away {
+    transform: none;
+  }
+}
+
 /* --- Figure ------------------------------------------------------------- */
 .wraith-launcher {
   order: 2;
@@ -61,6 +84,7 @@
 }
 .wraith-art .wr-rim {
   stroke: var(--wraith-rim);
+  stroke-opacity: var(--wraith-rim-op);
 }
 .wraith-art .wr-gold {
   stroke: var(--accent);
@@ -123,6 +147,14 @@
 /* Hop: it has a tip. Three hops, then it rests until clicked. */
 .is-hop {
   animation: wraith-hop 2.4s ease-in-out 3;
+}
+/* The rim brightens and widens while it hops, and is calm otherwise (stroke only, no filter). */
+.is-hop .wr-rim {
+  animation: wraith-rim-hop 2.4s ease-in-out 3;
+}
+@keyframes wraith-rim-hop {
+  0%, 32%, 100% { stroke-opacity: var(--wraith-rim-op); stroke-width: 6; }
+  8%, 26% { stroke-opacity: var(--wraith-rim-op-hop); stroke-width: 7.5; }
 }
 @keyframes wraith-hop {
   0%, 30%, 100% { transform: translateY(0); }
