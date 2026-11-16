@@ -1,20 +1,19 @@
 'use client'
 
 import { useEffect, useState, type ComponentType } from 'react'
-import { usePersistedState } from '@/hooks/usePersistedState'
 import { useCompanionOn } from '@/lib/companionSetting'
 
-type CompanionComponent = ComponentType<{ hasNextStep: boolean }>
+type CompanionComponent = ComponentType
 
 /**
  * Always-loaded shell for the wraith: nothing renders until the browser is
  * idle, then the companion chunk is imported, so first-load JS grows only by
- * this file. Off (footer toggle) renders nothing and loads nothing.
- * `stepCount` is the checklist's total, from the layout at build time.
+ * this file. Off (footer toggle) renders nothing and loads nothing. The import
+ * runs once per page load: the host sits in the root layout, so a client-side
+ * navigation (a Reopen included) keeps `Loaded`.
  */
-export function CompanionHost({ stepCount }: { stepCount: number }) {
+export function CompanionHost() {
   const on = useCompanionOn()
-  const { state } = usePersistedState()
   const [Loaded, setLoaded] = useState<CompanionComponent | null>(null)
 
   useEffect(() => {
@@ -35,6 +34,5 @@ export function CompanionHost({ stepCount }: { stepCount: number }) {
     }
   }, [on, Loaded])
 
-  const hasNextStep = state.checklist.completedStepIds.length < stepCount
-  return on && Loaded ? <Loaded hasNextStep={hasNextStep} /> : null
+  return on && Loaded ? <Loaded /> : null
 }

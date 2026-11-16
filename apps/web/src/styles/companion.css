@@ -1,12 +1,13 @@
-/* Wraith companion (components/companion). Fixed top-right under the nav on desktop, bottom-right above the tab bar on
-   phones. Motion is transform and opacity only; under reduced motion the figure is static and text appears whole.
+/* Wraith companion (components/companion). Fixed top-right under the nav: 64px on desktop, 80px on phones (owner,
+   2026-11-16: it read too small at 56px). On phones the bubble drops below the figure at full width. Motion is transform and opacity only; under reduced motion the figure is static and text appears whole.
    Timings: docs/design/WRAITH.md (carry files are retired). */
 
 .wraith {
-  --wraith-size: 56px;
+  --wraith-size: 64px;
   position: fixed;
   z-index: 30;
-  top: calc(var(--nav-h) + 12px);
+  /* --banner-h: the patch banner above the nav, measured by Companion.tsx (0 when dismissed or absent). */
+  top: calc(var(--nav-h) + var(--banner-h, 0px) + 12px);
   right: max(16px, env(safe-area-inset-right, 0px));
   display: flex;
   align-items: flex-start;
@@ -16,21 +17,19 @@
 .wraith > * {
   pointer-events: auto;
 }
+/* A full-screen sheet or modal is open (the Atlas map sheet sits inside #main's stacking context, under the figure):
+   step aside so the figure never covers its controls. Native <dialog>s are in the top layer already. */
+:root:has([aria-modal='true'], .atlas-sheet[data-open]) .wraith {
+  visibility: hidden;
+}
 
 @media (max-width: 720px) {
   .wraith {
-    top: auto;
-    bottom: calc(var(--tabbar-h) + env(safe-area-inset-bottom, 0px) + 12px);
+    --wraith-size: 80px;
+    top: calc(var(--nav-h) + var(--banner-h, 0px) + 6px);
+    flex-direction: column;
     align-items: flex-end;
-  }
-  :root[data-compact] .wraith {
-    bottom: calc(env(safe-area-inset-bottom, 0px) + 12px);
-  }
-  /* Room under the last row, so the figure never covers its buttons. Always reserved (not keyed on .wraith): the
-     companion mounts after idle, and a late padding change would grow the page after the user (or a test) had
-     already scrolled to the end, leaving the footer under the tab bar. */
-  #main {
-    padding-bottom: calc(56px + 3rem);
+    gap: 10px;
   }
 }
 
@@ -59,6 +58,9 @@
   height: 100%;
   width: auto;
   overflow: visible;
+}
+.wraith-art .wr-rim {
+  stroke: var(--wraith-rim);
 }
 .wraith-art .wr-gold {
   stroke: var(--accent);
@@ -176,6 +178,8 @@
   order: 1;
   position: relative;
   width: min(20rem, calc(100vw - var(--wraith-size) - 44px));
+  max-height: calc(100dvh - var(--nav-h) - 24px);
+  overflow-y: auto;
   padding: 14px 16px 12px;
   background: var(--data-fill, var(--surface));
   border: 1px solid var(--accent-line);
@@ -196,9 +200,16 @@
   transform: rotate(45deg);
 }
 @media (max-width: 720px) {
+  .wraith-bubble {
+    order: 3;
+    width: min(22rem, calc(100vw - 32px));
+    max-height: calc(100dvh - var(--nav-h) - var(--wraith-size) - var(--tabbar-h) - 40px);
+  }
+  /* Tail on top, pointing up at the figure. */
   .wraith-bubble::after {
-    top: auto;
-    bottom: 20px;
+    top: -7px;
+    right: calc(var(--wraith-size) / 2 - 6px);
+    border-width: 1px 0 0 1px;
   }
 }
 @keyframes wraith-bubble-in {

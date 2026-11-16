@@ -1,14 +1,21 @@
 'use client'
 
 import Link from 'next/link'
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { usePathname } from 'next/navigation'
+import { useCallback, useEffect, useRef, useState, type MouseEvent } from 'react'
 import { Wraith } from './Wraith'
-import { next, nodeFor, type Choice, type NodeId } from '@/lib/companionTree'
+import { nextStepTitle } from '@/data/stepTitles'
+import { usePersistedState } from '@/hooks/usePersistedState'
+import { BASE_PATH } from '@/lib/basePath'
+import { next, nodeFor, sameRoute, shouldHop, type Choice, type NodeContext, type NodeId } from '@/lib/companionTree'
+import { CURRENT_PATCH } from '@/lib/constants'
 import { isIdle, subscribeIdle } from '@/lib/idle'
 import { importPath, recentCharacters } from '@/lib/recentCharacters'
 
 /** Set once the visitor has opened the tip, so the hop stops for this session. */
 const TIP_SEEN = 'poe2-companion-tip-seen'
+/** Set once the first-visit tour has been opened, for good. */
+export const TOURED = 'poe2-companion-toured'
 /** Quick type: each letter fades in this many ms after the one before it. */
 const CHAR_MS = 6
 const DOZE_MS = 120_000
@@ -16,25 +23,38 @@ const WANDER_EVERY_MS = 120_000
 const WANDER_MS = 5_000
 const STARTLE_MS = 300
 
-function tipSeen(): boolean {
+function flag(store: 'local' | 'session', key: string): boolean {
   try {
-    return window.sessionStorage.getItem(TIP_SEEN) === '1'
+    return (store === 'local' ? window.localStorage : window.sessionStorage).getItem(key) === '1'
   } catch {
-    return false
+    // Storage blocked: treat as seen, so a visitor who can never save it is not toured or hopped at every visit.
+    return true
+  }
+}
+
+function setFlag(store: 'local' | 'session', key: string): void {
+  try {
+    ;(store === 'local' ? window.localStorage : window.sessionStorage).setItem(key, '1')
+  } catch {
+    // Best-effort.
   }
 }
 
 /**
  * The wraith: a small figure fixed under the nav (desktop) or above the tab bar
- * (phones). Clicking it opens a square speech bubble beside it with one line of
- * the tree and its choices. Non-modal: Esc, a click outside or Close shuts it
- * and focus returns to the figure. When the checklist has a step left it hops
- * until clicked (once per session); the click opens that tip.
+ * (phones), both top-right. Clicking it opens a square speech bubble beside it
+ * with one line of the tree and its choices; `start` opens the node for the
+ * current page. Non-modal: Esc, a click outside or Close shuts it and focus
+ * returns to the figure. First visit: it hops and the click opens a three-line
+ * tour (once, ever). After that it hops only when there is a next step and the
+ * visitor has started the checklist or imported a character; the click opens
+ * "Next: {step}." (once per session).
  */
-export default function Companion({ hasNextStep }: { hasNextStep: boolean }) {
+export default function Companion() {
   const [node, setNode] = useState<NodeId | null>(null)
   // Read once on mount (this chunk only loads in the browser); the hop follows the checklist from there.
-  const [tipDone, setTipDone] = useState(tipSeen)
+  const [toured, setToured] = useState(() => flag('local', TOURED))
+  const [tipDone, setTipDone] = useState(() => flag('session', TIP_SEEN))
   const [talking, setTalking] = useState(false)
   const [skip, setSkip] = useState(false)
   const [startle, setStartle] = useState(false)
@@ -43,9 +63,16 @@ export default function Companion({ hasNextStep }: { hasNextStep: boolean }) {
   const launcher = useRef<HTMLButtonElement>(null)
   const root = useRef<HTMLElement>(null)
   const firstChoice = useRef<HTMLElement | null>(null)
+  const startleTimer = useRef(0)
   const open = node !== null
+  const path = usePathname() ?? '/'
+  const { state } = usePersistedState()
+  const completed = state.checklist.completedStepIds
+  const step = nextStepTitle(completed)
+  const recent = recentCharacters.get()[0]
 
-  const hop = hasNextStep && !tipDone
+  const tipHop = shouldHop({ hasNextStep: step !== null, completed: completed.length, hasRecent: Boolean(recent), tipSeen: tipDone })
+  const hop = !toured || tipHop
 
   /** Open a node: the line types out again, with the squint. */
   const show = (id: NodeId) => {
@@ -76,10 +103,22 @@ export default function Companion({ hasNextStep }: { hasNextStep: boolean }) {
     }
   }, [open, close])
 
-  const reopen = recentCharacters.get()[0]
-  const current = node
-    ? nodeFor(node, reopen ? { reopen: { label: `Reopen ${reopen.name}`, href: importPath(reopen.url) } } : {})
-    : null
+  let ctx: NodeContext = { path, step }
+  if (recent) {
+    // The latest snapshot of that character; snapshots are oldest first.
+    const snap = [...state.character.snapshots].reverse().find((s) => s.key === recent.key)
+    const was = snap?.gameVersion
+    ctx = {
+      ...ctx,
+      recent: {
+        name: recent.name,
+        href: importPath(recent.url),
+        topFix: recent.topFix ?? null,
+        stalePatch: was && was !== CURRENT_PATCH ? { was, now: CURRENT_PATCH } : null,
+      },
+    }
+  }
+  const current = node ? nodeFor(node, ctx) : null
 
   // Squint while the line types out; focus the first choice once it is there.
   useEffect(() => {
@@ -111,26 +150,51 @@ export default function Companion({ hasNextStep }: { hasNextStep: boolean }) {
     }
   }, [open, hop, asleep])
 
+  useEffect(() => () => window.clearTimeout(startleTimer.current), [])
+
+  // Sit under the nav, which the patch banner pushes down (one or two lines, or gone once dismissed).
+  useEffect(() => {
+    const banner = document.querySelector<HTMLElement>('.patch-banner')
+    const el = root.current
+    if (!banner || !el || typeof ResizeObserver !== 'function') return
+    const ro = new ResizeObserver(() => el.style.setProperty('--banner-h', `${banner.offsetHeight}px`))
+    ro.observe(banner)
+    return () => ro.disconnect()
+  }, [])
+
   function onLauncher() {
     setStartle(true)
-    window.setTimeout(() => setStartle(false), STARTLE_MS)
+    window.clearTimeout(startleTimer.current)
+    startleTimer.current = window.setTimeout(() => setStartle(false), STARTLE_MS)
     if (open) return close()
-    if (hop) {
+    if (!toured) {
+      setToured(true)
+      setFlag('local', TOURED)
+      return show('tour1')
+    }
+    if (tipHop) {
       setTipDone(true)
-      try {
-        window.sessionStorage.setItem(TIP_SEEN, '1')
-      } catch {
-        // Best-effort: it hops again next visit.
-      }
+      setFlag('session', TIP_SEEN)
       return show('tip')
     }
     show('start')
   }
 
-  function pick(choice: Choice) {
+  function pick(choice: Choice, e?: MouseEvent) {
     const to = next(choice)
-    if ('node' in to) show(to.node)
-    else close(false)
+    if ('node' in to) return show(to.node)
+    close(false)
+    const here = window.location
+    const how = sameRoute(to.href, { pathname: here.pathname.slice(BASE_PATH.length) || '/', search: here.search, hash: here.hash })
+    if (how === 'link') return
+    // Same page: <Link> would change the URL and nothing else (see sameRoute).
+    e?.preventDefault()
+    const u = new URL(to.href, here.origin)
+    // assign() of a same-document hash URL fires `hashchange` (the character tabs listen for it) without a load.
+    if (how === 'hash') window.location.assign(u.hash)
+    // A full load on purpose: router.push to the same path keeps the page mounted, so its `?import=` effect never runs.
+    // eslint-disable-next-line @next/next/no-location-assign-relative-destination
+    else if (how === 'load') window.location.assign(`${BASE_PATH}${to.href}`)
   }
 
   const pose = [
@@ -144,7 +208,7 @@ export default function Companion({ hasNextStep }: { hasNextStep: boolean }) {
     .join(' ')
 
   return (
-    <aside ref={root} aria-label="Companion" className="wraith">
+    <aside ref={root} aria-label="Companion guide" className="wraith">
       {current && (
         <div id="wraith-bubble" role="dialog" aria-modal="false" aria-labelledby="wraith-line" className="wraith-bubble">
           <p className="wraith-line" aria-live="polite" onClick={() => setSkip(true)}>
@@ -165,7 +229,7 @@ export default function Companion({ hasNextStep }: { hasNextStep: boolean }) {
               return (
                 <li key={c.label}>
                   {c.href ? (
-                    <Link ref={ref} href={c.href} className="wraith-choice" onClick={() => pick(c)}>
+                    <Link ref={ref} href={c.href} className="wraith-choice" onClick={(e) => pick(c, e)}>
                       {c.label}
                     </Link>
                   ) : (
@@ -186,7 +250,7 @@ export default function Companion({ hasNextStep }: { hasNextStep: boolean }) {
         ref={launcher}
         type="button"
         className={`wraith-launcher ${pose}`}
-        aria-label={hop ? 'Companion: you have a tip' : 'Companion'}
+        aria-label={!toured ? 'Companion guide: take the tour' : tipHop ? 'Companion guide: you have a tip' : 'Companion guide'}
         aria-expanded={open}
         aria-controls={open ? 'wraith-bubble' : undefined}
         onClick={onLauncher}

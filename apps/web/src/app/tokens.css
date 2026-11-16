@@ -110,6 +110,8 @@
   /* Wraith companion eyes (blue only; docs/design/WRAITH.md) */
   --wraith-eye: #cdeeff;
   --wraith-eye-glow: #6fbfff;
+  /* Outline traced round the wraith's cloak, so the dark figure reads on the dark page (a game-style interact rim). */
+  --wraith-rim: rgb(176 214 255 / 0.55);
 
   /* Canvases */
   --constellation-density: 0.64;
