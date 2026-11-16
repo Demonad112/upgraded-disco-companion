@@ -27,7 +27,6 @@ Answers of 2026-11-15 (`docs/plans/FINISH-PLAN.md`) are applied and the rows cle
 | RV1-3 | Custom domain | Your call. If yes, the same PR must add the domain to the proxy `ALLOWED_ORIGIN` (`services/ninja-proxy/api/_upstream.js`), the OG/sitemap base and, for a proxy move, `connect-src`; otherwise character import breaks on the new domain | RV1 |
 | RV1-4 | Move `services/ninja-proxy` from Vercel to a Cloudflare Worker | Defer: responses already carry edge `s-maxage` (character 60 s, ladder 1 h); revisit only if Vercel limits bite | RV1 |
 | RV1-5 | Rate limit on the public proxy (`/api/*`) | Add a Vercel Firewall rate-limit rule (account toggle, no code); CORS does not stop non-browser callers | RV1 |
-| LHCI-LCP | Lighthouse LCP gate (`<= 2500` ms, error) fails on every route at 2.8–3.4 s now that CI scores the styled page (basePath bug since #131 made CSS, fonts and JS 404). Lantern counts every byte fetched before first paint; dropping all three font preloads only reaches 2.76–2.87 s | Keep `error` but at `<= 3600` ms for now (a ratchet: worst today 3,414 ms), and open a C row to cut first-load JS until 2500 holds. Alternative: leave the gate and treat #196 as blocked until that work lands | LHCI-A11Y, 2026-11-16 |
 
 ## 1. Decisions
 | ID | Question | Recommended | Origin | Status |
@@ -52,6 +51,7 @@ These rows run in the §6 owner-pass order.
 |---|---|---|---|---|---|
 | R65 | F7: trade-map uses explicit single-resist ids; pseudo totals count every source | M | PV1 | one live trade2 check first | open; Batch 2 (needs one live trade2 check first) |
 | RV1-6 | Export / import progress as a JSON file (checklist, Atlas, farm, snapshots, prefs) through `parsePersisted`, so a backup restores through the same validation | M | RV1 | covers most of the cross-device need without accounts | open |
+| PERF-LCP | Cut first-load JS and render-blocking bytes until Lighthouse LCP holds `<= 2500` ms on all 8 routes, then ratchet `lighthouserc.json` back from 3600 to 2500 | M | LHCI-LCP | CI LCP 2.8–3.4 s (Lantern, mobile); dropping all three font preloads alone only reaches 2.76–2.87 s | open |
 
 ## 4. Standing rules (no work)
 - Route budgets live in `scripts/route-weight.mjs` (source of truth; brotli, first load, the `noModule` polyfill chunk excluded; exits 1 when a route is over): `/` 158,000 · `/checklist` 167,000 · `/character` 209,000 · `/atlas` 177,000 · `/dashboard` 188,000 · `/trade` 162,000 · `/methodology` 156,000 · `/whats-new` 154,000 B; any other route 190,000. Raise one only on purpose, with the reason in the PR. Also pins the lazy chunks (none named by any route HTML) at 178,000 B br. Not run in CI. Any change to home JS reports before and after.
