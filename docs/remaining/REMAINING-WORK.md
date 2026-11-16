@@ -21,7 +21,6 @@ Answers of 2026-11-15 (`docs/plans/FINISH-PLAN.md`) are applied and the rows cle
 
 | ID | Question | Recommended answer | Source |
 |---|---|---|---|
-| LHCI-A11Y | CI Lighthouse reports accessibility 0.92–0.94 (trade and whats-new 0.92, dashboard and methodology 0.93, atlas 0.94); cloud Chromium scores 1.0 on all 8 routes in 24 runs, also on the #181 merge commit and under 6× CPU throttling. Add an `actions/upload-artifact` step for `.lighthouseci` (`if: always()`) to the `lighthouse` job, or warn-level audit assertions in `lighthouserc.json`, so the next CI run names the failing audits | Add the upload step (reports stay off the repo); fix the named audits next session, then raise the gate to 0.95 | Batch 3 |
 | PV1-1 | PoB2 MCP fork with must-haves 1–6 (blocks PV1-2 engine-parity checks) | Build with mcp-builder; local stdio; return `MeasuredDelta`-shaped results | PV1 |
 | RV1-1 | Cloudflare Pages build caching (Settings → Builds & deployments) | Turn it on: free, no code, repeat builds skip `npm ci` | RV1 (external review, 2026-11-15) |
 | RV1-2 | Cloudflare Web Analytics (Settings → Web Analytics) | Turn it on after RV1 merges: the CSP now allows `static.cloudflareinsights.com` and `cloudflareinsights.com`; before that the injected beacon was blocked | RV1 |
@@ -107,7 +106,6 @@ Batches are in `docs/plans/FINISH-PLAN.md`. Rows keep their carry IDs. One line 
 | ID | Row | Batch |
 |---|---|---|
 | R65 | See §3 (trade-map pseudo-resist ids); blocked on the live trade2 check and read access to `packages/data/trade2-stats.json` | 2b (out of scope for b2b; needs the live check) |
-| LHCI-A11Y | Cloud Lighthouse (24 runs, 8 routes × 3) scores accessibility 1.0 and CI scores 0.92–0.94 on the same tree, so the failing audit is not visible from the cloud. CI now uploads `.lighthouseci` and prints failing audits to the job log (`scripts/lhci-a11y-report.mjs`); fixes and the 0.95 gate follow in the same PR | 3, in progress |
 | WQA3-9b | `scripts/scroll-audit.cjs` runs in CI report-only (`continue-on-error`); make it blocking only after a few clean runs on `main` | done in Batch 1 |
 | PV1-2 | Engine parity, proof stats, config robustness (R63) | parked on PV1-1 |
 | CF2-2 | Monster physical damage per area level has no second source | parked (no second source) |

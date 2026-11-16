@@ -175,9 +175,10 @@ jobs:
         if: needs.changes.outputs.heavy == 'true'
       - name: Build web
         if: needs.changes.outputs.heavy == 'true'
-        # No GITHUB_ACTIONS basePath: the static server below serves the export from its root.
+        # No basePath: the static server below serves the export from its root. Setting GITHUB_ACTIONS to '' did not
+        # work (Actions keeps its GITHUB_* defaults), so every stylesheet 404'd and Lighthouse scored an unstyled page.
         env:
-          GITHUB_ACTIONS: ''
+          ROOT_BASE_PATH: '1'
         run: npm run build
       - name: Lighthouse (mobile, all 8 routes, 2 runs)
         if: needs.changes.outputs.heavy == 'true'

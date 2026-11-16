@@ -24,7 +24,9 @@ import type { NextConfig } from 'next'
  * poe.ninja sends no CORS headers and 405s preflight — a browser cannot call
  * it directly. See services/ninja-proxy/README.md.
  */
-const isCI = process.env.GITHUB_ACTIONS === 'true'
+// `ROOT_BASE_PATH=1` forces an empty basePath under Actions (the Lighthouse job serves the export from its root). A
+// step cannot blank `GITHUB_ACTIONS` itself: Actions ignores overrides of its default `GITHUB_*` variables.
+const isCI = process.env.GITHUB_ACTIONS === 'true' && process.env.ROOT_BASE_PATH !== '1'
 const repo = process.env.GITHUB_REPOSITORY?.split('/')[1] ?? ''
 const basePath = isCI && repo ? `/${repo}` : ''
 
