@@ -37,9 +37,9 @@ function ContributionRow({ c }: { c: ItemStatContribution }) {
     <li className="px-2 py-1.5 odd:bg-surface-sunken/40">
       <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
         <span className="min-w-0 flex-1 text-xs text-ink">{c.label}</span>
-        <span className="tabular text-[11px] text-ink-dim">{granted}</span>
+        <span className="tabular text-[length:var(--fs-11)] text-ink-dim">{granted}</span>
       </div>
-      <div className="mt-0.5 flex flex-wrap items-baseline gap-x-2 text-[11px] text-ink-mute">
+      <div className="mt-0.5 flex flex-wrap items-baseline gap-x-2 text-[length:var(--fs-11)] text-ink-mute">
         {c.loss === 0 ? (
           <span className="text-good">
             Removing it costs nothing on the sheet — overcap absorbs all {fmt(c.flat)}
@@ -79,7 +79,7 @@ function ItemRow({ item }: { item: ItemAttribution }) {
       >
         <span className="min-w-0">
           <span className="text-xs font-medium text-ink">{item.itemName}</span>
-          <span className="ml-2 text-[11px] text-ink-mute">
+          <span className="ml-2 text-[length:var(--fs-11)] text-ink-mute">
             {item.slotLabel} · carries {item.contributions.length}{' '}
             {item.contributions.length === 1 ? 'stat' : 'stats'}
           </span>
@@ -124,15 +124,15 @@ export function Attribution({ report, bare = false }: { report: AttributionRepor
 
       {report.excluded.length ? (
         <div className="mt-4 border border-line bg-surface-sunken p-4">
-          <h3 className="text-[11px] font-medium tracking-wide text-ink-dim uppercase">Not attributed</h3>
-          <p className="mt-1 text-[11px] text-ink-mute">
+          <h3 className="text-[length:var(--fs-11)] font-medium tracking-wide text-ink-dim uppercase">Not attributed</h3>
+          <p className="mt-1 text-[length:var(--fs-11)] text-ink-mute">
             These are left out because they don&apos;t match the number on screen.
           </p>
           <ul className="mt-2 space-y-2">
             {report.excluded.map((e) => (
               <li key={e.stat}>
                 <div className="text-xs font-medium text-ink-dim">{e.label}</div>
-                <div className="mt-0.5 text-[11px] leading-relaxed text-ink-mute">{e.reason}</div>
+                <div className="mt-0.5 text-[length:var(--fs-11)] leading-relaxed text-ink-mute">{e.reason}</div>
               </li>
             ))}
           </ul>
@@ -140,7 +140,7 @@ export function Attribution({ report, bare = false }: { report: AttributionRepor
       ) : null}
 
       {report.unmatchedSources.length ? (
-        <p className="mt-3 text-[11px] leading-relaxed text-ink-mute">
+        <p className="mt-3 text-[length:var(--fs-11)] leading-relaxed text-ink-mute">
           Also contributing, but not equipped gear so not shown above: {report.unmatchedSources.join(', ')}.
         </p>
       ) : null}

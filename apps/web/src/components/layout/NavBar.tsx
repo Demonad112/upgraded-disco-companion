@@ -75,7 +75,7 @@ export function NavBar() {
             <path d="M12 2 L20 12 L12 22 L4 12 Z" stroke="var(--accent)" strokeWidth="1.5" fill="var(--accent-soft)" />
             <path d="M12 6 L16 12 L12 18 L8 12 Z" fill="var(--accent)" opacity="0.8" />
           </svg>
-          <span className="font-display text-gradient-gold hidden text-[15px] font-bold uppercase min-[1100px]:inline">
+          <span className="font-display text-gradient-gold hidden text-[length:var(--fs-16)] font-bold uppercase min-[1100px]:inline">
             PoE2 Endgame Companion
           </span>
         </Link>
@@ -119,7 +119,7 @@ export function NavBar() {
             </svg>
             <span className="hidden lg:inline">Search</span>
             {/* Keyboard hint is noise on touch devices. */}
-            <kbd className="hidden border border-line px-1 py-0.5 font-mono text-[11px] text-ink-mute lg:inline">
+            <kbd className="hidden border border-line px-1 py-0.5 font-mono text-[length:var(--fs-11)] text-ink-mute lg:inline">
               {shortcut}
             </kbd>
           </button>

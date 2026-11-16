@@ -103,7 +103,7 @@ export function TreeDataNote({ analysis, tree }: { analysis: Analysis; tree: Pas
         the tool&rsquo;s tree data yet, so {missing.length === 1 ? 'its effect isn' : 'their effects aren'}&rsquo;t counted. Keystone and
         notable findings may be missing something.
       </p>
-      <p className="tabular mt-2 font-mono text-[11px] break-words text-ink-mute">
+      <p className="tabular mt-2 font-mono text-[length:var(--fs-11)] break-words text-ink-mute">
         Node ids: {missing.join(', ')} · tree data: {tree.treeName}
       </p>
     </aside>

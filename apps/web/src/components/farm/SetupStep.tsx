@@ -241,7 +241,7 @@ export default function SetupStep({ strategyId, onChangeFarm, onQuickView }: { s
 
       <header data-surface="data" className="card flex flex-col gap-3">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <h3 className="title-sentence text-[19px] text-ink">{title}</h3>
+          <h3 className="title-sentence text-[length:var(--fs-18)] text-ink">{title}</h3>
           <span className="flex flex-wrap gap-2">
             {onQuickView ? <Button size="sm" onClick={onQuickView}>Quick view</Button> : null}
             <Button size="sm" onClick={onChangeFarm}>Change farm</Button>

@@ -26,7 +26,7 @@
 /* Hero C, compact bold: pill, two-line title, gold gem rule, count row. */
 .hero-pill {
   background: linear-gradient(var(--accent-soft), transparent);
-  font-size: 11.5px;
+  font-size: var(--fs-12);
 }
 .hero-gem::before,
 .hero-gem::after {

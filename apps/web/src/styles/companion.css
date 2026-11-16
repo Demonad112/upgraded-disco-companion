@@ -216,7 +216,7 @@
   from { opacity: 0; }
 }
 .wraith-line {
-  font-size: 0.9375rem;
+  font-size: var(--fs-16);
   line-height: 1.45;
   color: var(--ink);
   cursor: default;
@@ -244,7 +244,7 @@
   border: 1px solid var(--line-strong);
   background: var(--raised);
   color: var(--ink);
-  font-size: 0.875rem;
+  font-size: var(--fs-14);
   text-align: left;
   text-decoration: none;
   cursor: pointer;
@@ -267,7 +267,7 @@
   background: none;
   color: var(--ink-mute);
   font-family: var(--font-geist-mono), ui-monospace, monospace;
-  font-size: 0.6875rem;
+  font-size: var(--fs-11);
   letter-spacing: 0.08em;
   text-transform: uppercase;
   cursor: pointer;

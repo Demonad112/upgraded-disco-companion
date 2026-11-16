@@ -43,7 +43,7 @@ export function PobAnalysisView({ analysis }: { analysis: PobAnalysis }) {
         ) : null}
 
         {overstates ? (
-          <p className="mt-2 bg-warn/10 px-3 py-2 text-[11px] leading-relaxed text-warn">
+          <p className="mt-2 bg-warn/10 px-3 py-2 text-[length:var(--fs-11)] leading-relaxed text-warn">
             The effective health pool of {fmt(d.effectiveHealthPool)} overstates survivability by{' '}
             {d.ehpOverstatementRatio!.toFixed(1)}×. Judge this build by the figure above.
           </p>
@@ -52,14 +52,14 @@ export function PobAnalysisView({ analysis }: { analysis: PobAnalysis }) {
         <ul className="mt-3 space-y-1">
           {d.maxHits.map((hit) => (
             <li key={hit.type} className="grid grid-cols-[5rem_1fr_4.5rem] items-center gap-2">
-              <span className="text-[11px] text-ink-dim capitalize">{hit.type}</span>
+              <span className="text-[length:var(--fs-11)] text-ink-dim capitalize">{hit.type}</span>
               <span className="relative h-3 overflow-hidden bg-surface-sunken">
                 <span
                   className={`absolute inset-y-0 left-0 ${hit.value === d.lowestMaximumHit ? 'bg-danger/70' : 'bg-accent/60'}`}
                   style={{ width: `${(hit.value / d.maxHits.at(-1)!.value) * 100}%` }}
                 />
               </span>
-              <span className="tabular text-right text-[11px] text-ink">{fmt(hit.value)}</span>
+              <span className="tabular text-right text-[length:var(--fs-11)] text-ink">{fmt(hit.value)}</span>
             </li>
           ))}
         </ul>
@@ -74,13 +74,13 @@ export function PobAnalysisView({ analysis }: { analysis: PobAnalysis }) {
         <ul className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4">
           {d.resistances.map((res) => (
             <li key={res.type} className="bg-surface-sunken px-3 py-2">
-              <div className="text-[11px] text-ink-mute capitalize">{res.type}</div>
+              <div className="text-[length:var(--fs-11)] text-ink-mute capitalize">{res.type}</div>
               <div
                 className={`tabular mt-0.5 text-lg font-semibold ${res.underCap > 0 ? 'text-danger' : 'text-ink'}`}
               >
                 {res.value}%
               </div>
-              <div className="text-[10px] text-ink-mute">
+              <div className="text-[length:var(--fs-11)] text-ink-mute">
                 {res.underCap > 0 ? `${res.underCap}% under cap` : res.overCap > 0 ? `+${res.overCap}% over` : 'at cap'}
               </div>
             </li>
@@ -108,11 +108,11 @@ export function PobAnalysisView({ analysis }: { analysis: PobAnalysis }) {
           {analysis.gaps.map((gap) => (
             <li key={gap.what} className="bg-surface-sunken px-3 py-2">
               <div className="text-xs font-medium text-ink">{gap.what}</div>
-              <p className="mt-0.5 text-[11px] leading-relaxed text-ink-mute">{gap.why}</p>
+              <p className="mt-0.5 text-[length:var(--fs-11)] leading-relaxed text-ink-mute">{gap.why}</p>
             </li>
           ))}
         </ul>
-        <p className="mt-3 text-[11px] leading-relaxed text-ink-dim">
+        <p className="mt-3 text-[length:var(--fs-11)] leading-relaxed text-ink-dim">
           Import the same character from poe.ninja for per-skill damage, gear modifier tiers and stat attribution.
         </p>
       </Panel>
@@ -126,7 +126,7 @@ export function PobAnalysisView({ analysis }: { analysis: PobAnalysis }) {
             {Object.entries(analysis.playerStats)
               .sort(([a], [b]) => a.localeCompare(b))
               .map(([key, value]) => (
-                <li key={key} className="flex justify-between gap-3 text-[11px]">
+                <li key={key} className="flex justify-between gap-3 text-[length:var(--fs-11)]">
                   <span className="truncate text-ink-mute">{key}</span>
                   <span className="tabular shrink-0 text-ink-dim">
                     {Number.isInteger(value) ? value : value.toFixed(2)}

@@ -74,16 +74,16 @@ export function ChecklistStep({
         }`}
       >
         <summary className="flex cursor-pointer list-none items-center gap-2.5 py-2.5 pr-3 pl-10 [&::-webkit-details-marker]:hidden">
-          <span className="tabular w-6 shrink-0 text-[11px] text-ink-mute">#{step.order}</span>
+          <span className="tabular w-6 shrink-0 text-[length:var(--fs-11)] text-ink-mute">#{step.order}</span>
           <span
-            className={`title-sentence min-w-0 flex-1 text-[15px] ${complete ? "text-ink-mute line-through" : "text-ink"}`}
+            className={`title-sentence min-w-0 flex-1 text-[length:var(--fs-16)] ${complete ? "text-ink-mute line-through" : "text-ink"}`}
           >
             {step.title}
           </span>
           <span className="flex shrink-0 items-center gap-1.5">
             {items.length ? (
               <span
-                className={`tabular px-1.5 py-px text-[11px] ${
+                className={`tabular px-1.5 py-px text-[length:var(--fs-11)] ${
                   itemsDone === items.length ? "bg-good/10 text-good" : "bg-surface-sunken text-ink-mute"
                 }`}
                 title="Action items done"
@@ -92,12 +92,12 @@ export function ChecklistStep({
               </span>
             ) : null}
             {avoid.length ? (
-              <span className="bg-danger/10 px-1.5 py-px text-[11px] text-danger" title="Mistakes to avoid">
+              <span className="bg-danger/10 px-1.5 py-px text-[length:var(--fs-11)] text-danger" title="Mistakes to avoid">
                 ⚠ {avoid.length}
               </span>
             ) : null}
             {gates.length ? (
-              <span className="bg-accent-soft px-1.5 py-px text-[11px] text-accent" title="Readiness gate">
+              <span className="bg-accent-soft px-1.5 py-px text-[length:var(--fs-11)] text-accent" title="Readiness gate">
                 gate
               </span>
             ) : null}
@@ -165,7 +165,7 @@ export function ChecklistStep({
                       <span className="min-w-0 flex-1">
                         <span className="text-ink-mute">Avoid:</span> {m.title}
                       </span>
-                      <span className="text-[11px] text-ink-mute group-open/avoid:hidden">why?</span>
+                      <span className="text-[length:var(--fs-11)] text-ink-mute group-open/avoid:hidden">why?</span>
                     </summary>
                     <p className="px-2.5 pb-2 pl-7 text-xs leading-relaxed text-ink-mute">{avoidTexts[i]}</p>
                   </details>

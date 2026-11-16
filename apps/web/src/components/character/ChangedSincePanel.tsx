@@ -39,7 +39,7 @@ export function ChangedSincePanel({ analysis, snapshots }: { analysis: Analysis;
         <p className="mt-1.5 text-xs text-ink-dim">Import again after playing; two reports are needed to compare.</p>
       ) : (
         <>
-          <p className="mt-1 text-[11px] text-ink-mute">
+          <p className="mt-1 text-[length:var(--fs-11)] text-ink-mute">
             {when(ch.since)} → {when(ch.until)}
           </p>
           {ch.unchanged ? <p className="mt-1.5 text-xs text-ink-dim">No tracked figure moved.</p> : null}

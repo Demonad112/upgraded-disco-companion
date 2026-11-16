@@ -333,7 +333,7 @@ export function ImportBar({
           </p>
         ) : null}
 
-        <p className="mt-2 text-[11px] leading-relaxed text-ink-mute">
+        <p className="mt-2 text-[length:var(--fs-11)] leading-relaxed text-ink-mute">
           {mode === 'url' ? (
             <>
               Example:{' '}

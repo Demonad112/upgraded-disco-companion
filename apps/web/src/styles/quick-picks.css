@@ -46,7 +46,7 @@
 .qp-title {
   margin: 0;
   color: var(--ink);
-  font-size: 26px;
+  font-size: var(--fs-22);
 }
 .qp-estimate {
   color: var(--accent);
@@ -97,7 +97,7 @@
   border: 1px solid var(--accent-line);
   background: transparent;
   color: var(--ink);
-  font-size: 16px;
+  font-size: var(--fs-16);
   text-align: left;
   overflow-wrap: anywhere;
   cursor: pointer;
@@ -115,7 +115,7 @@
 }
 .qp-flag {
   color: var(--accent);
-  font-size: 12px;
+  font-size: var(--fs-12);
 }
 
 /* Result strip: three plain numbers with their change vs the recommended start. Sticky under the header on phones. */
@@ -133,12 +133,12 @@
 }
 .qp-big {
   color: var(--ink);
-  font-size: 24px;
+  font-size: var(--fs-22);
   line-height: 1.2;
 }
 .qp-vs {
   color: var(--ink-mute);
-  font-size: 13px;
+  font-size: var(--fs-14);
   line-height: 1.3;
 }
 @media (min-width: 721px) {
@@ -174,7 +174,7 @@
   gap: 2px 12px;
   padding: 8px 0;
   border-top: 1px solid var(--line);
-  font-size: 16px;
+  font-size: var(--fs-16);
 }
 .qp-lines li[data-danger] span:first-child {
   color: var(--danger);
@@ -186,7 +186,7 @@
 }
 .qp-actions .btn {
   min-height: 48px;
-  font-size: 16px;
+  font-size: var(--fs-16);
 }
 @media (max-width: 720px) {
   .qp-actions .btn {
@@ -199,7 +199,7 @@
   border: 1px solid var(--line);
   background: var(--sunken);
   font-family: var(--font-label);
-  font-size: 14px;
+  font-size: var(--fs-14);
   white-space: pre-wrap;
   overflow-wrap: anywhere;
 }
@@ -267,7 +267,7 @@
 .qp-sheet-title {
   margin: 0;
   color: var(--ink);
-  font-size: 22px;
+  font-size: var(--fs-22);
 }
 .qp-alts {
   display: flex;
@@ -293,13 +293,13 @@
 }
 .qp-alt-name {
   grid-area: name;
-  font-size: 16px;
+  font-size: var(--fs-16);
   overflow-wrap: anywhere;
 }
 .qp-alt-delta {
   grid-area: delta;
   color: var(--ink-mute);
-  font-size: 15px;
+  font-size: var(--fs-16);
 }
 .qp-alt-delta[data-tone='good'] {
   color: var(--good);
@@ -313,21 +313,21 @@
 
 @media (min-width: 1280px) {
   .qp-title {
-    font-size: 32px;
+    font-size: var(--fs-36);
   }
   .qp-chip,
   .qp-lines li,
   .qp-alt-name,
   .qp-actions .btn {
-    font-size: 18px;
+    font-size: var(--fs-18);
   }
   .qp-big {
-    font-size: 30px;
+    font-size: var(--fs-36);
   }
   .qp-vs {
-    font-size: 15px;
+    font-size: var(--fs-16);
   }
   .qp-sheet-title {
-    font-size: 26px;
+    font-size: var(--fs-22);
   }
 }

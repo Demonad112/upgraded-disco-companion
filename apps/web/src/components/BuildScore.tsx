@@ -19,8 +19,8 @@ function Half({ label, value, of, unscored }: { label: string; value: number | n
   return (
     <div className="min-w-0">
       <div className="flex items-baseline justify-between gap-2">
-        <span className="text-[11px] font-medium tracking-wide text-ink-dim uppercase">{label}</span>
-        <span className="tabular text-[11px] text-ink-mute">
+        <span className="text-[length:var(--fs-11)] font-medium tracking-wide text-ink-dim uppercase">{label}</span>
+        <span className="tabular text-[length:var(--fs-11)] text-ink-mute">
           {value === null ? 'not assessed' : `${value.toFixed(2)} of ${of.toFixed(2)}`}
         </span>
       </div>
@@ -33,7 +33,7 @@ function Half({ label, value, of, unscored }: { label: string; value: number | n
           <div className="h-full bg-accent" style={{ width: `${Math.max(2, pct)}%` }} />
         )}
       </div>
-      {unscored ? <p className="mt-1.5 text-[11px] leading-relaxed text-ink-mute">{unscored}</p> : null}
+      {unscored ? <p className="mt-1.5 text-[length:var(--fs-11)] leading-relaxed text-ink-mute">{unscored}</p> : null}
     </div>
   )
 }
@@ -70,7 +70,7 @@ export function BuildScore({ assessment, keystones }: { assessment: BuildAssessm
         calling the total "life + ES" regardless would credit the build with a
         buffer it does not have. Ward is never part of it.
       */}
-      <p className="mt-3 text-[11px] leading-relaxed text-ink-mute">
+      <p className="mt-3 text-[length:var(--fs-11)] leading-relaxed text-ink-mute">
         Defensive pool{' '}
         <span className="tabular font-semibold text-ink-dim">{fmt(assessment.pool.total)}</span> —{' '}
         {assessment.pool.label}
@@ -84,7 +84,7 @@ export function BuildScore({ assessment, keystones }: { assessment: BuildAssessm
 
       <div className="mt-5 grid gap-4 sm:grid-cols-2">
         <div className="min-w-0 border border-good/40 bg-good/5 p-3">
-          <h3 className="mb-2 text-[11px] font-medium tracking-wide text-good uppercase">Holding up</h3>
+          <h3 className="mb-2 text-[length:var(--fs-11)] font-medium tracking-wide text-good uppercase">Holding up</h3>
           <ul className="space-y-1.5">
             {assessment.strengths.map((s) => (
               <li key={s} className="flex gap-2 text-xs leading-relaxed text-ink-dim">
@@ -96,7 +96,7 @@ export function BuildScore({ assessment, keystones }: { assessment: BuildAssessm
         </div>
 
         <div className="min-w-0">
-          <h3 className="mb-2 text-[11px] font-medium tracking-wide text-warn uppercase">Gaps</h3>
+          <h3 className="mb-2 text-[length:var(--fs-11)] font-medium tracking-wide text-warn uppercase">Gaps</h3>
           <ul className="space-y-1.5">
             {[...critical, ...warnings].map((w) => (
               <li key={w.text} className="flex gap-2 text-xs leading-relaxed text-ink-dim">
@@ -120,12 +120,12 @@ export function BuildScore({ assessment, keystones }: { assessment: BuildAssessm
 
       {assessment.caveats.length ? (
         <details className="mt-5 border border-line bg-surface-sunken p-4">
-          <summary className="cursor-pointer text-[11px] font-medium tracking-wide text-ink-dim uppercase">
+          <summary className="cursor-pointer text-[length:var(--fs-11)] font-medium tracking-wide text-ink-dim uppercase">
             What this verdict assumes
           </summary>
           <ul className="mt-2 space-y-1.5">
             {assessment.caveats.map((c) => (
-              <li key={c} className="text-[11px] leading-relaxed text-ink-mute">
+              <li key={c} className="text-[length:var(--fs-11)] leading-relaxed text-ink-mute">
                 {c}
               </li>
             ))}
@@ -135,14 +135,14 @@ export function BuildScore({ assessment, keystones }: { assessment: BuildAssessm
 
       {keystones.notes.length ? (
         <div className="mt-4">
-          <h3 className="mb-2 text-[11px] font-medium tracking-wide text-ink-dim uppercase">
+          <h3 className="mb-2 text-[length:var(--fs-11)] font-medium tracking-wide text-ink-dim uppercase">
             Keystones changing how this reads
           </h3>
           <ul className="space-y-2">
             {keystones.notes.map((n) => (
               <li key={n.keystone} className="bg-surface-sunken px-3 py-2">
                 <span className="text-xs font-medium text-ink">{n.keystone}</span>
-                <p className="mt-0.5 text-[11px] leading-relaxed text-ink-dim">{n.text}</p>
+                <p className="mt-0.5 text-[length:var(--fs-11)] leading-relaxed text-ink-dim">{n.text}</p>
               </li>
             ))}
           </ul>
@@ -151,13 +151,13 @@ export function BuildScore({ assessment, keystones }: { assessment: BuildAssessm
 
       {keystones.unverified.length ? (
         <div className="mt-4 border border-warn/40 p-4">
-          <h3 className="text-[11px] font-medium tracking-wide text-warn uppercase">Allocated but not in effect</h3>
-          <p className="mt-1 text-[11px] leading-relaxed text-ink-mute">
+          <h3 className="text-[length:var(--fs-11)] font-medium tracking-wide text-warn uppercase">Allocated but not in effect</h3>
+          <p className="mt-1 text-[length:var(--fs-11)] leading-relaxed text-ink-mute">
             These keystones are on the tree, but this character&rsquo;s stats contradict them, so they were ignored. poe.ninja may not have caught up with a tree change.
           </p>
           <ul className="mt-2 space-y-1.5">
             {keystones.unverified.map((u) => (
-              <li key={u.keystone} className="text-[11px] leading-relaxed text-ink-dim">
+              <li key={u.keystone} className="text-[length:var(--fs-11)] leading-relaxed text-ink-dim">
                 <span className="font-medium text-ink">{u.keystone}</span> — {u.reason}
               </li>
             ))}

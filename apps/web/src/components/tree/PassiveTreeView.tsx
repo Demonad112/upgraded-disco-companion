@@ -187,7 +187,7 @@ export function PassiveTreeView({ tree, allocation, className = '' }: PassiveTre
             onClick={fitToAllocation}
             aria-label="Fit to allocated nodes"
             title="Fit to allocated nodes"
-            className="size-8 border border-line bg-surface-raised/90 text-[10px] text-ink-dim transition-colors hover:text-ink"
+            className="size-8 border border-line bg-surface-raised/90 text-[length:var(--fs-11)] text-ink-dim transition-colors hover:text-ink"
           >
             fit
           </button>
@@ -207,25 +207,25 @@ export function PassiveTreeView({ tree, allocation, className = '' }: PassiveTre
               {activeIds.has(hovered.id) ? <Tag tone="good">taken</Tag> : null}
             </div>
             {hovered.ascendancy ? (
-              <div className="mt-0.5 text-[10px] text-warn">{hovered.ascendancy}</div>
+              <div className="mt-0.5 text-[length:var(--fs-11)] text-warn">{hovered.ascendancy}</div>
             ) : null}
             {hovered.stats.length ? (
               <ul className="mt-1.5 space-y-0.5">
                 {hovered.stats.map((s, i) => (
-                  <li key={i} className="text-[11px] leading-snug text-ink-dim">
+                  <li key={i} className="text-[length:var(--fs-11)] leading-snug text-ink-dim">
                     {s}
                   </li>
                 ))}
               </ul>
             ) : (
-              <p className="mt-1 text-[11px] text-ink-mute">No stats recorded for this node.</p>
+              <p className="mt-1 text-[length:var(--fs-11)] text-ink-mute">No stats recorded for this node.</p>
             )}
           </div>
         ) : null}
       </div>
 
       <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-2">
-        <label className="flex items-center gap-1.5 text-[11px] text-ink-dim">
+        <label className="flex items-center gap-1.5 text-[length:var(--fs-11)] text-ink-dim">
           <input
             type="checkbox"
             checked={showSwapSet}
@@ -234,7 +234,7 @@ export function PassiveTreeView({ tree, allocation, className = '' }: PassiveTre
           />
           Show weapon set {allocation.activeSet === 1 ? 2 : 1} (inactive)
         </label>
-        <label className="flex items-center gap-1.5 text-[11px] text-ink-dim">
+        <label className="flex items-center gap-1.5 text-[length:var(--fs-11)] text-ink-dim">
           <input
             type="checkbox"
             checked={showAllAscendancies}
@@ -248,14 +248,14 @@ export function PassiveTreeView({ tree, allocation, className = '' }: PassiveTre
       <Legend />
 
       {resolved.unresolvedIds.length ? (
-        <p className="mt-2 text-[11px] leading-relaxed text-warn">
+        <p className="mt-2 text-[length:var(--fs-11)] leading-relaxed text-warn">
           {resolved.unresolvedIds.length} allocated node
           {resolved.unresolvedIds.length === 1 ? '' : 's'} are missing from this tree data, so they can&apos;t be drawn. The gap is in the data, not your build.
         </p>
       ) : null}
 
       {resolved.components.length > 1 ? (
-        <p className="mt-2 text-[11px] leading-relaxed text-ink-mute">
+        <p className="mt-2 text-[length:var(--fs-11)] leading-relaxed text-ink-mute">
           The allocation forms {resolved.components.length} groups:{' '}
           {resolved.components
             .map((c) => `${c.nodes.length} ${c.kind === 'ascendancy' ? `on the ${c.ascendancy} wheel` : c.kind === 'main-tree' ? 'on the main tree' : 'in a cluster this data set does not link'}`)
@@ -278,7 +278,7 @@ function Legend() {
   return (
     <ul className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1">
       {items.map((i) => (
-        <li key={i.label} className="flex items-center gap-1.5 text-[11px] text-ink-mute">
+        <li key={i.label} className="flex items-center gap-1.5 text-[length:var(--fs-11)] text-ink-mute">
           <span aria-hidden className={`inline-block ${i.size} ${i.className}`} />
           {i.label}
         </li>

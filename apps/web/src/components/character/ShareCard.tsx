@@ -82,7 +82,7 @@ export function ShareCard({
         {busy ? 'Drawing…' : 'Share card'}
       </Button>
       {status && !card ? (
-        <span role="status" className="text-[11px] text-ink-mute">
+        <span role="status" className="text-[length:var(--fs-11)] text-ink-mute">
           {status}
         </span>
       ) : null}

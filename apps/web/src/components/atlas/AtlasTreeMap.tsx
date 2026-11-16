@@ -398,7 +398,7 @@ function AtlasMapCanvas({ atlas }: { atlas: AtlasTree }) {
                     className="flex w-full items-baseline justify-between gap-3 px-3 py-2 text-left text-sm hover:bg-surface-overlay"
                   >
                     <span className="truncate text-ink">{n.name}</span>
-                    <span className="shrink-0 text-[11px] text-ink-mute">{subtreeLabel(atlas.subtree.get(n.id))}</span>
+                    <span className="shrink-0 text-[length:var(--fs-11)] text-ink-mute">{subtreeLabel(atlas.subtree.get(n.id))}</span>
                   </button>
                 </li>
               ))}
@@ -470,15 +470,15 @@ function AtlasMapCanvas({ atlas }: { atlas: AtlasTree }) {
             onPointerLeave={(e) => e.pointerType === 'mouse' && !request && e.relatedTarget !== canvasRef.current && setHovered(null)}
           >
             {item ? (
-              <div className="text-[11px] font-semibold tracking-wide text-accent uppercase">
+              <div className="text-[length:var(--fs-11)] font-semibold tracking-wide text-accent uppercase">
                 {TAB_NOUN[tab]} {item.num}
                 {item.name !== hovered.name ? ` · ${item.name}` : ''}
               </div>
             ) : null}
             <div className="text-xs font-semibold text-ink">{hovered.name || 'Atlas'}</div>
-            {subtitle && subtitle !== hovered.name ? <div className="mt-0.5 text-[11px] text-ink-mute">{subtitle}</div> : null}
+            {subtitle && subtitle !== hovered.name ? <div className="mt-0.5 text-[length:var(--fs-11)] text-ink-mute">{subtitle}</div> : null}
             {stats.length ? (
-              <ul className="mt-1.5 space-y-0.5 text-[11px] leading-snug text-ink-dim">
+              <ul className="mt-1.5 space-y-0.5 text-[length:var(--fs-11)] leading-snug text-ink-dim">
                 {stats.map((s) => (
                   <li key={s}>{s}</li>
                 ))}
@@ -487,7 +487,7 @@ function AtlasMapCanvas({ atlas }: { atlas: AtlasTree }) {
             {tags.length ? (
               <div className="mt-1.5 flex flex-wrap gap-1">
                 {tags.map((t) => (
-                  <span key={t.label} className={`border px-1.5 py-px text-[11px] ${t.tone}`}>
+                  <span key={t.label} className={`border px-1.5 py-px text-[length:var(--fs-11)] ${t.tone}`}>
                     {t.label}
                   </span>
                 ))}
@@ -529,7 +529,7 @@ function AtlasMapCanvas({ atlas }: { atlas: AtlasTree }) {
         </div>
       ) : null}
 
-      <p className="text-[11px] leading-relaxed text-ink-mute">
+      <p className="text-[length:var(--fs-11)] leading-relaxed text-ink-mute">
         {proDetail ? (
           <Button size="sm" onClick={showWhole} className="mr-2">
             Whole tree

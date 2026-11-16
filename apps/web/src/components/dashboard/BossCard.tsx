@@ -66,7 +66,7 @@ export function BossCard({ boss }: { boss: PinnacleBoss }) {
           </ul>
         ) : null}
         {detail ? (
-          <span className="text-[11px] text-accent group-open:hidden">
+          <span className="text-[length:var(--fs-11)] text-accent group-open:hidden">
             {boss.gatingRequirements.length
               ? `How to unlock (${boss.gatingRequirements.length} step${boss.gatingRequirements.length === 1 ? "" : "s"})`
               : "Fight notes"}

@@ -63,7 +63,7 @@
     box-shadow: 0 12px 32px -10px #000;
     color: var(--ink-dim);
     font-family: var(--font-inter), system-ui, sans-serif;
-    font-size: 13px;
+    font-size: var(--fs-14);
     font-weight: 400;
     font-style: normal;
     line-height: 1.45;
@@ -78,7 +78,7 @@
     margin-bottom: 2px;
     color: var(--accent);
     font-family: var(--font-garamond), serif;
-    font-size: 13px;
+    font-size: var(--fs-14);
     font-weight: 600;
     letter-spacing: 0.06em;
     text-transform: uppercase;
