@@ -29,7 +29,10 @@ for (const file of htmlFiles(out)) {
 
 const headersPath = join(out, '_headers')
 const headers = readFileSync(headersPath, 'utf8')
-const re = /(script-src 'self')( 'sha256-[^;]*)?(?=;)/
-if (!re.test(headers)) throw new Error("csp-hashes: script-src 'self' not found in out/_headers")
-writeFileSync(headersPath, headers.replace(re, `$1 ${[...hashes].sort().join(' ')}`))
+// The directive may list hosts after 'self' (Cloudflare Web Analytics); hashes from an earlier run are replaced.
+const re = /script-src 'self'[^;]*(?=;)/
+const directive = re.exec(headers)?.[0]
+if (!directive) throw new Error("csp-hashes: script-src 'self' not found in out/_headers")
+const kept = directive.split(/\s+/).filter((t) => !t.startsWith("'sha256-"))
+writeFileSync(headersPath, headers.replace(re, [...kept, ...[...hashes].sort()].join(' ')))
 console.log(`csp-hashes: ${hashes.size} inline script hashes written to out/_headers`)

@@ -7,8 +7,9 @@
  * Use the bare production alias, NOT the team-scoped one
  * (`*-obsidian-intelligenceyyc.vercel.app`): team aliases sit behind Vercel's
  * SSO and answer 302 to anonymous requests, so the app would silently fail to
- * import. Verified 2026-07-24: this alias returns 200 with
- * `access-control-allow-origin: *`.
+ * import. Verified 2026-07-24: this alias returns 200. CORS is an allowlist
+ * (`ALLOWED_ORIGIN` in services/ninja-proxy/api/_upstream.js: *.pages.dev of
+ * this project and localhost), so a new site origin must be added there too.
  *
  * NEXT_PUBLIC_NINJA_PROXY_BASE overrides it if the proxy ever moves.
  *

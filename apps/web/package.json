@@ -9,7 +9,7 @@
     "prebuild": "npm run build -w @poe2/core && npm run sync-data",
     "build": "next build && node scripts/csp-hashes.mjs",
     "sync-data": "node scripts/sync-data.mjs",
-    "start": "next start",
+    "preview": "npx wrangler@4 pages dev out",
     "typecheck": "tsc --noEmit",
     "lint": "eslint",
     "test": "vitest run",
