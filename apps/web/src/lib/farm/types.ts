@@ -104,6 +104,8 @@ export interface FarmData {
       layerDetect: { relativeToLargest: number; why: string; sources: string[]; confidence: Confidence }
       /** R36 "Fits your build": build-aware danger / generic danger of the farm's starter loadout must be below this. */
       fitsBuild: { maxRatio: number; why: string; sources: string[]; confidence: Confidence }
+      /** Danger bands: Low below `medium`, Medium from `medium` to below `high`, High from `high`. */
+      bands: { medium: number; high: number; why: string; sources: string[]; confidence: Confidence }
     }
     risk: Record<RiskKey, number>
   }

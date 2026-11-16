@@ -23,15 +23,62 @@ export function dangerWeight(rating: DangerRating | undefined, layers: Layer[] |
   return sum / layers.length
 }
 
+/** Scores are in percent-of-max-roll units, so a full roll of a weight-1 stat is 100. */
+export const SCORE_SCALE = 100
+
+const maxRolls = new WeakMap<FarmData, Map<string, number>>()
+
+/** The largest single roll any mod of this stat can reach (1 for a flag), the unit a total is divided by. */
+export function maxRoll(d: FarmData, stat: string): number {
+  let m = maxRolls.get(d)
+  if (!m) {
+    m = new Map()
+    for (const mod of [...d.tabletMods, ...d.waystoneMods]) {
+      const top = Math.max(...mod.tiers.map((t) => t.max))
+      m.set(mod.stat, Math.max(m.get(mod.stat) ?? 0, top))
+    }
+    for (const s of d.stats) if (s.combine === 'flag') m.set(s.id, 1)
+    maxRolls.set(d, m)
+  }
+  const v = m.get(stat)
+  return v && v > 0 ? v : 1
+}
+
+/** A stat's total as a share of its own max roll (1 = one full roll), so big-number stats do not outweigh small ones. */
+export const normalise = (d: FarmData, stat: string, total: number): number => total / maxRoll(d, stat)
+
 function scoreTotals(d: FarmData, totals: Totals, o: ScoreOptions): Score {
   const weights = d.weights.presets[o.presetId]?.weights ?? {}
   let reward = 0
   let danger = 0
   for (const [stat, t] of Object.entries(totals)) {
-    reward += t.total * (weights[stat]?.value ?? 0)
-    danger += t.total * dangerWeight(d.weights.danger.per_stat[stat], o.layers, d.weights.danger.build_multipliers)
+    const n = normalise(d, stat, t.total) * SCORE_SCALE
+    reward += n * (weights[stat]?.value ?? 0)
+    danger += n * dangerWeight(d.weights.danger.per_stat[stat], o.layers, d.weights.danger.build_multipliers)
   }
   return { reward, danger, net: reward - danger * d.weights.risk[o.risk] }
+}
+
+export type DangerBand = 'low' | 'medium' | 'high'
+
+/** Low / Medium / High from a Danger figure (before the risk setting), cut at `weights.danger.bands`. */
+export function dangerBand(d: FarmData, danger: number): DangerBand {
+  const b = d.weights.danger.bands
+  return danger >= b.high ? 'high' : danger >= b.medium ? 'medium' : 'low'
+}
+
+export const BAND_LABEL: Readonly<Record<DangerBand, string>> = Object.freeze({ low: 'Low', medium: 'Medium', high: 'High' })
+
+/** What to show for a loadout's danger: "No danger mods" when nothing rated is on it, else Low / Medium / High. */
+export function dangerReading(d: FarmData, l: Loadout, danger: number): { band: DangerBand | null; label: string } {
+  if (!hasDangerMods(d, l)) return { band: null, label: 'No danger mods' }
+  const band = dangerBand(d, danger)
+  return { band, label: BAND_LABEL[band] }
+}
+
+/** True when the loadout carries at least one mod whose stat has a hazard rating above 0. */
+export function hasDangerMods(d: FarmData, l: Loadout): boolean {
+  return Object.entries(computeTotals(d, l)).some(([stat, t]) => t.total > 0 && (d.weights.danger.per_stat[stat]?.generic ?? 0) > 0)
 }
 
 export const scoreLoadout = (d: FarmData = farmData, l: Loadout, o: ScoreOptions): Score => scoreTotals(d, computeTotals(d, l), o)

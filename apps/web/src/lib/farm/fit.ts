@@ -1,5 +1,5 @@
 import { farmData } from '@/data/farm'
-import { scoreLoadout } from './score'
+import { hasDangerMods, scoreLoadout } from './score'
 import type { FarmData, Layer, Loadout } from './types'
 
 export type FitVerdict = 'fits' | 'harder' | 'even'
@@ -18,8 +18,8 @@ export interface BuildFit {
  */
 export function buildFit(d: FarmData = farmData, loadout: Loadout, presetId: string, layers: Layer[]): BuildFit {
   const generic = { presetId, risk: 'balanced' as const, layers: null }
+  if (!hasDangerMods(d, loadout)) return { ratio: null, verdict: null }
   const g = scoreLoadout(d, loadout, generic).danger
-  if (g <= 1e-9) return { ratio: null, verdict: null }
   const ratio = scoreLoadout(d, loadout, { ...generic, layers }).danger / g
   const max = d.weights.danger.fitsBuild.maxRatio
   const eps = 1e-9

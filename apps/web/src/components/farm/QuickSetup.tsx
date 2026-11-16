@@ -24,6 +24,7 @@ import {
 } from "@/lib/farm/quickPicks";
 import type { Loadout } from "@/lib/farm/types";
 import { MapIcon } from "@/components/icons";
+import { DangerReading } from "./DangerReading";
 import { ModSheet } from "./ModSheet";
 import "@/styles/quick-picks.css";
 
@@ -182,7 +183,7 @@ export default function QuickSetup({ farmKey, onChangeFarm, onOpenFull }: { farm
           </div>
           <div>
             <dt className="label-metric">Map danger</dt>
-            <dd><span className="farm-num qp-big">{num(score.danger)}</span><VsRecommended c={pctChange(recScore.danger, score.danger)} upIsBad /></dd>
+            <dd><DangerReading loadout={loadout} danger={score.danger} big /><VsRecommended c={pctChange(recScore.danger, score.danger)} upIsBad /></dd>
           </div>
           <div>
             <dt className="label-metric">Net</dt>

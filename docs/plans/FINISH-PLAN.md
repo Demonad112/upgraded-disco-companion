@@ -14,7 +14,7 @@ Owner answers recorded here count as owner approval for the Needs-owner kinds li
 - R60: F2 goes live on Yykiuy only. PXA-7 accept. PXA-8 keep. CF1-1 keep the deny. WQA1-5: add lang "en" only. WQA1-6 skip.
 - Dropped: OffscreenCanvas (WQA3-2b/14, wait for a device trace), PXC-8 sweeps, analytics idea, PRO1 W7.
 - CF2-2 parked (no second source). CF2-5: document that ΔDPS stays null (poe.ninja-as-given rule).
-- Parked on owner hardware (no session): R40 (→F1, R10), R44–R47, OC1-3, console realm, R57.
+- Parked on owner hardware (no session): R44–R47, OC1-3, console realm, R57.
 
 ## Batch 1 — Cleanup + config (LOCAL, one PR `claude/finish-b1`)
 1. Commit this file as docs/plans/FINISH-PLAN.md.

@@ -26,6 +26,8 @@ test.describe('quick picks', () => {
     await expect(page.getByTestId('qp-result').getByText('Map danger', { exact: true })).toBeVisible()
     await expect(page.getByTestId('qp-result').getByText('Danger', { exact: true })).toHaveCount(0)
     await expect(page.getByTestId('qp-danger-note')).toContainText('Farm risk is how dangerous this kind of farm is')
+    // Danger reads as a word, never a bare number.
+    await expect(page.getByTestId('qp-result').getByTestId('danger-band')).toHaveText(/^(No danger mods|Low|Medium|High)$/)
     await expect(setup).toContainText('+35% or +70% density')
     await expect(page.getByTestId('qp-footnote')).toContainText('Patch 0.5.5, checked against 0.5.5e')
     await expect(page.getByTestId('qp-footnote')).toContainText(/\d+ unverified/)
