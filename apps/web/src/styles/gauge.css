@@ -49,7 +49,7 @@
 .gauge-pct {
   flex: none;
   font-family: var(--font-label);
-  font-size: 11px;
+  font-size: var(--fs-11);
   line-height: 1;
   white-space: nowrap;
 }

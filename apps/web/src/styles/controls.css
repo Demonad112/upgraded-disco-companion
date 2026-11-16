@@ -34,7 +34,7 @@
     background-repeat: no-repeat;
     color: var(--ink);
     color-scheme: dark;
-    font-size: 14px;
+    font-size: var(--fs-14);
     line-height: 1.3;
     text-overflow: ellipsis;
     text-shadow: none;
@@ -66,7 +66,7 @@
     background-color: color-mix(in srgb, var(--sunken) 70%, transparent);
     color: var(--ink);
     color-scheme: dark;
-    font-size: 14px;
+    font-size: var(--fs-14);
     line-height: 1.3;
     text-shadow: none;
     transition: border-color 0.15s ease;
@@ -90,7 +90,7 @@
   /* Phones zoom the page into any field set under 16 px when it takes focus. */
   @media (max-width: 720px) {
     .input {
-      font-size: 16px;
+      font-size: var(--fs-16);
     }
   }
 
@@ -105,7 +105,7 @@
     border: 1px solid var(--line-strong);
     background: transparent;
     color: var(--ink);
-    font-size: 14px;
+    font-size: var(--fs-14);
     font-weight: 600;
     line-height: 1.2;
     text-shadow: none;
@@ -127,7 +127,7 @@
   }
   .btn-sm {
     padding: 0 12px;
-    font-size: 13px;
+    font-size: var(--fs-14);
   }
   .btn-primary {
     border-color: var(--accent);
@@ -181,7 +181,7 @@
     /* Cells touch, and a scrolling row clips anything outside it: the ring goes inside the cell. */
     --focus-offset: -2px;
     color: var(--ink-mute);
-    font-size: 13px;
+    font-size: var(--fs-14);
     font-weight: 500;
     line-height: 1.2;
     white-space: nowrap;
@@ -194,6 +194,12 @@
   .seg-item + .seg-item {
     border-left: 1px solid var(--line);
   }
+  /* 280 px phones: 14 px labels need tighter cells so a row of four still fits. */
+  @media (max-width: 340px) {
+    .seg-item {
+      padding: 0 10px;
+    }
+  }
   .seg-item:hover {
     color: var(--ink);
     box-shadow: inset 0 -2px 0 var(--accent-line);
@@ -205,7 +211,7 @@
     box-shadow: inset 0 -2px 0 var(--accent);
   }
   .seg-count {
-    font-size: 11px;
+    font-size: var(--fs-11);
     color: var(--ink-mute);
   }
   .seg-item[aria-selected='true'] .seg-count,
@@ -289,7 +295,7 @@
 }
 .bar.idx .idx-count {
   margin-left: 0.45rem;
-  font-size: 11px;
+  font-size: var(--fs-11);
   letter-spacing: 0;
   color: var(--ink-mute);
 }

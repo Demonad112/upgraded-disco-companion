@@ -45,7 +45,7 @@
 
   /* Reference group: quieter titles than the gold panel headings (ink, 18 px); badges untouched. */
   [data-reference] .h3 {
-    font-size: 18px;
+    font-size: var(--fs-18);
     background: none;
     -webkit-background-clip: border-box;
     background-clip: border-box;

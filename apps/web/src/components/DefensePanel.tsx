@@ -78,7 +78,7 @@ function Meter({ r }: { r: DefenseSummary['resistances'][number] }) {
           {known ? `${value}%` : 'unknown'}
         </span>
         {!known ? <Tag>unknown</Tag> : under ? <Tag tone="danger">{r.underCap} under</Tag> : <Tag tone="good">OK</Tag>}
-        {over ? <span className="tabular font-mono text-[11px] text-ink-mute">{r.overCap} over cap</span> : null}
+        {over ? <span className="tabular font-mono text-[length:var(--fs-11)] text-ink-mute">{r.overCap} over cap</span> : null}
       </span>
     </li>
   )
@@ -110,7 +110,7 @@ function ResistanceMeters({ d }: { d: DefenseSummary }) {
             'none, nothing is over its cap'
           )}
         </p>
-        <ul className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-[11px] text-ink-mute">
+        <ul className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-[length:var(--fs-11)] text-ink-mute">
           <li>Gold pin: cap</li>
           <li>Hatched: over cap</li>
           <li>Dashed: shortfall to cap</li>
@@ -172,7 +172,7 @@ function LargestHit({ d }: { d: DefenseSummary }) {
                 <span className="eplate tabular text-sm text-ink">{fmt(h.value)}</span>
                 {h.isLowest ? <Tag tone="danger">Kills first</Tag> : null}
               </span>
-              {note ? <span className="tabular font-mono text-[11px] text-ink-mute min-[621px]:col-start-2">{note}</span> : null}
+              {note ? <span className="tabular font-mono text-[length:var(--fs-11)] text-ink-mute min-[621px]:col-start-2">{note}</span> : null}
             </li>
           )
         })}
@@ -189,8 +189,8 @@ function PoolTile({ label, value, hint }: { label: string; value: string; hint?:
   return (
     <div className="min-w-0 border border-line bg-sunken/80 px-3.5 py-3">
       <div className="label-metric truncate">{label}</div>
-      <div className="tabular mt-1.5 truncate font-mono text-[20px] leading-none font-medium text-ink">{value}</div>
-      {hint ? <div className="mt-1.5 truncate text-[11px] text-ink-mute">{hint}</div> : null}
+      <div className="tabular mt-1.5 truncate font-mono text-[length:var(--fs-22)] leading-none font-medium text-ink">{value}</div>
+      {hint ? <div className="mt-1.5 truncate text-[length:var(--fs-11)] text-ink-mute">{hint}</div> : null}
     </div>
   )
 }

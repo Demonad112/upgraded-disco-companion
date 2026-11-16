@@ -48,7 +48,7 @@ function Delta({ now, before }: { now: number; before: number | undefined }) {
   if (before === undefined || now === before || before === 0) return null;
   const up = now > before;
   return (
-    <span className={`tabular mt-2 inline-block border px-1.5 py-0.5 text-[11px] font-medium ${up ? "border-good/40 bg-good/10 text-good" : "border-danger/40 bg-danger/10 text-danger"}`}>
+    <span className={`tabular mt-2 inline-block border px-1.5 py-0.5 text-[length:var(--fs-11)] font-medium ${up ? "border-good/40 bg-good/10 text-good" : "border-danger/40 bg-danger/10 text-danger"}`}>
       {up ? "▲" : "▼"} {compact(Math.abs(now - before))}
     </span>
   );

@@ -32,7 +32,7 @@ export function CopyLink({ url, name }: { url: string; name: string }) {
       <Button size="sm" onClick={() => void share()}>
         Copy link
       </Button>
-      <span role="status" aria-live="polite" className="text-[11px] text-ink-mute">
+      <span role="status" aria-live="polite" className="text-[length:var(--fs-11)] text-ink-mute">
         {status}
       </span>
     </div>

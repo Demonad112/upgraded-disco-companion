@@ -117,7 +117,7 @@
   border-top: 1px solid var(--accent-line);
   color: var(--accent);
   font-family: var(--font-label);
-  font-size: 10px;
+  font-size: var(--fs-11);
   font-weight: 600;
   letter-spacing: 0.03em;
   text-transform: uppercase;
@@ -134,7 +134,7 @@
   display: grid;
   gap: 6px;
   margin: 14px 0 20px;
-  font-size: 13px;
+  font-size: var(--fs-14);
   color: var(--ink-dim);
 }
 .relic-why b {
@@ -175,7 +175,7 @@
   flex-wrap: wrap;
   gap: 2px 20px;
   font-family: var(--font-label);
-  font-size: 13px;
+  font-size: var(--fs-14);
   color: var(--ink-dim);
 }
 .gcard-sum b {
@@ -198,7 +198,7 @@
   gap: 2px 10px;
   padding: 6px 8px;
   border-left: 2px solid transparent;
-  font-size: 14px;
+  font-size: var(--fs-14);
 }
 .gline + .gline {
   border-top: 1px solid var(--line);
@@ -308,7 +308,7 @@
 }
 .trail-delta {
   font-family: var(--font-label);
-  font-size: 13px;
+  font-size: var(--fs-14);
 }
 @media (max-width: 639px) {
   .trail-stop {

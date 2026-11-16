@@ -112,7 +112,6 @@ Batches are in `docs/plans/FINISH-PLAN.md`. Rows keep their carry IDs. One line 
 |---|---|---|
 | R65 | See §3 (trade-map pseudo-resist ids); blocked on the live trade2 check and read access to `packages/data/trade2-stats.json` | 2b (out of scope for b2b; needs the live check) |
 | LHCI-A11Y | Cloud Lighthouse (24 runs, 8 routes × 3) scores accessibility 1.0 and CI scores 0.92–0.94 on the same tree, so the failing audit is not visible from the cloud. Waiting on CI reports (see Owner queue LHCI-A11Y; no upload step in `ci.yml` yet, so no audit names this wave); gate stays 0.90 | 3, blocked on owner |
-| UXS-1 | Collapse ~22 text sizes to 8 (11, 12, 14, 16, 18, 22, 36, 64 px) on `variant/<yyyymmdd>-type-scale`; merge only on owner OK | 3, PR B |
 | WQA3-9b | `scripts/scroll-audit.cjs` runs in CI report-only (`continue-on-error`); make it blocking only after a few clean runs on `main` | done in Batch 1 |
 | PV1-2 | Engine parity, proof stats, config robustness (R63) | parked on PV1-1 |
 | CF2-2 | Monster physical damage per area level has no second source | parked (no second source) |

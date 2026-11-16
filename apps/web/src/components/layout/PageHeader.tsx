@@ -27,7 +27,7 @@ export function PageHeader({
   return (
     <header className="page-title">
       <div className="label-metric">{eyebrow}</div>
-      <h1 data-vt={tool} className="mt-2 font-display text-[clamp(34px,5.2vw,64px)] leading-[1.04] font-bold text-ink">
+      <h1 data-vt={tool} className="mt-2 font-display text-[length:var(--fs-36)] max-[340px]:text-[length:var(--fs-22)] min-[981px]:text-[length:var(--fs-64)] leading-[1.04] font-bold text-ink">
         {title} <span className="text-gradient-gold">{accent}</span>
       </h1>
       <Triad />
