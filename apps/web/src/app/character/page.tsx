@@ -13,7 +13,7 @@ import {
 import { ImportBar, importProfile, sharedProfileUrl, type ImportResult } from '@/components/ImportBar'
 import { Skeleton } from '@/components/Skeleton'
 import { useCharacterHistory } from '@/lib/useCharacterHistory'
-import { recordRecent } from '@/lib/recentCharacters'
+import { recordRecent, topFixOf } from '@/lib/recentCharacters'
 import { gradeText } from '@/lib/grade'
 import { useLadder } from '@/lib/useLadder'
 import { PROXY_BASE } from '@/lib/proxy'
@@ -193,6 +193,7 @@ export default function Home() {
       className: identity.className ?? null,
       level: identity.level ?? null,
       grade: gradeText(settled.assessment)?.letter ?? null,
+      topFix: topFixOf(settled.recommendations.recommendations),
       at: new Date().toISOString(),
     })
   }, [sourceUrl, settled])

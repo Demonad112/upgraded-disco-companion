@@ -2,8 +2,8 @@
  * The wraith (v2 art, locked 2026-11-15; Figma "Wraith companion v2"). One
  * master drawing in a 120×180 box, hand-kept so layer classes survive (Figma's
  * export renames them). Blue eyes only; asleep dims them in CSS. The rim is a
- * touch brighter than the board, so the figure still reads at 56px on the dark
- * page. A static radial halo stands in for a drop shadow (no filters). Motion
+ * touch brighter than the board, and a pale rim (.wr-rim, --wraith-rim) traces
+ * the cloak, so the figure reads at 64px on the dark page. A static radial halo stands in for a drop shadow (no filters). Motion
  * lives in styles/companion.css (transform and opacity only).
  * Gradient ids are fixed: the site draws one wraith at a time.
  */
@@ -38,6 +38,8 @@ export function Wraith({ className }: { className?: string }) {
           compositing). Outside .wr-body, so the doze droop leaves it put. */}
       <ellipse cx="60" cy="100" rx="62" ry="88" fill="url(#wr-halo)" />
       <g className="wr-body">
+        {/* Rim: the cloak outline stroked under the cloak, so only its outer half shows (no filter). */}
+        <path className="wr-rim" fill="none" strokeWidth="6" strokeLinejoin="round" d="M52 2C58 5 68 12 76 22C83 31 86 43 84 55L87 58L85 61C95 72 99 88 98 104C97 118 93 130 90 140L92 150L86 146L88 162L81 148L78 170L73 150L69 158L65 147L61 174L57 148L52 160L49 147L44 168L41 148L36 156L34 142C30 130 24 118 23 104C22 88 27 72 35 62L33 59L36 57C34 45 36 31 42 20C45 13 48 6 52 2Z" />
         <path fill="url(#wr-hem)" d="M34 128L30 176L38 150L44 181L50 152L58 178L64 152L72 183L78 150L86 173L90 128Z" />
         <path
           fill="url(#wr-cloak)"

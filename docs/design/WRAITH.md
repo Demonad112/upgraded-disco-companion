@@ -6,15 +6,20 @@ Locked by the owner on 2026-11-15 (Figma file "Wraith companion v2"). Code: `app
 ## Picks
 | Topic | Pick |
 |---|---|
-| Launcher | Small full figure, 56 px tall, frameless; a static radial halo inside the SVG stands in for the shadow (P2, 2026-11-15: CSS `filter: drop-shadow` dropped) |
+| Launcher | Full figure, frameless, 64 px tall on desktop and 80 px on phones (owner, 2026-11-16: 56 px read too small); a static radial halo inside the SVG stands in for the shadow (P2, 2026-11-15: CSS `filter: drop-shadow` dropped); a pale rim (`.wr-rim`, `--wraith-rim`) traces the cloak so the figure stands out on the dark page |
 | Eyes | Blue only (`--wraith-eye`, `--wraith-eye-glow`); asleep dims them |
 | Open | Square speech bubble beside the figure, 150 ms fade; no panel effect |
 | Panel | Solid fill, gold hairline, square tail pointing at the figure |
 | Typing | Quick type: each letter fades in 6 ms after the last; click the line to skip |
-| Reactions | Squint while talking, startle on click, hop when it has a tip (3 hops, then rests until clicked; once per session) |
+| Reactions | Squint while talking, startle on click, hop when it has something to say (3 hops, then rests until clicked) |
+| Tour | First visit: it hops and the click opens a three-line tour (`tour1`–`tour3`, Next / Skip the tour), remembered for good in localStorage `poe2-companion-toured` |
+| Hop gating | After the tour it hops for a tip only when there is a next step and the visitor has ticked at least one step or imported a character (`shouldHop`); once per session (sessionStorage `poe2-companion-tip-seen`). The tip reads "Next: {title}." and links `/checklist/#{id}`; titles come from `src/data/stepTitles.ts`, tested against the roadmap |
+| Start node | `nodeFor('start', { path })` opens the node for the page: /character → fix, /checklist → next, /atlas → atlas, /dashboard → farm, anything else → menu. "Something else" goes to the menu |
+| Fix node | With a recent character: "Reopen {name}" first; its top fix ("Top fix for {name}: {lead}.", stored with the recent row) links `#top-fixes-title`; when its latest snapshot's patch is not the current one, a patch notice replaces the top fix. A same-page Reopen does a full load so the import runs |
+| Questions | Menu → Questions: why the grade is a range, how the numbers work (/methodology), what changed (/whats-new) |
 | Idle | Float, eye flicker and blink, wander off the edge and back; dozes after 2 quiet minutes |
 | Dropped | Eyes follow cursor, lean to choice, hem sway, wisps, gold and dim mood colours |
-| Placement | Desktop top-right under the nav; phones bottom-right above the tab bar |
+| Placement | Top-right under the nav (and under the patch banner while it shows) on desktop and phones (owner, 2026-11-16; phones were bottom-right above the tab bar). On phones the bubble drops below the figure at full width, tail on top |
 
 ## Art
 One master SVG, `viewBox 0 0 120 180`, no filters (the glow is a radial gradient). Layers, back to front: hem, cloak,
