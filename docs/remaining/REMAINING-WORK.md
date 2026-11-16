@@ -79,7 +79,7 @@ main 763b2bb. These totals include Next's 35,158 B br polyfill chunk, which `scr
 ## 6. Next batches (2026-11-08)
 
 ### Rules
-- One draft PR per batch, with no session links on GitHub. Don't merge.
+- One draft PR per batch, with no session links on GitHub. Merge only under `docs/SESSION-PROTOCOL.md` step 5.
 - Token economy: grep first, read only what you edit, cap output, and run independent calls in parallel.
 - Out of scope: the patch day / 1.0 data refresh (the owner does it), design changes, and MCP beyond "builds, and `node scripts/verify-mcp.mjs` passes".
 - Code batches run the gate as separate commands:
@@ -107,7 +107,7 @@ Batches are in `docs/plans/FINISH-PLAN.md`. Rows keep their carry IDs. One line 
 | ID | Row | Batch |
 |---|---|---|
 | R65 | See §3 (trade-map pseudo-resist ids); blocked on the live trade2 check and read access to `packages/data/trade2-stats.json` | 2b (out of scope for b2b; needs the live check) |
-| LHCI-A11Y | Cloud Lighthouse (24 runs, 8 routes × 3) scores accessibility 1.0 and CI scores 0.92–0.94 on the same tree, so the failing audit is not visible from the cloud. Waiting on CI reports (see Owner queue LHCI-A11Y; no upload step in `ci.yml` yet, so no audit names this wave); gate stays 0.90 | 3, blocked on owner |
+| LHCI-A11Y | Cloud Lighthouse (24 runs, 8 routes × 3) scores accessibility 1.0 and CI scores 0.92–0.94 on the same tree, so the failing audit is not visible from the cloud. CI now uploads `.lighthouseci` and prints failing audits to the job log (`scripts/lhci-a11y-report.mjs`); fixes and the 0.95 gate follow in the same PR | 3, in progress |
 | WQA3-9b | `scripts/scroll-audit.cjs` runs in CI report-only (`continue-on-error`); make it blocking only after a few clean runs on `main` | done in Batch 1 |
 | PV1-2 | Engine parity, proof stats, config robustness (R63) | parked on PV1-1 |
 | CF2-2 | Monster physical damage per area level has no second source | parked (no second source) |
