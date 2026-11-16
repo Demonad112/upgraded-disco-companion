@@ -159,7 +159,7 @@ jobs:
     needs: changes
     # PRs only: the merge commit was already measured on the PR. 2 runs per route on the PR (median).
     if: github.event_name == 'pull_request'
-    # Mobile Lighthouse on the built static site. Fails the job when LCP > 2.5 s or CLS > 0.1 (R49: flipped from warn
+    # Mobile Lighthouse on the built static site. Fails the job when LCP > 3.6 s or CLS > 0.1 (R49: flipped from warn
     # after five clean main runs, 2026-11-06). If it flakes, set `continue-on-error: true` and the assertions back to "warn".
     runs-on: ubuntu-latest
     timeout-minutes: 20
