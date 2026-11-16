@@ -50,8 +50,6 @@ These rows run in the §6 owner-pass order.
 | ID | Item | Size | Origin | Notes | Status |
 |---|---|---|---|---|---|
 | R65 | F7: trade-map uses explicit single-resist ids; pseudo totals count every source | M | PV1 | one live trade2 check first | open; Batch 2 (needs one live trade2 check first) |
-| RV1-6 | Export / import progress as a JSON file (checklist, Atlas, farm, snapshots, prefs) through `parsePersisted`, so a backup restores through the same validation | M | RV1 | covers most of the cross-device need without accounts | open |
-| PERF-LCP | Cut first-load JS and render-blocking bytes until Lighthouse LCP holds `<= 2500` ms on all 8 routes, then ratchet `lighthouserc.json` back from 3600 to 2500 | M | LHCI-LCP | CI LCP 2.8–3.4 s (Lantern, mobile); dropping all three font preloads alone only reaches 2.76–2.87 s | open |
 
 ## 4. Standing rules (no work)
 - Route budgets live in `scripts/route-weight.mjs` (source of truth; brotli, first load, the `noModule` polyfill chunk excluded; exits 1 when a route is over): `/` 158,000 · `/checklist` 167,000 · `/character` 209,000 · `/atlas` 177,000 · `/dashboard` 188,000 · `/trade` 162,000 · `/methodology` 156,000 · `/whats-new` 154,000 B; any other route 190,000. Raise one only on purpose, with the reason in the PR. Also pins the lazy chunks (none named by any route HTML) at 178,000 B br. Not run in CI. Any change to home JS reports before and after.
