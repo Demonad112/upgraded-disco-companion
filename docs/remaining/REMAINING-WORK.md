@@ -21,9 +21,8 @@ Answers of 2026-11-15 (`docs/plans/FINISH-PLAN.md`) are applied and the rows cle
 
 | ID | Question | Recommended answer | Source |
 |---|---|---|---|
-| PXV-4 | Pick one chat-settings variant (waystone, ledger, relic) or merge parity alone | Merge parity now; choose a variant after viewing the three previews | PXV (#155, #158) |
+| PXV-4-DEL | Delete the three unused chat-settings variant branches (waystone, ledger, relic) | Delete them; branch deletion is owner-only | PXV (#155, #158) |
 | LHCI-A11Y | CI Lighthouse reports accessibility 0.92–0.94 (trade and whats-new 0.92, dashboard and methodology 0.93, atlas 0.94); cloud Chromium scores 1.0 on all 8 routes in 24 runs, also on the #181 merge commit and under 6× CPU throttling. Add an `actions/upload-artifact` step for `.lighthouseci` (`if: always()`) to the `lighthouse` job, or warn-level audit assertions in `lighthouserc.json`, so the next CI run names the failing audits | Add the upload step (reports stay off the repo); fix the named audits next session, then raise the gate to 0.95 | Batch 3 |
-| FX-GRAIN | Grain (`body::after`) still rasters as its own layer in Full: ~11 ms over a trace-fx run on software compositing (SwiftShader). Promote it to a static layer (one pre-rendered tile, `will-change: transform`, no repaint), or drop it in Full as Lite and Still already do | Promote to a static layer and re-trace; drop it only if the layer still re-rasters | P4 (`scripts/trace-fx.mjs`) |
 | COMP-1 | On phones the wraith now sits top-right (80 px) and covers the top-right corner of whatever scrolls under it | Hide it while scrolling down and bring it back on scroll up or after 1 s still (transform only); keep it always shown if you prefer the presence | C1–C5 |
 | PV1-1 | PoB2 MCP fork with must-haves 1–6 (blocks PV1-2 engine-parity checks) | Build with mcp-builder; local stdio; return `MeasuredDelta`-shaped results | PV1 |
 | RV1-1 | Cloudflare Pages build caching (Settings → Builds & deployments) | Turn it on: free, no code, repeat builds skip `npm ci` | RV1 (external review, 2026-11-15) |
@@ -48,7 +47,6 @@ These rows run in the §6 owner-pass order.
 | R45 | Android share target on a real device. The emulated e2e passes | 8 | L1-3 | parked (P): owner skipped manual checks 2026-11-08 |
 | R46 | Real display and Safari: sky over 30 s, hover pulse, hero draw-in, lantern, foil, route transitions, glyphs | 9 | A5-4, W15-pulse-1, MP1-4, LS1-4 | parked (P): owner skipped manual checks 2026-11-08 |
 | R47 | Phone and Xbox sizing for the quick-pick sheet and sticky strip; reduced-motion fade; picker states; diagram labels. The emulated part is done | 10 | QP1-1, FP1-5, H1-2, V1-1 | parked (P): owner skipped manual checks 2026-11-08 |
-| R60 | Two character fixtures: `packages/core/test/fixtures/yykiuy-v<version>.json` and `athrynas-94-v<version>.json` | 11 | evidence-pack tests | answered 2026-11-15: F2 goes live on Yykiuy only; Athrynas dropped |
 | R43 | TT1 live trade2 checks: filter shapes, link length at 6k/8k/9k, `TradeStatus` via `?q=`, console realm. Optional | 5 | TT1 #2–#5 | done except console realm, 2026-11-08: 6k/8k/9k links load, four statuses show correctly, weight group prefills (OC1) |
 
 ## 3. Code and CI follow-ups (class C)
@@ -102,7 +100,6 @@ N1 (#122), N2 (#124) and N3 (#125) are merged; their rows are archived. The PX p
 | ID | Branch | Scope | Depends on |
 |---|---|---|---|
 | F1 | `data/<yyyymmdd>-danger-calibration` | R10: calibrated danger (follow `R40-RUN-LOG.md` exactly) | R40 (parked) |
-| F2 | `test/<yyyymmdd>-evidence-fixtures` | R60: skipped evidence-pack suites go live | none (R60 answered: Yykiuy fixtures only) |
 
 Owner-only steps: § Owner queue and §2 (every §2 row is done or parked).
 

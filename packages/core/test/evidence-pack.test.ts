@@ -1,16 +1,10 @@
 /**
- * Regression tests for the two characters the analyzer was validated against.
- *
- * Both depend on a poe.ninja capture that is NOT in the repository yet. Until
- * the file is committed to test/fixtures/ the suite is skipped (pending), not
- * failing. Expected values come from the evidence pack: what this app read from
- * poe.ninja and the attached PoB export for that character. The reference
- * tool's different numbers (uncapped resistances +10, higher max hits) are
- * deliberately NOT asserted: they are hints to verify, not targets to match.
- *
- * Files to commit (stored verbatim, `{type, charModel}` envelope, see README):
- *   test/fixtures/yykiuy-v<model version>.json     Martial Artist, level 88 (capture v51, 2026-11-08)
- *   test/fixtures/athrynas-94-v<model version>.json  level 94 Athrynas
+ * Regression test for the character the analyzer was validated against: Yykiuy,
+ * level 88 Martial Artist (test/fixtures/yykiuy-v51.json, captured 2026-11-08).
+ * Expected values come from the evidence pack: what this app read from poe.ninja
+ * and the attached PoB export. The reference tool's different numbers (uncapped
+ * resistances +10, higher max hits) are deliberately NOT asserted: they are
+ * hints to verify, not targets to match. Athrynas was dropped from the pack.
  */
 
 import { beforeAll, describe, expect, it } from 'vitest'
@@ -20,10 +14,9 @@ import { checkBaseline, ninjaBaselineExpectations } from '../src/pob/baseline-ga
 import { analyzePob } from './helpers/pob.js'
 import { findFixture } from './helpers/fixtures.js'
 
-const yykiuy = findFixture(/^yykiuy.*\.json$/i)
-const athrynas94 = findFixture(/^athrynas.*94.*\.json$/i)
+const yykiuy = findFixture(/^yykiuy-v51\.json$/)
 
-describe.skipIf(!yykiuy)('Yykiuy (level 88 Martial Artist) evidence pack', () => {
+describe('Yykiuy (level 88 Martial Artist) evidence pack', () => {
   let a: Analysis
   const s = yykiuy?.model.defensiveStats ?? {}
   beforeAll(async () => {
@@ -70,14 +63,3 @@ describe.skipIf(!yykiuy)('Yykiuy (level 88 Martial Artist) evidence pack', () =>
     expect(a.warnings.join(' ')).not.toMatch(/disagree between poe.ninja/)
   })
 })
-
-describe.skipIf(!athrynas94)('Athrynas (level 94) evidence pack', () => {
-  it('is a level 94 capture', () => {
-    expect(athrynas94!.model.level).toBe(94)
-  })
-  it.todo('expected outputs: not in the evidence pack; record them from the committed capture')
-})
-
-// Visible in the run as pending until the captures are committed.
-if (!yykiuy) it.todo('Yykiuy: commit test/fixtures/yykiuy-v<model version>.json (level 88 Martial Artist)')
-if (!athrynas94) it.todo('Athrynas level 94: commit test/fixtures/athrynas-94-v<model version>.json')
