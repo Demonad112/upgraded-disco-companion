@@ -42,7 +42,7 @@ cd services/ninja-proxy && npm test                # node:test, separate from th
 - **poe.ninja numbers are used as given.** Missing inputs produce an explicit "missing" result, not a guess. The build score can be a range (e.g. `D–B`) rather than a letter for this reason, and there are deliberately no DPS threshold constants. A recommendation's ΔDPS (`measured.dps`) stays null unless poe.ninja supplies the figure; the site never simulates a swap.
 - **Data flow for the web app.** `packages/data/generated/*` is copied into `apps/web/public` by `sync-data` (generated, gitignored). `next.config.ts` hashes those files into `NEXT_PUBLIC_DATA_VERSION`, which keys the service-worker caches.
 - **Character import.** The browser cannot call poe.ninja (no CORS, preflight 405), so it goes through `services/ninja-proxy`. The base URL is `NEXT_PUBLIC_NINJA_PROXY_BASE`, inlined at build time, defaulting to `https://poe2-v3-ninja-proxy.vercel.app` (`apps/web/src/lib/proxy.ts`). Any other value must also be added to `connect-src` in `apps/web/public/_headers`.
-- **`basePath`.** Applied only when `GITHUB_ACTIONS=true` (derived from `GITHUB_REPOSITORY`); empty locally and on Cloudflare Pages. Client code must read `BASE_PATH` from `apps/web/src/lib/basePath.ts`, because Next only inlines `NEXT_PUBLIC_*` env vars into client bundles.
+- **`basePath`.** Applied only when `GITHUB_ACTIONS=true` (derived from `GITHUB_REPOSITORY`) and `ROOT_BASE_PATH` is not `1`; empty locally and on Cloudflare Pages. Client code must read `BASE_PATH` from `apps/web/src/lib/basePath.ts`, because Next only inlines `NEXT_PUBLIC_*` env vars into client bundles.
 - **PoB (Path of Building) probes** under `packages/core/src/pob/` are interfaces only; nothing implements them. Results must pass the baseline gate before use.
 - Web state is client-side only (`localStorage`); reference content lives in hand-edited files in `apps/web/src/data/`.
 
@@ -89,4 +89,8 @@ The SessionStart hook runs `npm ci` when `package-lock.json` changed since the l
   compact or hand off at a task boundary, never mid-task.
 - Don't sit watching PRs or CI: use a scheduled check-in or PR Auto-fix and come back later, but every session ends with its PR ready and a scheduled check-in that confirms the required checks are green.
 - Suggest a plugin, connector or tool only when the task needs one.
+- Prompts, reports and handoffs are printed in chat in a code block; write a file only when asked.
+- If an attachment the owner mentions isn't visible, say so before starting.
+- Visual work: before opening the PR, ask whether to run a screenshot check; if yes, post the 390 px and 1440 px
+  Playwright screenshots in chat (images stay out of git).
 - The owner is proficient in Python; skip the basics.

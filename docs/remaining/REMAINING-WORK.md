@@ -21,7 +21,6 @@ Answers of 2026-11-15 (`docs/plans/FINISH-PLAN.md`) are applied and the rows cle
 
 | ID | Question | Recommended answer | Source |
 |---|---|---|---|
-| LHCI-A11Y | CI Lighthouse reports accessibility 0.92–0.94 (trade and whats-new 0.92, dashboard and methodology 0.93, atlas 0.94); cloud Chromium scores 1.0 on all 8 routes in 24 runs, also on the #181 merge commit and under 6× CPU throttling. Add an `actions/upload-artifact` step for `.lighthouseci` (`if: always()`) to the `lighthouse` job, or warn-level audit assertions in `lighthouserc.json`, so the next CI run names the failing audits | Add the upload step (reports stay off the repo); fix the named audits next session, then raise the gate to 0.95 | Batch 3 |
 | PV1-1 | PoB2 MCP fork with must-haves 1–6 (blocks PV1-2 engine-parity checks) | Build with mcp-builder; local stdio; return `MeasuredDelta`-shaped results | PV1 |
 | RV1-1 | Cloudflare Pages build caching (Settings → Builds & deployments) | Turn it on: free, no code, repeat builds skip `npm ci` | RV1 (external review, 2026-11-15) |
 | RV1-2 | Cloudflare Web Analytics (Settings → Web Analytics) | Turn it on after RV1 merges: the CSP now allows `static.cloudflareinsights.com` and `cloudflareinsights.com`; before that the injected beacon was blocked | RV1 |
@@ -52,6 +51,7 @@ These rows run in the §6 owner-pass order.
 |---|---|---|---|---|---|
 | R65 | F7: trade-map uses explicit single-resist ids; pseudo totals count every source | M | PV1 | one live trade2 check first | open; Batch 2 (needs one live trade2 check first) |
 | RV1-6 | Export / import progress as a JSON file (checklist, Atlas, farm, snapshots, prefs) through `parsePersisted`, so a backup restores through the same validation | M | RV1 | covers most of the cross-device need without accounts | open |
+| PERF-LCP | Cut first-load JS and render-blocking bytes until Lighthouse LCP holds `<= 2500` ms on all 8 routes, then ratchet `lighthouserc.json` back from 3600 to 2500 | M | LHCI-LCP | CI LCP 2.8–3.4 s (Lantern, mobile); dropping all three font preloads alone only reaches 2.76–2.87 s | open |
 
 ## 4. Standing rules (no work)
 - Route budgets live in `scripts/route-weight.mjs` (source of truth; brotli, first load, the `noModule` polyfill chunk excluded; exits 1 when a route is over): `/` 158,000 · `/checklist` 167,000 · `/character` 209,000 · `/atlas` 177,000 · `/dashboard` 188,000 · `/trade` 162,000 · `/methodology` 156,000 · `/whats-new` 154,000 B; any other route 190,000. Raise one only on purpose, with the reason in the PR. Also pins the lazy chunks (none named by any route HTML) at 178,000 B br. Not run in CI. Any change to home JS reports before and after.
@@ -79,7 +79,7 @@ main 763b2bb. These totals include Next's 35,158 B br polyfill chunk, which `scr
 ## 6. Next batches (2026-11-08)
 
 ### Rules
-- One draft PR per batch, with no session links on GitHub. Don't merge.
+- One draft PR per batch, with no session links on GitHub. Merge only under `docs/SESSION-PROTOCOL.md` step 5.
 - Token economy: grep first, read only what you edit, cap output, and run independent calls in parallel.
 - Out of scope: the patch day / 1.0 data refresh (the owner does it), design changes, and MCP beyond "builds, and `node scripts/verify-mcp.mjs` passes".
 - Code batches run the gate as separate commands:
@@ -107,7 +107,6 @@ Batches are in `docs/plans/FINISH-PLAN.md`. Rows keep their carry IDs. One line 
 | ID | Row | Batch |
 |---|---|---|
 | R65 | See §3 (trade-map pseudo-resist ids); blocked on the live trade2 check and read access to `packages/data/trade2-stats.json` | 2b (out of scope for b2b; needs the live check) |
-| LHCI-A11Y | Cloud Lighthouse (24 runs, 8 routes × 3) scores accessibility 1.0 and CI scores 0.92–0.94 on the same tree, so the failing audit is not visible from the cloud. Waiting on CI reports (see Owner queue LHCI-A11Y; no upload step in `ci.yml` yet, so no audit names this wave); gate stays 0.90 | 3, blocked on owner |
 | WQA3-9b | `scripts/scroll-audit.cjs` runs in CI report-only (`continue-on-error`); make it blocking only after a few clean runs on `main` | done in Batch 1 |
 | PV1-2 | Engine parity, proof stats, config robustness (R63) | parked on PV1-1 |
 | CF2-2 | Monster physical damage per area level has no second source | parked (no second source) |

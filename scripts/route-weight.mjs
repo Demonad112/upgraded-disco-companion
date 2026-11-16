@@ -21,6 +21,11 @@ const DEFAULT_BUDGET = 190_000
 // lazy panels). They load after first paint, so they sit outside the route budgets above; this pins their total.
 // Same rule: measured size rounded up to the next 2,000 B.
 const LAZY_BUDGET = 190_000 // C1-C4: +2,193 B br, the companion chunk (step titles for the tip, the tour, Questions, page starts); CMP2: +2,753 B br, the companion chunk; P1: +5,180 B br, the sky painter moved out of first load (every route -4,605 B); P3: +1,051 B br, the effects-tier probe (renderer and frame checks)
+// Per-chunk caps inside the lazy set, found by a marker string because chunk names are hashed. The lazy total above
+// is one sum, so moving code between lazy chunks never frees it; these caps stop one chunk growing into the headroom.
+const CHUNK_CAPS = [
+  { name: 'companion', marker: 'poe2-companion-toured', cap: 6_000 }, // 5,721 B br on 2026-11-16
+]
 const ROUTES = ['index.html', 'checklist/index.html', 'character/index.html', 'atlas/index.html', 'dashboard/index.html', 'trade/index.html', 'methodology/index.html', 'whats-new/index.html']
 const CHUNK_RE = /\/_next\/static\/chunks\/[^"']+\.(?:js|css)/g
 let over = 0
@@ -46,5 +51,13 @@ if (named.size) {
   }
   console.log('lazy (no HTML names them)'.padEnd(24), String(lazyFiles).padStart(3), 'files', String(lazyRaw).padStart(9), 'raw', String(lazyBr).padStart(8), 'br',
     lazyBr > LAZY_BUDGET ? (over++, 'OVER ' + LAZY_BUDGET) : '')
+}
+for (const { name, marker, cap } of CHUNK_CAPS) {
+  const dir = `${out}/_next/static/chunks`
+  if (!existsSync(dir)) continue
+  const hits = readdirSync(dir).filter((f) => f.endsWith('.js') && readFileSync(`${dir}/${f}`, 'utf8').includes(marker))
+  if (hits.length !== 1) { over++; console.log(`${name} chunk: expected 1 file with "${marker}", found ${hits.length}`); continue }
+  const br = brotliCompressSync(readFileSync(`${dir}/${hits[0]}`)).length
+  console.log(`${name} chunk`.padEnd(24), '  1 file ', ' '.repeat(18), String(br).padStart(8), 'br', br > cap ? (over++, 'OVER ' + cap) : '')
 }
 if (over) process.exit(1)

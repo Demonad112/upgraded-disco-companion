@@ -175,10 +175,26 @@ jobs:
         if: needs.changes.outputs.heavy == 'true'
       - name: Build web
         if: needs.changes.outputs.heavy == 'true'
-        # No GITHUB_ACTIONS basePath: the static server below serves the export from its root.
+        # No basePath: the static server below serves the export from its root. Setting GITHUB_ACTIONS to '' did not
+        # work (Actions keeps its GITHUB_* defaults), so every stylesheet 404'd and Lighthouse scored an unstyled page.
         env:
-          GITHUB_ACTIONS: ''
+          ROOT_BASE_PATH: '1'
         run: npm run build
       - name: Lighthouse (mobile, all 8 routes, 2 runs)
         if: needs.changes.outputs.heavy == 'true'
         run: npx --yes @lhci/cli@0.14.0 autorun --config=lighthouserc.json --collect.numberOfRuns=2
+      - name: Upload Lighthouse reports
+        if: always() && needs.changes.outputs.heavy == 'true'
+        uses: actions/upload-artifact@v6
+        with:
+          name: lighthouse-reports
+          path: .lighthouseci
+          # A dot-directory: upload-artifact@v4+ skips hidden files unless told otherwise.
+          include-hidden-files: true
+          if-no-files-found: ignore
+          retention-days: 14
+      - name: List accessibility audits below 1 (report only)
+        # The job log names each failing audit, so a session without artifact access can read it.
+        if: always() && needs.changes.outputs.heavy == 'true'
+        continue-on-error: true
+        run: node scripts/lhci-a11y-report.mjs .lighthouseci

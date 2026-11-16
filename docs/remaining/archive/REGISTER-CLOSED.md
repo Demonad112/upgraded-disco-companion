@@ -158,3 +158,9 @@ Measured at 390×844, 4× CPU, ~1.6 Mbps / 165 ms, local brotli server, reduced 
 | R60 / F2 | Evidence-pack fixtures | closed 2026-11-16: the Yykiuy suite runs live on `yykiuy-v51.json`; Athrynas dropped; skipped 1 to 0, todo 2 to 0 |
 | UXS-1 | Type scale | built on `variant/20261116-type-scale` (11, 12, 14, 16, 18, 22, 36, 64 px as `--fs-*` tokens, Tailwind `text-*` mapped onto them); lands on `main` only on owner OK |
 | COMP-1 | Wraith covers the top-right corner on phones | done (owner, 2026-11-16: hide while scrolling down, play it safe): the figure slides off the right edge on scroll down past 48 px and returns on scroll up or 1 s after it stops; the flight variant was not built |
+
+## Closed 2026-11-16
+| ID | Item | Status |
+|---|---|---|
+| LHCI-A11Y | CI accessibility 0.92–0.94 vs 1.0 in the cloud. Cause: the Lighthouse build's `GITHUB_ACTIONS: ''` is ignored by Actions, so basePath stayed on, every stylesheet 404'd and Lighthouse scored an unstyled page (link blue on white, 17–21 px targets). Fixed with `ROOT_BASE_PATH=1`; gate raised to 0.95; reports upload and failing audits print to the log | done |
+| LHCI-LCP | Owner approved the ratchet (2026-11-16): LCP gate stays `error` at `<= 3600` ms (worst today 3,414 ms); PERF-LCP brings it back to 2500 | closed |

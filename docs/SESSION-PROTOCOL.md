@@ -55,7 +55,11 @@
    link the tooling appended to the body. The `guard` check (`scripts/check-pr-body.mjs`) cuts a session link out of
    the body and fails a PR whose title carries one.
 5. Mark the PR ready once the local gate passes (draft PRs skip e2e and Lighthouse). Book a scheduled check-in (about
-   15 minutes); when it fires, fix any failing check on the branch. Done means every required check is green. Never merge.
+   15 minutes); when it fires, fix any failing check on the branch. Done means every required check is green.
+   A session may merge a PR itself only when all of these hold (owner rule, 2026-11-16): every required check is green
+   on the PR's current head; the PR has no merge conflict; its body does not say "do not merge without owner OK", or the
+   owner gave that OK in the chat; and it is the only open PR (with more than one open, merge only on the owner's OK in
+   the chat). Use a regular merge commit, not squash or rebase. Never force-push and never delete branches.
 
 ### IDs and owner queue
 - Session ID = prefix + the next free number for that prefix in `docs/HISTORY.md` and `REMAINING-WORK.md`, e.g. `PRO2`.
