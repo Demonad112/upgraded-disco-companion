@@ -189,6 +189,8 @@ jobs:
         with:
           name: lighthouse-reports
           path: .lighthouseci
+          # A dot-directory: upload-artifact@v4+ skips hidden files unless told otherwise.
+          include-hidden-files: true
           if-no-files-found: ignore
           retention-days: 14
       - name: List accessibility audits below 1 (report only)
