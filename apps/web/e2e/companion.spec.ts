@@ -155,3 +155,63 @@ test.describe('companion motion', () => {
     expect(states.filter((s) => s !== 'paused')).toEqual([])
   })
 })
+
+/** COMP-1: on phones the figure slides off the edge while the page scrolls down and returns on scroll up or after 1 s still. */
+test.describe('companion scroll away', () => {
+  const aside = (page: Page) => page.locator('aside.wraith')
+  const scrollTo = (page: Page, y: number) => page.evaluate((top) => window.scrollTo(0, top), y)
+
+  test.beforeEach(async ({ page }) => {
+    await seen(page)
+    await page.setViewportSize({ width: 390, height: 844 })
+    await page.goto('checklist/')
+    await expect(launcher(page)).toBeVisible()
+  })
+
+  test('hides on scroll down, returns at once on scroll up and a second after it stops', async ({ page }) => {
+    await scrollTo(page, 600)
+    await expect(aside(page)).toHaveClass(/is-away/)
+    await expect(launcher(page)).toBeHidden()
+    await scrollTo(page, 300)
+    await expect(aside(page)).not.toHaveClass(/is-away/)
+    await expect(launcher(page)).toBeVisible()
+    await scrollTo(page, 900)
+    await expect(launcher(page)).toBeHidden()
+    // Scrolling has stopped: back, top-right.
+    await expect(launcher(page)).toBeVisible({ timeout: 4000 })
+    const fig = (await launcher(page).boundingBox())!
+    expect(fig.x + fig.width).toBeGreaterThan(390 - 40)
+    expect(fig.y).toBeLessThan(160)
+  })
+
+  test('stays put near the top of the page', async ({ page }) => {
+    await scrollTo(page, 30)
+    await page.waitForTimeout(300)
+    await expect(aside(page)).not.toHaveClass(/is-away/)
+  })
+
+  test('an open bubble keeps it in place', async ({ page }) => {
+    await launcher(page).click()
+    await expect(bubble(page)).toBeVisible()
+    await scrollTo(page, 600)
+    await page.waitForTimeout(400)
+    await expect(aside(page)).not.toHaveClass(/is-away/)
+    await expect(bubble(page)).toBeVisible()
+  })
+
+  test('reduced motion fades without sliding', async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: 'reduce' })
+    await scrollTo(page, 600)
+    await expect(aside(page)).toHaveClass(/is-away/)
+    expect(await aside(page).evaluate((el) => getComputedStyle(el).transform)).toBe('none')
+    await expect(launcher(page)).toBeHidden()
+  })
+
+  test('never on desktop', async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 })
+    await scrollTo(page, 600)
+    await page.waitForTimeout(400)
+    await expect(aside(page)).not.toHaveClass(/is-away/)
+    await expect(launcher(page)).toBeVisible()
+  })
+})

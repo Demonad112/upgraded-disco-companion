@@ -1,7 +1,7 @@
 import { existsSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
-import { TREE, capLine, next, nodeFor, sameRoute, shouldHop, startNode, type NodeId } from '@/lib/companionTree'
+import { TREE, capLine, hopKind, next, nodeFor, sameRoute, shouldHop, startNode, type NodeId } from '@/lib/companionTree'
 import { acceptRecent, topFixOf } from '@/lib/recentCharacters'
 
 const ids = Object.keys(TREE) as Exclude<NodeId, 'start'>[]
@@ -130,6 +130,19 @@ describe('companion tree', () => {
     expect(shouldHop({ ...base, hasRecent: true })).toBe(true)
     expect(shouldHop({ ...base, completed: 1, tipSeen: true })).toBe(false)
     expect(shouldHop({ ...base, completed: 1, hasNextStep: false })).toBe(false)
+  })
+
+  it('hops once per session for a character read on another patch, ahead of the tip', () => {
+    const base = { hasNextStep: false, completed: 0, hasRecent: true, tipSeen: false }
+    expect(shouldHop(base)).toBe(false)
+    expect(shouldHop({ ...base, stalePatch: true })).toBe(true)
+    expect(hopKind({ ...base, stalePatch: true })).toBe('stale')
+    expect(shouldHop({ ...base, stalePatch: true, staleSeen: true })).toBe(false)
+    // No next step is needed for the patch notice; a tip still follows once the notice has been opened.
+    const both = { ...base, hasNextStep: true, stalePatch: true }
+    expect(hopKind(both)).toBe('stale')
+    expect(hopKind({ ...both, staleSeen: true })).toBe('tip')
+    expect(hopKind({ ...both, staleSeen: true, tipSeen: true })).toBeNull()
   })
 
   it('handles links to the page already open', () => {

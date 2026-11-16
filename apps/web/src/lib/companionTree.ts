@@ -198,7 +198,25 @@ export function sameRoute(
   return 'none'
 }
 
-/** Hop gating: a tip is worth a hop once the visitor has started the checklist or imported a character. */
-export function shouldHop(o: { hasNextStep: boolean; completed: number; hasRecent: boolean; tipSeen: boolean }): boolean {
-  return o.hasNextStep && !o.tipSeen && (o.completed > 0 || o.hasRecent)
+/**
+ * Why the wraith hops, if it does (after the tour). `stale`: the recent character was last read on another patch,
+ * once per session. `tip`: there is a next step and the visitor has ticked a step or imported a character, once per
+ * session. The patch notice outranks the tip because it says the numbers are out of date.
+ */
+export function hopKind(o: {
+  hasNextStep: boolean
+  completed: number
+  hasRecent: boolean
+  tipSeen: boolean
+  stalePatch?: boolean
+  staleSeen?: boolean
+}): 'stale' | 'tip' | null {
+  if (o.stalePatch && !o.staleSeen) return 'stale'
+  if (o.hasNextStep && !o.tipSeen && (o.completed > 0 || o.hasRecent)) return 'tip'
+  return null
+}
+
+/** Hop gating: a hop is worth it for a stale patch, or for a tip once the visitor has started the checklist or imported a character. */
+export function shouldHop(o: Parameters<typeof hopKind>[0]): boolean {
+  return hopKind(o) !== null
 }

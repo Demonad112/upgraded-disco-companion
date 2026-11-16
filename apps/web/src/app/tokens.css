@@ -111,7 +111,9 @@
   --wraith-eye: #cdeeff;
   --wraith-eye-glow: #6fbfff;
   /* Outline traced round the wraith's cloak, so the dark figure reads on the dark page (a game-style interact rim). */
-  --wraith-rim: rgb(176 214 255 / 0.55);
+  --wraith-rim: rgb(176 214 255);
+  --wraith-rim-op: 0.55;
+  --wraith-rim-op-hop: 0.9; /* while it hops with a tip */
 
   /* Canvases */
   --constellation-density: 0.64;
