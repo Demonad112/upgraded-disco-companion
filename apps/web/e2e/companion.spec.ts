@@ -116,9 +116,17 @@ test.describe('companion', () => {
       expect(Math.round(fig.height)).toBe(size)
       expect(fig.x + fig.width).toBeGreaterThan(w - 40)
       // Just under the nav (which the patch banner pushes down), not down by the tab bar.
+      // The banner height reaches the figure through a ResizeObserver, so poll the gap instead of reading it once.
+      await expect
+        .poll(async () => {
+          const f = (await launcher(page).boundingBox())!
+          const n = (await page.locator('nav').first().boundingBox())!
+          return f.y - (n.y + n.height)
+        })
+        .toBeGreaterThanOrEqual(-2)
       const nav = (await page.locator('nav').first().boundingBox())!
-      expect(fig.y).toBeGreaterThanOrEqual(nav.y + nav.height - 2)
-      expect(fig.y).toBeLessThan(nav.y + nav.height + 24)
+      const fig2 = (await launcher(page).boundingBox())!
+      expect(fig2.y).toBeLessThan(nav.y + nav.height + 24)
       await launcher(page).click()
       const box = (await bubble(page).boundingBox())!
       expect(box.x).toBeGreaterThanOrEqual(0)

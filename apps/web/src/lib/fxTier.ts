@@ -6,7 +6,7 @@ import { createLocalStore, useLocalStore } from './localStore'
  * Visual effects tier (footer "Visual effects"). The applied tier is `data-fx`
  * on <html>, set before paint by FX_TIER_BOOTSTRAP and read by the sky and CSS:
  * full = everything (with the idle pause), lite = 15 fps half sky and no
- * float/flicker/hover pulse/grain, still = the reduced-motion frame and no
+ * float/flicker/hover pulse, still = the reduced-motion frame and no
  * decorative loops. Auto is detected after first paint by lib/fxProbe (a lazy
  * chunk); a user pick wins and is never lowered.
  */

@@ -23,9 +23,9 @@ guess. Stored as `poe2-fx-tier` = `{v:1, choice, auto, lowered?}`. A user pick w
 
 | Tier | Sky | Wraith | Other |
 |---|---|---|---|
-| Full | today, plus the idle pause | today, plus the idle pause | grain, hover pulse |
-| Lite | 15 fps, half the stars, DPR 1, no lantern | no float or flicker | no grain, no hover pulse (focus keeps it) |
-| Still | the reduced-motion still frame | fixed pose, no animations | no grain; `animation: none` on waystone-glow, star-breathe, card-pulse/card-glow |
+| Full | today, plus the idle pause | today, plus the idle pause | hover pulse |
+| Lite | 15 fps, half the stars, DPR 1, no lantern | no float or flicker | no hover pulse (focus keeps it) |
+| Still | the reduced-motion still frame | fixed pose, no animations | `animation: none` on waystone-glow, star-breathe, card-pulse/card-glow |
 
 Auto (`lib/fxProbe.ts`, a lazy chunk started in idle time after first paint):
 - Renderer: a throwaway WebGL context, `UNMASKED_RENDERER_WEBGL` (else `RENDERER`), released with
@@ -47,7 +47,11 @@ threads, raster ms per layer with the owning element, and cc and React commits p
 - Character tabs: one state update in one transition per switch (`lib/characterTab.ts`); the old panel stays up while
   a lazy tab loads.
 - `content-visibility: auto` on long panels was tried and reverted: raster moved within run-to-run noise.
-- Grain in Full: Owner queue `FX-GRAIN`.
+- Grain (`body::after`) removed in every tier (FX-GRAIN, 2026-11-16). `will-change: transform` on the layer did not cut
+  its raster, so it was dropped rather than promoted. Cloud Chromium on SwiftShader, 3 runs each, ms of raster for the
+  `::after` layer over one trace-fx run (median): GPU as found 8 → gone, `--disable-gpu` 8 → gone.
+  With `will-change`: GPU as found 22 / 8 / 11 (median 11), `--disable-gpu` 7 / 8 / 8 (median 8).
+  Before: GPU as found 10 / 7 / 8, `--disable-gpu` 8 / 9 / 7.
 
 Trace, cloud Chromium on SwiftShader (no GPU in the container), one run each, GPU-as-found pass:
 
