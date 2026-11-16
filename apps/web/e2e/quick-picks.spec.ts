@@ -23,7 +23,7 @@ test.describe('quick picks', () => {
     await expect(setup.getByRole('article', { name: 'Waystone' })).toBeVisible()
     await expect(net(page)).toContainText('Same as recommended')
     // Two different dangers, two names: the tile's farm risk and the setup's map danger.
-    await expect(page.getByTestId('qp-result').getByText('Map danger', { exact: true })).toBeVisible()
+    await expect(page.getByTestId('qp-result').getByText('Danger', { exact: true })).toBeVisible()
     await expect(page.getByTestId('qp-result').getByText('Danger', { exact: true })).toHaveCount(0)
     await expect(page.getByTestId('qp-danger-note')).toContainText('Farm risk is how dangerous this kind of farm is')
     // Danger reads as a word, never a bare number.

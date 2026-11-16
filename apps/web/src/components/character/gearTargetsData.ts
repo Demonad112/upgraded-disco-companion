@@ -26,6 +26,8 @@ export const improvable = (r: Pick<ReplacementPriority, 'reasons'>): boolean => 
  * A prefilled trade2 search (`?q=`) for replacing one item, ranked by a weighted sum: every resistance the
  * character is still short of (and only those) counts 1 point per point, and the sum must reach the shortfall (at most two
  * rolls' worth). The resistances the item holds up are hard minimums, so the swap does not open a new hole.
+ * Only resistances the base can roll are weighed (`canRoll`, B1-1): a weapon rolls none, so it gets no resist search.
+ * Ids are the trade site's pseudo totals (R65), so hybrid and all-elemental lines, implicits and runes count.
  * Null when nothing resistance-related applies, a stat has no trade id, or the link would be too long.
  */
 export function weightedTradeLink(
@@ -33,8 +35,9 @@ export function weightedTradeLink(
   gaps: Record<string, number>,
   map: TradeStatMap,
   league: string,
+  canRoll: (statId: string) => boolean = () => true,
 ): string | null {
-  const types = TYPES.filter((t) => (gaps[t] ?? 0) > 0 && statFor(t))
+  const types = TYPES.filter((t) => (gaps[t] ?? 0) > 0 && statFor(t) && canRoll(statFor(t)!))
   if (!types.length) return null
   const weights = types.flatMap((t) => (statFor(t) ? [{ statId: statFor(t)!, weight: 1 }] : []))
   const mustKeep = TYPES.flatMap((t) => {

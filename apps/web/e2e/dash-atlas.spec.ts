@@ -20,7 +20,7 @@ test.describe('strategy rows', () => {
     await page.goto('dashboard/')
     const first = page.locator('ol details > summary').first()
     await expect(first.locator('.pill').nth(0)).toContainText(/Invest (low|medium|high)/)
-    await expect(first.locator('.pill').nth(1)).toContainText(/Risk (low|medium|high)/)
+    await expect(first.locator('.pill').nth(1)).toContainText(/Farm risk (low|medium|high)/)
     await expect(page.getByLabel('Tier legend')).toContainText('not ranked')
   })
 

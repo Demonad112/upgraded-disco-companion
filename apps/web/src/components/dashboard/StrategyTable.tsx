@@ -72,6 +72,9 @@ export function StrategyTable({ strategies }: { strategies: FarmingStrategy[] })
           <StrategyTierBadge /> not ranked
         </span>
       </p>
+      <p className="mb-2 text-xs text-ink-mute" data-testid="farm-risk-def">
+        Farm risk is how dangerous this kind of farm is. Danger, in the planner, counts the mods on your Waystone and tablets.
+      </p>
       <ol data-surface="data" className="overflow-hidden border border-line shadow-[var(--lift)]">
         {sorted.map((strategy) => {
           const stage = [strategy.leagueStartViable && "League start", strategy.lateGameViable && "Late game"]
@@ -85,7 +88,7 @@ export function StrategyTable({ strategies }: { strategies: FarmingStrategy[] })
                   <span className="title-sentence block min-w-0 text-[length:var(--fs-16)] text-ink">{strategy.name}</span>
                   <span className="strat-facts">
                     <LevelPill label="Invest" value={strategy.investment} />
-                    <LevelPill label="Risk" value={strategy.risk} />
+                    <LevelPill label="Farm risk" value={strategy.risk} />
                     <span className="strat-stage">{stage || "Niche"}</span>
                   </span>
                   <span className="strat-tags">

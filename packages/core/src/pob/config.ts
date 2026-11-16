@@ -36,6 +36,13 @@ const CONDITIONAL_LABELS: Readonly<Record<string, string>> = Object.freeze({
   conditionEnemyIntimidated: 'enemy is intimidated',
   conditionEnemyCoveredInAsh: 'enemy is covered in ash',
   conditionEnemyRareOrUnique: 'enemy is rare or unique',
+  conditionEnemyDazed: 'enemy is dazed',
+  conditionEnemyElectrocuted: 'enemy is electrocuted',
+  conditionEnemyPinned: 'enemy is pinned',
+  conditionEnemyImmobilised: 'enemy is immobilised',
+  conditionEnemyColdExposure: 'enemy has cold exposure',
+  conditionEnemyFireExposure: 'enemy has fire exposure',
+  conditionEnemyLightningExposure: 'enemy has lightning exposure',
   conditionCritRecently: 'you have crit recently',
   conditionKilledRecently: 'you have killed recently',
   conditionMoving: 'you are moving',
@@ -187,6 +194,20 @@ export function readPobConfig(xml: string): PobConfig {
  * One sentence describing what a DPS figure from this export actually
  * represents, for use anywhere such a number is shown or judged.
  */
+/**
+ * A readable name for a conditional with no label (B1-7): `conditionEnemyFooBar` -> "enemy: foo bar",
+ * `conditionFooBar` -> "foo bar". Still named, never dropped; the raw id stays in `unlabelledConditionals`.
+ */
+export function humaniseCondition(id: string): string {
+  const words = id
+    .replace(/^condition/, '')
+    .replace(/([a-z0-9])([A-Z])/g, '$1 $2')
+    .toLowerCase()
+    .trim()
+  if (!words) return id
+  return words.startsWith('enemy ') ? `enemy: ${words.slice(6)}` : words
+}
+
 export function describePobConfig(config: PobConfig | null | undefined): string {
   if (!config || config.inputCount === 0) {
     return 'This export saved no Path of Building configuration, so the damage figures use PoB’s defaults.'
@@ -201,7 +222,7 @@ export function describePobConfig(config: PobConfig | null | undefined): string 
 
   const conditionCount = config.conditionals.length + config.unlabelledConditionals.length
   if (conditionCount > 0) {
-    const named = [...config.conditionals, ...config.unlabelledConditionals].join(', ')
+    const named = [...config.conditionals, ...config.unlabelledConditionals.map(humaniseCondition)].join(', ')
     const plural = conditionCount === 1 ? 'condition holds' : 'conditions hold'
     parts.push(`assuming ${conditionCount} ${plural} (${named})`)
   }

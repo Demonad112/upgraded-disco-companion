@@ -20,7 +20,7 @@ const DEFAULT_BUDGET = 190_000
 // PXC-2: chunks that no route's first-load HTML references (the /character tab and results chunks, the Farm and Atlas
 // lazy panels). They load after first paint, so they sit outside the route budgets above; this pins their total.
 // Same rule: measured size rounded up to the next 2,000 B.
-const LAZY_BUDGET = 190_000 // C1-C4: +2,193 B br, the companion chunk (step titles for the tip, the tour, Questions, page starts); CMP2: +2,753 B br, the companion chunk; P1: +5,180 B br, the sky painter moved out of first load (every route -4,605 B); P3: +1,051 B br, the effects-tier probe (renderer and frame checks)
+const LAZY_BUDGET = 191_000 // B4: main was already 190,090 after #198; B4 adds +185 B br (rank-ordered gear grid, trade slot check, readable PoB conditions); C1-C4: +2,193 B br, the companion chunk (step titles for the tip, the tour, Questions, page starts); CMP2: +2,753 B br, the companion chunk; P1: +5,180 B br, the sky painter moved out of first load (every route -4,605 B); P3: +1,051 B br, the effects-tier probe (renderer and frame checks)
 // Per-chunk caps inside the lazy set, found by a marker string because chunk names are hashed. The lazy total above
 // is one sum, so moving code between lazy chunks never frees it; these caps stop one chunk growing into the headroom.
 const CHUNK_CAPS = [

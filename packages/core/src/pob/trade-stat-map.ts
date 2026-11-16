@@ -116,14 +116,17 @@ export interface Trade2StatsSnapshot {
  * The internal stats the app needs a trade id for, each with the text of its
  * mod line. Internal ids are the `RESIST_STAT` values (`gear/analyze.ts`); the
  * texts are copied from `packages/data/generated/mods.json` (the top-tier line
- * of each resistance suffix). No trade id is stated here: ids come only from a
- * snapshot, by exact normalised text match.
+ * of each resistance suffix). `pseudoText` is the trade site's pseudo total for
+ * the same resistance, which sums every source on the item (single, hybrid and
+ * all-elemental affixes, implicits, runes), so it is the id a resist search
+ * wants (R65). No trade id is stated here: ids come only from a snapshot, by
+ * exact normalised text match.
  */
-export const MAPPED_STATS: readonly { internalId: string; text: string }[] = [
-  { internalId: RESIST_STAT.fire!, text: '+10% to Fire Resistance' },
-  { internalId: RESIST_STAT.cold!, text: '+10% to Cold Resistance' },
-  { internalId: RESIST_STAT.lightning!, text: '+10% to Lightning Resistance' },
-  { internalId: RESIST_STAT.chaos!, text: '+7% to Chaos Resistance' },
+export const MAPPED_STATS: readonly { internalId: string; text: string; pseudoText: string }[] = [
+  { internalId: RESIST_STAT.fire!, text: '+10% to Fire Resistance', pseudoText: '+#% total to Fire Resistance' },
+  { internalId: RESIST_STAT.cold!, text: '+10% to Cold Resistance', pseudoText: '+#% total to Cold Resistance' },
+  { internalId: RESIST_STAT.lightning!, text: '+10% to Lightning Resistance', pseudoText: '+#% total to Lightning Resistance' },
+  { internalId: RESIST_STAT.chaos!, text: '+7% to Chaos Resistance', pseudoText: '+#% total to Chaos Resistance' },
 ]
 
 /**
@@ -155,11 +158,12 @@ export interface ResolvedSnapshotStat {
 /**
  * Map each `MAPPED_STATS` entry to a trade id. Exactly one exact-normalised
  * match among entries of `typeFilter` gives the id; zero or several give a null
- * id and a reason. Nothing is guessed.
+ * id and a reason. Nothing is guessed. The default, `pseudo`, matches
+ * `pseudoText` (totals over every source); any other type matches `text`.
  */
 export function resolveTradeStatMapFromSnapshot(
   snapshot: Trade2StatsSnapshot,
-  typeFilter = 'explicit',
+  typeFilter = 'pseudo',
 ): ResolvedSnapshotStat[] {
   const byText = new Map<string, string[]>()
   for (const e of snapshot.entries) {
@@ -170,7 +174,7 @@ export function resolveTradeStatMapFromSnapshot(
   return MAPPED_STATS.map((m) => {
     const base = { internalId: m.internalId, text: m.text, patch: snapshot.patch, fetchedAt: snapshot.fetchedAt }
     if (snapshot.entries.length === 0) return { ...base, tradeId: null, reason: 'empty-snapshot' as const }
-    const ids = byText.get(normaliseStatText(m.text)) ?? []
+    const ids = byText.get(normaliseStatText(typeFilter === 'pseudo' ? m.pseudoText : m.text)) ?? []
     if (ids.length === 1) return { ...base, tradeId: ids[0]!, reason: null }
     return { ...base, tradeId: null, reason: ids.length === 0 ? ('no-match' as const) : ('ambiguous' as const) }
   })

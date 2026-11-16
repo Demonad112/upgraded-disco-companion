@@ -91,8 +91,9 @@ export interface Recommendation {
    */
   measured?: { grade: number | null; lowestMaxHit: number | null; dps: number | null }
   /**
-   * Ids of other findings this one subsumes as alternatives for the same
-   * action, e.g. two resistance shortfalls closable by recrafting one suffix.
+   * Ids of the generic findings for the alternatives this one names, e.g. two
+   * resistance shortfalls closable by recrafting one suffix. Named, not
+   * superseded: taking the lead option leaves the alternative's gap open (B1-2).
    */
   alsoCovers?: string[]
 }

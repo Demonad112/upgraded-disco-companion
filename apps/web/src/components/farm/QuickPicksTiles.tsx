@@ -8,7 +8,7 @@ import { dangerLevel } from "@/lib/farm/quickPickIds";
 const LEVEL_WORD: Record<1 | 2 | 3, string> = { 1: "Low", 2: "Medium", 3: "High" };
 const INVEST_WORD: Record<string, string> = { low: "Low investment", medium: "Medium investment", high: "High investment" };
 
-/** Farm risk 1–3 (the strategy's own rating, not the loadout's Map danger) as a word plus three square pips (the word carries the meaning; the pips are decoration). */
+/** Farm risk 1–3 (the strategy's own rating, not the loadout's Danger) as a word plus three square pips (the word carries the meaning; the pips are decoration). */
 function DangerPips({ level }: { level: 1 | 2 | 3 }) {
   return (
     <span className="qp-danger" data-level={level}>
