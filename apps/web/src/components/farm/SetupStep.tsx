@@ -10,13 +10,14 @@ import { LAYER_LABEL } from "@/lib/farm/danger";
 import { isLoadout, useFarm } from "@/hooks/useFarm";
 import { removePick, setMapContext, setTabletRarity, setTabletType, setWaystone } from "@/lib/farm/edit";
 import { isCorrupted, maxTablets, roomOn, validate, waystoneLimits } from "@/lib/farm/rules";
-import { changeSign, formatChange, pctChange, presetFor, scoreLoadout, type Change, type ScoreOptions } from "@/lib/farm/score";
+import { changeSign, formatChange, dangerReading, pctChange, presetFor, scoreLoadout, type Change, type ScoreOptions } from "@/lib/farm/score";
 import { starterLoadout, typeForPreset } from "@/lib/farm/starter";
 import { applySwap, bestSwaps, netLabels, rollFor, subjectAt, withPick, type SwapTarget } from "@/lib/farm/swaps";
 import { computeTotals } from "@/lib/farm/totals";
 import { pickByKey, recommendedLoadout } from "@/lib/farm/quickPicks";
 import type { Loadout, MapContext, ModPick, RiskKey, Side, Tablet } from "@/lib/farm/types";
 import { CUSTOM_FARM } from "./ids";
+import { DangerReading } from "./DangerReading";
 
 const RISK_OPTIONS: { value: RiskKey; label: string }[] = [
   { value: "safe", label: "Play safe" },
@@ -234,7 +235,7 @@ export default function SetupStep({ strategyId, onChangeFarm, onQuickView }: { s
   return (
     <div className="flex flex-col gap-5" data-testid="farm-setup">
       <div className="farm-sticky" aria-hidden="true">
-        Reward {num(score.reward)} · Danger {num(score.danger)} · Net {num(score.net)}
+        Reward {num(score.reward)} · Danger {dangerReading(d, loadout, score.danger).label} · Net {num(score.net)}
       </div>
 
       {isSeed ? <p className="farm-banner" role="note">Example data, not verified.</p> : null}
@@ -397,7 +398,7 @@ export default function SetupStep({ strategyId, onChangeFarm, onQuickView }: { s
           </div>
           <div>
             <dt className="label-metric">Danger</dt>
-            <dd><Num value={num(score.danger)} /> <Delta c={dangerC} upIsBad /> <span className="farm-since">since start</span></dd>
+            <dd><DangerReading loadout={loadout} danger={score.danger} /> <Delta c={dangerC} upIsBad /> <span className="farm-since">since start</span></dd>
           </div>
           <div>
             <dt className="label-metric">Net</dt>

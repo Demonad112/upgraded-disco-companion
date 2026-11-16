@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { farmData as d } from '@/data/farm'
 import { computeTotals, effectScalars } from '@/lib/farm/totals'
 import { validate, legalMods, roomOn } from '@/lib/farm/rules'
-import { formatChange, pctChange, presetFor, scoreLoadout, dangerWeight } from '@/lib/farm/score'
+import { formatChange, pctChange, presetFor, scoreLoadout, dangerWeight, SCORE_SCALE, maxRoll, normalise, dangerBand, dangerReading, hasDangerMods } from '@/lib/farm/score'
 import { allSwaps, applySwap, bestSwaps, netLabels } from '@/lib/farm/swaps'
 import { starterLoadout } from '@/lib/farm/starter'
 import { layersFromSnapshot } from '@/lib/farm/danger'
@@ -127,7 +127,8 @@ describe('score', () => {
     const l = base({ waystone: { tier: 15, rarity: 'rare', corrupted: false, prefixes: [m('w-quantity', 28)], suffixes: [m('w-extra-fire', 38)] } })
     const safe = scoreLoadout(d, l, { ...opts, risk: 'safe' })
     const greedy = scoreLoadout(d, l, { ...opts, risk: 'greedy' })
-    expect(safe.reward).toBeCloseTo(28 * 1.5)
+    // Normalised: 28 of a max roll of 29, scaled to percent, times the preset weight.
+    expect(safe.reward).toBeCloseTo((28 / 29) * SCORE_SCALE * 1.5)
     expect(safe.danger).toBeGreaterThan(0)
     expect(greedy.net).toBeGreaterThan(safe.net)
   })
@@ -151,6 +152,67 @@ describe('score', () => {
     expect(layersFromSnapshot(d, { energyShield: 6000, armour: 200, evasion: 100, manaBeforeLife: true, gearLeech: true })).toEqual(['es', 'mana', 'recovery'])
     expect(layersFromSnapshot(d, { energyShield: null, armour: 0, evasion: 0, gearLeech: true })).toEqual(['recovery'])
     expect(layersFromSnapshot(d, { energyShield: 6000, armour: 0, evasion: 0, manaBeforeLife: false })).toEqual(['es'])
+  })
+})
+
+describe('R10 normaliser, bands and ratings', () => {
+  const way = (prefixes: ModPick[], suffixes: ModPick[] = []) => base({ waystone: { tier: 15, rarity: 'rare', corrupted: false, prefixes, suffixes } })
+  const noRisk = { ...opts, risk: 'balanced' as const }
+
+  it('maxRoll is the largest tier max for the stat, and 1 for a flag or an unknown stat', () => {
+    expect(maxRoll(d, 'map_item_quantity_+%')).toBeGreaterThanOrEqual(29)
+    expect(maxRoll(d, 'monster_damage_extra_fire')).toBe(40)
+    expect(maxRoll(d, 'no-such-stat')).toBe(1)
+  })
+  it('normalise divides a total by its own max roll, so a full roll of any stat is 1', () => {
+    expect(normalise(d, 'monster_damage_extra_fire', 40)).toBe(1)
+    expect(normalise(d, 'monster_damage_extra_fire', 20)).toBe(0.5)
+    expect(normalise(d, 'monster_crit_profile', 200)).toBe(1)
+  })
+  it('a full roll of a big-number stat no longer outweighs a full roll of a small one', () => {
+    // Same preset weight would have given crit (200) five times fire (40); now both are one max roll.
+    const fire = scoreLoadout(d, way([], [m('w-extra-fire', 40)]), noRisk).danger
+    const crit = scoreLoadout(d, way([], [m('w-crit', 200)]), noRisk).danger
+    expect(fire).toBeCloseTo(SCORE_SCALE * d.weights.danger.per_stat['monster_damage_extra_fire']!.generic)
+    expect(crit).toBeCloseTo(SCORE_SCALE * d.weights.danger.per_stat['monster_crit_profile']!.generic)
+  })
+  it('danger bands cut at the data values: Low below medium, Medium below high, else High', () => {
+    const { medium, high } = d.weights.danger.bands
+    expect(dangerBand(d, 0)).toBe('low')
+    expect(dangerBand(d, medium - 0.01)).toBe('low')
+    expect(dangerBand(d, medium)).toBe('medium')
+    expect(dangerBand(d, high - 0.01)).toBe('medium')
+    expect(dangerBand(d, high)).toBe('high')
+    expect(medium).toBeLessThan(high)
+  })
+  it('a loadout with no rated hazard mod reads "No danger mods", not Danger 0', () => {
+    const l = way([m('w-quantity', 28), m('w-rarity', 126)])
+    expect(hasDangerMods(d, l)).toBe(false)
+    expect(dangerReading(d, l, scoreLoadout(d, l, noRisk).danger)).toEqual({ band: null, label: 'No danger mods' })
+  })
+  it('a rated hazard mod reads as a band', () => {
+    const l = way([m('w-quantity', 28)], [m('w-extra-fire', 40), m('w-extra-cold', 40)])
+    expect(hasDangerMods(d, l)).toBe(true)
+    expect(dangerReading(d, l, scoreLoadout(d, l, noRisk).danger)).toEqual({ band: 'high', label: 'High' })
+    const mild = way([], [m('w-magic-monsters', 80)])
+    expect(dangerReading(d, mild, scoreLoadout(d, mild, noRisk).danger).band).toBe('low')
+  })
+  it('every Waystone mod stat is rated 0–3 per layer with a source and a confidence', () => {
+    for (const w of d.waystoneMods) {
+      const r = d.weights.danger.per_stat[w.stat]
+      expect(r, w.id).toBeDefined()
+      for (const k of ['es', 'armour', 'evasion', 'mana', 'recovery'] as const) {
+        expect(r![k], `${w.id} ${k}`).toBeGreaterThanOrEqual(0)
+        expect(r![k], `${w.id} ${k}`).toBeLessThanOrEqual(3)
+      }
+      expect(r!.sources.length, w.id).toBeGreaterThan(0)
+      expect(w.danger.generic, `${w.id} copy matches`).toBe(r!.generic)
+    }
+  })
+  it('swaps rank by Net, best first', () => {
+    const l: Loadout = way([m('w-quantity', 28)], [m('w-extra-fire', 40)])
+    const nets = allSwaps(d, l, noRisk).map((s) => s.netDelta)
+    expect(nets).toEqual([...nets].sort((a, b) => b - a))
   })
 })
 

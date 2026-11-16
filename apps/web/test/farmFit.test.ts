@@ -6,7 +6,7 @@ import type { Loadout } from '@/lib/farm/types'
 const withSuffixes = (suffixes: Loadout['waystone']['suffixes']): Loadout => ({
   strategyId: 'breach-rares',
   tablets: [],
-  waystone: { tier: 15, rarity: 'rare', corrupted: false, prefixes: [{ modId: 'w-pack-size', tier: 1, value: 15 }], suffixes },
+  waystone: { tier: 15, rarity: 'rare', corrupted: false, prefixes: [{ modId: 'w-quantity', tier: 1, value: 27 }], suffixes },
   options: { mapContext: 'standard', keystones: false, effects: [] },
 })
 
@@ -21,6 +21,11 @@ describe('R36 fits your build', () => {
 
   it('gives no verdict for a loadout with no danger mods (nothing to compare)', () => {
     expect(buildFit(farmData, withSuffixes([]), 'breach', ['es'])).toEqual({ ratio: null, verdict: null })
+  })
+
+  it('a loadout with only a rated non-damage mod (pack size) still has danger mods to compare', () => {
+    const l: Loadout = { ...withSuffixes([]), waystone: { ...withSuffixes([]).waystone, prefixes: [{ modId: 'w-pack-size', tier: 1, value: 46 }] } }
+    expect(buildFit(farmData, l, 'breach', ['es']).ratio).not.toBeNull()
   })
 
   it('extra fire: easier for ES (2 vs generic 2 → even), harder for armour (3 vs 2)', () => {

@@ -167,7 +167,9 @@ describe('setup view helpers', () => {
   it('"What the map has" lists danger first, then the stats this preset weights most', () => {
     const p = pickById('abyss')!
     const lines = statLines(d, computeTotals(d, p.recommended), p.preset)
-    expect(lines[0]!.name).toBe('Abyss monster density')
+    // Pack size on the Waystone is rated now, so it leads as a danger line; the preset's top stat follows.
+    expect(lines[0]).toMatchObject({ name: 'Pack size', danger: true })
+    expect(lines.find((l) => !l.danger)!.name).toBe('Abyss monster density')
     const withDanger = applySwap(p.recommended, alternatives(d, p.recommended, optsFor(p), chipsOf(p.recommended, 0).find((c) => c.target.side === 'prefix')!.target).find((a) => a.to.modId === 't-effectiveness')!)
     expect(statLines(d, computeTotals(d, withDanger), p.preset)[0]!.danger).toBe(true)
   })

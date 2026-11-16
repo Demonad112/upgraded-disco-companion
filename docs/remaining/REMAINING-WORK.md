@@ -31,7 +31,6 @@ Answers of 2026-11-15 (`docs/plans/FINISH-PLAN.md`) are applied and the rows cle
 ## 1. Decisions
 | ID | Question | Recommended | Origin | Status |
 |---|---|---|---|---|
-| R10 | Farm-planner danger calibration. Danger is total × severity, every Quick Pick Waystone shows Danger 0, and big totals outweigh reward stats | Don't invent weights. Collect the R40 run log first, then add per-stat normalisers in the data. Until then, keep Net unranked | FP1-1 / QP1-5 | parked (P): blocked on R40, owner skipped 2026-11-08 |
 | R57 | Patch-0.5.5e sources for the two `dev-notes` claims in `apps/web/src/data/farm/tablets-0.5.5.json` | Park until the patch-day data refresh. Both claims carry weight 0, so they feed no number | QP1-3 | parked (P) |
 
 ## 2. Owner hardware / account actions (class A)
@@ -39,7 +38,6 @@ These rows run in the §6 owner-pass order.
 
 | ID | Action | Owner step | Origin | Status |
 |---|---|---|---|---|
-| R40 | 50-map run log for danger calibration; feeds R10. Format: `R40-RUN-LOG.md` | 6 | FP1-1 | parked (P): owner skipped manual checks 2026-11-08 |
 | R44 | Real-device pass: keyboard hides the tab bar on iOS Safari and Android Chrome; Install / Add to Home Screen; Safari 17; rotation; VoiceOver. The emulated e2e passes | 7 | U13b-1 | parked (P): owner skipped manual checks 2026-11-08 |
 | R45 | Android share target on a real device. The emulated e2e passes | 8 | L1-3 | parked (P): owner skipped manual checks 2026-11-08 |
 | R46 | Real display and Safari: sky over 30 s, hover pulse, hero draw-in, lantern, foil, route transitions, glyphs | 9 | A5-4, W15-pulse-1, MP1-4, LS1-4 | parked (P): owner skipped manual checks 2026-11-08 |
@@ -95,7 +93,6 @@ N1 (#122), N2 (#124) and N3 (#125) are merged; their rows are archived. The PX p
 
 | ID | Branch | Scope | Depends on |
 |---|---|---|---|
-| F1 | `data/<yyyymmdd>-danger-calibration` | R10: calibrated danger (follow `R40-RUN-LOG.md` exactly) | R40 (parked) |
 
 Owner-only steps: § Owner queue and §2 (every §2 row is done or parked).
 
@@ -119,7 +116,7 @@ Closed in this consolidation: PV1-6 / R67, PRO1-1, PRO1-2, PRO1-4, PRO1-5 (owner
 | WQA3-2b / WQA3-14 OffscreenCanvas sky | Wait for a real-device trace |
 | PXC-4 sky rAF pause when covered | Sky stays visible in the margins; revisit only if a route is fully covered |
 | PXC-8 skipped sweeps, analytics idea, PRO1 W7 | Dropped by owner 2026-11-15 (the hooded mascot came back as the wraith companion, docs/design/WRAITH.md) |
-| R40 (→F1, R10), R44–R47, R57, console realm | Parked on owner hardware; no session |
+| R44–R47, R57, console realm | Parked on owner hardware; no session |
 | R31 / R33 / R34: MCP schemas, footer, stamps | Owner: keep MCP as is |
 | R39: sky id index | ~15 KB on an idle cached chunk; not worth it |
 | R50: lazy core on `/character` | Only if the route goes over its `scripts/route-weight.mjs` budget (209,000 B br; 208,064 on 2026-11-14) |
@@ -131,5 +128,5 @@ Closed in this consolidation: PV1-6 / R67, PRO1-1, PRO1-2, PRO1-4, PRO1-5 (owner
 | Re-add Dependabot | Removed on purpose |
 | Design, light theme, cursor effects | Decided; change only with the owner |
 | Patch-day / 1.0 data refresh | Owner |
-| Guessed danger weights, DPS thresholds | Against the data rules; wait for R40 |
+| Guessed DPS thresholds | Against the data rules |
 | Restore `DESIGN.md` / `DATA-REFRESH.md` | R20: closed |

@@ -1,19 +1,11 @@
 # Owner steps
 
 These need your accounts, devices or game time, so only you can do them. Tick each box when it's done.
-Do them in the order shown. Step 6 comes first because it takes longest, and the farm danger tuning (R10) waits on it.
-The rest are independent. The step numbers stay the same so old reports still match. Time estimates are in brackets. Register IDs are in brackets after each title.
+Do them in the order shown; they are independent. The step numbers stay the same so old reports still match. Time estimates are in brackets. Register IDs are in brackets after each title.
 
 ## Done
 
 - [x] **1. Merge PR #111 (plain words)** (merged)
-
-## Start now: it takes the longest
-
-- [ ] **6. Log about 50 maps** (R40) (over a few play sessions)
-  - Follow `docs/remaining/R40-RUN-LOG.md`: one line per map in `docs/remaining/r40-run-log.csv`.
-  - Play normally. At least 15 maps should have no danger mod on the Waystone.
-  - Done when the file has about 50 rows. A session then tunes farm danger from it (batch F1).
 
 ## Quick checks (2 min)
 
