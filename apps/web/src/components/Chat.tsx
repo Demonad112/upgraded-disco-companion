@@ -131,7 +131,7 @@ export function Chat({ analysis, pob }: { analysis?: Analysis; pob?: PobAnalysis
     >
       {showSettings ? (
         <div className="mb-3 border border-line bg-surface-sunken p-3">
-          <p className="text-[11px] leading-relaxed text-ink-dim">
+          <p className="text-[length:var(--fs-11)] leading-relaxed text-ink-dim">
             Your key is stored <strong className="text-ink">in this browser only</strong> and sent straight to the provider. This site has no server, so it can&apos;t hold a key for you.
           </p>
 
@@ -154,7 +154,7 @@ export function Chat({ analysis, pob }: { analysis?: Analysis; pob?: PobAnalysis
           />
 
           <label className="mt-3 block">
-            <span className="text-[11px] text-ink-mute">{spec.label} API key</span>
+            <span className="text-[length:var(--fs-11)] text-ink-mute">{spec.label} API key</span>
             <Input
               type="password"
               value={apiKey}
@@ -166,7 +166,7 @@ export function Chat({ analysis, pob }: { analysis?: Analysis; pob?: PobAnalysis
               spellCheck={false}
             />
           </label>
-          <p className="mt-1.5 text-[10px] text-ink-mute">
+          <p className="mt-1.5 text-[length:var(--fs-11)] text-ink-mute">
             Get one at{' '}
             <a href={spec.keyUrl} target="_blank" rel="noreferrer noopener" className="underline hover:text-ink-dim">
               {new URL(spec.keyUrl).hostname}
@@ -214,9 +214,9 @@ export function Chat({ analysis, pob }: { analysis?: Analysis; pob?: PobAnalysis
         </ul>
       )}
 
-      {busy ? <p className="mb-2 text-[11px] text-ink-mute">Thinking…</p> : null}
+      {busy ? <p className="mb-2 text-[length:var(--fs-11)] text-ink-mute">Thinking…</p> : null}
       {error ? (
-        <p className="mb-2 border border-warn/40 px-3 py-2 text-[11px] leading-relaxed text-warn">{error}</p>
+        <p className="mb-2 border border-warn/40 px-3 py-2 text-[length:var(--fs-11)] leading-relaxed text-warn">{error}</p>
       ) : null}
 
       <form

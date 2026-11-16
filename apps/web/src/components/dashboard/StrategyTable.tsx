@@ -82,7 +82,7 @@ export function StrategyTable({ strategies }: { strategies: FarmingStrategy[] })
               <details id={strategy.id} className="group scroll-mt-40">
                 <summary className="strat-row cursor-pointer list-none px-3 py-2.5 transition-colors hover:bg-surface-overlay/60 [&::-webkit-details-marker]:hidden">
                   <StrategyTierBadge tier={strategy.tier} />
-                  <span className="title-sentence block min-w-0 text-[15px] text-ink">{strategy.name}</span>
+                  <span className="title-sentence block min-w-0 text-[length:var(--fs-16)] text-ink">{strategy.name}</span>
                   <span className="strat-facts">
                     <LevelPill label="Invest" value={strategy.investment} />
                     <LevelPill label="Risk" value={strategy.risk} />

@@ -65,7 +65,7 @@ export function DecideStep({ onPick, onQuick }: { onPick: (id: string) => void; 
           return (
             <li key={s.id}>
               <button type="button" className="farm-tile" data-suggested={suggested.has(s.id) || undefined} onClick={() => onPick(s.id)}>
-                <span className="title-sentence text-[17px] text-ink">{s.name}</span>
+                <span className="title-sentence text-[length:var(--fs-18)] text-ink">{s.name}</span>
                 <span className="flex flex-wrap items-center gap-1.5">
                   {suggested.has(s.id) ? <span className="farm-mark">Suggested</span> : null}
                   {pinnedStrategyId === s.id ? <span className="farm-mark">★ Pinned</span> : null}
@@ -94,7 +94,7 @@ export function DecideStep({ onPick, onQuick }: { onPick: (id: string) => void; 
         })}
         <li>
           <button type="button" className="farm-tile" onClick={() => onPick(CUSTOM_FARM)}>
-            <span className="title-sentence text-[17px] text-ink">Any farm / custom</span>
+            <span className="title-sentence text-[length:var(--fs-18)] text-ink">Any farm / custom</span>
             <span className="text-sm text-ink-dim">Build tablets and a Waystone without a farm in mind; choose the scoring preset yourself.</span>
           </button>
         </li>

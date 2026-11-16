@@ -14,7 +14,7 @@
 }
 .bc-top {
   font-family: var(--font-label);
-  font-size: 11px;
+  font-size: var(--fs-11);
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--ink-dim);
@@ -35,7 +35,7 @@
   min-width: 0;
   overflow-wrap: anywhere;
   font-family: var(--font-heading);
-  font-size: clamp(26px, 7.4vw, 34px);
+  font-size: var(--fs-22);
   line-height: 1.05;
   font-weight: 700;
   letter-spacing: var(--heading-tracking);
@@ -52,7 +52,7 @@
   border-top: 2px solid var(--bc-rule);
   background: var(--sunken);
   font-family: var(--font-heading);
-  font-size: 20px;
+  font-size: var(--fs-22);
   font-weight: 700;
   line-height: 1;
   color: var(--ink);
@@ -60,7 +60,7 @@
 .bc-level small {
   display: block;
   font-family: var(--font-label);
-  font-size: 9px;
+  font-size: var(--fs-11);
   font-weight: 400;
   letter-spacing: 0.12em;
   color: var(--ink-mute);
@@ -75,7 +75,7 @@
   align-items: center;
   gap: 8px;
   margin-top: 8px;
-  font-size: 14px;
+  font-size: var(--fs-14);
   color: var(--ink);
   min-width: 0;
 }
@@ -89,7 +89,7 @@
 .bc-age {
   margin-left: auto;
   font-family: var(--font-label);
-  font-size: 12px;
+  font-size: var(--fs-12);
   color: var(--ink-mute);
 }
 .bc-skill span {
@@ -125,7 +125,7 @@
 }
 .bc-note {
   margin-top: 6px;
-  font-size: 12px;
+  font-size: var(--fs-12);
   line-height: 1.4;
   color: var(--ink-dim);
 }
@@ -150,7 +150,7 @@
 }
 .bc-tile dt {
   font-family: var(--font-label);
-  font-size: 11px;
+  font-size: var(--fs-11);
   letter-spacing: 0.06em;
   text-transform: uppercase;
   color: var(--ink-dim);
@@ -166,7 +166,7 @@
   display: block;
   margin-top: 3px;
   font-family: var(--font-heading);
-  font-size: 22px;
+  font-size: var(--fs-22);
   line-height: 1.05;
   font-weight: 700;
   font-variant-numeric: tabular-nums;
@@ -174,14 +174,14 @@
 }
 .bc-val[data-missing] {
   font-family: var(--font-label);
-  font-size: 12px;
+  font-size: var(--fs-12);
   font-weight: 400;
   line-height: 26px;
   color: var(--ink-mute);
 }
 .bc-sub {
   font-family: var(--font-label);
-  font-size: 11px;
+  font-size: var(--fs-11);
   color: var(--ink-mute);
 }
 .bc-res {
@@ -198,14 +198,14 @@
   border-bottom: 2px solid var(--c);
   background: var(--sunken);
   font-family: var(--font-label);
-  font-size: 11px;
+  font-size: var(--fs-11);
   color: var(--ink-dim);
   min-width: 0;
 }
 .bc-res b {
   display: block;
   margin-top: 1px;
-  font-size: 14px;
+  font-size: var(--fs-14);
   font-weight: 600;
   font-variant-numeric: tabular-nums;
   color: var(--ink);

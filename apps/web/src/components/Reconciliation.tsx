@@ -47,7 +47,7 @@ export function Reconciliation({ report, bare = false }: { report: Reconciliatio
               {unverifiable.map((c) => (
                 <li key={c.stat} className="bg-surface-sunken px-3 py-2">
                   <span className="font-mono text-xs text-ink">{c.stat}</span>
-                  <p className="mt-1 text-[11px] leading-relaxed text-ink-mute">{c.note}</p>
+                  <p className="mt-1 text-[length:var(--fs-11)] leading-relaxed text-ink-mute">{c.note}</p>
                 </li>
               ))}
             </ul>
@@ -63,7 +63,7 @@ export function Reconciliation({ report, bare = false }: { report: Reconciliatio
                   {fmt(c.ninja)} vs {c.other === null ? 'n/a' : fmt(c.other)}
                 </span>
               </div>
-              <p className="mt-1 text-[11px] leading-relaxed text-ink-mute">{c.note}</p>
+              <p className="mt-1 text-[length:var(--fs-11)] leading-relaxed text-ink-mute">{c.note}</p>
             </li>
           ))}
         </ul>
@@ -71,7 +71,7 @@ export function Reconciliation({ report, bare = false }: { report: Reconciliatio
 
       {unmapped.length ? (
         <div className="mt-3">
-          <p className="text-[11px] leading-relaxed text-ink-mute">
+          <p className="text-[length:var(--fs-11)] leading-relaxed text-ink-mute">
             Stats with no known name. They’re shown but not judged, since how poe.ninja works them out isn’t known.
           </p>
           <ul className="mt-2 space-y-2">

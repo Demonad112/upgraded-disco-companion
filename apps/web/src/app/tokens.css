@@ -80,6 +80,15 @@
   --font-body: var(--font-inter), ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
   --font-label: var(--font-geist-mono), ui-monospace, 'SFMono-Regular', Menlo, monospace;
   --lh-body: 1.6;
+  /* Type scale (UXS-1): the only text sizes. Every font-size is one of these. */
+  --fs-11: 11px;
+  --fs-12: 12px;
+  --fs-14: 14px;
+  --fs-16: 16px;
+  --fs-18: 18px;
+  --fs-22: 22px;
+  --fs-36: 36px;
+  --fs-64: 64px;
   /* Farm Planner: a changed figure fades in over at most this long (FP1). */
   --farm-fade: 150ms;
   --qp-sheet-motion: 150ms; /* QP1: the mod sheet appears in at most 150 ms; none under reduced motion */
@@ -89,7 +98,7 @@
 
   /* Breakpoint-dependent values: MOBILE set (<= 980px). The desktop set is in
      the single @media (min-width: 981px) block directly below. */
-  --fs-body: 17px; /* Z2 */
+  --fs-body: var(--fs-18); /* Z2 */
   --card-pad: 20px; /* S2 */
   --section-pad: 46px;
   --title-pad-top: 36px;
@@ -102,7 +111,7 @@
   --page-max: 1180px;
   --gutter: max(20px, env(safe-area-inset-left), env(safe-area-inset-right));
   --tap-min: 44px;
-  --fs-micro: 11px; /* floor for uppercase mono labels and chips; sentences are 12px or more (PX8 row 6) */
+  --fs-micro: var(--fs-11); /* floor for uppercase mono labels and chips; sentences are 12px or more (PX8 row 6) */
   --nav-h: 4rem;
   --tabbar-h: 3.5rem; /* phone tab bar, without the safe-area inset (styles/nav.css) */
   --focus-ring: 2px solid var(--accent);
@@ -161,7 +170,7 @@
 /* Desktop set (>= 981px): the one place breakpoint-dependent values change. */
 @media (min-width: 981px) {
   :root {
-    --fs-body: 15.5px; /* Z1. Flip to 17px here for "large" on desktop too. */
+    --fs-body: var(--fs-16); /* Z1 */
     --card-pad: 28px; /* S1 */
     --section-pad: 72px;
     --title-pad-top: 56px;

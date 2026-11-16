@@ -61,12 +61,12 @@ export function AuditPanel({
       <div className="grid gap-4">
         {report.emptySockets.length ? (
           <section>
-            <h3 className="mb-1.5 text-[11px] font-medium tracking-wide text-warn uppercase">
+            <h3 className="mb-1.5 text-[length:var(--fs-11)] font-medium tracking-wide text-warn uppercase">
               Empty rune sockets — free stats not taken
             </h3>
             <ul className="space-y-1">
               {report.emptySockets.map((s) => (
-                <li key={s.slotId} className="bg-warn/10 px-3 py-2 text-[11px] text-ink">
+                <li key={s.slotId} className="bg-warn/10 px-3 py-2 text-[length:var(--fs-11)] text-ink">
                   <span className="font-medium">{s.itemName}</span>
                   <span className="ml-2 text-ink-mute">
                     {s.slotLabel} · {s.empty} of {s.sockets} socket{s.sockets === 1 ? '' : 's'} empty
@@ -79,12 +79,12 @@ export function AuditPanel({
 
         {report.soulCoreLimits.length ? (
           <section>
-            <h3 className="mb-1.5 text-[11px] font-medium tracking-wide text-warn uppercase">
+            <h3 className="mb-1.5 text-[length:var(--fs-11)] font-medium tracking-wide text-warn uppercase">
               Soul Cores over their limit — extra copies grant nothing
             </h3>
             <ul className="space-y-1">
               {report.soulCoreLimits.map((c) => (
-                <li key={c.name} className="bg-warn/10 px-3 py-2 text-[11px] text-ink">
+                <li key={c.name} className="bg-warn/10 px-3 py-2 text-[length:var(--fs-11)] text-ink">
                   <span className="font-medium">{c.name}</span>
                   <span className="ml-2 text-ink-mute">
                     {c.socketed} socketed ({c.slotLabels.join(', ')}) · limit {c.limit} · {c.excess} wasted
@@ -98,12 +98,12 @@ export function AuditPanel({
 
         {report.soulCoreChanges.length ? (
           <section>
-            <h3 className="mb-1.5 text-[11px] font-medium tracking-wide text-ink-dim uppercase">
+            <h3 className="mb-1.5 text-[length:var(--fs-11)] font-medium tracking-wide text-ink-dim uppercase">
               Soul Cores whose value changed in 0.5.5
             </h3>
             <ul className="space-y-1">
               {report.soulCoreChanges.map((c) => (
-                <li key={c.name} className="bg-surface-sunken px-3 py-2 text-[11px] text-ink">
+                <li key={c.name} className="bg-surface-sunken px-3 py-2 text-[length:var(--fs-11)] text-ink">
                   <span className="font-medium">{c.name}</span>
                   <span className="ml-2 text-ink-mute">{c.slotLabels.join(', ')}</span>
                   <ul className="mt-1 space-y-0.5 text-ink-dim">
@@ -121,14 +121,14 @@ export function AuditPanel({
 
         {report.gemQuality.length ? (
           <section>
-            <h3 className="mb-1.5 text-[11px] font-medium tracking-wide text-ink-dim uppercase">
+            <h3 className="mb-1.5 text-[length:var(--fs-11)] font-medium tracking-wide text-ink-dim uppercase">
               Gems below {MAX_GEM_QUALITY}% quality ({report.gemQuality.length})
             </h3>
             <ul className="space-y-1">
               {report.gemQuality.map((g, i) => (
                 <li
                   key={`${g.skill}-${g.gem}-${i}`}
-                  className="flex flex-wrap items-baseline gap-x-2 bg-surface-sunken px-3 py-1.5 text-[11px]"
+                  className="flex flex-wrap items-baseline gap-x-2 bg-surface-sunken px-3 py-1.5 text-[length:var(--fs-11)]"
                 >
                   <span className="font-medium text-ink">{g.gem}</span>
                   <span className="text-ink-mute">in {g.skill}</span>
@@ -136,7 +136,7 @@ export function AuditPanel({
                     level {g.level} · {g.quality}%
                   </span>
                   {g.bestElsewhere !== null ? (
-                    <span className="w-full text-[10px] text-warn">
+                    <span className="w-full text-[length:var(--fs-11)] text-warn">
                       Another copy of this gem is at {g.bestElsewhere}%, so this one can be too.
                     </span>
                   ) : null}
@@ -148,7 +148,7 @@ export function AuditPanel({
 
         {report.jewels.length ? (
           <section>
-            <h3 className="mb-1.5 text-[11px] font-medium tracking-wide text-ink-dim uppercase">
+            <h3 className="mb-1.5 text-[length:var(--fs-11)] font-medium tracking-wide text-ink-dim uppercase">
               Socketed jewels ({report.jewels.length})
             </h3>
             <ul className="space-y-1.5">
@@ -161,14 +161,14 @@ export function AuditPanel({
 
         {report.attributes.length ? (
           <section>
-            <h3 className="mb-1.5 text-[11px] font-medium tracking-wide text-ink-dim uppercase">
+            <h3 className="mb-1.5 text-[length:var(--fs-11)] font-medium tracking-wide text-ink-dim uppercase">
               Attribute headroom
             </h3>
             <ul className="space-y-1">
               {report.attributes.map((a) => (
                 <li
                   key={a.attribute}
-                  className={`flex flex-wrap items-baseline gap-x-2 px-3 py-1.5 text-[11px] ${
+                  className={`flex flex-wrap items-baseline gap-x-2 px-3 py-1.5 text-[length:var(--fs-11)] ${
                     a.tight ? 'bg-warn/10 ring-1 ring-warn/30' : 'bg-surface-sunken'
                   }`}
                 >
@@ -181,7 +181,7 @@ export function AuditPanel({
                     {fmt(a.headroom)} spare
                   </span>
                   {a.tight ? (
-                    <span className="w-full text-[10px] text-warn">
+                    <span className="w-full text-[length:var(--fs-11)] text-warn">
                       Losing one source of {a.attribute} would leave something unequippable.
                     </span>
                   ) : null}
@@ -193,9 +193,9 @@ export function AuditPanel({
 
         {report.spirit ? (
           <section>
-            <h3 className="mb-1.5 text-[11px] font-medium tracking-wide text-ink-dim uppercase">Spirit</h3>
+            <h3 className="mb-1.5 text-[length:var(--fs-11)] font-medium tracking-wide text-ink-dim uppercase">Spirit</h3>
             <div className="bg-surface-sunken px-3 py-2">
-              <div className="flex items-baseline justify-between text-[11px]">
+              <div className="flex items-baseline justify-between text-[length:var(--fs-11)]">
                 <span className="text-ink">
                   <span className="tabular font-semibold">{fmt(report.spirit.reserved)}</span> reserved of{' '}
                   <span className="tabular">{fmt(report.spirit.total)}</span>
@@ -208,7 +208,7 @@ export function AuditPanel({
                   style={{ width: `${100 - report.spirit.unreservedPercent}%` }}
                 />
               </div>
-              <p className="mt-1.5 text-[10px] leading-relaxed text-ink-mute">
+              <p className="mt-1.5 text-[length:var(--fs-11)] leading-relaxed text-ink-mute">
                 {fmt(report.spirit.unreserved)} spirit is unused. It&apos;s only worth spending if a buff you want fits.
               </p>
             </div>
@@ -217,10 +217,10 @@ export function AuditPanel({
 
         {report.unavailable.length ? (
           <section className="bg-surface-sunken p-3">
-            <h3 className="text-[11px] font-medium text-ink-dim">Could not be checked</h3>
+            <h3 className="text-[length:var(--fs-11)] font-medium text-ink-dim">Could not be checked</h3>
             <ul className="mt-1 space-y-1">
               {report.unavailable.map((u) => (
-                <li key={u} className="text-[11px] leading-relaxed text-ink-mute">
+                <li key={u} className="text-[length:var(--fs-11)] leading-relaxed text-ink-mute">
                   {u}
                 </li>
               ))}
@@ -237,14 +237,14 @@ function JewelCard({ jewel }: { jewel: ItemAnalysis }) {
     <li className="border border-line bg-surface px-3 py-2">
       <div className="flex flex-wrap items-baseline justify-between gap-x-3">
         <span className="text-xs font-medium text-ink">{jewel.name}</span>
-        <span className="text-[11px] text-ink-mute">
+        <span className="text-[length:var(--fs-11)] text-ink-mute">
           {jewel.baseType}
           {jewel.tierProfile ? ` · avg T${jewel.tierProfile.mean}` : ''}
         </span>
       </div>
       <ul className="mt-1 space-y-0.5">
         {jewel.mods.map((mod, i) => (
-          <li key={`${mod.id ?? i}`} className="flex flex-wrap items-baseline gap-x-2 text-[11px]">
+          <li key={`${mod.id ?? i}`} className="flex flex-wrap items-baseline gap-x-2 text-[length:var(--fs-11)]">
             <span
               className={`tabular w-11 shrink-0 font-semibold ${mod.tier === 1 ? 'text-good' : 'text-ink-dim'}`}
             >

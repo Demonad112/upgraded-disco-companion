@@ -45,7 +45,7 @@ const needValue = (n: PushNeed) => (n.unit === '%' ? `${n.from}% → ${n.to}%` :
 
 function LimitLine({ children }: { children: string }) {
   return (
-    <li aria-hidden className="eyebrow flex items-center gap-2 py-2 text-[10px] text-warn">
+    <li aria-hidden className="eyebrow flex items-center gap-2 py-2 text-[length:var(--fs-11)] text-warn">
       <span className="flex-1 border-t border-dashed border-warn" />
       {children}
       <span className="flex-1 border-t border-dashed border-warn" />
@@ -62,7 +62,7 @@ function TierRow({ row }: { row: WaystoneRow }) {
     >
       <div>
         <div className="font-display text-xl leading-none font-bold">T{row.tier}</div>
-        <div className="eyebrow mt-1 text-[10px]">
+        <div className="eyebrow mt-1 text-[length:var(--fs-11)]">
           lvl {row.areaLevel}
           {row.corruptOnly ? ' · corrupt' : ''}
         </div>
@@ -80,7 +80,7 @@ function TierRow({ row }: { row: WaystoneRow }) {
       </div>
       <div aria-hidden className="text-right">
         <div className={`tabular font-mono text-base ${xpLostTone(row.xpLost)}`}>{xpLostLabel(row.xpLost)}</div>
-        <div className="eyebrow text-[10px]">XP lost</div>
+        <div className="eyebrow text-[length:var(--fs-11)]">XP lost</div>
       </div>
     </li>
   )
@@ -202,7 +202,7 @@ export function Headroom({ defense, level }: { defense: DefenseSummary | null; l
         </div>
       </div>
 
-      <div aria-hidden className="eyebrow mt-5 grid grid-cols-[5rem_1fr_4.5rem] gap-3 border-l-2 border-transparent pl-3 text-[10px]">
+      <div aria-hidden className="eyebrow mt-5 grid grid-cols-[5rem_1fr_4.5rem] gap-3 border-l-2 border-transparent pl-3 text-[length:var(--fs-11)]">
         <span>Tier</span>
         <span>{character ? 'Risk for you' : 'General risk'}</span>
         <span className="text-right">XP lost</span>
@@ -218,7 +218,7 @@ export function Headroom({ defense, level }: { defense: DefenseSummary | null; l
         })}
       </ol>
 
-      <ul className="eyebrow mt-3 flex flex-wrap gap-x-4 gap-y-1 text-[11px]">
+      <ul className="eyebrow mt-3 flex flex-wrap gap-x-4 gap-y-1 text-[length:var(--fs-11)]">
         <li className="flex items-center gap-1.5">
           <span aria-hidden className="inline-block size-2.5 bg-good" /> Low 0%
         </li>
@@ -255,11 +255,11 @@ export function Headroom({ defense, level }: { defense: DefenseSummary | null; l
               <li key={`${n.stat}${n.tier}`} className="grid grid-cols-[1fr_auto] gap-x-3 gap-y-0.5 border-b border-line py-2.5">
                 <span className="font-semibold text-ink">{n.stat}</span>
                 <span className="tabular font-mono text-warn">{needValue(n)}</span>
-                <span className="text-[13px] text-ink-dim">
+                <span className="text-[length:var(--fs-14)] text-ink-dim">
                   {n.tier !== null ? `Gets T${n.tier} to low risk. ` : ''}
                   {n.note}
                 </span>
-                <span className="eyebrow text-right text-[10px]">{n.tier !== null ? `T${n.tier}` : 'All'}</span>
+                <span className="eyebrow text-right text-[length:var(--fs-11)]">{n.tier !== null ? `T${n.tier}` : 'All'}</span>
               </li>
             ))}
           </ul>
@@ -308,7 +308,7 @@ export function Headroom({ defense, level }: { defense: DefenseSummary | null; l
       </details>
 
       <div className="mt-4 border border-warn/40 bg-warn/5 p-3">
-        <h4 className="text-[11px] font-medium tracking-wide text-warn uppercase">A death costs {pct(DEATH_XP_LOSS)} of a level</h4>
+        <h4 className="text-[length:var(--fs-11)] font-medium tracking-wide text-warn uppercase">A death costs {pct(DEATH_XP_LOSS)} of a level</h4>
         <p className="mt-1.5 text-xs leading-relaxed text-ink-dim">
           In waystones a death takes {pct(DEATH_XP_LOSS)} of the XP needed for your next level. The bar stops at 0%; you never lose a level.
         </p>
@@ -316,7 +316,7 @@ export function Headroom({ defense, level }: { defense: DefenseSummary | null; l
 
       {report && character ? (
         <div className="mt-2 border border-warn/40 bg-warn/5 p-3">
-          <h4 className="text-[11px] font-medium tracking-wide text-warn uppercase">Upper bound, not a safety verdict</h4>
+          <h4 className="text-[length:var(--fs-11)] font-medium tracking-wide text-warn uppercase">Upper bound, not a safety verdict</h4>
           <ul className="mt-1.5 space-y-1">
             <li className="text-xs leading-relaxed text-ink-dim">{report.caveats[0]}</li>
             <li className="text-xs leading-relaxed text-ink-dim">

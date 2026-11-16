@@ -156,4 +156,5 @@ Measured at 390×844, 4× CPU, ~1.6 Mbps / 165 ms, local brotli server, reduced 
 | PXV-4 | Chat-settings variant (waystone, ledger, relic) | closed 2026-11-16 (owner): chat-settings parity is the answer; the three variants are not pursued |
 | FX-GRAIN | Grain layer raster in Full | closed 2026-11-16: `will-change: transform` did not cut the layer raster (median 8 ms before, 11 ms GPU as found / 8 ms software after), so grain is removed in every tier; `docs/design/SKY-FX.md` § Raster |
 | R60 / F2 | Evidence-pack fixtures | closed 2026-11-16: the Yykiuy suite runs live on `yykiuy-v51.json`; Athrynas dropped; skipped 1 to 0, todo 2 to 0 |
+| UXS-1 | Type scale | built on `variant/20261116-type-scale` (11, 12, 14, 16, 18, 22, 36, 64 px as `--fs-*` tokens, Tailwind `text-*` mapped onto them); lands on `main` only on owner OK |
 | COMP-1 | Wraith covers the top-right corner on phones | done (owner, 2026-11-16: hide while scrolling down, play it safe): the figure slides off the right edge on scroll down past 48 px and returns on scroll up or 1 s after it stops; the flight variant was not built |

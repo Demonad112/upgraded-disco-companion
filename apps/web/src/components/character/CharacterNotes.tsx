@@ -32,7 +32,7 @@ export function CharacterNotes({ analysis }: { analysis: Analysis }) {
             </span>
           ))}
         </div>
-        <p className="mt-1 text-[11px] text-ink-mute">
+        <p className="mt-1 text-[length:var(--fs-11)] text-ink-mute">
           Only firm “cannot be …” lines on your gear and passives count. Unknown means none was found, not that you are vulnerable.
         </p>
       </div>
@@ -41,7 +41,7 @@ export function CharacterNotes({ analysis }: { analysis: Analysis }) {
         <div>
           <h3 className="text-xs font-medium tracking-wide text-ink-dim uppercase">Main skill</h3>
           <p className="mt-1.5 text-xs leading-relaxed text-ink-dim">{mainSkill.message}</p>
-          <p className="mt-1 text-[11px] text-ink-mute">{mainSkill.basisNote}</p>
+          <p className="mt-1 text-[length:var(--fs-11)] text-ink-mute">{mainSkill.basisNote}</p>
         </div>
       ) : null}
 
@@ -50,7 +50,7 @@ export function CharacterNotes({ analysis }: { analysis: Analysis }) {
           Inactive weapon set (set {inactiveSet.inactiveSet})
         </h3>
         {inactiveSet.activeSetAssumed ? (
-          <p className="mt-1.5 text-[11px] text-warn">The payload does not say which set is live; set 1 is assumed.</p>
+          <p className="mt-1.5 text-[length:var(--fs-11)] text-warn">The payload does not say which set is live; set 1 is assumed.</p>
         ) : null}
         {primaryInInactiveSet ? <p className="mt-1.5 text-xs leading-relaxed text-warn">{primaryInInactiveSet}</p> : null}
         {idleItems.length ? (
@@ -65,7 +65,7 @@ export function CharacterNotes({ analysis }: { analysis: Analysis }) {
         ) : (
           <p className="mt-1.5 text-xs text-ink-dim">No items in the inactive set.</p>
         )}
-        <p className="mt-1 text-[11px] text-ink-mute">
+        <p className="mt-1 text-[length:var(--fs-11)] text-ink-mute">
           {inactiveSet.skills.status === 'known'
             ? inactiveSet.skills.names.length
               ? inactiveSet.skills.partial

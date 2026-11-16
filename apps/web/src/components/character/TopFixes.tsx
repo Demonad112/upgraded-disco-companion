@@ -69,7 +69,7 @@ export function FixRow({
       <div className="min-w-0">
         <p className="text-sm leading-snug font-medium text-ink">{lead}</p>
         {detail ? <p className="mt-1 text-xs text-ink-mute">{detail}</p> : null}
-        {note ? <p className="mt-1 font-mono text-[11px] text-ink-mute">{note}</p> : null}
+        {note ? <p className="mt-1 font-mono text-[length:var(--fs-11)] text-ink-mute">{note}</p> : null}
         <div className="mt-2.5 flex flex-wrap items-center gap-2">
           {gain ? <span className="tabular mr-1 font-mono text-xs text-good">{gain}</span> : null}
           <a href={fixAnchor(f)} className="btn btn-secondary btn-sm" aria-label={`Details: ${lead}`}>

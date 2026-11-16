@@ -293,7 +293,7 @@ export default function Home() {
           </svg>
           <span className="shrink-0">Load another character</span>
           {a ? (
-            <span className="tabular ml-auto min-w-0 truncate font-mono text-[11px] text-ink-mute">
+            <span className="tabular ml-auto min-w-0 truncate font-mono text-[length:var(--fs-11)] text-ink-mute">
               {[a.identity.name, a.identity.level != null ? `Lv ${a.identity.level}` : null].filter(Boolean).join(' · ')}
             </span>
           ) : null}
@@ -342,7 +342,7 @@ export default function Home() {
         ) : null}
       </div>
 
-      <footer className="mt-12 border-t border-line pt-5 text-[11px] leading-relaxed text-ink-mute">
+      <footer className="mt-12 border-t border-line pt-5 text-[length:var(--fs-11)] leading-relaxed text-ink-mute">
         Character data from poe.ninja. Path of Exile 2 is a trademark of Grinding Gear Games; this is an unofficial
         fan-made tool.
       </footer>

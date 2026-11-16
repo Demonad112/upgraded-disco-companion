@@ -70,13 +70,13 @@ function Row({ metric, snapshots }: { metric: Metric; snapshots: CharacterSnapsh
   return (
     <li className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-3 gap-y-1 border-t border-line py-2 first:border-t-0 sm:grid-cols-[9rem_minmax(0,22rem)]">
       <div className="min-w-0">
-        <div className="text-[11px] text-ink-mute">{metric.label}</div>
+        <div className="text-[length:var(--fs-11)] text-ink-mute">{metric.label}</div>
         <div className="tabular text-sm font-semibold text-ink">
           {fmt(values[shown])}
-          {hover !== null ? <span className="ml-1.5 text-[11px] font-normal text-ink-mute">{day(snapshots[hover]!.at)}</span> : null}
+          {hover !== null ? <span className="ml-1.5 text-[length:var(--fs-11)] font-normal text-ink-mute">{day(snapshots[hover]!.at)}</span> : null}
         </div>
         {delta !== null && hover === null ? (
-          <div title={delta === 0 ? undefined : fmt(delta)} className={`tabular text-[11px] ${delta > 0 ? 'text-good' : delta < 0 ? 'text-danger' : 'text-ink-mute'}`}>
+          <div title={delta === 0 ? undefined : fmt(delta)} className={`tabular text-[length:var(--fs-11)] ${delta > 0 ? 'text-good' : delta < 0 ? 'text-danger' : 'text-ink-mute'}`}>
             {delta > 0 ? '▲ +' : delta < 0 ? '▼ ' : ''}
             {delta === 0 ? 'no change' : fmtCompact(delta)} since {day(snapshots[firstIndex]!.at)}
           </div>
@@ -135,7 +135,7 @@ export function HistoryChart({ snapshots }: { snapshots: CharacterSnapshot[] }) 
           <Row key={m.label} metric={m} snapshots={snapshots} />
         ))}
       </ul>
-      <details className="mt-1 text-[11px] text-ink-mute">
+      <details className="mt-1 text-[length:var(--fs-11)] text-ink-mute">
         <summary className="hit-area cursor-pointer select-none">Show as a table</summary>
         <div className="mt-2 overflow-x-auto">
           <table className="tabular w-full text-right text-xs">

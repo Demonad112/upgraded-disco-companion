@@ -34,7 +34,7 @@ function SplitBar({ skill }: { skill: SkillDamage }) {
           </span>
         </span>
       </div>
-      <p className="tabular mt-1.5 font-mono text-[11px] text-ink-mute">{text}</p>
+      <p className="tabular mt-1.5 font-mono text-[length:var(--fs-11)] text-ink-mute">{text}</p>
     </div>
   )
 }
@@ -43,7 +43,7 @@ function Legend() {
   return (
     <ul className="flex flex-wrap items-center gap-x-4 gap-y-1">
       {TYPE_ORDER.map((t) => (
-        <li key={t} className="flex items-center gap-2 text-[11px] text-ink-dim">
+        <li key={t} className="flex items-center gap-2 text-[length:var(--fs-11)] text-ink-dim">
           <Diamond type={t} />
           {cap(t)}
         </li>
@@ -56,8 +56,8 @@ function Mini({ label, value, sub, title }: { label: string; value: string; sub?
   return (
     <div className="border border-line bg-sunken/80 px-3.5 py-3">
       <div className="label-metric">{label}</div>
-      <div title={title} className="tabular mt-1.5 font-mono text-[20px] leading-none font-medium text-ink">{value}</div>
-      {sub ? <div className="tabular mt-1.5 font-mono text-[11px] text-ink-mute">{sub}</div> : null}
+      <div title={title} className="tabular mt-1.5 font-mono text-[length:var(--fs-22)] leading-none font-medium text-ink">{value}</div>
+      {sub ? <div className="tabular mt-1.5 font-mono text-[length:var(--fs-11)] text-ink-mute">{sub}</div> : null}
     </div>
   )
 }
@@ -71,7 +71,7 @@ function SkillRow({ s, isPrimary, top, total }: { s: SkillDamage; isPrimary: boo
       <summary className="block cursor-pointer list-none py-3 [&::-webkit-details-marker]:hidden">
         <span className="flex items-center gap-3">
           <span className="min-w-0 flex-1">
-            <span className="serif-label text-[17px]">{s.name}</span>
+            <span className="serif-label text-[length:var(--fs-18)]">{s.name}</span>
             {isPrimary ? (
               <span className="ml-2 align-middle">
                 <Tag tone="accent">primary</Tag>
@@ -100,7 +100,7 @@ function SkillRow({ s, isPrimary, top, total }: { s: SkillDamage; isPrimary: boo
           </span>
         </span>
         {share !== null ? (
-          <span className="tabular mt-1 block font-mono text-[11px] text-ink-mute">{pct(share)} of listed damage</span>
+          <span className="tabular mt-1 block font-mono text-[length:var(--fs-11)] text-ink-mute">{pct(share)} of listed damage</span>
         ) : null}
       </summary>
       <div className="pb-4">
@@ -141,9 +141,9 @@ function ConfigCaveat({ config, applies }: { config: PobConfig | null; applies: 
 
   return (
     <div className="mt-3 border border-line bg-sunken px-3 py-2.5">
-      <p className="text-[11px] leading-relaxed text-ink-dim">{describePobConfig(config)}</p>
+      <p className="text-[length:var(--fs-11)] leading-relaxed text-ink-dim">{describePobConfig(config)}</p>
       {!config.versusBoss ? (
-        <p className="mt-1 text-[11px] leading-relaxed text-warn">
+        <p className="mt-1 text-[length:var(--fs-11)] leading-relaxed text-warn">
           Not a single-target number, so don&apos;t judge boss readiness on it.
         </p>
       ) : null}

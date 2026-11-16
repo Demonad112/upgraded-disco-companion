@@ -71,7 +71,7 @@ function GradeStamp({ letter }: { letter: string }) {
   const long = letter.length > 1
   return (
     <div ref={ref} data-grade-stamp className="bc-stamp">
-      <span className="text-gradient-gold" style={{ fontSize: long ? 22 : 40 }}>
+      <span className="text-gradient-gold" style={{ fontSize: long ? "var(--fs-22)" : "var(--fs-36)" }}>
         {letter}
       </span>
     </div>
@@ -175,7 +175,7 @@ export function Showcase({ analysis, children }: { analysis: Analysis; children?
               <div className="min-w-0">
                 <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1">
                   <GradeLadder assessment={assessment} />
-                  <span className="tabular font-mono text-[11px] whitespace-nowrap text-ink-dim">score {grade.score}</span>
+                  <span className="tabular font-mono text-[length:var(--fs-11)] whitespace-nowrap text-ink-dim">score {grade.score}</span>
                 </div>
                 {analysis.pobStats ? (
                   <div className="mt-1">

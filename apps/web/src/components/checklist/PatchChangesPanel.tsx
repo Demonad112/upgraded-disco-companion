@@ -10,7 +10,7 @@ export function PatchChangesPanel() {
       title="0.5.0 → 0.5.5 — what changed in the endgame"
       summary="If an older guide disagrees with this app, check here first: 2 Divinity kills, boss resistances, Rakiata's Flow, Expedition, Delirium."
       badge={
-        <span className="border border-line px-1.5 py-0.5 text-[11px] text-ink-mute">
+        <span className="border border-line px-1.5 py-0.5 text-[length:var(--fs-11)] text-ink-mute">
           {patchDeltas.length} changes
         </span>
       }
@@ -24,11 +24,11 @@ export function PatchChangesPanel() {
             </div>
             <dl className="mt-1.5 grid gap-1.5 text-sm sm:grid-cols-2">
               <div>
-                <dt className="text-[11px] font-semibold uppercase tracking-wide text-ink-mute">Old advice</dt>
+                <dt className="text-[length:var(--fs-11)] font-semibold uppercase tracking-wide text-ink-mute">Old advice</dt>
                 <dd className="text-ink-mute line-through decoration-ink-mute/40">{d.before}</dd>
               </div>
               <div>
-                <dt className="text-[11px] font-semibold uppercase tracking-wide text-accent">0.5.5</dt>
+                <dt className="text-[length:var(--fs-11)] font-semibold uppercase tracking-wide text-accent">0.5.5</dt>
                 <dd className="text-ink-dim">{d.now}</dd>
               </div>
             </dl>

@@ -84,7 +84,7 @@ export function Stat({
     <div className="border border-line/70 bg-surface-sunken px-3.5 py-3">
       <div className="label-metric leading-tight">{label}</div>
       <div className={`tabular mt-1.5 text-xl leading-none font-semibold ${color}`}>{value}</div>
-      {hint ? <div className="mt-1 text-[11px] leading-tight text-ink-mute">{hint}</div> : null}
+      {hint ? <div className="mt-1 text-[length:var(--fs-11)] leading-tight text-ink-mute">{hint}</div> : null}
     </div>
   )
 }

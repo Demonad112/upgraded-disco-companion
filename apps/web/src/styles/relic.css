@@ -67,7 +67,7 @@
 }
 .relic-slot-name {
   font-family: var(--font-heading);
-  font-size: 15px;
+  font-size: var(--fs-16);
   font-weight: 600;
   line-height: 1.2;
   color: var(--ink);
@@ -202,7 +202,7 @@
 .relic-ring-gem > span {
   transform: rotate(-45deg);
   font-family: var(--font-label);
-  font-size: 15px;
+  font-size: var(--fs-16);
   font-weight: 700;
   color: var(--on-accent);
 }

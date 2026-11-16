@@ -45,23 +45,23 @@ function CandidateRow({ c, ratio }: { c: GemCandidate; ratio?: number }) {
         <span className="text-xs font-medium text-ink">{c.name}</span>
         {c.lineage ? <Tag tone="accent">lineage</Tag> : null}
         {ratio !== undefined ? (
-          <span className="tabular text-[11px] text-good">{pct(ratio)} DPS vs current (nominal)</span>
+          <span className="tabular text-[length:var(--fs-11)] text-good">{pct(ratio)} DPS vs current (nominal)</span>
         ) : c.value.offensive && c.value.quantified && c.value.dps !== 1 ? (
-          <span className="tabular text-[11px] text-good">{pct(c.value.dps)} on its own (nominal)</span>
+          <span className="tabular text-[length:var(--fs-11)] text-good">{pct(c.value.dps)} on its own (nominal)</span>
         ) : (
-          <span className="text-[11px] text-ink-mute">effect not quantified — see its description</span>
+          <span className="text-[length:var(--fs-11)] text-ink-mute">effect not quantified — see its description</span>
         )}
       </div>
-      {c.description ? <p className="mt-0.5 text-[11px] text-ink-mute">{c.description}</p> : null}
+      {c.description ? <p className="mt-0.5 text-[length:var(--fs-11)] text-ink-mute">{c.description}</p> : null}
       {c.value.notes.length ? (
-        <p className="mt-0.5 text-[10px] text-ink-mute">{c.value.notes.join(' · ')}</p>
+        <p className="mt-0.5 text-[length:var(--fs-11)] text-ink-mute">{c.value.notes.join(' · ')}</p>
       ) : null}
-      {c.restriction ? <p className="mt-0.5 text-[11px] text-warn">Condition: {c.restriction}</p> : null}
+      {c.restriction ? <p className="mt-0.5 text-[length:var(--fs-11)] text-warn">Condition: {c.restriction}</p> : null}
       {c.tradeoffs.length ? (
-        <p className="mt-0.5 text-[11px] text-warn">Trade-off: {c.tradeoffs.join(', ')}</p>
+        <p className="mt-0.5 text-[length:var(--fs-11)] text-warn">Trade-off: {c.tradeoffs.join(', ')}</p>
       ) : null}
       {c.conflicts.map((x) => (
-        <p key={x} className="mt-0.5 text-[11px] text-danger">
+        <p key={x} className="mt-0.5 text-[length:var(--fs-11)] text-danger">
           Clashes with your setup: {x}
         </p>
       ))}
@@ -183,7 +183,7 @@ export function DamageReview({
               <option value="none">No limit</option>
             </Select>
           </label>
-          <span className="text-[11px] text-ink-mute">
+          <span className="text-[length:var(--fs-11)] text-ink-mute">
             {savedCap === undefined
               ? evidenceTier !== null
                 ? `Defaulted from your gems — you already socket a tier-${evidenceTier} support.`
@@ -197,7 +197,7 @@ export function DamageReview({
         </div>
 
         {review.familyNotes.length ? (
-          <ul className="space-y-1 text-[11px] leading-relaxed text-ink-dim" aria-label="Support family notes">
+          <ul className="space-y-1 text-[length:var(--fs-11)] leading-relaxed text-ink-dim" aria-label="Support family notes">
             {review.familyNotes.map((n) => (
               <li key={n}>{n}</li>
             ))}
@@ -206,12 +206,12 @@ export function DamageReview({
 
         {/* Gems */}
         <section>
-          <h3 className="mb-1.5 text-[11px] font-medium tracking-wide text-ink-dim uppercase">Support gems</h3>
+          <h3 className="mb-1.5 text-[length:var(--fs-11)] font-medium tracking-wide text-ink-dim uppercase">Support gems</h3>
           <ul className="mb-2 flex flex-wrap gap-1.5">
             {review.supports.map((s) => (
               <li
                 key={s.name}
-                className={`border px-2 py-1 text-[11px] ${
+                className={`border px-2 py-1 text-[length:var(--fs-11)] ${
                   s.issue ? 'border-danger/40 bg-danger/10 text-danger' : 'border-line text-ink-dim'
                 }`}
                 title={s.issue ?? s.value?.notes.join(' · ') ?? ''}
@@ -245,14 +245,14 @@ export function DamageReview({
               </ul>
             </div>
           ) : (
-            <p className="text-[11px] text-good">
+            <p className="text-[length:var(--fs-11)] text-good">
               No support is ruled out or called weakest, because these figures aren&apos;t measured on your build.
             </p>
           )}
 
           {review.strongestCompatible.length ? (
             <details className="mt-2">
-              <summary className="cursor-pointer text-[11px] text-ink-mute">
+              <summary className="cursor-pointer text-[length:var(--fs-11)] text-ink-mute">
                 Strongest compatible supports you don&apos;t have ({review.strongestCompatible.length}) — including
                 ones with conditions or clashes
               </summary>
@@ -266,7 +266,7 @@ export function DamageReview({
 
           {review.lineageOptions.length ? (
             <details className="mt-2">
-              <summary className="cursor-pointer text-[11px] text-ink-mute">
+              <summary className="cursor-pointer text-[length:var(--fs-11)] text-ink-mute">
                 Lineage supports that fit this skill ({review.lineageOptions.length}) — chase drops, never part of a
                 suggested swap. Most have conditional effects, so few carry a figure.
               </summary>
@@ -281,17 +281,17 @@ export function DamageReview({
 
         {/* Gear */}
         <section>
-          <h3 className="mb-1.5 text-[11px] font-medium tracking-wide text-ink-dim uppercase">
+          <h3 className="mb-1.5 text-[length:var(--fs-11)] font-medium tracking-wide text-ink-dim uppercase">
             Gear changes for this skill
           </h3>
           {tiersState.status !== 'ready' ? (
-            <p className="text-[11px] text-ink-mute">Waiting for the affix data…</p>
+            <p className="text-[length:var(--fs-11)] text-ink-mute">Waiting for the affix data…</p>
           ) : review.gear.length ? (
             <ul className="space-y-1">
               {review.gear.map((g, i) => (
                 <li key={`${g.itemName}-${i}`} className="bg-surface-sunken/50 px-2 py-1.5">
                   <div className="flex flex-wrap items-baseline gap-x-2">
-                    <span className="tabular text-[11px] font-semibold text-ink-dim">
+                    <span className="tabular text-[length:var(--fs-11)] font-semibold text-ink-dim">
                       T{g.tier}→T{g.toTier}
                     </span>
                     <span className="min-w-0 flex-1 text-xs text-ink">{g.text}</span>
@@ -299,7 +299,7 @@ export function DamageReview({
                       {g.reachableOnThisItem ? 'on this item' : `needs ilvl ${g.ilvl} base`}
                     </Tag>
                   </div>
-                  <div className="mt-0.5 text-[10px] text-ink-mute">
+                  <div className="mt-0.5 text-[length:var(--fs-11)] text-ink-mute">
                     {g.itemName} · {g.slotLabel}
                     {g.gain !== null ? ` · up to ${g.gain} more` : ''} · {g.why}
                   </div>
@@ -307,17 +307,17 @@ export function DamageReview({
               ))}
             </ul>
           ) : (
-            <p className="text-[11px] text-ink-mute">
+            <p className="text-[length:var(--fs-11)] text-ink-mute">
               Every damage modifier scaling this skill is already at the best tier its item can hold.
             </p>
           )}
 
           {review.openSlots.length ? (
             <div className="mt-2">
-              <p className="mb-1 text-[11px] text-ink-dim">Open slots that could take a damage line:</p>
+              <p className="mb-1 text-[length:var(--fs-11)] text-ink-dim">Open slots that could take a damage line:</p>
               <ul className="space-y-1">
                 {review.openSlots.map((o) => (
-                  <li key={`${o.itemName}-${o.kind}`} className="text-[11px] text-ink-mute">
+                  <li key={`${o.itemName}-${o.kind}`} className="text-[length:var(--fs-11)] text-ink-mute">
                     <span className="font-medium text-ink-dim">
                       {o.itemName} ({o.slotLabel}), open {o.kind}:
                     </span>{' '}
@@ -330,7 +330,7 @@ export function DamageReview({
         </section>
 
         {review.notes.length ? (
-          <ul className="space-y-0.5 border-t border-line pt-2 text-[11px] text-ink-mute">
+          <ul className="space-y-0.5 border-t border-line pt-2 text-[length:var(--fs-11)] text-ink-mute">
             {review.notes.map((n) => (
               <li key={n}>{n}</li>
             ))}

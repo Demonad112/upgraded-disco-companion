@@ -30,7 +30,7 @@ function costTone(kind: Cost['kind']) {
 
 function EvidenceLine({ e }: { e: Evidence }) {
   return (
-    <li className="flex gap-2 text-[11px] leading-relaxed text-ink-dim">
+    <li className="flex gap-2 text-[length:var(--fs-11)] leading-relaxed text-ink-dim">
       <span aria-hidden className="mt-[0.35rem] size-1 shrink-0 bg-ink-mute" />
       <span>{e.note}</span>
     </li>
@@ -81,7 +81,7 @@ function Card({ r, rank }: { r: Recommendation; rank: number }) {
       <div className="flex flex-wrap items-center gap-1.5">
         <span
           aria-label={isQuestion ? 'Question' : `Finding ${rank}`}
-          className="tabular inline-flex h-[22px] min-w-[22px] items-center justify-center border border-accent-line bg-accent-soft px-1 text-[11px] font-semibold text-accent"
+          className="tabular inline-flex h-[22px] min-w-[22px] items-center justify-center border border-accent-line bg-accent-soft px-1 text-[length:var(--fs-11)] font-semibold text-accent"
         >
           {isQuestion ? '?' : `#${rank}`}
         </span>
@@ -95,7 +95,7 @@ function Card({ r, rank }: { r: Recommendation; rank: number }) {
           {r.cost.currencyTier && r.cost.currencyTier !== 'unknown' ? ` · ${r.cost.currencyTier}` : ''}
         </Tag>
       </div>
-      <h3 className="title-sentence mt-2.5 text-[17px] text-ink">{r.action}</h3>
+      <h3 className="title-sentence mt-2.5 text-[length:var(--fs-18)] text-ink">{r.action}</h3>
 
       <div className="mt-3">
         <ImpactBar r={r} />
@@ -108,19 +108,19 @@ function Card({ r, rank }: { r: Recommendation; rank: number }) {
           type="button"
           onClick={() => setOpen(!more)}
           aria-expanded={more}
-          className="hit-area text-[11px] text-accent transition-opacity hover:opacity-80"
+          className="hit-area text-[length:var(--fs-11)] text-accent transition-opacity hover:opacity-80"
         >
           {more ? 'Hide details' : 'Why? Cost and evidence'}
         </button>
         {more ? (
           <div className="mt-2 space-y-2 border-l border-line pl-3">
-            <p className="text-[13px] leading-relaxed text-ink-dim"><Glossed>{r.rationale}</Glossed></p>
+            <p className="text-[length:var(--fs-14)] leading-relaxed text-ink-dim"><Glossed>{r.rationale}</Glossed></p>
             {r.detail ? <p className="text-xs leading-relaxed text-ink-dim">{r.detail}</p> : null}
             <p className="text-xs leading-relaxed text-ink-dim">
               <span className="label-field">Cost:</span> {r.cost.detail}
             </p>
             {r.tradeoff ? (
-              <p className="border-l-2 border-warn pl-2.5 text-[11px] leading-relaxed text-ink-mute">
+              <p className="border-l-2 border-warn pl-2.5 text-[length:var(--fs-11)] leading-relaxed text-ink-mute">
                 <span className="label-field">Trade-off:</span> {r.tradeoff}
               </p>
             ) : null}
@@ -179,7 +179,7 @@ export function Recommendations({ report }: { report: RecommendationReport }) {
       {report.suppressed.length ? (
         <div data-surface="data" className="card mt-4 p-4">
           <h3 className="text-xs font-medium tracking-wide text-ink-dim uppercase">Ruled out by a keystone</h3>
-          <p className="mt-1 text-[11px] text-ink-mute">
+          <p className="mt-1 text-[length:var(--fs-11)] text-ink-mute">
             Findings the tool spotted and then dropped, listed so you can see they were checked.
           </p>
           <ul className="mt-3 space-y-3">
@@ -191,7 +191,7 @@ export function Recommendations({ report }: { report: RecommendationReport }) {
                   </span>
                   <Tag tone="accent">{s.keystone}</Tag>
                 </div>
-                <div className="mt-0.5 text-[11px] leading-relaxed text-ink-mute">{s.reason}</div>
+                <div className="mt-0.5 text-[length:var(--fs-11)] leading-relaxed text-ink-mute">{s.reason}</div>
               </li>
             ))}
           </ul>
@@ -201,14 +201,14 @@ export function Recommendations({ report }: { report: RecommendationReport }) {
       {report.unresolved.length ? (
         <div data-surface="data" className="card mt-4 p-4">
           <h3 className="text-xs font-medium tracking-wide text-ink-dim uppercase">Could not be determined</h3>
-          <p className="mt-1 text-[11px] text-ink-mute">
+          <p className="mt-1 text-[length:var(--fs-11)] text-ink-mute">
             Stated rather than guessed — a wrong number is worse than a missing one.
           </p>
           <ul className="mt-3 space-y-3">
             {report.unresolved.map((u) => (
               <li key={u.id}>
                 <div className="text-xs font-medium text-ink-dim">{u.question}</div>
-                <div className="mt-0.5 text-[11px] leading-relaxed text-ink-mute">{u.missing}</div>
+                <div className="mt-0.5 text-[length:var(--fs-11)] leading-relaxed text-ink-mute">{u.missing}</div>
               </li>
             ))}
           </ul>

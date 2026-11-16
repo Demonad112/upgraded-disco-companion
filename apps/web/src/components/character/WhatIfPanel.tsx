@@ -199,7 +199,7 @@ export function WhatIfPanel({ analysis, options }: { analysis: Analysis; options
               <div className="mt-1 text-lg font-semibold">
                 <Delta before={d0.lowestMaximumHit} after={d1.lowestMaximumHit} />
               </div>
-              <div className="text-[11px] text-ink-mute capitalize">
+              <div className="text-[length:var(--fs-11)] text-ink-mute capitalize">
                 {d1.lowestMaximumHitType ?? 'unknown'} kills first
               </div>
             </div>
@@ -219,7 +219,7 @@ export function WhatIfPanel({ analysis, options }: { analysis: Analysis; options
                   </>
                 ) : null}
               </div>
-              <div className="text-[11px] text-ink-mute tabular">
+              <div className="text-[length:var(--fs-11)] text-ink-mute tabular">
                 <CountUp value={after.assessment.defence} format={fmtDefence} /> / 0.50 defence
               </div>
             </div>
@@ -228,7 +228,7 @@ export function WhatIfPanel({ analysis, options }: { analysis: Analysis; options
               <div className="mt-1 text-lg font-semibold">
                 <Delta before={f0.length} after={f1.length} />
               </div>
-              <div className="text-[11px] text-ink-mute">{pending ? 'recomputing…' : 'actionable'}</div>
+              <div className="text-[length:var(--fs-11)] text-ink-mute">{pending ? 'recomputing…' : 'actionable'}</div>
             </div>
           </div>
 
