@@ -75,6 +75,39 @@ export const BLOCK_NEGLIGIBLE = 20
 export const WEAK_HIT_RATIO = 0.4
 
 /**
+ * The toughest damage type must survive at least this many times the weakest
+ * before the "one hit of X kills" finding is raised. Like WEAK_HIT_RATIO it
+ * compares the character with itself only.
+ */
+export const ONE_SHOT_GAP_RATIO = 1.5
+
+/**
+ * Effective health pool divided by the largest hit survived. Above this the
+ * pool figure is called out as overstating the build's safety.
+ */
+export const EHP_OVERSTATEMENT_WARN = 1.5
+
+/**
+ * Physical damage reduction from armour, in percent, below which armour is
+ * called negligible by the recommendations.
+ */
+export const ARMOUR_DR_NEGLIGIBLE = 15
+
+/** Character level from which a missing anoint is worth raising. */
+export const ANOINT_MIN_LEVEL = 30
+
+/**
+ * The weapon-lag finding needs at least this many equipped items with an item
+ * level, and a weapon at least this many item levels under the median of the
+ * rest.
+ */
+export const WEAPON_LAG_MIN_ITEMS = 3
+export const WEAPON_LAG_MIN_ILVL_GAP = 4
+
+/** A damage type counts as "dealt" at this percentage share of the hit. */
+export const DAMAGE_TYPE_MIN_SHARE = 10
+
+/**
  * Below this, critical strikes contribute so little that scaling them is not
  * the lever — expressed as a damage multiplier over never critting, so 1.15
  * means "crit is adding 15%".

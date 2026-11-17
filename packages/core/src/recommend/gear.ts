@@ -41,7 +41,7 @@
  */
 
 import type { EquippedItem } from '../model/slots.js'
-import type { DefenseSummary } from '../defense/index.js'
+import { RES_CAP_DEFAULT, type DefenseSummary } from '../defense/index.js'
 import {
   AFFIX_CAPACITY,
   OCCUPIES_AFFIX_SLOT,
@@ -66,7 +66,7 @@ import { NO_KEYSTONE_EFFECTS, type KeystoneEffects } from '../keystones/index.js
 import { scalesSkill } from './damage.js'
 
 /** The resistance cap, and the yardstick significance is measured against. */
-const RESIST_CAP = 75
+const RESIST_CAP = RES_CAP_DEFAULT
 
 
 function score(significance: number, kind: CostKind, amount: number): number {

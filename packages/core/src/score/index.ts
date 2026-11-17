@@ -16,7 +16,7 @@
  *     resistance" is not a harsh verdict, it is a wrong one.
  */
 
-import { knownResistances, type DefenseSummary, type ResistanceState } from '../defense/index.js'
+import { EFFECTIVE_RES_CEILING, knownResistances, type DefenseSummary, type ResistanceState } from '../defense/index.js'
 import type { DpsSummary } from '../dps/index.js'
 import { effectiveArmour, effectivePool, NO_KEYSTONE_EFFECTS, type KeystoneEffects } from '../keystones/index.js'
 import { bandFor, describeLadderSample, type LadderStat, type LadderSummary } from '../ninja/ladder.js'
@@ -62,7 +62,7 @@ export const RUBRIC = Object.freeze({
  * 0 at or over the cap. The cap is ninja's maximum as given.
  */
 export function resGapDamageTaken(r: Pick<ResistanceState, 'value' | 'max'> & { value: number }): number {
-  const cap = Math.min(r.max, 99)
+  const cap = Math.min(r.max, EFFECTIVE_RES_CEILING)
   if (r.value >= cap) return 0
   return (1 - r.value / 100) / (1 - cap / 100) - 1
 }

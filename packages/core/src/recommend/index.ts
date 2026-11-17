@@ -19,7 +19,15 @@ import { normalizePassives, inactiveSetNodes, type PassiveAllocation } from '../
 import { normalizeItems, type EquippedItem } from '../model/slots.js'
 import { OFFENCE_RULES } from './offence.js'
 import { compareRecommendations, costScore, measureRecommendations } from './rank.js'
-import { WEAK_HIT_RATIO } from '../thresholds.js'
+import {
+  ANOINT_MIN_LEVEL,
+  ARMOUR_DR_NEGLIGIBLE,
+  EHP_OVERSTATEMENT_WARN,
+  ONE_SHOT_GAP_RATIO,
+  WEAK_HIT_RATIO,
+  WEAPON_LAG_MIN_ILVL_GAP,
+  WEAPON_LAG_MIN_ITEMS,
+} from '../thresholds.js'
 import type {
   Cost,
   Evidence,
@@ -231,7 +239,7 @@ function oneShotRule(ctx: Context): Recommendation[] {
   // measured against every damage type, including any this rule just excluded.
   const ratio = lowest.value > 0 ? highest.value / lowest.value : 1
   // Only worth flagging when one vector is meaningfully thinner than the rest.
-  if (ratio < 1.5) return []
+  if (ratio < ONE_SHOT_GAP_RATIO) return []
 
   const evidence: Evidence[] = [
     {
@@ -242,7 +250,7 @@ function oneShotRule(ctx: Context): Recommendation[] {
     },
   ]
 
-  if (d.effectiveHealthPool !== null && d.ehpOverstatementRatio !== null && d.ehpOverstatementRatio > 1.5) {
+  if (d.effectiveHealthPool !== null && d.ehpOverstatementRatio !== null && d.ehpOverstatementRatio > EHP_OVERSTATEMENT_WARN) {
     evidence.push({
       kind: 'stat',
       stat: 'effectiveHealthPool',
@@ -338,7 +346,7 @@ function oneShotRule(ctx: Context): Recommendation[] {
 function armourRule(ctx: Context): Recommendation[] {
   const d = ctx.defense
   const dr = d.physicalDamageReduction
-  if (dr === null || dr >= 15) return []
+  if (dr === null || dr >= ARMOUR_DR_NEGLIGIBLE) return []
 
   const evidence: Evidence[] = [
     {
@@ -416,7 +424,7 @@ function anointRule(ctx: Context): Recommendation[] {
   const counts = ctx.passives.counts
   if (typeof counts.anoints !== 'number' || counts.anoints > 0) return []
   const level = ctx.model.level
-  if (typeof level !== 'number' || level < 30) return []
+  if (typeof level !== 'number' || level < ANOINT_MIN_LEVEL) return []
 
   const amulet = ctx.items.find((i) => i.slotId === 4)
 
@@ -477,7 +485,7 @@ function anointRule(ctx: Context): Recommendation[] {
 // ---------------------------------------------------------------------------
 function weaponTierRule(ctx: Context): Recommendation[] {
   const active = ctx.items.filter((i) => i.active && i.itemLevel !== null)
-  if (active.length < 3) return []
+  if (active.length < WEAPON_LAG_MIN_ITEMS) return []
 
   const weapon = active.find((i) => i.slotId === 7 || i.slotId === 15)
   if (!weapon || weapon.itemLevel === null) return []
@@ -487,7 +495,7 @@ function weaponTierRule(ctx: Context): Recommendation[] {
 
   const median = [...others.map((i) => i.itemLevel!)].sort((a, b) => a - b)[Math.floor(others.length / 2)]!
   const gap = median - weapon.itemLevel
-  if (gap < 4) return []
+  if (gap < WEAPON_LAG_MIN_ILVL_GAP) return []
 
   return [
     make({
