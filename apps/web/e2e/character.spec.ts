@@ -59,19 +59,16 @@ test('gear lists only what can be improved, each with a weighted-sum trade searc
   await expect(gear.getByText('Checking gear…')).toHaveCount(0, { timeout: 15_000 })
   await expect(gear.locator('details')).toHaveCount(0)
   const rows = gear.locator('[data-gear-targets] > li')
-  if (await rows.count()) {
-    // B1-1: the fixture's #1 is a weapon, which can't roll resistances, so it falls back to the plain trade page.
-    const weapon = rows.first()
-    await expect(weapon.getByRole('link', { name: /Find on trade/ })).toHaveAttribute('href', /\/trade\/$/)
-    await expect(weapon.locator('a[data-trade="weighted"]')).toHaveCount(0)
-    // The helmet can, so it carries the weighted-sum search.
-    const helmet = rows.filter({ hasText: 'Helmet' }).first()
-    await helmet.getByRole('button', { name: /^Helmet/ }).click()
-    const link = helmet.locator('a[data-trade="weighted"]')
-    await expect(link).toBeVisible({ timeout: 15_000 })
-    const q = JSON.parse(new URL((await link.getAttribute('href'))!).searchParams.get('q')!)
-    expect(q.query.stats.some((g: { type: string }) => g.type === 'weight')).toBe(true)
-  }
+  await expect(rows.first()).toBeVisible({ timeout: 15_000 })
+  // HG1-10: the fixture is short of resistance, so the helmet (it can close the gap) is first, and the weapon (it
+  // can't roll resistance, so it has no usable search, B1-1) is hidden.
+  await expect(rows.first()).toContainText('Helmet')
+  await expect(rows.filter({ hasText: 'Main Hand' })).toHaveCount(0)
+  await expect(gear.locator('a[data-trade="page"]')).toHaveCount(0)
+  const link = rows.first().locator('a[data-trade="weighted"]')
+  await expect(link).toBeVisible({ timeout: 15_000 })
+  const q = JSON.parse(new URL((await link.getAttribute('href'))!).searchParams.get('q')!)
+  expect(q.query.stats.some((g: { type: string }) => g.type === 'weight')).toBe(true)
 })
 
 test('the defences checklist lists resistances and never reads missing ailment proof as a fail', async ({ page }) => {
