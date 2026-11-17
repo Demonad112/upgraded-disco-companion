@@ -3,6 +3,7 @@
 Finished batches and plans, 1–2 sentences each. Carry files are retired here when closed; open rows live in
 `docs/remaining/REMAINING-WORK.md`; closed register rows in `docs/remaining/archive/REGISTER-CLOSED.md`. Details are in git history.
 
+- **B10** (RV1-6, reinstated by the owner 2026-11-17): progress export/import as a versioned JSON file on the Checklist, validated whole before a Merge-or-Replace prompt; character history and prefs stay out of the file.
 - **CF1 / CF2** (#162, #163): Yykiuy audit of the character analysis. CF1 fixed element order, affix slots, dead stats and gloves; CF2 added follow-ups, now rows CF2-1 to CF2-5.
 - **MCP2** (M1, M2): ported the poe2-mcp2 tools into `apps/mcp` (removed in CL1) on `@poe2/core`, added `packages/core/src/provenance` and `version.json`.
 - **PP1–PP3 / PERF** (#132–#134): perf plan, character spec and design audit; gaps were closed in PXA–PXC and UXS. Perf bar and route budgets are in REMAINING §4.
