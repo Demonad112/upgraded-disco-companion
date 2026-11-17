@@ -576,18 +576,21 @@ export function gearRecommendations({
       },
       cost: {
         kind: 'gear',
-        amount: needed ?? usable.length,
+        // One swap, the one the impact describes: one swap's gain over two
+        // swaps' cost would rank it below what it is.
+        amount: 1,
         currencyTier: 'low',
         detail:
-          `Recrafting one suffix on ${best.itemName}` +
-          (needed !== null && needed > 1 ? `, and ${needed - 1} more like it` : '') +
-          '. The rest of each item is unaffected.',
+          `Recrafting one suffix on ${best.itemName}. The rest of the item is unaffected.` +
+          (needed !== null && needed > 1
+            ? ` Closing the whole gap takes ${needed} such recrafts; this cost and the impact are for this one.`
+            : ''),
       },
       tradeoff:
         `Gives up ${best.replace.text} on ${best.itemName}. That is already ${best.replace.reason.includes('doing nothing') ? 'partly wasted' : 'over cap'}, so the loss is smaller than the number suggests — but it is not zero if you later lose another source of it.`,
       evidence,
       provenance: 'ninja',
-      score: score(Math.min(1, candidate.closesShortfall / RESIST_CAP), 'gear', needed ?? 1),
+      score: score(Math.min(1, candidate.closesShortfall / RESIST_CAP), 'gear', 1),
     })
   }
 
