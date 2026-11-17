@@ -397,20 +397,26 @@ export function planReplacement({
   const followUps: FollowUp[] = []
   const uncovered: ReplacementPlan['uncovered'] = []
   let step = 1
+  // A free suffix is spent by the first craft that takes it, whichever
+  // resistance that craft is for. Counted per item across every type.
+  const suffixesTaken = new Map<number, number>()
 
   for (const res of caused.filter((i) => i.remaining > 0).sort((a, b) => b.remaining - a.remaining)) {
     const statId = RESIST_STAT[res.type]
     if (!statId) continue
     let left = res.remaining
+    // An all-elemental line grants fire, cold and lightning. It grants no chaos.
+    const grants = (id: string) =>
+      id === statId || (id === ALL_ELEMENTAL && (ELEMENTS as readonly string[]).includes(res.type))
 
     // 1. Upgrade a non-T1 resistance line on another item, biggest gain first.
     const upgrades = items
       .filter((i) => i.slotId !== target.slotId && i.active && !i.corrupted)
       .flatMap((item) =>
         item.mods
-          .filter((m) => m.upgrades.length && m.rolled.some((r) => r.id === statId || r.id === ALL_ELEMENTAL))
+          .filter((m) => m.upgrades.length && m.rolled.some((r) => grants(r.id)))
           .map((mod) => {
-            const stat = mod.rolled.find((r) => r.id === statId || r.id === ALL_ELEMENTAL)!
+            const stat = mod.rolled.find((r) => grants(r.id))!
             const reachable = mod.upgrades.find((u) => u.reachableOnThisItem) ?? null
             const raw = rawItems.find((r) => r.slotId === item.slotId)
             const tags = raw ? tiers.tagsForBase(raw.baseType) : null
@@ -453,7 +459,8 @@ export function planReplacement({
         if (left <= 0) break
         if (item.slotId === target.slotId || !item.active || item.corrupted) continue
         const cap = item.affixCapacity
-        if (!cap || item.affixCounts.suffix >= cap.suffix) continue
+        const taken = suffixesTaken.get(item.slotId) ?? 0
+        if (!cap || item.affixCounts.suffix + taken >= cap.suffix) continue
         if (item.mods.some((m) => OCCUPIES_AFFIX_SLOT.has(m.source) && m.kind === null)) continue
         const raw = rawItems.find((r) => r.slotId === item.slotId)
         const tags = raw ? tiers.tagsForBase(raw.baseType) : null
@@ -479,6 +486,7 @@ export function planReplacement({
           closes,
           note: `${item.name} has an open suffix; ${res.type} resistance there rolls ${best.stat.min}-${best.stat.max}% at its item level.`,
         })
+        suffixesTaken.set(item.slotId, taken + 1)
         left -= closes
       }
     }

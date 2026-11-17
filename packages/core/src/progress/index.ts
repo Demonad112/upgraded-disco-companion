@@ -41,8 +41,8 @@ export interface CharacterSnapshot {
   life: number | null
   energyShield: number | null
   ward: number | null
-  armour: number
-  evasion: number
+  armour: number | null
+  evasion: number | null
   /** Keystone-corrected defensive pool, matching what the assessment used. */
   pool: number | null
   /** poe.ninja's averaged effective health pool. Trended, never led with. */

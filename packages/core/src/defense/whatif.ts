@@ -13,15 +13,12 @@
  */
 
 import type { CharModel, DamageType, NinjaDefensiveStats } from '../model/types.js'
-import { RES_CAP_DEFAULT } from './constants.js'
+import { EFFECTIVE_RES_CEILING, RES_CAP_DEFAULT } from './constants.js'
 import { analyzeDefense, type DefenseSummary, type MaxHit, type ResistanceState } from './index.js'
 
 export type WhatIfOverrides = Partial<Record<ResistanceState['type'], number>>
 
-/** Highest effective resistance the projection will divide by. */
-const EFFECTIVE_CEILING = 99
-
-const effective = (value: number, max: number): number => Math.min(value, max, EFFECTIVE_CEILING)
+const effective = (value: number, max: number): number => Math.min(value, max, EFFECTIVE_RES_CEILING)
 
 export function whatIfDefense(defense: DefenseSummary, overrides: WhatIfOverrides): DefenseSummary {
   const scale = new Map<DamageType, number>()

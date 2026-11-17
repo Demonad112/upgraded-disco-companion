@@ -37,6 +37,8 @@ const NULLABLE_FIELDS: ReadonlySet<string> = new Set([
   'life',
   'energyShield',
   'ward',
+  'armour',
+  'evasion',
   'pool',
   'ehp',
   'fire',

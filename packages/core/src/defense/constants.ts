@@ -13,6 +13,12 @@
 export const RES_CAP_DEFAULT = 75
 export const RES_CAP_HARD = 90
 
+/**
+ * Highest effective resistance any projection divides by. An arithmetic guard
+ * (damage taken is 1 - res), not a claim about what the game allows.
+ */
+export const EFFECTIVE_RES_CEILING = 99
+
 /** Block caps at 50% in PoE2, not PoE1's 75%. */
 export const BLOCK_CAP = 50
 

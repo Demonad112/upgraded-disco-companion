@@ -17,12 +17,13 @@
  */
 
 import type { DefenseSummary } from '../defense/index.js'
-import { COMFORT_THRESHOLDS, type ContentReport, type TierEntry } from './content.js'
+import { COMFORT_THRESHOLDS, XP_WORTH_FLOOR } from '../thresholds.js'
+import type { ContentReport, TierEntry } from './content.js'
 
 export const XP_PENALTY = { gapPower: 2.5, exponent: 1.5 } as const
 
-/** Below this share of full XP a tier is "not worth it". Project judgement. */
-export const XP_WORTH_FLOOR = 0.8
+/** Declared in thresholds.ts; re-exported for existing importers. */
+export { XP_WORTH_FLOOR }
 
 /** Reference mode: risk added per area level above the character. Project judgement. */
 export const REFERENCE_RISK_PER_LEVEL = 20
@@ -123,7 +124,7 @@ function needsFor(tier: number, required: number, defense: DefenseSummary, curre
   const out: PushNeed[] = []
   const res = defense.resistances.find((r) => r.type === type)
   const poolPct = Math.ceil((ratio - 1) * 100)
-  if (res && res.value !== null) {
+  if (res && res.value !== null && res.max !== null) {
     const target = Math.ceil(100 - (100 - res.value) / ratio)
     if (target <= res.max) {
       out.push({
@@ -200,7 +201,7 @@ export function planWaystones(input: {
       needs.push(...needsFor(t.tier, COMFORT_THRESHOLDS.comfortable * t.baseMonsterHit, input.defense, report.lowestMaximumHit))
     }
     for (const r of input.defense.resistances) {
-      if (r.type === 'chaos' || !r.underCap || r.value === null) continue
+      if (r.type === 'chaos' || !r.underCap || r.value === null || r.max === null) continue
       needs.push({
         stat: `${cap(r.type)} resistance`,
         from: r.value,

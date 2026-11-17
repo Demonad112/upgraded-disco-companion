@@ -21,7 +21,7 @@ import type { ModTiers } from './gear/tiers.js'
 import type { SupportCatalog } from './gems/catalog.js'
 import type { MainSkillContext } from './recommend/gear.js'
 import { effectiveCritMultiplier } from './recommend/offence.js'
-import { CRIT_UNINVESTED } from './thresholds.js'
+import { CRIT_UNINVESTED, DAMAGE_TYPE_MIN_SHARE } from './thresholds.js'
 import { decodePobExport, readPlayerStats } from './pob/export.js'
 import { readPobConfig, type PobConfig } from './pob/config.js'
 import { readPobMainSkill } from './pob/main-skill.js'
@@ -232,7 +232,7 @@ function skillContext(dps: DpsSummary, catalog: SupportCatalog | undefined): Mai
   return {
     name: primary.name,
     types,
-    dealt: new Set(primary.damageSplit.filter((s) => s.percent >= 10).map((s) => s.type)),
+    dealt: new Set(primary.damageSplit.filter((s) => s.percent >= DAMAGE_TYPE_MIN_SHARE).map((s) => s.type)),
     crit: (effectiveCritMultiplier(primary) ?? 1) >= CRIT_UNINVESTED,
   }
 }

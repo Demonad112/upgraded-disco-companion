@@ -16,7 +16,7 @@
  *     resistance" is not a harsh verdict, it is a wrong one.
  */
 
-import { knownResistances, type DefenseSummary, type ResistanceState } from '../defense/index.js'
+import { EFFECTIVE_RES_CEILING, knownResistances, type DefenseSummary, type ResistanceState } from '../defense/index.js'
 import type { DpsSummary } from '../dps/index.js'
 import { effectiveArmour, effectivePool, NO_KEYSTONE_EFFECTS, type KeystoneEffects } from '../keystones/index.js'
 import { bandFor, describeLadderSample, type LadderStat, type LadderSummary } from '../ninja/ladder.js'
@@ -25,6 +25,8 @@ import {
   ARMOUR_NEGLIGIBLE,
   BLOCK_NEGLIGIBLE,
   CHAOS_CRITICAL,
+  DEFENCE_PART_WEIGHTS,
+  DEFENCE_WEIGHT,
   EVASION_SUBSTANTIAL,
   MAX_HIT_SCORE,
   OFFENCE_GRADE,
@@ -43,8 +45,8 @@ import {
  */
 export const RUBRIC = Object.freeze({
   /** Defence parts; they sum to the defence half. */
-  weights: Object.freeze({ maxHit: 0.3, elemental: 0.15, chaos: 0.05 }),
-  defenceWeight: 0.5,
+  weights: DEFENCE_PART_WEIGHTS,
+  defenceWeight: DEFENCE_WEIGHT,
   offenceWeight: OFFENCE_WEIGHT,
   /** Survivability part: linear on the lowest of the five max hits. */
   maxHit: MAX_HIT_SCORE,
@@ -61,14 +63,14 @@ export const RUBRIC = Object.freeze({
  * Extra damage taken because a resistance is below its cap: (1 - res) / (1 - cap) - 1.
  * 0 at or over the cap. The cap is ninja's maximum as given.
  */
-export function resGapDamageTaken(r: Pick<ResistanceState, 'value' | 'max'> & { value: number }): number {
-  const cap = Math.min(r.max, 99)
+export function resGapDamageTaken(r: Pick<ResistanceState, 'value' | 'max'> & { value: number; max: number }): number {
+  const cap = Math.min(r.max, EFFECTIVE_RES_CEILING)
   if (r.value >= cap) return 0
   return (1 - r.value / 100) / (1 - cap / 100) - 1
 }
 
 /** 0-1 credit for one resistance: damage taken at the cap over damage taken now. */
-function resCredit(r: Pick<ResistanceState, 'value' | 'max'> & { value: number }): number {
+function resCredit(r: Pick<ResistanceState, 'value' | 'max'> & { value: number; max: number }): number {
   return 1 / (1 + resGapDamageTaken(r))
 }
 
@@ -106,7 +108,7 @@ export function defenceParts(
   const chaosRes = defense.resistances.find((r) => r.type === 'chaos')
   const chaos = keystones.chaosImmune
     ? w.chaos
-    : chaosRes && chaosRes.value !== null
+    : chaosRes && chaosRes.value !== null && chaosRes.max !== null
       ? w.chaos * resCredit({ value: chaosRes.value, max: chaosRes.max })
       : 0
 
@@ -280,7 +282,7 @@ export function assessBuild(input: BuildAssessmentInput): BuildAssessment {
     caveats.push('Chaos resistance not in the payload, so it was not graded.')
   } else if (chaos && chaos.value !== null && chaos.value < CHAOS_CRITICAL) {
     weaknesses.push({ text: `Negative chaos resistance (${chaos.value}%)`, severity: 'critical' })
-  } else if (chaos && chaos.value !== null && resGapDamageTaken({ value: chaos.value, max: chaos.max }) > 0) {
+  } else if (chaos && chaos.value !== null && chaos.max !== null && resGapDamageTaken({ value: chaos.value, max: chaos.max }) > 0) {
     const gap = resGapDamageTaken({ value: chaos.value, max: chaos.max })
     weaknesses.push({
       text: `Chaos resistance below its cap (${gapText({ type: 'chaos', value: chaos.value, max: chaos.max })})`,
@@ -293,14 +295,15 @@ export function assessBuild(input: BuildAssessmentInput): BuildAssessment {
   // nor leaves the build short on armour — both judgements below would
   // otherwise be backwards.
   const armour = effectiveArmour(defense, keystones)
-  if (defense.evasion > EVASION_SUBSTANTIAL) {
+  if (defense.evasion !== null && defense.evasion > EVASION_SUBSTANTIAL) {
     strengths.push(
       keystones.evasionIsArmour
         ? `${defense.evasion.toLocaleString()} evasion converted to armour is a real mitigation layer`
         : `${defense.evasion.toLocaleString()} evasion is a real mitigation layer`,
     )
   }
-  if (armour < ARMOUR_NEGLIGIBLE && defense.blockChance < BLOCK_NEGLIGIBLE) {
+  // Only when both were reported: an absent stat is missing, not little.
+  if (armour !== null && defense.blockChance !== null && armour < ARMOUR_NEGLIGIBLE && defense.blockChance < BLOCK_NEGLIGIBLE) {
     weaknesses.push({
       text: 'Little armour or block — leaning on evasion and resistances alone',
       severity: 'warning',

@@ -23,8 +23,10 @@ const RES_SCALE = 90
 function Meter({ r }: { r: DefenseSummary['resistances'][number] }) {
   const pos = (v: number) => `${(Math.max(0, Math.min(RES_SCALE, v)) / RES_SCALE) * 100}%`
   const color = DMG_VAR[r.type] ?? 'var(--ink-dim)'
-  const known = r.value !== null
+  // A resistance is drawn only when both its value and its cap were reported.
+  const known = r.value !== null && r.max !== null
   const value = r.value ?? 0
+  const capAt = r.max ?? 0
   const under = known && r.underCap !== null && r.underCap > 0
   const over = known && r.overCap !== null && r.overCap > 0
   return (
@@ -37,7 +39,7 @@ function Meter({ r }: { r: DefenseSummary['resistances'][number] }) {
         role="img"
         aria-label={
           known
-            ? `${cap(r.type)} resistance ${value}% of a ${r.max}% cap${under ? `, ${r.underCap} under cap` : over ? `, ${r.overCap} over cap` : ''}`
+            ? `${cap(r.type)} resistance ${value}% of a ${capAt}% cap${under ? `, ${r.underCap} under cap` : over ? `, ${r.overCap} over cap` : ''}`
             : `${cap(r.type)} resistance unknown`
         }
         className="etrough"
@@ -45,13 +47,13 @@ function Meter({ r }: { r: DefenseSummary['resistances'][number] }) {
         <span className="ewell">
           {known ? (
             <>
-              <span className="efill egrow" data-abs data-dmg={r.type} style={{ width: pos(Math.min(value, r.max)) }} />
+              <span className="efill egrow" data-abs data-dmg={r.type} style={{ width: pos(Math.min(value, capAt)) }} />
               {over ? (
                 <span
                   className="absolute inset-y-0"
                   style={{
-                    left: pos(r.max),
-                    width: `calc(${pos(value)} - ${pos(r.max)})`,
+                    left: pos(capAt),
+                    width: `calc(${pos(value)} - ${pos(capAt)})`,
                     background: `repeating-linear-gradient(45deg, ${color} 0 3px, transparent 3px 6px)`,
                   }}
                 />
@@ -61,7 +63,7 @@ function Meter({ r }: { r: DefenseSummary['resistances'][number] }) {
                   className="absolute inset-y-[3px]"
                   style={{
                     left: pos(value),
-                    width: `calc(${pos(r.max)} - ${pos(value)})`,
+                    width: `calc(${pos(capAt)} - ${pos(value)})`,
                     borderTop: '1px dashed var(--danger)',
                     borderBottom: '1px dashed var(--danger)',
                     background: 'color-mix(in srgb, var(--danger) 18%, transparent)',
@@ -71,7 +73,7 @@ function Meter({ r }: { r: DefenseSummary['resistances'][number] }) {
             </>
           ) : null}
         </span>
-        <span className="ecap" style={at(Math.min(r.max, RES_SCALE) / RES_SCALE)} />
+        {r.max !== null ? <span className="ecap" style={at(Math.min(r.max, RES_SCALE) / RES_SCALE)} /> : null}
       </span>
       <span className="flex flex-wrap items-center gap-2 min-[621px]:justify-end">
         <span className={`eplate tabular text-sm ${under ? 'text-danger' : over ? 'text-accent' : 'text-ink'}`}>
