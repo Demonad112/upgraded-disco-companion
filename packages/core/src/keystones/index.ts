@@ -104,7 +104,7 @@ const RULES: Readonly<Record<string, KeystoneRule>> = Object.freeze({
     effects: { evasionIsArmour: true },
     note: 'All evasion rating is converted to armour, so evasion is not avoiding hits — it is mitigating them.',
     verify: (d) =>
-      d.evasion > 0
+      d.evasion !== null && d.evasion > 0
         ? `evasion rating reads ${d.evasion.toLocaleString()}, but this keystone converts all of it to armour`
         : null,
   },
@@ -290,8 +290,11 @@ export function effectivePool(
 export function effectiveArmour(
   defense: Pick<DefenseSummary, 'armour' | 'evasion'>,
   effects: KeystoneEffects = NO_KEYSTONE_EFFECTS,
-): number {
-  return effects.evasionIsArmour ? defense.armour + defense.evasion : defense.armour
+): number | null {
+  // Unknown stays unknown: an absent armour or evasion is never read as 0.
+  if (defense.armour === null) return null
+  if (!effects.evasionIsArmour) return defense.armour
+  return defense.evasion === null ? null : defense.armour + defense.evasion
 }
 
 export interface KeystoneInfo {

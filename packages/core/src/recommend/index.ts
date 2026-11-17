@@ -346,7 +346,7 @@ function oneShotRule(ctx: Context): Recommendation[] {
 function armourRule(ctx: Context): Recommendation[] {
   const d = ctx.defense
   const dr = d.physicalDamageReduction
-  if (dr === null || dr >= ARMOUR_DR_NEGLIGIBLE) return []
+  if (dr === null || dr >= ARMOUR_DR_NEGLIGIBLE || d.armour === null) return []
 
   const evidence: Evidence[] = [
     {
@@ -608,7 +608,7 @@ function collectUnresolved(ctx: Context): Unresolved[] {
     out.push({ id: 'dps-missing', question: 'What does each skill actually do?', missing: ctx.dps.unresolved })
   }
 
-  if (ctx.defense.physicalDamageReductionAgainstHit === null && ctx.defense.armour > 0) {
+  if (ctx.defense.physicalDamageReductionAgainstHit === null && ctx.defense.armour !== null && ctx.defense.armour > 0) {
     out.push({
       id: 'armour-hit-size',
       question: 'How much physical damage does armour actually stop?',

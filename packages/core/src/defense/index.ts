@@ -70,20 +70,23 @@ export interface DefenseSummary {
   /** Pool against chaos: chaos drains ES at 2x, so ES counts half. Null when life or ES is unknown. */
   chaosRawPool: number | null
 
-  armour: number
+  /** Null when the payload did not report it. */
+  armour: number | null
   /** Physical DR poe.ninja computed, against the hit size it assumed. */
   physicalDamageReduction: number | null
   /** The hit size that DR figure corresponds to, when stated. */
   physicalDamageReductionAgainstHit: number | null
 
-  evasion: number
+  /** Null when the payload did not report it. */
+  evasion: number | null
   /**
    * poe.ninja's evade chance, read as given. Null when the payload carries none:
    * never 0, which would read as "cannot evade". Not derived locally; see
    * `evadeChance()` in constants.ts for why that formula is not used.
    */
   evadeChance: number | null
-  blockChance: number
+  /** Null when the payload did not report it. */
+  blockChance: number | null
 
   /** 0.5 mechanics V1 had no model for. */
   deflectionRating: number
@@ -172,6 +175,12 @@ export function analyzeDefense(model: Pick<CharModel, 'defensiveStats'>): Defens
   const energyShield = num(s, 'energyShield')
   if (life === null) missing.push('life')
   if (energyShield === null) missing.push('energyShield')
+  const armour = num(s, 'armour')
+  const evasion = num(s, 'evasionRating')
+  const blockChance = num(s, 'blockChance')
+  if (armour === null) missing.push('armour')
+  if (evasion === null) missing.push('evasionRating')
+  if (blockChance === null) missing.push('blockChance')
 
   // poe.ninja reports lowestMaximumHitTaken directly; prefer it, but fall back
   // to the minimum we computed rather than reporting nothing.
@@ -211,14 +220,14 @@ export function analyzeDefense(model: Pick<CharModel, 'defensiveStats'>): Defens
     mana: num(s, 'mana'),
     chaosRawPool: life === null || energyShield === null ? null : chaosRawPool(life, energyShield),
 
-    armour: num(s, 'armour') ?? 0,
+    armour,
     physicalDamageReduction: typeof physReduction?.value === 'number' ? physReduction.value : null,
     physicalDamageReductionAgainstHit:
       typeof physReduction?.takenDamage === 'number' ? physReduction.takenDamage : null,
 
-    evasion: num(s, 'evasionRating') ?? 0,
+    evasion,
     evadeChance: num(s, 'evadeChance'),
-    blockChance: num(s, 'blockChance') ?? 0,
+    blockChance,
 
     deflectionRating: num(s, 'deflectionRating') ?? 0,
     deflectChance: num(s, 'deflectChance') ?? 0,
@@ -239,7 +248,7 @@ export function projectArmour(
   newArmour: number,
 ): { from: number; to: number; againstHit: number } | null {
   const hit = summary.physicalDamageReductionAgainstHit
-  if (hit === null || hit <= 0) return null
+  if (hit === null || hit <= 0 || summary.armour === null) return null
   return {
     from: armourDamageReduction(summary.armour, hit),
     to: armourDamageReduction(newArmour, hit),

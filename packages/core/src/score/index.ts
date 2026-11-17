@@ -293,14 +293,15 @@ export function assessBuild(input: BuildAssessmentInput): BuildAssessment {
   // nor leaves the build short on armour — both judgements below would
   // otherwise be backwards.
   const armour = effectiveArmour(defense, keystones)
-  if (defense.evasion > EVASION_SUBSTANTIAL) {
+  if (defense.evasion !== null && defense.evasion > EVASION_SUBSTANTIAL) {
     strengths.push(
       keystones.evasionIsArmour
         ? `${defense.evasion.toLocaleString()} evasion converted to armour is a real mitigation layer`
         : `${defense.evasion.toLocaleString()} evasion is a real mitigation layer`,
     )
   }
-  if (armour < ARMOUR_NEGLIGIBLE && defense.blockChance < BLOCK_NEGLIGIBLE) {
+  // Only when both were reported: an absent stat is missing, not little.
+  if (armour !== null && defense.blockChance !== null && armour < ARMOUR_NEGLIGIBLE && defense.blockChance < BLOCK_NEGLIGIBLE) {
     weaknesses.push({
       text: 'Little armour or block — leaning on evasion and resistances alone',
       severity: 'warning',
