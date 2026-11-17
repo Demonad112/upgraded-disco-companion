@@ -510,13 +510,13 @@ export function gearRecommendations({
     deltas[gained] = { min: prior + candidate.min, max: prior + candidate.max }
     changes.push({ id, label: `Recraft ${best.replace.text} on ${best.itemName}`, deltas })
 
-    // The swaps `swapsNeeded` counted: largest candidate first, as summarizeSwaps does.
+    // The swaps `swapsNeeded` counted: largest guaranteed roll first, as summarizeSwaps does.
     const reach = (s: GearSwap) => s.candidates.find((c) => c.statId === shortfall.stat && c.reachableOnThisItem)
     // The finding describes `best`, so the check counts it first and fills the
     // rest largest candidate first.
     const counted = [
       best,
-      ...swaps.filter((s) => s !== best && reach(s) !== undefined).sort((a, b) => reach(b)!.max - reach(a)!.max),
+      ...swaps.filter((s) => s !== best && reach(s) !== undefined).sort((a, b) => reach(b)!.min - reach(a)!.min),
     ].slice(0, needed ?? undefined)
     if (counted.length > 1) {
       const lost: Partial<Record<LedgerStat, number>> = {}
