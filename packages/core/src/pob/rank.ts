@@ -80,8 +80,8 @@ export interface RankReport {
   warnings: string[]
   /**
    * Result of comparing the simulation's baseline with poe.ninja's observed
-   * values. Null when no expectations were given, in which case the ranking is
-   * unvalidated and says so in `warnings`.
+   * values. Null when no expectations were given, in which case nothing is
+   * simulated or ranked and `warnings` says why.
    */
   baselineGate: BaselineGateResult | null
   /** Version Path of Building reported at the start of the run; null when it did not say. */
@@ -176,7 +176,20 @@ export async function rankNodesByMeasuredGain(
       }
     }
   } else {
-    warnings.push('The simulation baseline was not checked against poe.ninja, so these deltas are unvalidated.')
+    // No observed values means no way to tell a correct baseline from a wrong
+    // one, so no delta is shown: unvalidated numbers look exactly like real ones.
+    return {
+      metric,
+      baseline,
+      ranked,
+      skipped,
+      halted: true,
+      warnings: [
+        'The simulation baseline could not be checked against poe.ninja, so nothing is ranked: unvalidated deltas are not shown.',
+      ],
+      baselineGate: null,
+      pobVersion,
+    }
   }
 
   let halted = false
