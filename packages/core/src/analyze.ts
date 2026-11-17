@@ -357,7 +357,9 @@ export async function analyzeCharacter(
   // was left uncorrected on purpose.
   for (const unverified of keystones.unverified) {
     warnings.push(
-      `${unverified.keystone} is allocated on the passive tree, but ${unverified.reason}. Its corrections were not applied — poe.ninja may not have reindexed this character since the tree changed.`,
+      `${unverified.keystone} is allocated on the passive tree, but ${unverified.reason}. Its corrections were not applied${
+        unverified.kind === 'contradicted' ? ' — poe.ninja may not have reindexed this character since the tree changed' : ''
+      }.`,
     )
   }
 

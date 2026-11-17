@@ -116,28 +116,30 @@ describe('corroboration', () => {
     expect(effects.unverified[0]!.reason).toContain('6,490')
   })
 
-  it('applies unverifiable keystones, which have nothing to check against', () => {
+  it('withholds unverifiable keystones, which have nothing to check against', () => {
     // Resolute Technique changes crit behaviour, which no defensive stat
-    // exposes. Withholding it for want of a check it cannot fail would be a
-    // different kind of wrong.
+    // exposes. Owner decision CA1-3: no corroboration, no correction.
     const effects = keystoneEffectsOf([{ name: 'Resolute Technique' }], defense)
-    expect(effects.neverCrits).toBe(true)
-    expect(effects.applied).toEqual(['Resolute Technique'])
+    expect(effects.neverCrits).toBe(false)
+    expect(effects.applied).toEqual([])
+    expect(effects.unverified.map((u) => u.keystone)).toEqual(['Resolute Technique'])
   })
 
-  it('applies effects with no stats at all, since nothing can be contradicted', () => {
+  it('withholds effects with no stats at all, since nothing corroborates them', () => {
     const effects = keystoneEffectsOf([{ name: 'Chaos Inoculation' }])
-    expect(effects.chaosImmune).toBe(true)
-    expect(effects.unverified).toEqual([])
+    expect(effects.chaosImmune).toBe(false)
+    expect(effects.unverified.map((u) => u.keystone)).toEqual(['Chaos Inoculation'])
   })
 
   it('folds several keystones and sorts the output', () => {
     const effects = keystoneEffectsOf(
-      [{ name: 'Vaal Pact' }, { name: 'Avatar of Fire' }, { name: 'Blood Magic' }],
+      [{ name: 'Vaal Pact' }, { name: 'Resolute Technique' }, { name: 'Avatar of Fire' }, { name: 'Blood Magic' }],
       defense,
     )
-    expect(effects.fireOnly).toBe(true)
-    expect(effects.notes.map((n) => n.keystone)).toEqual(['Avatar of Fire', 'Blood Magic', 'Vaal Pact'])
+    expect(effects.fireOnly).toBe(false)
+    expect(effects.notes.map((n) => n.keystone)).toEqual(['Blood Magic', 'Vaal Pact'])
+    expect(effects.applied).toEqual(['Blood Magic', 'Vaal Pact'])
+    expect(effects.unverified.map((u) => u.keystone)).toEqual(['Avatar of Fire', 'Resolute Technique'])
   })
 })
 
@@ -169,9 +171,10 @@ describe('effective pool', () => {
   })
 
   it('adds mana under Mind Over Matter, and with Eldritch Battery only alongside it', () => {
-    const mom = keystoneEffectsOf([{ name: 'Mind Over Matter' }], stats({}))
+    // No stat corroborates Mind Over Matter (CA1-3), so the pool maths is fed the effect directly.
+    const mom = { ...NO_KEYSTONE_EFFECTS, manaIsPool: true }
     expect(effectivePool({ ...defense, ...pools }, mom)).toMatchObject({ total: 3500, parts: ['life', 'energy shield', 'mana'] })
-    const both = keystoneEffectsOf([{ name: 'Mind Over Matter' }, { name: 'Eldritch Battery' }], stats({ energyShield: 0 }))
+    const both = { ...keystoneEffectsOf([{ name: 'Eldritch Battery' }], stats({ energyShield: 0 })), manaIsPool: true }
     expect(effectivePool({ ...defense, ...pools }, both)).toMatchObject({ total: 1500, parts: ['life', 'mana'] })
   })
 
@@ -247,5 +250,43 @@ describe('through the full analysis', () => {
     expect(analysis.warnings.some((w) => w.includes('Chaos Inoculation'))).toBe(true)
     // Chaos advice survives, because nothing established that it should not.
     expect(analysis.recommendations.suppressed).toEqual([])
+  })
+})
+
+describe('never applied without corroboration (CA1-3)', () => {
+  it('withholds a keystone no stat can confirm and lists it as unverified', () => {
+    const effects = keystoneEffectsOf([{ name: 'Resolute Technique' }], defense)
+    expect(effects.neverCrits).toBe(false)
+    expect(effects.applied).toEqual([])
+    expect(effects.notes).toEqual([])
+    expect(effects.unverified).toMatchObject([{ keystone: 'Resolute Technique', kind: 'unconfirmed' }])
+  })
+
+  it('withholds a checkable keystone when no stats were given', () => {
+    const effects = keystoneEffectsOf([{ name: 'Chaos Inoculation' }])
+    expect(effects.chaosImmune).toBe(false)
+    expect(effects.lifeIsNegligible).toBe(false)
+    expect(effects.unverified).toMatchObject([{ keystone: 'Chaos Inoculation', kind: 'unconfirmed' }])
+  })
+
+  it('withholds a checkable keystone when the stat it checks is unknown', () => {
+    const effects = keystoneEffectsOf(
+      [{ name: 'Chaos Inoculation' }, { name: 'Eldritch Battery' }, { name: 'Iron Reflexes' }],
+      stats({ life: null, energyShield: null, evasion: null }),
+    )
+    expect(effects).toMatchObject({ chaosImmune: false, esNotDefensive: false, evasionIsArmour: false, applied: [] })
+    expect(effects.unverified.map((u) => u.keystone)).toEqual(['Chaos Inoculation', 'Eldritch Battery', 'Iron Reflexes'])
+    expect(effects.unverified.every((u) => u.kind === 'unconfirmed')).toBe(true)
+  })
+
+  it('marks a sheet that contradicts the keystone as contradicted', () => {
+    const effects = keystoneEffectsOf([{ name: 'Chaos Inoculation' }], stats({ life: 1823 }))
+    expect(effects.unverified).toMatchObject([{ keystone: 'Chaos Inoculation', kind: 'contradicted' }])
+  })
+
+  it('still shows a note-only keystone, which changes no figure', () => {
+    const effects = keystoneEffectsOf([{ name: 'Blood Magic' }], defense)
+    expect(effects.applied).toEqual(['Blood Magic'])
+    expect(effects.unverified).toEqual([])
   })
 })
