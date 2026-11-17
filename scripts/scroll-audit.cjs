@@ -1,4 +1,4 @@
-// WQA3-9 scroll guard: functional checks on the constellation sky, no timing. Run by hand (not a CI gate):
+// WQA3-9 scroll guard: functional checks on the constellation sky, no timing. A CI step (ci.yml "Scroll guard"); by hand:
 //   npm run build && node scripts/perf-serve.cjs &   then   node scripts/scroll-audit.cjs [baseUrl]
 // Default base is the perf server (http://localhost:4400/); pass a Pages preview URL to check a deploy.
 // Per profile (phone, desktop): the sky doesn't paint while the page scrolls, before and after a resize (WQA3-1);
@@ -52,6 +52,10 @@ async function run(name, p, reduced) {
   const browser = await launch()
   const ctx = await browser.newContext({ viewport: p.viewport, isMobile: p.isMobile, hasTouch: p.hasTouch, reducedMotion: reduced ? 'reduce' : 'no-preference' })
   await ctx.addInitScript(counter)
+  // B7-1: the checks are about scrolling, not the effects tier. Pin Full, as the e2e fixture does: on CI and in cloud
+  // sessions the renderer is software (Auto picks still), and under 480 px Auto starts still (HG1-5), so an unpinned
+  // run paints nothing when idle and fails "animates when idle" for a reason the check is not about.
+  await ctx.addInitScript(() => localStorage.setItem('poe2-fx-tier', JSON.stringify({ v: 1, choice: 'full', auto: 'full' })))
   const page = await ctx.newPage()
   await page.goto(base)
   await page.waitForFunction(() => {
@@ -62,7 +66,8 @@ async function run(name, p, reduced) {
   const out = []
   const check = (label, ok, value) => out.push({ profile: name, reduced, label, value, ok })
   if (reduced) {
-    check('still sky (paints in 1.5 s idle)', (await paintsDuring(page, 1500, false)) === 0, await page.evaluate(() => window.__skyPaints))
+    const held = await paintsDuring(page, 1500, false)
+    check('still sky (paints in 1.5 s idle)', held === 0, held)
   } else {
     const idle = await paintsDuring(page, 800, false)
     check('animates when idle (paints in 0.8 s)', idle > 0, idle)
