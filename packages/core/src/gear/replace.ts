@@ -405,15 +405,18 @@ export function planReplacement({
     const statId = RESIST_STAT[res.type]
     if (!statId) continue
     let left = res.remaining
+    // An all-elemental line grants fire, cold and lightning. It grants no chaos.
+    const grants = (id: string) =>
+      id === statId || (id === ALL_ELEMENTAL && (ELEMENTS as readonly string[]).includes(res.type))
 
     // 1. Upgrade a non-T1 resistance line on another item, biggest gain first.
     const upgrades = items
       .filter((i) => i.slotId !== target.slotId && i.active && !i.corrupted)
       .flatMap((item) =>
         item.mods
-          .filter((m) => m.upgrades.length && m.rolled.some((r) => r.id === statId || r.id === ALL_ELEMENTAL))
+          .filter((m) => m.upgrades.length && m.rolled.some((r) => grants(r.id)))
           .map((mod) => {
-            const stat = mod.rolled.find((r) => r.id === statId || r.id === ALL_ELEMENTAL)!
+            const stat = mod.rolled.find((r) => grants(r.id))!
             const reachable = mod.upgrades.find((u) => u.reachableOnThisItem) ?? null
             const raw = rawItems.find((r) => r.slotId === item.slotId)
             const tags = raw ? tiers.tagsForBase(raw.baseType) : null
