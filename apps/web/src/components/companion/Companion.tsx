@@ -13,7 +13,8 @@ import { CURRENT_PATCH } from '@/lib/constants'
 import { isIdle, subscribeIdle } from '@/lib/idle'
 import { importPath, recentCharacters } from '@/lib/recentCharacters'
 
-/** Set once the visitor has opened the tip, so the hop stops for this session. */
+/** Set once the visitor has opened the tip, so the hop stops for this session. Keep it module-private: it is the
+ * companion chunk's marker in `scripts/route-weight.mjs` (CHUNK_CAPS). */
 const TIP_SEEN = 'poe2-companion-tip-seen'
 /** Set once the visitor has opened the stale-patch notice, so that hop stops for this session. */
 const STALE_SEEN = 'poe2-companion-stale-seen'

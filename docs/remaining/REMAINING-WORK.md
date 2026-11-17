@@ -27,6 +27,7 @@ Answers of 2026-11-15 (`docs/plans/FINISH-PLAN.md`) are applied and the rows cle
 | RV1-3 | Custom domain | Your call. If yes, the same PR must add the domain to the proxy `ALLOWED_ORIGIN` (`services/ninja-proxy/api/_upstream.js`), the OG/sitemap base and, for a proxy move, `connect-src`; otherwise character import breaks on the new domain | RV1 |
 | RV1-4 | Move `services/ninja-proxy` from Vercel to a Cloudflare Worker | Defer: responses already carry edge `s-maxage` (character 60 s, ladder 1 h); revisit only if Vercel limits bite | RV1 |
 | RV1-5 | Rate limit on the public proxy (`/api/*`) | Add a Vercel Firewall rate-limit rule (account toggle, no code); CORS does not stop non-browser callers | RV1 |
+| CG1-1 | Run `scripts/route-weight.mjs` in CI (route, lazy and per-chunk budgets are only checked locally today) | One step in the existing `lighthouse` job after "Build web": `node scripts/route-weight.mjs`, reusing that build (no new job, no second build) | CG1 (#196 leftovers) |
 
 ## 1. Decisions
 | ID | Question | Recommended | Origin | Status |
