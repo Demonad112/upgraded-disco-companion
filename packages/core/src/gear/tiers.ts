@@ -221,6 +221,16 @@ export class ModTiers {
   }
 
   /**
+   * Whether any affix carrying `statId` (single or hybrid) can spawn on a base
+   * with these tags. A quarterstaff cannot roll a resistance, so a trade search
+   * for one should not weigh resistances.
+   */
+  canRollStat(statId: string, baseTags: Iterable<string>): boolean {
+    const tags = [...baseTags]
+    return (this.modsByStat().get(statId) ?? []).some((id) => this.canSpawn(id, tags))
+  }
+
+  /**
    * The full ladder for a group on one item class, best tier first.
    *
    * Returns an empty ladder rather than throwing when nothing can spawn — an

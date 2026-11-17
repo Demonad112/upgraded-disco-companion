@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useCallback, useEffect, useRef, useState, type MouseEvent } from 'react'
+import { HOP_MS, scrollAwayStep } from '@/lib/companionScroll'
 import { Wraith } from './Wraith'
 import { nextStepTitle } from '@/data/stepTitles'
 import { usePersistedState } from '@/hooks/usePersistedState'
@@ -24,12 +25,8 @@ const DOZE_MS = 120_000
 const WANDER_EVERY_MS = 120_000
 const WANDER_MS = 5_000
 const STARTLE_MS = 300
-/** Phones: scrolling down past this many px slides the figure away (COMP-1). */
-const AWAY_PX = 48
 /** It comes back this long after scrolling stops, or at once on scroll up. */
 const BACK_MS = 1000
-/** Scroll up by at least this much counts as a change of direction (ignores momentum jitter). */
-const UP_PX = 4
 
 function flag(store: 'local' | 'session', key: string): boolean {
   try {
@@ -174,10 +171,20 @@ export default function Companion() {
 
   // Phones: slide off the edge while the page scrolls down, back on scroll up or BACK_MS after it stops. Passive,
   // rAF-throttled, and the only thing read is scrollY. Never while the bubble is open, it hops, or the figure has focus.
-  const block = useRef(false)
+  // `hop` stays true while a tip is pending, long after the CSS hop has rested, so only the HOP_MS it plays blocks
+  // (B1-4: blocking on `hop` kept the figure over the text on every first visit). The window re-arms each time the
+  // `is-hop` class comes back (closing the bubble replays the hop) and is skipped under reduced motion, where the CSS
+  // plays no hop at all.
+  const hopping = hop && !open
+  const hopUntil = useRef(0)
   useEffect(() => {
-    block.current = open || hop
-  }, [open, hop])
+    const still = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    hopUntil.current = hopping && !still ? performance.now() + HOP_MS : 0
+  }, [hopping])
+  const openRef = useRef(false)
+  useEffect(() => {
+    openRef.current = open
+  }, [open])
   useEffect(() => {
     const phone = window.matchMedia('(max-width: 720px)')
     let last = window.scrollY
@@ -192,9 +199,15 @@ export default function Companion() {
       const y = window.scrollY
       const dy = y - last
       last = y
-      if (!phone.matches || block.current) return show()
-      if (dy <= -UP_PX) return show()
-      if (dy > 0 && y > AWAY_PX && !root.current?.contains(document.activeElement)) setAway(true)
+      const step = scrollAwayStep({
+        phone: phone.matches,
+        blocked: openRef.current || performance.now() < hopUntil.current,
+        focused: !!root.current?.contains(document.activeElement),
+        y,
+        dy,
+      })
+      if (step === 'show') return show()
+      if (step === 'away') setAway(true)
       window.clearTimeout(back)
       back = window.setTimeout(show, BACK_MS)
     }
@@ -260,7 +273,7 @@ export default function Companion() {
   }
 
   const pose = [
-    hop && !open ? 'is-hop' : '',
+    hopping ? 'is-hop' : '',
     talking && !skip ? 'is-talking' : '',
     startle ? 'is-startle' : '',
     asleep && !open ? 'is-asleep' : '',

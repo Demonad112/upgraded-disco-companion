@@ -287,10 +287,10 @@ describe('findings that recraft the same line', () => {
     expect(primary.action).toMatch(/"of Bameth": chaos 18% → 45%, score \+0\.04; or "of Haast": cold 74% → 75%, score under \+0\.01/)
   })
 
-  it('supersedes the generic finding of every alternative, not only the primary', () => {
+  it('supersedes only the lead option generic finding; an alternative gap stays a fix (B1-2)', () => {
     const primary = mergeSameLineSwaps([chaos, cold])
     const base = ['res-cold-under-cap', 'res-chaos-under-cap', 'res-lightning-under-cap'].map((id) => ({ ...rec(id), id }))
     const merged = mergeGearRecommendations(base, [primary])
-    expect(merged.map((r) => r.id).sort()).toEqual(['gear-swap-cold', 'res-lightning-under-cap'])
+    expect(merged.map((r) => r.id).sort()).toEqual(['gear-swap-cold', 'res-chaos-under-cap', 'res-lightning-under-cap'])
   })
 })

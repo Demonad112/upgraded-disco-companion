@@ -638,14 +638,15 @@ export function mergeGearRecommendations(
   if (!gear.length) return base
 
   // A gear swap for a resistance supersedes the engine's generic under-cap entry
-  // for the SAME resistance, and nothing else.
-  const superseded = new Set([
-    ...gear
+  // for the SAME resistance, and nothing else. The alternatives a same-line
+  // decision names (`alsoCovers`) are not superseded: one suffix is recrafted
+  // once, so taking the lead option leaves the other shortfall open (B1-2).
+  const superseded = new Set(
+    gear
       .map((g) => /^gear-swap-(\w+)$/.exec(g.id)?.[1])
       .filter((type): type is string => Boolean(type))
       .map((type) => `res-${type}-under-cap`),
-    ...gear.flatMap((g) => g.alsoCovers ?? []),
-  ])
+  )
 
   return [...base.filter((r) => !superseded.has(r.id)), ...gear].sort(compareRecommendations)
 }

@@ -63,7 +63,7 @@ describe('Yykiuy worked examples', () => {
   })
 
   it('orders by effort, then score gain', () => {
-    expect(yk.report.wins.map((w) => w.id)).toEqual(['one-shot-physical', 'gear-swap-chaos'])
+    expect(yk.report.wins.map((w) => w.id)).toEqual(['one-shot-physical', 'gear-swap-chaos', 'res-lightning-under-cap'])
   })
 })
 

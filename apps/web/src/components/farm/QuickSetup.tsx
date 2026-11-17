@@ -182,7 +182,7 @@ export default function QuickSetup({ farmKey, onChangeFarm, onOpenFull }: { farm
             <dd><span className="farm-num qp-big">{num(score.reward)}</span><VsRecommended c={pctChange(recScore.reward, score.reward)} /></dd>
           </div>
           <div>
-            <dt className="label-metric">Map danger</dt>
+            <dt className="label-metric">Danger</dt>
             <dd><DangerReading loadout={loadout} danger={score.danger} big /><VsRecommended c={pctChange(recScore.danger, score.danger)} upIsBad /></dd>
           </div>
           <div>
@@ -253,7 +253,7 @@ export default function QuickSetup({ farmKey, onChangeFarm, onOpenFull }: { farm
           All three are estimates from this farm&rsquo;s scoring weights, not predicted drops.
         </p>
         <p className="text-sm text-ink-dim" data-testid="qp-danger-note">
-          Farm risk is how dangerous this kind of farm is. Map danger only counts the mods on this Waystone and these tablets, so it can be 0 on a farm that still hurts.
+          Farm risk is how dangerous this kind of farm is. Danger counts only the mods on this Waystone and these tablets, so it can be low on a farm that still hurts.
         </p>
         {errors.length > 0 ? (
           <ul className="farm-errors" role="alert">
