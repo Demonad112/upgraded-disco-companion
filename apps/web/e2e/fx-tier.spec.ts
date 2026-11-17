@@ -55,6 +55,8 @@ test('slow frames lower Auto once, with one toast', async ({ page }) => {
     }
     requestAnimationFrame(burn)
   })
+  // Above 480 px: below it Auto already starts still (HG1-5), so there is nothing to lower.
+  await page.setViewportSize({ width: 1280, height: 800 })
   await page.goto('')
   const toast = page.locator('[data-fx-toast]')
   await expect(toast).toHaveText(/Effects lowered for smoother scrolling\. Change in the footer\./, { timeout: 30_000 })
@@ -66,4 +68,15 @@ test('slow frames lower Auto once, with one toast', async ({ page }) => {
   await expect(html(page)).toHaveAttribute('data-fx', 'lite')
   await page.waitForTimeout(8000)
   await expect(toast).toHaveCount(0)
+})
+
+test('Auto starts still under 480 px and full above it (HG1-5)', async ({ page }) => {
+  // Nothing stored on every load: the fixture's pinned full pick is removed, so the default shows.
+  await page.addInitScript(() => localStorage.removeItem('poe2-fx-tier'))
+  await page.setViewportSize({ width: 390, height: 844 })
+  await page.goto('')
+  await expect(html(page)).toHaveAttribute('data-fx', 'still')
+  await page.setViewportSize({ width: 1280, height: 800 })
+  await page.reload()
+  await expect(html(page)).not.toHaveAttribute('data-fx', 'still')
 })

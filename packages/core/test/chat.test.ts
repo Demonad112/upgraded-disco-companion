@@ -177,4 +177,9 @@ describe('provider transport', () => {
     // Gemini has a no-cost tier, which is why it is the sensible default.
     expect(PROVIDERS.gemini.hasFreeTier).toBe(true)
   })
+
+  it('defaults Anthropic to the current Sonnet id (HG1-11)', () => {
+    // Models API ids, no date suffix. `claude-sonnet-5` is the previous generation.
+    expect(PROVIDERS.anthropic.defaultModel).toBe('claude-sonnet-5-5')
+  })
 })

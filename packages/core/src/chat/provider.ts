@@ -86,7 +86,7 @@ export const PROVIDERS: Readonly<Record<ProviderId, ProviderSpec>> = Object.free
   anthropic: {
     id: 'anthropic',
     label: 'Anthropic',
-    defaultModel: 'claude-sonnet-5',
+    defaultModel: 'claude-sonnet-5-5',
     keyUrl: 'https://console.anthropic.com/settings/keys',
     hasFreeTier: false,
   },

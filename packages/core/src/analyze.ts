@@ -27,7 +27,7 @@ import { readPobMainSkill } from './pob/main-skill.js'
 import { inactiveSetFromPob, readPobSkillGroups, type PobSkillGroup } from './pob/skill-groups.js'
 import { mainSkillNote } from './dps/main-skill.js'
 import { assessBuild, type BuildAssessment } from './score/index.js'
-import { resolveAllocation, type PassiveTree } from './tree/index.js'
+import { checkTreeVersion, resolveAllocation, TREE_UNCHECKED, type PassiveTree, type TreeCheck } from './tree/index.js'
 import { ailmentImmunities, type AilmentStatus } from './defense/ailments.js'
 import type { LadderSummary } from './ninja/ladder.js'
 import type { CharModel, CharModelResponse } from './model/types.js'
@@ -75,6 +75,11 @@ export interface Analysis {
    * keystone names come from the tree data, so without it none can be resolved.
    */
   keystones: KeystoneEffects
+  /**
+   * Whether the tree data covers every allocated node (HG1-9). Keystones are
+   * trusted from the tree only when this is `current`.
+   */
+  treeCheck: TreeCheck
   recommendations: RecommendationReport
   /** The overall verdict, and the reasons behind it. */
   assessment: BuildAssessment
@@ -273,22 +278,18 @@ export async function analyzeCharacter(
   // resolved. Report the neutral result rather than a guess: an uncorrected
   // reading is merely less specific, while a guessed keystone would be wrong.
   const resolvedTree = options.tree ? resolveAllocation(options.tree, passives) : null
-  const keystones = resolvedTree ? keystoneEffectsOf(resolvedTree.keystones, defense) : NO_KEYSTONE_EFFECTS
-  if (options.tree && resolvedTree) {
-    const missing = [
-      ...new Set([
-        ...resolvedTree.unresolvedIds,
-        ...resolvedTree.unresolvedBySet.main,
-        ...resolvedTree.unresolvedBySet.set1,
-        ...resolvedTree.unresolvedBySet.set2,
-      ]),
-    ].sort((a, b) => a - b)
-    if (missing.length) {
-      warnings.push(
-        `${missing.length} allocated passive node${missing.length === 1 ? '' : 's'} (id ${missing.join(', ')}) ${missing.length === 1 ? 'is' : 'are'} not in this tree data (${options.tree.treeName}). ` +
-          'Their effects are not read, so keystone and notable findings may be incomplete. The data may predate the character’s tree version.',
-      )
-    }
+  const treeCheck = options.tree && resolvedTree ? checkTreeVersion(options.tree, resolvedTree) : { ...TREE_UNCHECKED, missing: [] }
+  // HG1-2: an unconfirmed keystone is applied from the tree only once the tree
+  // is known to match the character's; a contradicted one never is.
+  const keystones = resolvedTree
+    ? keystoneEffectsOf(resolvedTree.keystones, defense, { treeCurrent: treeCheck.status === 'current' })
+    : NO_KEYSTONE_EFFECTS
+  if (treeCheck.status === 'stale') {
+    const missing = treeCheck.missing
+    warnings.push(
+      `${missing.length} allocated passive node${missing.length === 1 ? '' : 's'} (id ${missing.join(', ')}) ${missing.length === 1 ? 'is' : 'are'} not in this tree data (${treeCheck.treeName}). ` +
+        'Their effects are not read, so keystone and notable findings may be incomplete. The data may predate the character’s tree version.',
+    )
   }
 
   const reconciliation = pobStats ? reconcile(model, pobStats, { pobMainSkill: exportMain }) : null
@@ -313,6 +314,7 @@ export async function analyzeCharacter(
     breakdowns,
     attribution: attributeToItems(breakdowns, items, defense),
     keystones,
+    treeCheck,
     model,
     recommendations: recommendationsFor(model, options, keystones, exportMain, skillContext(dps, options.catalog)),
     assessment: assessBuild({

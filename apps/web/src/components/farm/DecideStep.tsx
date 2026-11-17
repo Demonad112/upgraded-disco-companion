@@ -82,7 +82,7 @@ export function DecideStep({ onPick, onQuick }: { onPick: (id: string) => void; 
                 </span>
                 <span className="flex flex-wrap items-center gap-2 text-xs">
                   <span className="farm-tile-more"><LevelPill label="Invest" value={s.investment} /></span>
-                  <LevelPill label="Danger" value={s.risk} />
+                  <LevelPill label="Farm risk" value={s.risk} />
                 </span>
                 <span className="farm-tile-more text-sm text-ink-dim">{s.expectedReturn}</span>
                 <span className="farm-tile-more text-xs text-ink-mute">

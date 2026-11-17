@@ -22,6 +22,8 @@ export interface FxState {
 }
 
 export const FX_KEY = 'poe2-fx-tier'
+/** Under this viewport width, auto starts still (HG1-5: owner, 2026-11-17). A user pick still wins. */
+export const PHONE_STILL_PX = 480
 export const TIERS: readonly Tier[] = ['full', 'lite', 'still']
 const isTier = (v: unknown): v is Tier => TIERS.includes(v as Tier)
 
@@ -49,7 +51,7 @@ export function chooseFx(choice: FxChoice) {
 }
 
 /**
- * In <head>, before paint: the stored pick (or stored auto), else a quick hardware guess (data saver, ≤4 cores or
- * ≤4 GB is lite). The renderer and frame checks refine auto after first paint.
+ * In <head>, before paint: the stored pick (or stored auto), else still under 480 px, else a quick hardware guess
+ * (data saver, ≤4 cores or ≤4 GB is lite). The renderer and frame checks refine auto after first paint.
  */
-export const FX_TIER_BOOTSTRAP = `(function(){var d=document.documentElement,t;try{var s=JSON.parse(localStorage.getItem(${JSON.stringify(FX_KEY)})||'null');if(s&&s.v===1)t=s.choice==='auto'?s.auto:s.choice}catch(e){}if(t!=='full'&&t!=='lite'&&t!=='still'){var n=navigator,c=n.connection;t=(c&&c.saveData)||(n.hardwareConcurrency||8)<=4||(n.deviceMemory||8)<=4?'lite':'full'}d.setAttribute('data-fx',t)})()`
+export const FX_TIER_BOOTSTRAP = `(function(){var d=document.documentElement,t;try{var s=JSON.parse(localStorage.getItem(${JSON.stringify(FX_KEY)})||'null');if(s&&s.v===1)t=s.choice==='auto'?s.auto:s.choice}catch(e){}if(t!=='full'&&t!=='lite'&&t!=='still'){var n=navigator,c=n.connection;t=innerWidth<${PHONE_STILL_PX}?'still':(c&&c.saveData)||(n.hardwareConcurrency||8)<=4||(n.deviceMemory||8)<=4?'lite':'full'}d.setAttribute('data-fx',t)})()`

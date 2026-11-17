@@ -187,7 +187,8 @@ export default function Companion() {
     openRef.current = open
   }, [open])
   useEffect(() => {
-    const phone = window.matchMedia('(max-width: 720px)')
+    // Under 480 px the figure is docked in the header and scrolls with it (HG1-5), so only 480–720 px slides away.
+    const phone = window.matchMedia('(min-width: 480px) and (max-width: 720px)')
     let last = window.scrollY
     let frame = 0
     let back = 0
