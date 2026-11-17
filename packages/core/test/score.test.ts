@@ -109,13 +109,13 @@ describe('offence is never graded against invented thresholds', () => {
 
   it('reports a range rather than a point when damage was not graded', () => {
     const unscored = assessBuild({ defense, dps })
-    // Defence alone is 0.30. Damage scores at least 0.15 and at most 0.5 and
-    // was not measured, so the score is somewhere in [0.45, 0.80] and no single
+    // Defence alone is 0.30. Damage scores at least 0 and at most 0.5 and
+    // was not measured, so the score is somewhere in [0.30, 0.80] and no single
     // figure is asserted (CF2, audit item 14).
     expect(unscored.defence).toBe(0.3)
     expect(unscored.score).toBeNull()
     expect(unscored.tier).toBeNull()
-    expect(unscored.scoreRange).toEqual({ min: 0.45, max: 0.8 })
+    expect(unscored.scoreRange).toEqual({ min: 0.3, max: 0.8 })
     expect(unscored.tierRange).toEqual({ worst: 'C', best: 'A' })
   })
 
@@ -148,7 +148,7 @@ describe('offence is never graded against invented thresholds', () => {
     // answer: the bottom of the range is what the build scores if its damage is
     // worth nothing at all, which is not a claim being made.
     const unscored = assessBuild({ defense, dps })
-    expect(unscored.scoreRange!.min).toBe(Math.round((unscored.defence + 0.15) * 100) / 100)
+    expect(unscored.scoreRange!.min).toBe(unscored.defence)
     expect(unscored.scoreRange!.max).toBe(Math.round((unscored.defence + 0.5) * 100) / 100)
   })
 

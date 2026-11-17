@@ -13,7 +13,7 @@ import { readFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 
 import { analyzeCharacter, unwrapCharModel } from '../src/analyze.js'
-import { keystoneEffectsOf, NO_KEYSTONE_EFFECTS } from '../src/keystones/index.js'
+import { keystoneEffectsOf } from '../src/keystones/index.js'
 import {
   appendSnapshot,
   diffSnapshots,
@@ -87,8 +87,8 @@ describe('taking a snapshot', () => {
 
   it('flags Mind Over Matter only when the keystone is allocated and noted', () => {
     expect(base.manaBeforeLife).toBe(false)
-    // No stat corroborates Mind Over Matter (CA1-3), so the note is supplied directly.
-    const mom = { ...NO_KEYSTONE_EFFECTS, notes: [{ keystone: 'Mind Over Matter', text: 'mana before life' }] }
+    // Trusted from the tree (B1), so this goes through the production path.
+    const mom = keystoneEffectsOf([{ name: 'Mind Over Matter' }], analysis.defense)
     expect(toSnapshot(analysis, base.at, mom).manaBeforeLife).toBe(true)
   })
 

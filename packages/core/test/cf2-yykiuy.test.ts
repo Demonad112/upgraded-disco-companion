@@ -90,9 +90,9 @@ describe('CF2 rubric: Yykiuy on the new rubric', () => {
     expect(JSON.stringify(analysis.recommendations)).not.toMatch(/one-shot (risk|threshold)|kills you first/i)
   })
 
-  it('bounds an ungraded range by the lowest damage score: [defence + 0.15, defence + 0.5]', () => {
+  it('bounds an ungraded range by every damage score: [defence + 0, defence + 0.5]', () => {
     const a = assessBuild({ defense, dps })
-    expect(a.scoreRange).toEqual({ min: 0.52, max: 0.87 })
+    expect(a.scoreRange).toEqual({ min: 0.37, max: 0.87 })
   })
 })
 

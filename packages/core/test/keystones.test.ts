@@ -116,13 +116,13 @@ describe('corroboration', () => {
     expect(effects.unverified[0]!.reason).toContain('6,490')
   })
 
-  it('withholds unverifiable keystones, which have nothing to check against', () => {
-    // Resolute Technique changes crit behaviour, which no defensive stat
-    // exposes. Owner decision CA1-3: no corroboration, no correction.
+  it('shows the note for a keystone that changes no figure (B1)', () => {
+    // Resolute Technique changes crit behaviour, which no figure here reads, so
+    // its rule is a note only: shown, and never listed as unverified.
     const effects = keystoneEffectsOf([{ name: 'Resolute Technique' }], defense)
-    expect(effects.neverCrits).toBe(false)
-    expect(effects.applied).toEqual([])
-    expect(effects.unverified.map((u) => u.keystone)).toEqual(['Resolute Technique'])
+    expect(effects.applied).toEqual(['Resolute Technique'])
+    expect(effects.unverified).toEqual([])
+    expect(effects.notes[0]!.text).toContain('never deal critical hits')
   })
 
   it('withholds effects with no stats at all, since nothing corroborates them', () => {
@@ -136,10 +136,10 @@ describe('corroboration', () => {
       [{ name: 'Vaal Pact' }, { name: 'Resolute Technique' }, { name: 'Avatar of Fire' }, { name: 'Blood Magic' }],
       defense,
     )
-    expect(effects.fireOnly).toBe(false)
-    expect(effects.notes.map((n) => n.keystone)).toEqual(['Blood Magic', 'Vaal Pact'])
-    expect(effects.applied).toEqual(['Blood Magic', 'Vaal Pact'])
-    expect(effects.unverified.map((u) => u.keystone)).toEqual(['Avatar of Fire', 'Resolute Technique'])
+    const all = ['Avatar of Fire', 'Blood Magic', 'Resolute Technique', 'Vaal Pact']
+    expect(effects.notes.map((n) => n.keystone)).toEqual(all)
+    expect(effects.applied).toEqual(all)
+    expect(effects.unverified).toEqual([])
   })
 })
 
@@ -171,10 +171,10 @@ describe('effective pool', () => {
   })
 
   it('adds mana under Mind Over Matter, and with Eldritch Battery only alongside it', () => {
-    // No stat corroborates Mind Over Matter (CA1-3), so the pool maths is fed the effect directly.
-    const mom = { ...NO_KEYSTONE_EFFECTS, manaIsPool: true }
+    // Mind Over Matter is trusted from the tree (B1), so this goes through the production path.
+    const mom = keystoneEffectsOf([{ name: 'Mind Over Matter' }], stats({}))
     expect(effectivePool({ ...defense, ...pools }, mom)).toMatchObject({ total: 3500, parts: ['life', 'energy shield', 'mana'] })
-    const both = { ...keystoneEffectsOf([{ name: 'Eldritch Battery' }], stats({ energyShield: 0 })), manaIsPool: true }
+    const both = keystoneEffectsOf([{ name: 'Eldritch Battery' }, { name: 'Mind Over Matter' }], stats({ energyShield: 0 }))
     expect(effectivePool({ ...defense, ...pools }, both)).toMatchObject({ total: 1500, parts: ['life', 'mana'] })
   })
 
@@ -254,12 +254,19 @@ describe('through the full analysis', () => {
 })
 
 describe('never applied without corroboration (CA1-3)', () => {
-  it('withholds a keystone no stat can confirm and lists it as unverified', () => {
-    const effects = keystoneEffectsOf([{ name: 'Resolute Technique' }], defense)
-    expect(effects.neverCrits).toBe(false)
-    expect(effects.applied).toEqual([])
-    expect(effects.notes).toEqual([])
-    expect(effects.unverified).toMatchObject([{ keystone: 'Resolute Technique', kind: 'unconfirmed' }])
+  it('trusts Mind Over Matter from the tree, with or without stats, and lists it as such (B1)', () => {
+    for (const effects of [keystoneEffectsOf([{ name: 'Mind Over Matter' }]), keystoneEffectsOf([{ name: 'Mind Over Matter' }], defense)]) {
+      expect(effects.manaIsPool).toBe(true)
+      expect(effects.applied).toEqual(['Mind Over Matter'])
+      expect(effects.fromTree).toEqual(['Mind Over Matter'])
+      expect(effects.unverified).toEqual([])
+    }
+  })
+
+  it('never lists a corroborated keystone as resting on the tree', () => {
+    const effects = keystoneEffectsOf([{ name: 'Chaos Inoculation' }], stats({ life: 1 }))
+    expect(effects.applied).toEqual(['Chaos Inoculation'])
+    expect(effects.fromTree).toEqual([])
   })
 
   it('withholds a checkable keystone when no stats were given', () => {
