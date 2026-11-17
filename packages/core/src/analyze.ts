@@ -341,7 +341,7 @@ export async function analyzeCharacter(
     const vsOwn = majors.length - vsPob
     if (vsPob > 0) {
       warnings.push(
-        `${vsPob} stat${vsPob === 1 ? '' : 's'} disagree between poe.ninja and the attached Path of Building export. See the reconciliation report before trusting those figures.`,
+        `${vsPob} stat${vsPob === 1 ? ' disagrees' : 's disagree'} between poe.ninja and the attached Path of Building export. See the reconciliation report before trusting those figures.`,
       )
     }
     if (vsOwn > 0) {

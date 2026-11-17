@@ -84,7 +84,7 @@
   ],
   "pobConfigInputCount": 20,
   "warnings": [
-    "1 stat disagree between poe.ninja and the attached Path of Building export. See the reconciliation report before trusting those figures."
+    "1 stat disagrees between poe.ninja and the attached Path of Building export. See the reconciliation report before trusting those figures."
   ],
   "holdingUp": {
     "resistances": [
