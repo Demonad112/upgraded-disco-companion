@@ -179,3 +179,5 @@ Measured at 390×844, 4× CPU, ~1.6 Mbps / 165 ms, local brotli server, reduced 
 |---|---|---|
 | PV1-1 | PoB2 MCP fork with must-haves 1–6 | removed: MCP and the PoB2 bridge deleted (owner approval 2026-11-16) |
 | PV1-2 | Engine parity, proof stats, config robustness (R63) | removed: it depended on PV1-1 |
+| CA1-8 | `rankSensitivity` returns readings with no poe.ninja baseline | removed: #204 deleted `pob/sensitivity.ts` (HG1, 2026-11-17) |
+| CA1-9 | An unknown maximum hit earns 0, so the score is a point | done (HG1, 2026-11-17): the score is a range widened by the max-hit weight |
