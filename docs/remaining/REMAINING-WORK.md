@@ -25,7 +25,6 @@ Answers of 2026-11-15 are applied and the rows cleared: PRO1-3, WQA3-9b, WQA1-1 
 | RV1-3 | Custom domain | Your call. If yes, the same PR must add the domain to the proxy `ALLOWED_ORIGIN` (`services/ninja-proxy/api/_upstream.js`), the OG/sitemap base and, for a proxy move, `connect-src`; otherwise character import breaks on the new domain | RV1 |
 | RV1-4 | Move `services/ninja-proxy` from Vercel to a Cloudflare Worker | Defer: responses already carry edge `s-maxage` (character 60 s, ladder 1 h); revisit only if Vercel limits bite | RV1 |
 | RV1-5 | Rate limit on the public proxy (`/api/*`) | Add a Vercel Firewall rate-limit rule (account toggle, no code); CORS does not stop non-browser callers | RV1 |
-| CG1-1 | Run `scripts/route-weight.mjs` in CI (route, lazy and per-chunk budgets are only checked locally today) | One step in the existing `lighthouse` job after "Build web": `node scripts/route-weight.mjs`, reusing that build (no new job, no second build) | CG1 (#196 leftovers) |
 | CA1-8 | `rankSensitivity` (`pob/sensitivity.ts`) still returns readings with no poe.ninja baseline, only warning "unvalidated" | Apply the CA1-2 rule: no expectations, no readings | CA1 |
 | CA1-9 | An unknown maximum hit earns 0 in `defenceParts().total`, so the score is a point that assumes the worst survivability | Widen `scoreRange` by the max-hit weight when it is in `missing`, as offence already does | CA1 |
 
@@ -51,43 +50,26 @@ These rows run in the order of `OWNER-STEPS.md`.
 | DATA-1 | `passive-tree.json` and the Soul Core entries in `mod-tiers.json` predate patch 0.5.5 and are unverified against it (`packages/data/PROVENANCE.md`) | M | PROVENANCE | Refresh with the 0.5.5 data; needs `packages/data` | open (waits on the 0.5.5 data) |
 | B4-1 | Gear "Find on trade" for a weapon: weigh its own mods. Today a base that can't roll resists gets no resist weights and falls back to the trade page; weighing weapon lines needs trade ids for those mods in `trade-map.json` (sync-data) | M | B4 (B1-1) | `packages/data` / sync-data scope | open |
 | CA1-7 | Raw `summarizeSwaps` counts one recraftable line once per stat: one fire line that could go to cold or lightning reads "1 swap covers" for both. Recommendations already merge it (`mergeSameLineSwaps`, pinned by `gear-swap-summary-shared-line.test.ts`). Fix: assign each swap to one shortfall, or add a shared-line note | S | CA1 batch 4 | Repro red: `expected 2 to be less than or equal to 1` | open |
+| B7-1 | `scripts/scroll-audit.cjs` (CI "Scroll guard", report-only) fails on main: "animates when idle" / "resumes after scrolling stops" paint 0 in 0.8 s on phone and desktop (runs 2026-11-17 08:35 and 09:09). Fix the check or the sky, then drop `continue-on-error` in `ci.yml` | S | B7 | WQA3-9b | open |
 
 ## 4. Standing rules (no work)
-- Route budgets live in `scripts/route-weight.mjs` (source of truth; brotli, first load, the `noModule` polyfill chunk excluded; exits 1 when a route is over): `/` 160,000 · `/checklist` 167,000 · `/character` 209,000 · `/atlas` 179,000 · `/dashboard` 188,000 · `/trade` 162,000 · `/methodology` 156,000 · `/whats-new` 154,000 B; any other route 190,000. Raise one only on purpose, with the reason in the PR. Also pins the lazy chunks (none named by any route HTML) at 191,000 B br. Not run in CI. Any change to home JS reports before and after.
+- Route, lazy and per-chunk budgets live in `scripts/route-weight.mjs` (source of truth; brotli, first load). It exits 1 when one is over and runs in CI (`ci.yml`). Raise one only on purpose, with the reason in the PR. Any change to home JS reports before and after.
 - Perf bar: keep a change only if it saves ≥ 5 % br on its file or route, or removes real runtime work.
 - New tokens go in `tokens.css`. Canvas code reads only colours from tokens.
 - A bare `.card` outside home needs `data-surface="data"`.
 - SB1-1: add a proxy lockfile, `npm ci` and audit only if `services/ninja-proxy` gains runtime deps.
 - Never put session URLs on GitHub (commits, PRs, comments).
 
-## 5. Open rows (moved from the carry files, 2026-11-15)
-Finished work is in `docs/HISTORY.md`. Rows keep their carry IDs. One line each.
+## 5. Parked, not planned
+One line each; reopen only when the trigger happens.
 
-| ID | Row | Batch |
+| ID | Row | Trigger |
 |---|---|---|
-| WQA3-9b | `scripts/scroll-audit.cjs` runs in CI report-only (`continue-on-error`); make it blocking only after a few clean runs on `main` | done in Batch 1 |
-| CF2-2 | Monster physical damage per area level has no second source | parked (no second source) |
-| OC1-2 | Local-only Lighthouse medians, visualViewport and share-target specs | CI / cloud when wanted |
+| CF2-2 | Monster physical damage per area level has no second source | A second source appears |
+| OC1-2 | Local-only Lighthouse medians, visualViewport and share-target specs | Run in CI or a cloud session when wanted |
+| R50 | Lazy core on `/character` | Only if the route goes over its `scripts/route-weight.mjs` budget |
+| R53 | 280 px determinism test | Only if CI flakes |
+| WQA3-2b / WQA3-14 | OffscreenCanvas sky | A real-device trace |
+| PXC-4 | Sky rAF pause when covered | A route fully covered by blocks |
 
-Closed in this consolidation: PV1-6 / R67, PRO1-1, PRO1-2, PRO1-4, PRO1-5 (owner decision 2026-11-15), PXA-7, PXA-8, PXC-4 (see Do not do), PXB-1, PXB-3, PXB-4.
-
-## 6. Do not do
-| Item | Why |
-|---|---|
-| WQA1-6 JSON-LD; HSTS preload; CORP | Owner 2026-11-15: skip (`lang: "en"` only, done) |
-| WQA3-2b / WQA3-14 OffscreenCanvas sky | Wait for a real-device trace |
-| PXC-4 sky rAF pause when covered | Sky stays visible in the margins; revisit only if a route is fully covered |
-| PXC-8 skipped sweeps, analytics idea, PRO1 W7 | Dropped by owner 2026-11-15 (the hooded mascot came back as the wraith companion, docs/design/WRAITH.md) |
-| R44–R47, R57, console realm | Parked on owner hardware; no session |
-| R39: sky id index | ~15 KB on an idle cached chunk; not worth it |
-| R50: lazy core on `/character` | Only if the route goes over its `scripts/route-weight.mjs` budget (209,000 B br; 208,064 on 2026-11-14) |
-| R51 / R52: blur drop, checks chip | Decided: keep / leave out |
-| R53: 280 px determinism test | Only if CI flakes |
-| Minify `trade2-stats.json` | 2.4 %, under the 5 % bar (L2) |
-| Lazy `CommandPalette` | Already lazy-loads `SearchDialog` |
-| Dedupe the Lighthouse job's build | Runs in parallel, so no wall-time win; basePath differs |
-| Re-add Dependabot | Removed on purpose |
-| Design, light theme, cursor effects | Decided; change only with the owner |
-| Patch-day / 1.0 data refresh | Owner |
-| Guessed DPS thresholds | Against the data rules |
-| Restore `DESIGN.md` / `DATA-REFRESH.md` | R20: closed |
+Decided and closed (not work): HSTS preload, CORP and JSON-LD skipped; Dependabot removed on purpose; design, light theme and cursor effects change only with the owner; patch-day / 1.0 data refresh is the owner's; no guessed DPS thresholds. Details of older rows: `archive/REGISTER-CLOSED.md`.
