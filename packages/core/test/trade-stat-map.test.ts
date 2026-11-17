@@ -37,6 +37,7 @@ describe('resolveTradeStatMapFromSnapshot', () => {
     const by = Object.fromEntries(r.map((x) => [x.internalId, x]))
     expect(by['base_fire_damage_resistance_%']!.tradeId).toBe('pseudo.t_fire')
     expect(by['base_chaos_damage_resistance_%']!.tradeId).toBe('pseudo.t_chaos')
+    expect(by['base_fire_damage_resistance_%']!.text).toBe('+#% total to Fire Resistance') // the line that matched
     expect(by['base_cold_damage_resistance_%']).toMatchObject({ tradeId: null, reason: 'no-match' })
   })
 

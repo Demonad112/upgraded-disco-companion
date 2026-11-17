@@ -147,6 +147,7 @@ export type ResolvedStatReason = 'empty-snapshot' | 'no-match' | 'ambiguous'
 
 export interface ResolvedSnapshotStat {
   internalId: string
+  /** The line matched: `pseudoText` for the pseudo type, `text` otherwise. */
   text: string
   /** Null unless exactly one entry of the wanted type matched. */
   tradeId: string | null
@@ -172,9 +173,10 @@ export function resolveTradeStatMapFromSnapshot(
     byText.set(key, [...(byText.get(key) ?? []), e.id])
   }
   return MAPPED_STATS.map((m) => {
-    const base = { internalId: m.internalId, text: m.text, patch: snapshot.patch, fetchedAt: snapshot.fetchedAt }
+    const text = typeFilter === 'pseudo' ? m.pseudoText : m.text
+    const base = { internalId: m.internalId, text, patch: snapshot.patch, fetchedAt: snapshot.fetchedAt }
     if (snapshot.entries.length === 0) return { ...base, tradeId: null, reason: 'empty-snapshot' as const }
-    const ids = byText.get(normaliseStatText(typeFilter === 'pseudo' ? m.pseudoText : m.text)) ?? []
+    const ids = byText.get(normaliseStatText(text)) ?? []
     if (ids.length === 1) return { ...base, tradeId: ids[0]!, reason: null }
     return { ...base, tradeId: null, reason: ids.length === 0 ? ('no-match' as const) : ('ambiguous' as const) }
   })

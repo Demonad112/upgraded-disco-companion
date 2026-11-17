@@ -191,10 +191,6 @@ export function readPobConfig(xml: string): PobConfig {
 }
 
 /**
- * One sentence describing what a DPS figure from this export actually
- * represents, for use anywhere such a number is shown or judged.
- */
-/**
  * A readable name for a conditional with no label (B1-7): `conditionEnemyFooBar` -> "enemy: foo bar",
  * `conditionFooBar` -> "foo bar". Still named, never dropped; the raw id stays in `unlabelledConditionals`.
  */
@@ -208,6 +204,10 @@ export function humaniseCondition(id: string): string {
   return words.startsWith('enemy ') ? `enemy: ${words.slice(6)}` : words
 }
 
+/**
+ * One sentence describing what a DPS figure from this export actually
+ * represents, for use anywhere such a number is shown or judged.
+ */
 export function describePobConfig(config: PobConfig | null | undefined): string {
   if (!config || config.inputCount === 0) {
     return 'This export saved no Path of Building configuration, so the damage figures use PoB’s defaults.'

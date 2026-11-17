@@ -28,6 +28,12 @@ describe('gear targets', () => {
     expect(weight.filters).toHaveLength(1) // held-up cold is a minimum only, not a weight
   })
 
+  it('keeps the full held-up resistance as the minimum, not one affix roll (pseudo totals, R65)', () => {
+    const url = weightedTradeLink({ baseType: 'Jungle Tiara', removalCost: { cold: 70 } }, { fire: 15 }, map, 'Standard')!
+    const keep = JSON.parse(new URL(url).searchParams.get('q')!).query.stats[0]
+    expect(keep.filters[0].value).toEqual({ min: 70 })
+  })
+
   it('weighs only resistances the base can roll (B1-1: a quarterstaff rolls none)', () => {
     const row = { baseType: 'Long Quarterstaff', removalCost: {} }
     const gaps = { lightning: 2, chaos: 6 }

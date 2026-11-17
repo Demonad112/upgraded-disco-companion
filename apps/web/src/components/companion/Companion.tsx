@@ -172,11 +172,15 @@ export default function Companion() {
   // Phones: slide off the edge while the page scrolls down, back on scroll up or BACK_MS after it stops. Passive,
   // rAF-throttled, and the only thing read is scrollY. Never while the bubble is open, it hops, or the figure has focus.
   // `hop` stays true while a tip is pending, long after the CSS hop has rested, so only the HOP_MS it plays blocks
-  // (B1-4: blocking on `hop` kept the figure over the text on every first visit).
+  // (B1-4: blocking on `hop` kept the figure over the text on every first visit). The window re-arms each time the
+  // `is-hop` class comes back (closing the bubble replays the hop) and is skipped under reduced motion, where the CSS
+  // plays no hop at all.
+  const hopping = hop && !open
   const hopUntil = useRef(0)
   useEffect(() => {
-    hopUntil.current = hop ? performance.now() + HOP_MS : 0
-  }, [hop])
+    const still = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    hopUntil.current = hopping && !still ? performance.now() + HOP_MS : 0
+  }, [hopping])
   const openRef = useRef(false)
   useEffect(() => {
     openRef.current = open
@@ -269,7 +273,7 @@ export default function Companion() {
   }
 
   const pose = [
-    hop && !open ? 'is-hop' : '',
+    hopping ? 'is-hop' : '',
     talking && !skip ? 'is-talking' : '',
     startle ? 'is-startle' : '',
     asleep && !open ? 'is-asleep' : '',

@@ -26,5 +26,9 @@ describe('wraith scroll-away on phones (B1-4)', () => {
     // The pending-hop flag alone must not block; only the HOP_MS window after it starts.
     expect(src).toMatch(/blocked: openRef\.current \|\| performance\.now\(\) < hopUntil\.current/)
     expect(src).not.toMatch(/block\.current = open \|\| hop\b/)
+    // The window follows the class the CSS animates (re-armed when the bubble closes) and is off under reduced motion.
+    expect(src).toMatch(/hopping \? 'is-hop'/)
+    expect(src).toMatch(/hopUntil\.current = hopping && !still/)
+    expect(src).toMatch(/\}, \[hopping\]\)/)
   })
 })
