@@ -1,6 +1,10 @@
 ---
 name: site-ui-rules
-description: Design tokens, fonts, icon rules and accessibility rules for the Endgame companion site. Use this whenever you add or restyle UI on the live site or mockups, pick colours, fonts or icons, add an icon set (Lucide, Font Awesome, Material Symbols), or review a change for contrast or focus. Reference only: for type sizes and spacing use ui-type-and-space; for a redesign workflow use ui-design-critique-loop.
+description: >-
+  Design tokens, fonts, icon rules and accessibility rules for the Endgame companion site. Use this whenever you add
+  or restyle UI on the live site or mockups, pick colours, fonts or icons, add an icon set (Lucide, Font Awesome,
+  Material Symbols), or review a change for contrast or focus. Reference only: for type sizes and spacing use
+  ui-type-and-space; for a redesign workflow use ui-design-critique-loop.
 ---
 
 > **This repo:** written for another repo. CLAUDE.md "Design" overrides it on any conflict (dark palette, uppercase EB Garamond headings, square corners, no rounded shapes, tokens from `apps/web/src/app/tokens.css`, imported by `globals.css`). Bars and data panels are solid (`--data-fill`); clear glass only on home and hero.

@@ -1,6 +1,9 @@
 ---
 name: ui-design-critique-loop
-description: A repeatable designer workflow for the agent: explore options, screenshot, critique against a rubric, fix, re-check. Use this whenever the user asks you to design, redesign or improve a UI, to compare directions, "make it better", or to act like a pro designer, and before presenting any visual work as finished.
+description: >-
+  A repeatable designer workflow for the agent: explore options, screenshot, critique against a rubric, fix,
+  re-check. Use this whenever the user asks you to design, redesign or improve a UI, to compare directions,
+  "make it better", or to act like a pro designer, and before presenting any visual work as finished.
 ---
 
 > **This repo:** written for another repo. CLAUDE.md "Design" overrides it on any conflict (dark palette, uppercase EB Garamond headings, square corners, no rounded shapes, tokens from `apps/web/src/app/tokens.css`, imported by `globals.css`). Bars and data panels are solid (`--data-fill`); clear glass only on home and hero.
