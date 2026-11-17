@@ -43,16 +43,14 @@ Two consequences that surprise people, both deliberate:
 
 | | |
 |---|---|
-| `packages/core` | Pure analysis. No I/O, no framework — `fetch` and the Path of Building transport are injected. 664 tests. |
+| `packages/core` | Pure analysis. No I/O, no framework — `fetch` is injected. 664 tests. |
 | `packages/data` | Generated game data artifacts and the scripts that extract them. See [PROVENANCE.md](packages/data/PROVENANCE.md). |
 | `apps/web` | Static Next.js export, deployed on Cloudflare Pages. Five routes. |
-| `apps/mcp` | 31-tool Model Context Protocol server over stdio. See [TOOLS.md](apps/mcp/TOOLS.md). |
 | `services/ninja-proxy` | Serverless functions. Needed because poe.ninja sends no CORS headers. |
 
-**The invariant:** neither app contains analysis logic. Both import
+**The invariant:** the app contains no analysis logic. It imports
 `packages/core`. A predecessor project vendored a duplicate analyser into its
-web app, so the app and the MCP server could only agree by coincidence. Do not
-break this.
+web app, so two consumers could only agree by coincidence. Do not break this.
 
 ## Routes
 
@@ -124,8 +122,6 @@ Verification, all of which should pass before any change is called done:
 npm run typecheck                  # builds core first; the script handles it
 npm test                           # 664 tests (core) + 92 (web)
 npm run build                      # core -> dist, then the web static export
-node scripts/verify-mcp.mjs        # drives the real MCP binary over stdio
-npm run tools -w @poe2/mcp         # regenerates TOOLS.md; CI fails if stale
 ```
 
 For an exact Cloudflare Pages parity check of the built export:

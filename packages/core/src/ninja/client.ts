@@ -2,7 +2,7 @@
  * poe.ninja PoE2 API client.
  *
  * The core stays pure: `fetch` is INJECTED, never imported. That is what lets
- * the MCP server call poe.ninja directly (server-side, no CORS) while the web
+ * Node callers hit poe.ninja directly (server-side, no CORS) while the web
  * app routes the same code through a proxy, with both sharing this logic.
  *
  * ## Why a proxy is needed in the browser

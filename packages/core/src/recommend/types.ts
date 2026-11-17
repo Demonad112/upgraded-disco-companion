@@ -3,7 +3,7 @@
  *
  * V1's biggest failure was emitting templated strings ("chaos res is low").
  * V2 emits structured, quantified, costed, evidence-backed objects. The UI
- * renders them; the MCP server serialises them; neither invents prose.
+ * renders them and invents no prose.
  *
  * THE RULE: never invent a number. If a value cannot be derived from the
  * payload, emit an `unresolved` entry naming exactly what is missing.
@@ -74,7 +74,7 @@ export interface Recommendation {
   action: string
   /** Why it matters: the caddy line, one short sentence a new player can act on. */
   rationale: string
-  /** The full reasoning with the measured numbers. Shown under Pro detail and passed to MCP clients. */
+  /** The full reasoning with the measured numbers. Shown under Pro detail. */
   detail?: string
   /** The measured gain. Null only for `question` entries. */
   impact: Impact | null

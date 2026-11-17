@@ -4,7 +4,7 @@
   "private": true,
   "description": "Generated Path of Exile 2 game data artifacts and the scripts that extract them. Consumed by reading files from generated/, never by importing this package.",
   "license": "MIT",
-  "//": "This directory sits under the packages/* workspace glob. Without a manifest npm treats it as a stray directory, which works until something in the workspace tries to resolve it. The artifacts are read from disk by apps/mcp and copied into apps/web/public by its sync-data script, so there is no main entry point to declare.",
+  "//": "This directory sits under the packages/* workspace glob. Without a manifest npm treats it as a stray directory, which works until something in the workspace tries to resolve it. The artifacts are copied into apps/web/public by its sync-data script, so there is no main entry point to declare.",
   "scripts": {
     "build:tree": "node scripts/build-tree.mjs",
     "build:mod-tiers": "node scripts/build-mod-tiers.mjs",

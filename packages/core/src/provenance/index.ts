@@ -35,7 +35,7 @@ const TIER_NOTE: Readonly<Partial<Record<Tier, string>>> = Object.freeze({
 
 /**
  * Which tier each of the site's sources maps to. Owner-approved mapping
- * (docs/HISTORY.md, MCP2).
+ * (docs/HISTORY.md).
  */
 export const SOURCE_TIER = Object.freeze({
   /** Fields read from a poe.ninja character payload. */
@@ -44,7 +44,7 @@ export const SOURCE_TIER = Object.freeze({
   generated: 'canonical',
   /** Figures derived in `defense/` and `gear/`. */
   derived: 'computed',
-  /** Mechanic explanations written by hand (`apps/mcp/src/mechanics.ts`). */
+  /** Mechanic explanations written by hand. */
   mechanics: 'interpreted',
 } as const satisfies Record<string, Tier>)
 

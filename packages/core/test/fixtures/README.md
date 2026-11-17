@@ -49,13 +49,12 @@ It exercises nearly every edge case the analyser has to survive:
 
 ## Captures still to commit
 
-`test/evidence-pack.test.ts` holds regression tests for two more characters and
-skips them until their captures exist. Save each verbatim (same two-step fetch
-as above, `{type, charModel}` envelope intact):
+`yykiuy-v51.json` and `yykiuy-v80.json` (Yykiuy, level 88 Martial Artist, Forbidden Rites) are
+committed and used by `test/evidence-pack.test.ts`. One capture is still wanted; save it
+verbatim (same two-step fetch as above, `{type, charModel}` envelope intact):
 
 | File | Character |
 |---|---|
-| `yykiuy-v<model version>.json` | Yykiuy, level 88 Martial Artist, Forbidden Rites |
 | `athrynas-94-v<model version>.json` | Athrynas at level 94 (the committed `athrynas-v43.json` is level 86) |
 
 Every file here is also checked by `tree.test.ts` for allocated passive nodes

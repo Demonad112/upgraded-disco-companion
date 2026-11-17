@@ -34,7 +34,7 @@ for (const s of resolveTradeStatMapFromSnapshot(snapshot)) if (s.tradeId) tradeM
 writeFileSync(join(to, 'trade-map.json'), JSON.stringify({ patch: snapshot.patch, fetchedAt: snapshot.fetchedAt, map: tradeMap }) + '\n')
 process.stdout.write(`  trade-map.json (${Object.keys(tradeMap).length} ids)\n`)
 // mod-tiers.json: the browser copy drops `displayOnly` (implicit/corrupted/unique text, half the bytes) into
-// mod-display.json, fetched only when a mod has no craftable ladder. The MCP server keeps the full file.
+// mod-display.json, fetched only when a mod has no craftable ladder.
 const tiersFull = JSON.parse(readFileSync(join(from, 'mod-tiers.json'), 'utf8'))
 const { displayOnly, ...tiersTrim } = tiersFull
 writeFileSync(join(to, 'mod-tiers.json'), JSON.stringify(tiersTrim) + '\n')

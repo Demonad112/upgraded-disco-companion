@@ -1,6 +1,6 @@
 import { PROFILE_URL, expect, test } from './fixtures'
 
-// PX0: pixel baselines. 8 routes plus /character with the bundled fixture, at 280, 390, 1440 and 1920 px
+// PX0: pixel baselines. 8 routes plus /character with an imported profile (PROFILE_URL), at 280, 390, 1440 and 1920 px
 // (the two extremes replace a separate width sweep). Reduced motion is on and the sky canvas is masked, so
 // stars never fail a diff. Baselines come from CI Linux Chromium only: the first CI run writes any that are
 // missing and uploads them as the `visual-baselines` artifact; commit them into

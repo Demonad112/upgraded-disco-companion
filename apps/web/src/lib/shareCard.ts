@@ -46,7 +46,7 @@ export interface ShareCardData {
   /** The weakest max hit: what kills the character first. */
   killer: { value: number; type: string } | null
   vitals: { label: string; value: number | null; caption?: string }[]
-  /** Up to three actionable findings, most important first. Kept for the alt text and MCP parity; v2 draws the showcase instead. */
+  /** Up to three actionable findings, most important first. Kept for the alt text; v2 draws the showcase instead. */
   findings: string[]
   /** The main skill and its DPS, the figure inside the ring. */
   dps: { value: number; skill: string } | null
