@@ -341,7 +341,7 @@ export async function analyzeCharacter(
     const vsOwn = majors.length - vsPob
     if (vsPob > 0) {
       warnings.push(
-        `${vsPob} stat${vsPob === 1 ? '' : 's'} disagree between poe.ninja and the attached Path of Building export. See the reconciliation report before trusting those figures.`,
+        `${vsPob} stat${vsPob === 1 ? ' disagrees' : 's disagree'} between poe.ninja and the attached Path of Building export. See the reconciliation report before trusting those figures.`,
       )
     }
     if (vsOwn > 0) {
@@ -357,7 +357,9 @@ export async function analyzeCharacter(
   // was left uncorrected on purpose.
   for (const unverified of keystones.unverified) {
     warnings.push(
-      `${unverified.keystone} is allocated on the passive tree, but ${unverified.reason}. Its corrections were not applied — poe.ninja may not have reindexed this character since the tree changed.`,
+      `${unverified.keystone} is allocated on the passive tree, but ${unverified.reason}. Its corrections were not applied${
+        unverified.kind === 'contradicted' ? ' — poe.ninja may not have reindexed this character since the tree changed' : ''
+      }.`,
     )
   }
 

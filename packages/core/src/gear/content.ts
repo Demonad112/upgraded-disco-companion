@@ -89,7 +89,8 @@ export interface BossRow {
 }
 
 export interface ContentReport {
-  lowestMaximumHit: number
+  /** Null when poe.ninja reported no maximum hit (CA1-6): no tier is graded then. */
+  lowestMaximumHit: number | null
   lowestMaximumHitType: string
   /** Waystone tiers, lowest first. */
   tiers: TierRow[]
@@ -109,7 +110,7 @@ export interface ContentReport {
 
 export function analyzeContent(defense: DefenseSummary, data: MonsterStatData): ContentReport {
   // No maximum hit in the payload means no headroom to state. The report keeps
-  // its shape (0, no rows) and says so; it never grades a tier against 0.
+  // its shape (null, no rows) and says so; it never grades a tier against 0.
   const known = defense.lowestMaximumHit !== null && defense.lowestMaximumHit > 0
   const lowest = known ? defense.lowestMaximumHit! : 0
   const type = defense.lowestMaximumHitType ?? 'unknown'
@@ -176,7 +177,7 @@ export function analyzeContent(defense: DefenseSummary, data: MonsterStatData): 
           `. That is against a normal monster; rares, uniques and map modifiers hit considerably harder.`
 
   return {
-    lowestMaximumHit: lowest,
+    lowestMaximumHit: known ? lowest : null,
     lowestMaximumHitType: type,
     tiers,
     bosses,

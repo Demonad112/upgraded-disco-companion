@@ -75,12 +75,14 @@ function resCredit(r: Pick<ResistanceState, 'value' | 'max'> & { value: number; 
 }
 
 export interface DefenceParts {
-  /** Survivability, from the lowest max hit. 0 when unknown. */
-  maxHit: number
+  /** Survivability, from the lowest max hit. Null when unknown, and listed in `missing`. */
+  maxHit: number | null
   elemental: number
   chaos: number
-  /** Unrounded sum, for ranking changes too small to move the rounded score. */
+  /** Unrounded sum of the known parts, for ranking changes too small to move the rounded score. */
   total: number
+  /** Parts with no input to grade; each earns no credit in `total`. */
+  missing: 'maxHit'[]
 }
 
 /**
@@ -94,7 +96,7 @@ export function defenceParts(
   const w = RUBRIC.weights
   const hit = lowestCountedHit(defense, keystones)
   const { zeroAt, fullAt } = RUBRIC.maxHit
-  const maxHit = hit === null ? 0 : w.maxHit * Math.min(1, Math.max(0, (hit - zeroAt) / (fullAt - zeroAt)))
+  const maxHit = hit === null ? null : w.maxHit * Math.min(1, Math.max(0, (hit - zeroAt) / (fullAt - zeroAt)))
 
   // Unknown elements earn no credit; the caveats say so.
   const elementalAll = defense.resistances.filter((r) => r.type !== 'chaos')
@@ -112,7 +114,7 @@ export function defenceParts(
       ? w.chaos * resCredit({ value: chaosRes.value, max: chaosRes.max })
       : 0
 
-  return { maxHit, elemental, chaos, total: maxHit + elemental + chaos }
+  return { maxHit, elemental, chaos, total: (maxHit ?? 0) + elemental + chaos, missing: maxHit === null ? ['maxHit'] : [] }
 }
 
 /** The lowest max hit that can kill: chaos is skipped under chaos immunity. */
@@ -239,7 +241,7 @@ export function assessBuild(input: BuildAssessmentInput): BuildAssessment {
   const hits = defense.maxHits.filter((h) => h.value > 0 && !(keystones.chaosImmune && h.type === 'chaos'))
   if (!hits.length) {
     caveats.push('The payload carries no maximum-hit figures, so survivability was not graded.')
-  } else if (parts.maxHit >= RUBRIC.weights.maxHit) {
+  } else if (parts.maxHit !== null && parts.maxHit >= RUBRIC.weights.maxHit) {
     const low = Math.min(...hits.map((h) => h.value))
     strengths.push(`Survives a ${low.toLocaleString()} hit of every damage type`)
   }

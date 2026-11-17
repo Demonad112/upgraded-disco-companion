@@ -82,6 +82,9 @@ class RankablePob {
   }
 }
 
+/** A gate the fake's baseline passes: every ranking needs one (CA1-2). */
+const GATE = [{ label: 'Life', expected: 1448, simulatedKeys: ['Life'] }]
+
 function bridgeFor(pob: RankablePob): PobBridge {
   return new PobBridge({ transport: pob.transport })
 }
@@ -97,7 +100,7 @@ describe('rankNodesByMeasuredGain', () => {
     const report = await rankNodesByMeasuredGain(bridgeFor(pob), [
       { id: 10, name: 'Far Notable' },
       { id: 11, name: 'Adjacent Notable' },
-    ])
+    ], { expected: GATE })
 
     expect(report.baseline).toBe(1000)
     expect(report.ranked.map((r) => r.nodeId)).toEqual([11, 10])
@@ -112,7 +115,7 @@ describe('rankNodesByMeasuredGain', () => {
     pob.worth.set(10, 500)
     pob.worth.set(11, 300)
 
-    const report = await rankNodesByMeasuredGain(bridgeFor(pob), [{ id: 10 }, { id: 11 }])
+    const report = await rankNodesByMeasuredGain(bridgeFor(pob), [{ id: 10 }, { id: 11 }], { expected: GATE })
 
     // If node 10 had been left allocated, node 11 would measure from 1500.
     for (const r of report.ranked) expect(r.measured?.before).toBe(1000)
@@ -124,7 +127,7 @@ describe('rankNodesByMeasuredGain', () => {
     pob.worth.set(11, 300)
     pob.stuck.add(10)
 
-    const report = await rankNodesByMeasuredGain(bridgeFor(pob), [{ id: 10 }, { id: 11 }])
+    const report = await rankNodesByMeasuredGain(bridgeFor(pob), [{ id: 10 }, { id: 11 }], { expected: GATE })
 
     expect(report.halted).toBe(true)
     // Node 10's measurement was valid — it is taken before the failed undo — so
@@ -137,7 +140,7 @@ describe('rankNodesByMeasuredGain', () => {
     const pob = new RankablePob()
     pob.worth.set(11, 300)
 
-    const report = await rankNodesByMeasuredGain(bridgeFor(pob), [{ id: 1 }, { id: 11 }])
+    const report = await rankNodesByMeasuredGain(bridgeFor(pob), [{ id: 1 }, { id: 11 }], { expected: GATE })
 
     expect(report.ranked.map((r) => r.nodeId)).toEqual([11])
     expect(report.skipped).toHaveLength(1)
@@ -160,7 +163,7 @@ describe('rankNodesByMeasuredGain', () => {
       },
     })
 
-    const report = await rankNodesByMeasuredGain(watching, [{ id: 10 }, { id: 11 }, { id: 12 }, { id: 13 }])
+    const report = await rankNodesByMeasuredGain(watching, [{ id: 10 }, { id: 11 }, { id: 12 }, { id: 13 }], { expected: GATE })
 
     expect(report.halted).toBe(true)
     expect(report.warnings.join(' ')).toContain('Lost the connection')
@@ -172,7 +175,7 @@ describe('rankNodesByMeasuredGain', () => {
 
   it('refuses to rank by a metric Path of Building does not report', async () => {
     const pob = new RankablePob()
-    const report = await rankNodesByMeasuredGain(bridgeFor(pob), [{ id: 10 }], { metric: 'Nonsense' })
+    const report = await rankNodesByMeasuredGain(bridgeFor(pob), [{ id: 10 }], { metric: 'Nonsense', expected: GATE })
 
     expect(report.halted).toBe(true)
     expect(report.ranked).toEqual([])
@@ -186,14 +189,14 @@ describe('rankNodesByMeasuredGain', () => {
     pob.metricName = 'Armour'
     pob.worth.set(10, 250)
 
-    const report = await rankNodesByMeasuredGain(bridgeFor(pob), [{ id: 10 }], { metric: 'Armour' })
+    const report = await rankNodesByMeasuredGain(bridgeFor(pob), [{ id: 10 }], { metric: 'Armour', expected: GATE })
     expect(report.ranked[0]).toMatchObject({ perPoint: 250 })
   })
 
   it('reports side effects separately from the metric', async () => {
     const pob = new RankablePob()
     pob.worth.set(10, 500)
-    const report = await rankNodesByMeasuredGain(bridgeFor(pob), [{ id: 10 }])
+    const report = await rankNodesByMeasuredGain(bridgeFor(pob), [{ id: 10 }], { expected: GATE })
 
     expect(report.ranked[0]!.measured?.stat).toBe('TotalDPS')
     // Life did not move on this fake, so there is nothing to report — the point
@@ -203,7 +206,7 @@ describe('rankNodesByMeasuredGain', () => {
 
   it('says plainly when nothing helped, rather than returning a ranking of zeroes', async () => {
     const pob = new RankablePob() // no node is worth anything
-    const report = await rankNodesByMeasuredGain(bridgeFor(pob), [{ id: 10 }, { id: 11 }])
+    const report = await rankNodesByMeasuredGain(bridgeFor(pob), [{ id: 10 }, { id: 11 }], { expected: GATE })
 
     expect(report.ranked).toHaveLength(2)
     expect(report.ranked.every((r) => r.perPoint === 0 || r.perPoint === null)).toBe(true)
@@ -217,7 +220,7 @@ describe('rankNodesByMeasuredGain', () => {
     // moves anyway, which is what the end-of-run baseline re-read is for.
     pob.driftAfterReads = 3
 
-    const report = await rankNodesByMeasuredGain(bridgeFor(pob), [{ id: 10 }])
+    const report = await rankNodesByMeasuredGain(bridgeFor(pob), [{ id: 10 }], { expected: GATE })
 
     expect(report.ranked[0]!.warnings).toEqual([])
     expect(report.warnings.join(' ')).toContain('did not end up where it started')
@@ -255,6 +258,16 @@ describe('rankNodesByMeasuredGain baseline gate', () => {
     expect(pob.allocated.has(10)).toBe(false)
   })
 
+  it('ranks nothing and simulates nothing when no expectations are supplied', async () => {
+    const pob = new RankablePob()
+    pob.worth.set(10, 500)
+    const report = await rankNodesByMeasuredGain(bridgeFor(pob), [{ id: 10 }])
+    expect(report.ranked).toEqual([])
+    expect(report.halted).toBe(true)
+    expect(pob.allocated.has(10)).toBe(false)
+    expect(report.warnings.join(' ')).toContain('nothing is ranked')
+  })
+
   it('flags the ranking as unvalidated when no expectations are supplied', async () => {
     const pob = new RankablePob()
     pob.worth.set(10, 500)
@@ -273,7 +286,7 @@ describe('rankNodesByMeasuredGain baseline gate', () => {
       if (JSON.parse(payload).method === 'set_passive_node') ctl.abort()
       return out
     }
-    const report = await rankNodesByMeasuredGain(bridgeFor(pob), [{ id: 10 }, { id: 11 }], { signal: ctl.signal })
+    const report = await rankNodesByMeasuredGain(bridgeFor(pob), [{ id: 10 }, { id: 11 }], { signal: ctl.signal, expected: GATE })
     expect(report.halted).toBe(true)
     expect(report.ranked.map((r) => r.nodeId)).toEqual([10])
     expect(report.warnings.join(' ')).toContain('Cancelled')
@@ -288,7 +301,7 @@ describe('rankNodesByMeasuredGain baseline gate', () => {
       if (req.method === 'ping') return `${JSON.stringify({ jsonrpc: '2.0', id: req.id, result: { pob_version: '2.51.0' } })}\n`
       return inner(port, payload, t)
     }
-    const report = await rankNodesByMeasuredGain(bridgeFor(pob), [{ id: 10 }], { expectedPobVersion: '2.50.0' })
+    const report = await rankNodesByMeasuredGain(bridgeFor(pob), [{ id: 10 }], { expectedPobVersion: '2.50.0', expected: GATE })
     expect(report.pobVersion).toBe('2.51.0')
     expect(report.warnings.join(' ')).toContain('2.51.0, not 2.50.0')
   })

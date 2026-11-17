@@ -157,7 +157,8 @@ export function planWaystones(input: {
   defense?: DefenseSummary | null
 }): WaystonePlan {
   const level = Math.round(input.level)
-  const report = input.report && input.report.lowestMaximumHit > 0 ? input.report : null
+  const hit = input.report?.lowestMaximumHit ?? null
+  const report = input.report && hit !== null && hit > 0 ? { ...input.report, lowestMaximumHit: hit } : null
   const mode = report ? 'character' : 'reference'
   const headroom = new Map(report?.tiers.map((t) => [t.tier, t]) ?? [])
 

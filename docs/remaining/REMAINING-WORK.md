@@ -28,6 +28,8 @@ Answers of 2026-11-15 (`docs/plans/FINISH-PLAN.md`) are applied and the rows cle
 | RV1-4 | Move `services/ninja-proxy` from Vercel to a Cloudflare Worker | Defer: responses already carry edge `s-maxage` (character 60 s, ladder 1 h); revisit only if Vercel limits bite | RV1 |
 | RV1-5 | Rate limit on the public proxy (`/api/*`) | Add a Vercel Firewall rate-limit rule (account toggle, no code); CORS does not stop non-browser callers | RV1 |
 | CG1-1 | Run `scripts/route-weight.mjs` in CI (route, lazy and per-chunk budgets are only checked locally today) | One step in the existing `lighthouse` job after "Build web": `node scripts/route-weight.mjs`, reusing that build (no new job, no second build) | CG1 (#196 leftovers) |
+| CA1-8 | `rankSensitivity` (`pob/sensitivity.ts`) still returns readings with no poe.ninja baseline, only warning "unvalidated" | Apply the CA1-2 rule: no expectations, no readings | CA1 |
+| CA1-9 | An unknown maximum hit earns 0 in `defenceParts().total`, so the score is a point that assumes the worst survivability | Widen `scoreRange` by the max-hit weight when it is in `missing`, as offence already does | CA1 |
 
 ## 1. Decisions
 | ID | Question | Recommended | Origin | Status |
@@ -49,6 +51,7 @@ These rows run in the §6 owner-pass order.
 | ID | Item | Size | Origin | Notes | Status |
 |---|---|---|---|---|---|
 | B4-1 | Gear "Find on trade" for a weapon: weigh its own mods. Today a base that can't roll resists gets no resist weights and falls back to the trade page; weighing weapon lines needs trade ids for those mods in `trade-map.json` (sync-data) | M | B4 (B1-1) | `packages/data` / sync-data scope | open |
+| CA1-7 | Raw `summarizeSwaps` (MCP `poe2_find_gear_improvements` `shortfallSummary`) counts one recraftable line once per stat: one fire line that could go to cold or lightning reads "1 swap covers" for both. Recommendations already merge it (`mergeSameLineSwaps`, pinned by `gear-swap-summary-shared-line.test.ts`). Fix: assign each swap to one shortfall, or add a shared-line note | S | CA1 batch 4 | Repro red: `expected 2 to be less than or equal to 1` | open |
 
 ## 4. Standing rules (no work)
 - Route budgets live in `scripts/route-weight.mjs` (source of truth; brotli, first load, the `noModule` polyfill chunk excluded; exits 1 when a route is over): `/` 160,000 · `/checklist` 167,000 · `/character` 209,000 · `/atlas` 179,000 · `/dashboard` 188,000 · `/trade` 162,000 · `/methodology` 156,000 · `/whats-new` 154,000 B; any other route 190,000. Raise one only on purpose, with the reason in the PR. Also pins the lazy chunks (none named by any route HTML) at 191,000 B br. Not run in CI. Any change to home JS reports before and after.

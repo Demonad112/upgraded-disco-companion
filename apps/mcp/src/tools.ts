@@ -1645,7 +1645,7 @@ const OUTPUTS: Record<string, z.ZodRawShape> = {
     item: any, replacing: any, openSlots: any, resistances: list, candidates: list, total: count, notes: any, note: text,
   },
   poe2_audit_character: { summary: any, note: text, jewels: list, emptySockets: list, attributes: list },
-  poe2_survivability_headroom: {},
+  poe2_survivability_headroom: { lowestMaximumHit: num, lowestMaximumHitType: text },
   poe2_constraint_map: { map: any, ledger: any },
   poe2_pob_status: {
     connected: bool, reason: text, hint: text, port: any, addonVersion: any, pobVersion: any, buildLoaded: bool,

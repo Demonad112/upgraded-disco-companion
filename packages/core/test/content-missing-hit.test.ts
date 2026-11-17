@@ -9,6 +9,7 @@
 import { describe, expect, it } from 'vitest'
 import { analyzeDefense } from '../src/defense/index.js'
 import { analyzeContent, type MonsterStatData } from '../src/gear/content.js'
+import { planWaystones } from '../src/gear/waystone.js'
 
 const monsters: MonsterStatData = {
   version: 1,
@@ -57,7 +58,10 @@ describe('analyzeContent without a maximum hit', () => {
   })
 
   it('still reads as "no maximum hit" to the waystone planner', () => {
-    expect(analyzeContent(noHits, monsters).lowestMaximumHit).toBe(0)
+    // CA1-6 (owner decision): a missing figure is null, not 0.
+    const report = analyzeContent(noHits, monsters)
+    expect(report.lowestMaximumHit).toBeNull()
+    expect(planWaystones({ level: 80, tiers: monsters.tiers!, report, defense: noHits }).mode).toBe('reference')
   })
 })
 
