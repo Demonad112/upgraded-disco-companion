@@ -173,21 +173,21 @@ export function scoreUpgrade(before: ScoreProfile, after: ScoreProfile, options:
 export function combineScores(scores: ScoreResult[]): { result: ScoreResult; jointlySimulated: false } {
   const parts = scores.flatMap((s) => s.parts)
   const unscored = scores.flatMap((s) => s.unscored)
-  const known = scores.reduce<Interval>(
-    (acc, s) => {
-      if (s.kind === 'point') return add(acc, { min: s.value, max: s.value })
-      if (s.kind === 'range') return add(acc, { min: s.min, max: s.max })
-      return s.knownPart ? add(acc, s.knownPart) : acc
-    },
-    { min: 0, max: 0 },
-  )
+  // Null until some input contributes a figure: a sum of nothing is not "no change".
+  let knownSum: Interval | null = null
+  for (const s of scores) {
+    const part: Interval | null =
+      s.kind === 'point' ? { min: s.value, max: s.value } : s.kind === 'range' ? { min: s.min, max: s.max } : s.knownPart
+    if (part) knownSum = knownSum ? add(knownSum, part) : part
+  }
   const unknown = scores.find((s) => s.kind === 'unknown')
   if (unknown) {
     return {
-      result: { kind: 'unknown', reason: 'At least one upgrade could not be scored.', knownPart: known, parts, unscored },
+      result: { kind: 'unknown', reason: 'At least one upgrade could not be scored.', knownPart: knownSum, parts, unscored },
       jointlySimulated: false,
     }
   }
+  const known: Interval = knownSum ?? { min: 0, max: 0 }
   const result: ScoreResult =
     known.min === known.max
       ? { kind: 'point', value: known.min, parts, unscored }
