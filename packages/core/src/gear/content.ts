@@ -25,6 +25,7 @@
  */
 
 import type { DefenseSummary } from '../defense/index.js'
+import { COMFORT_THRESHOLDS } from '../thresholds.js'
 
 /** Waystone tier and the area level it opens. */
 export interface TierEntry {
@@ -59,12 +60,8 @@ export interface MonsterStatData {
 /** How comfortable a given headroom is. Thresholds are stated, not hidden. */
 export type Comfort = 'comfortable' | 'thin' | 'dangerous'
 
-export const COMFORT_THRESHOLDS = {
-  /** At or above this many base hits survived, call it comfortable. */
-  comfortable: 12,
-  /** Below this, one unlucky rare hit is lethal. */
-  dangerous: 6,
-} as const
+/** Declared in thresholds.ts; re-exported for existing importers. */
+export { COMFORT_THRESHOLDS }
 
 function comfortOf(headroom: number): Comfort {
   if (headroom >= COMFORT_THRESHOLDS.comfortable) return 'comfortable'
@@ -92,7 +89,8 @@ export interface BossRow {
 }
 
 export interface ContentReport {
-  lowestMaximumHit: number
+  /** Null when poe.ninja reported no maximum hit (CA1-6): no tier is graded then. */
+  lowestMaximumHit: number | null
   lowestMaximumHitType: string
   /** Waystone tiers, lowest first. */
   tiers: TierRow[]
@@ -111,12 +109,15 @@ export interface ContentReport {
 }
 
 export function analyzeContent(defense: DefenseSummary, data: MonsterStatData): ContentReport {
-  const lowest = defense.lowestMaximumHit ?? 0
+  // No maximum hit in the payload means no headroom to state. The report keeps
+  // its shape (null, no rows) and says so; it never grades a tier against 0.
+  const known = defense.lowestMaximumHit !== null && defense.lowestMaximumHit > 0
+  const lowest = known ? defense.lowestMaximumHit! : 0
   const type = defense.lowestMaximumHitType ?? 'unknown'
-  const damageAt = (level: number) => data.physicalDamage[String(level)] ?? null
+  const damageAt = (level: number) => data.physicalDamage?.[String(level)] ?? null
 
   const tiers: TierRow[] = []
-  for (const entry of data.tiers ?? []) {
+  for (const entry of known ? (data.tiers ?? []) : []) {
     const hit = damageAt(entry.areaLevel)
     if (hit === null || hit <= 0) continue
     const headroom = Number((lowest / hit).toFixed(1))
@@ -131,19 +132,22 @@ export function analyzeContent(defense: DefenseSummary, data: MonsterStatData): 
   }
 
   const bosses: BossRow[] = []
-  const bossPoints: [string, number, string][] = [
+  // Boss levels come from the data only. A level it does not state is not
+  // replaced by a remembered one.
+  const bossPoints: [string, number | undefined, string][] = [
     [
       'Pinnacle boss',
-      data.enemyLevels?.pinnacleMinimum ?? 82,
+      data.enemyLevels?.pinnacleMinimum,
       'The floor for pinnacle and uber pinnacle bosses. They cannot be lower than this even at low character level.',
     ],
     [
       'Highest-level boss',
-      data.enemyLevels?.maxNormalAndBoss ?? 85,
+      data.enemyLevels?.maxNormalAndBoss,
       'The ceiling for normal enemies and all bosses. Nothing in the game scales past this level.',
     ],
   ]
-  for (const [label, level, note] of bossPoints) {
+  for (const [label, level, note] of known ? bossPoints : []) {
+    if (typeof level !== 'number') continue
     const hit = damageAt(level)
     if (hit === null || hit <= 0) continue
     const headroom = Number((lowest / hit).toFixed(1))
@@ -156,8 +160,15 @@ export function analyzeContent(defense: DefenseSummary, data: MonsterStatData): 
   const firstDangerousTier = dangerous.length ? Math.min(...dangerous.map((t) => t.tier)) : null
 
   const top = tiers.at(-1)
+  const notMeasured = !known
+    ? 'poe.ninja reported no maximum hit for this character, so headroom against map tiers was not measured.'
+    : !tiers.length
+      ? 'No base monster damage is available for any waystone tier, so headroom against map tiers was not measured.'
+      : null
   const summary =
-    highestComfortableTier === null
+    notMeasured !== null
+      ? notMeasured
+      : highestComfortableTier === null
       ? `A ${type} hit of ${lowest.toLocaleString()} kills this character, which is thin against a base monster even at tier 1. Survivability is the constraint, not the content.`
       : top && highestComfortableTier >= top.tier
         ? `Against BASE monsters this character has ${top.headroom}x headroom at tier ${top.tier}, the highest waystone. Rares, uniques and map mods hit harder and are not modelled here.`
@@ -166,7 +177,7 @@ export function analyzeContent(defense: DefenseSummary, data: MonsterStatData): 
           `. That is against a normal monster; rares, uniques and map modifiers hit considerably harder.`
 
   return {
-    lowestMaximumHit: lowest,
+    lowestMaximumHit: known ? lowest : null,
     lowestMaximumHitType: type,
     tiers,
     bosses,
@@ -180,6 +191,16 @@ export function analyzeContent(defense: DefenseSummary, data: MonsterStatData): 
       `Comfortable means surviving ${COMFORT_THRESHOLDS.comfortable} base hits or more; dangerous means fewer than ${COMFORT_THRESHOLDS.dangerous}. Those thresholds are this project's judgement, not a game constant.`,
     ],
     unresolved: [
+      ...(known
+        ? []
+        : [
+            {
+              question: 'How many base monster hits does this character survive?',
+              missing:
+                'The payload carries no maximum hit taken, so there is nothing to divide by base monster damage. ' +
+                'Re-import the character once poe.ninja has indexed it.',
+            },
+          ]),
       {
         question: 'How much harder does a specific rare, unique or map modifier hit?',
         missing:

@@ -20,7 +20,7 @@ import type { ModTiers } from './gear/tiers.js'
 import type { SupportCatalog } from './gems/catalog.js'
 import type { MainSkillContext } from './recommend/gear.js'
 import { effectiveCritMultiplier } from './recommend/offence.js'
-import { CRIT_UNINVESTED } from './thresholds.js'
+import { CRIT_UNINVESTED, DAMAGE_TYPE_MIN_SHARE } from './thresholds.js'
 import { decodePobExport, readPlayerStats } from './pob/export.js'
 import { readPobConfig, type PobConfig } from './pob/config.js'
 import { readPobMainSkill } from './pob/main-skill.js'
@@ -231,7 +231,7 @@ function skillContext(dps: DpsSummary, catalog: SupportCatalog | undefined): Mai
   return {
     name: primary.name,
     types,
-    dealt: new Set(primary.damageSplit.filter((s) => s.percent >= 10).map((s) => s.type)),
+    dealt: new Set(primary.damageSplit.filter((s) => s.percent >= DAMAGE_TYPE_MIN_SHARE).map((s) => s.type)),
     crit: (effectiveCritMultiplier(primary) ?? 1) >= CRIT_UNINVESTED,
   }
 }
@@ -340,7 +340,7 @@ export async function analyzeCharacter(
     const vsOwn = majors.length - vsPob
     if (vsPob > 0) {
       warnings.push(
-        `${vsPob} stat${vsPob === 1 ? '' : 's'} disagree between poe.ninja and the attached Path of Building export. See the reconciliation report before trusting those figures.`,
+        `${vsPob} stat${vsPob === 1 ? ' disagrees' : 's disagree'} between poe.ninja and the attached Path of Building export. See the reconciliation report before trusting those figures.`,
       )
     }
     if (vsOwn > 0) {
@@ -356,7 +356,9 @@ export async function analyzeCharacter(
   // was left uncorrected on purpose.
   for (const unverified of keystones.unverified) {
     warnings.push(
-      `${unverified.keystone} is allocated on the passive tree, but ${unverified.reason}. Its corrections were not applied — poe.ninja may not have reindexed this character since the tree changed.`,
+      `${unverified.keystone} is allocated on the passive tree, but ${unverified.reason}. Its corrections were not applied${
+        unverified.kind === 'contradicted' ? ' — poe.ninja may not have reindexed this character since the tree changed' : ''
+      }.`,
     )
   }
 

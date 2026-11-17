@@ -41,13 +41,14 @@
  */
 
 import type { EquippedItem } from '../model/slots.js'
-import type { DefenseSummary } from '../defense/index.js'
+import { RES_CAP_DEFAULT, type DefenseSummary } from '../defense/index.js'
 import {
   AFFIX_CAPACITY,
   OCCUPIES_AFFIX_SLOT,
   analyzeItem,
   findResistanceSwaps,
   summarizeSwaps,
+  type GearSwap,
   type ItemAnalysis,
   type ItemModAnalysis,
 } from '../gear/analyze.js'
@@ -65,7 +66,7 @@ import { NO_KEYSTONE_EFFECTS, type KeystoneEffects } from '../keystones/index.js
 import { scalesSkill } from './damage.js'
 
 /** The resistance cap, and the yardstick significance is measured against. */
-const RESIST_CAP = 75
+const RESIST_CAP = RES_CAP_DEFAULT
 
 
 function score(significance: number, kind: CostKind, amount: number): number {
@@ -444,6 +445,12 @@ export function gearRecommendations({
   /** What each emitted swap changes, for the cumulative check below. */
   const changes: LedgerChange[] = []
   const unknownRolls = new Set<string>()
+  /**
+   * Every swap a finding counts on when it says "N swaps cover the gap", as one
+   * change. The finding describes one swap, but its count spends the overcap
+   * once per swap, so the check has to cover all of them.
+   */
+  const countedOn = new Map<string, { change: LedgerChange; swaps: number }>()
   /** Which line each swap recrafts, so findings about the same line can merge. */
   const meta = new Map<
     string,
@@ -502,6 +509,34 @@ export function gearRecommendations({
     const prior = typeof deltas[gained] === 'number' ? (deltas[gained] as number) : 0
     deltas[gained] = { min: prior + candidate.min, max: prior + candidate.max }
     changes.push({ id, label: `Recraft ${best.replace.text} on ${best.itemName}`, deltas })
+
+    // The swaps `swapsNeeded` counted: largest guaranteed roll first, as summarizeSwaps does.
+    const reach = (s: GearSwap) => s.candidates.find((c) => c.statId === shortfall.stat && c.reachableOnThisItem)
+    // The finding describes `best`, so the check counts it first and fills the
+    // rest largest candidate first.
+    const counted = [
+      best,
+      ...swaps.filter((s) => s !== best && reach(s) !== undefined).sort((a, b) => reach(b)!.min - reach(a)!.min),
+    ].slice(0, needed ?? undefined)
+    if (counted.length > 1) {
+      const lost: Partial<Record<LedgerStat, number>> = {}
+      const gain = { min: 0, max: 0 }
+      for (const swap of counted) {
+        for (const removed of swap.removes) {
+          if (removed.value === null) {
+            unknownRolls.add(id)
+            continue
+          }
+          const stat = `${removed.type}Resistance` as LedgerStat
+          lost[stat] = (lost[stat] ?? 0) - removed.value
+        }
+        gain.min += reach(swap)!.min
+        gain.max += reach(swap)!.max
+      }
+      const all: LedgerChange['deltas'] = { ...lost }
+      all[gained] = { min: (lost[gained] ?? 0) + gain.min, max: (lost[gained] ?? 0) + gain.max }
+      countedOn.set(id, { change: { id, label: `The ${counted.length} recrafts counted on`, deltas: all }, swaps: counted.length })
+    }
     meta.set(id, {
       key: `${best.slotId}|${best.replace.id ?? best.replace.text}`,
       type: shortfall.type,
@@ -528,7 +563,7 @@ export function gearRecommendations({
         label: `${shortfall.type[0]!.toUpperCase()}${shortfall.type.slice(1)} resistance`,
         // ninja's own value and cap: a 76% lightning cap is not 75.
         from: resNow?.value ?? RESIST_CAP - shortfall.shortfall,
-        to: resNow?.value != null
+        to: resNow?.value != null && resNow.max !== null
           ? Math.min(resNow.max, resNow.value + candidate.closesShortfall)
           : Math.min(RESIST_CAP, RESIST_CAP - shortfall.shortfall + candidate.closesShortfall),
         delta: candidate.closesShortfall,
@@ -541,18 +576,21 @@ export function gearRecommendations({
       },
       cost: {
         kind: 'gear',
-        amount: needed ?? usable.length,
+        // One swap, the one the impact describes: one swap's gain over two
+        // swaps' cost would rank it below what it is.
+        amount: 1,
         currencyTier: 'low',
         detail:
-          `Recrafting one suffix on ${best.itemName}` +
-          (needed !== null && needed > 1 ? `, and ${needed - 1} more like it` : '') +
-          '. The rest of each item is unaffected.',
+          `Recrafting one suffix on ${best.itemName}. The rest of the item is unaffected.` +
+          (needed !== null && needed > 1
+            ? ` Closing the whole gap takes ${needed} such recrafts; this cost and the impact are for this one.`
+            : ''),
       },
       tradeoff:
         `Gives up ${best.replace.text} on ${best.itemName}. That is already ${best.replace.reason.includes('doing nothing') ? 'partly wasted' : 'over cap'}, so the loss is smaller than the number suggests — but it is not zero if you later lose another source of it.`,
       evidence,
       provenance: 'ninja',
-      score: score(Math.min(1, candidate.closesShortfall / RESIST_CAP), 'gear', needed ?? 1),
+      score: score(Math.min(1, candidate.closesShortfall / RESIST_CAP), 'gear', 1),
     })
   }
 
@@ -600,8 +638,18 @@ export function gearRecommendations({
           }
         }
       }
+      const all = countedOn.get(rec.id)
+      if (all) {
+        for (const v of applyLedger(totals, [all.change]).violations) {
+          const soloSame = solo.find((s) => s.stat === v.stat)
+          // Only worth saying when the further swaps make it worse than one alone.
+          if (!soloSame || soloSame.afterWorst !== v.afterWorst) {
+            notes.push(`Taking the ${all.swaps} swaps this counts on: ${v.message}`)
+          }
+        }
+      }
       if (unknownRolls.has(rec.id)) {
-        notes.push('The roll on the removed line is not known, so what it costs is not included in this check.')
+        notes.push('The roll on a removed line is not known, so what it costs is not included in this check.')
       }
       if (notes.length) {
         // The reassurance that the loss is "smaller than it looks" holds only

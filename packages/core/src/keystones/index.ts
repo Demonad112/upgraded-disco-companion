@@ -60,24 +60,36 @@ export interface KeystoneNote {
 }
 
 /**
- * A keystone allocated on the tree whose effect is not visible in the
+ * A keystone allocated on the tree whose effect is not confirmed by the
  * character's actual stats, so none of its corrections were applied.
  */
 export interface UnverifiedKeystone {
   keystone: string
-  /** What was expected, and what was seen instead. */
+  /**
+   * `contradicted`: the sheet shows a stat the keystone rules out.
+   * `unconfirmed`: nothing on the sheet confirms it (no check exists, no stats
+   * were given, or the checked stat is unknown).
+   */
+  kind: 'contradicted' | 'unconfirmed'
+  /** What was expected, and what was seen instead. Reads after "…is allocated, but". */
   reason: string
 }
+
+/** A check's verdict: null when the sheet confirms the keystone. */
+type Verdict = { kind: UnverifiedKeystone['kind']; reason: string } | null
+
+const unknown = (stat: string): Verdict => ({ kind: 'unconfirmed', reason: `${stat} is not reported, so its effect cannot be confirmed` })
 
 interface KeystoneRule {
   effects?: Partial<Omit<KeystoneEffects, 'notes' | 'unverified' | 'applied'>>
   /** Shown to the player as a consequence of having allocated this. */
   note?: string
   /**
-   * Confirm the keystone is actually in effect before trusting it. Returning a
-   * string means "not corroborated", and that string explains what was seen.
+   * Confirm the keystone is actually in effect before trusting it. Null means
+   * the sheet confirms it; anything else says why it does not. A rule with
+   * effects and no check is never applied.
    */
-  verify?: (defense: DefenseSummary) => string | null
+  verify?: (defense: DefenseSummary) => Verdict
 }
 
 /**
@@ -90,23 +102,31 @@ const RULES: Readonly<Record<string, KeystoneRule>> = Object.freeze({
     effects: { chaosImmune: true, lifeIsNegligible: true },
     note: 'Maximum life is 1 and you are immune to chaos damage and bleeding, so chaos resistance is irrelevant and energy shield is your entire pool.',
     verify: (d) =>
-      d.life !== null && d.life > 1 ? `maximum life reads ${d.life.toLocaleString()}, but this keystone fixes it at 1` : null,
+      d.life === null
+        ? unknown('maximum life')
+        : d.life > 1
+          ? { kind: 'contradicted', reason: `maximum life reads ${d.life.toLocaleString()}, but this keystone fixes it at 1` }
+          : null,
   },
   'Eldritch Battery': {
     effects: { esNotDefensive: true },
     note: 'All energy shield is converted to mana, so it is not absorbing hits — your defensive pool is life only, plus mana under Mind Over Matter.',
     verify: (d) =>
-      d.energyShield !== null && d.energyShield > 0
-        ? `energy shield reads ${d.energyShield.toLocaleString()}, but this keystone converts all of it to mana`
-        : null,
+      d.energyShield === null
+        ? unknown('energy shield')
+        : d.energyShield > 0
+          ? { kind: 'contradicted', reason: `energy shield reads ${d.energyShield.toLocaleString()}, but this keystone converts all of it to mana` }
+          : null,
   },
   'Iron Reflexes': {
     effects: { evasionIsArmour: true },
     note: 'All evasion rating is converted to armour, so evasion is not avoiding hits — it is mitigating them.',
     verify: (d) =>
-      d.evasion > 0
-        ? `evasion rating reads ${d.evasion.toLocaleString()}, but this keystone converts all of it to armour`
-        : null,
+      d.evasion === null
+        ? unknown('evasion rating')
+        : d.evasion > 0
+          ? { kind: 'contradicted', reason: `evasion rating reads ${d.evasion.toLocaleString()}, but this keystone converts all of it to armour` }
+          : null,
   },
   'Resolute Technique': {
     effects: { neverCrits: true },
@@ -187,7 +207,8 @@ export function hasKeystoneRule(name: string): boolean {
 
 /**
  * Fold every allocated keystone into one set of corrections, applying a
- * keystone's effects only when the character's stats corroborate them.
+ * keystone's effects only when the character's stats corroborate them. No
+ * check, no stats or an unknown stat all mean "not corroborated" (CA1-3).
  *
  * `keystones` accepts anything carrying a `name` — `resolveAllocation(...)
  * .keystones` from tree/index.ts is the intended source.
@@ -207,12 +228,19 @@ export function keystoneEffectsOf(
     const rule = RULES[keystone.name]
     if (!rule) continue
 
-    const mismatch = rule.verify && defense ? rule.verify(defense) : null
-    if (mismatch) {
-      // Allocated but not doing what it claims. Neither its corrections nor its
-      // note can be trusted, so record the discrepancy instead — a note stating
-      // "maximum life is 1" beside a life of 1,823 is worse than silence.
-      out.unverified.push({ keystone: keystone.name, reason: mismatch })
+    // A rule with no effects only adds a note and changes no figure.
+    const verdict: Verdict = !rule.effects
+      ? null
+      : !rule.verify
+        ? { kind: 'unconfirmed', reason: 'nothing on the character sheet can confirm its effect' }
+        : !defense
+          ? { kind: 'unconfirmed', reason: 'no character stats were given to confirm its effect' }
+          : rule.verify(defense)
+    if (verdict) {
+      // Not confirmed. Neither its corrections nor its note can be trusted, so
+      // record why instead — a note stating "maximum life is 1" beside a life
+      // of 1,823 is worse than silence.
+      out.unverified.push({ keystone: keystone.name, ...verdict })
       continue
     }
 
@@ -290,8 +318,11 @@ export function effectivePool(
 export function effectiveArmour(
   defense: Pick<DefenseSummary, 'armour' | 'evasion'>,
   effects: KeystoneEffects = NO_KEYSTONE_EFFECTS,
-): number {
-  return effects.evasionIsArmour ? defense.armour + defense.evasion : defense.armour
+): number | null {
+  // Unknown stays unknown: an absent armour or evasion is never read as 0.
+  if (defense.armour === null) return null
+  if (!effects.evasionIsArmour) return defense.armour
+  return defense.evasion === null ? null : defense.armour + defense.evasion
 }
 
 export interface KeystoneInfo {

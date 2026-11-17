@@ -544,8 +544,11 @@ export function findResistanceSwaps(
             min: stat.min,
             max: stat.max,
             reachableOnThisItem: item.itemLevel !== null && item.itemLevel >= entry.ilvl,
-            /** How much of the shortfall this closes, capped at what is missing. */
-            closesShortfall: Math.min(need.get(stat.id)!, stat.max),
+            /**
+             * How much of the shortfall this is sure to close, capped at what is
+             * missing: a fresh line can roll its minimum (as replace.ts counts it).
+             */
+            closesShortfall: Math.min(need.get(stat.id)!, stat.min),
           }
         })
         .sort(
@@ -605,7 +608,8 @@ export function summarizeSwaps(
     // Best available candidate per swap, for this stat only. Each item can
     // contribute at most one — they are separate affix slots on separate items.
     const perSwap = swaps
-      .map((s) => s.candidates.filter((c) => c.statId === statId && c.reachableOnThisItem)[0]?.max ?? 0)
+      // The guaranteed (minimum) roll: "N swaps cover it" must hold on low rolls.
+      .map((s) => s.candidates.filter((c) => c.statId === statId && c.reachableOnThisItem)[0]?.min ?? 0)
       .filter((v) => v > 0)
       .sort((a, b) => b - a)
 

@@ -17,28 +17,28 @@
       {
         "type": "fire",
         "value": null,
-        "max": 75,
+        "max": null,
         "overCap": null,
         "underCap": null
       },
       {
         "type": "cold",
         "value": null,
-        "max": 75,
+        "max": null,
         "overCap": null,
         "underCap": null
       },
       {
         "type": "lightning",
         "value": null,
-        "max": 75,
+        "max": null,
         "overCap": null,
         "underCap": null
       },
       {
         "type": "chaos",
         "value": null,
-        "max": 75,
+        "max": null,
         "overCap": null,
         "underCap": null
       }
@@ -73,7 +73,7 @@
     },
     "offenceUnscoredReason": "No ladder sample was available for this league and ascendancy, and this codebase does not carry invented damage thresholds to fall back on.",
     "weaknesses": [
-      "warning: Little armour or block — leaning on evasion and resistances alone"
+      "warning: No major gaps detected"
     ]
   },
   "recommendations": [
@@ -84,7 +84,7 @@
   ],
   "pobConfigInputCount": 20,
   "warnings": [
-    "3 stats disagree between poe.ninja and the attached Path of Building export. See the reconciliation report before trusting those figures."
+    "1 stat disagrees between poe.ninja and the attached Path of Building export. See the reconciliation report before trusting those figures."
   ],
   "holdingUp": {
     "resistances": [

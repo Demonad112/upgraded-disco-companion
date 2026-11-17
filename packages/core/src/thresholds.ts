@@ -19,7 +19,7 @@
  */
 
 import type { ResistanceState } from './defense/index.js'
-import type { RecommendationCategory } from './recommend/types.js'
+import type { CostKind, RecommendationCategory } from './recommend/types.js'
 
 /**
  * Chaos resistance has no cap-driven breakpoint in PoE2 the way the elements
@@ -75,6 +75,39 @@ export const BLOCK_NEGLIGIBLE = 20
 export const WEAK_HIT_RATIO = 0.4
 
 /**
+ * The toughest damage type must survive at least this many times the weakest
+ * before the "one hit of X kills" finding is raised. Like WEAK_HIT_RATIO it
+ * compares the character with itself only.
+ */
+export const ONE_SHOT_GAP_RATIO = 1.5
+
+/**
+ * Effective health pool divided by the largest hit survived. Above this the
+ * pool figure is called out as overstating the build's safety.
+ */
+export const EHP_OVERSTATEMENT_WARN = 1.5
+
+/**
+ * Physical damage reduction from armour, in percent, below which armour is
+ * called negligible by the recommendations.
+ */
+export const ARMOUR_DR_NEGLIGIBLE = 15
+
+/** Character level from which a missing anoint is worth raising. */
+export const ANOINT_MIN_LEVEL = 30
+
+/**
+ * The weapon-lag finding needs at least this many equipped items with an item
+ * level, and a weapon at least this many item levels under the median of the
+ * rest.
+ */
+export const WEAPON_LAG_MIN_ITEMS = 3
+export const WEAPON_LAG_MIN_ILVL_GAP = 4
+
+/** A damage type counts as "dealt" at this percentage share of the hit. */
+export const DAMAGE_TYPE_MIN_SHARE = 10
+
+/**
  * Below this, critical strikes contribute so little that scaling them is not
  * the lever — expressed as a damage multiplier over never critting, so 1.15
  * means "crit is adding 15%".
@@ -113,12 +146,12 @@ export const DATA_AGE_STALE_HOURS = 24
  * it, not a hardcoded 75 — a build that has raised its cap to 80 is not at cap
  * at 75, and saying otherwise would call a real gap closed.
  */
-export function targetFor(res: Pick<ResistanceState, 'type' | 'max'>): number {
+export function targetFor(res: Pick<ResistanceState, 'type'> & { max: number }): number {
   return res.type === 'chaos' ? CHAOS_TARGET : res.max
 }
 
 /** Whether a resistance clears its target. */
-export function isHealthy(res: Pick<ResistanceState, 'type' | 'max'> & { value: number }): boolean {
+export function isHealthy(res: Pick<ResistanceState, 'type'> & { max: number; value: number }): boolean {
   return res.value >= targetFor(res)
 }
 
@@ -137,6 +170,39 @@ export const POOL_PINNACLE = 5000
 
 /** Share of the build score given to damage; defence gets the rest. */
 export const OFFENCE_WEIGHT = 0.5
+
+/** Share of the build score given to defence. */
+export const DEFENCE_WEIGHT = 0.5
+
+/** The defence parts of the build score; they sum to DEFENCE_WEIGHT. */
+export const DEFENCE_PART_WEIGHTS = Object.freeze({ maxHit: 0.3, elemental: 0.15, chaos: 0.05 })
+
+/** Map-tier headroom, in base monster hits survived. Project judgement. */
+export const COMFORT_THRESHOLDS = Object.freeze({
+  /** At or above this many base hits survived, call it comfortable. */
+  comfortable: 12,
+  /** Below this, one unlucky rare hit is lethal. */
+  dangerous: 6,
+})
+
+/** Below this share of full XP a map tier is "not worth it". Project judgement. */
+export const XP_WORTH_FLOOR = 0.8
+
+/**
+ * Relative cost weights, the only copy. Judgement values, not data: free work
+ * is weighted at half the cheapest paid kind. Gear means owned or swappable;
+ * currency means it must be bought or crafted. Unknown cost has no weight: it
+ * is its own group, ranked after every known cost.
+ */
+export const COST_WEIGHT: Readonly<Record<Exclude<CostKind, 'unknown'>, number>> = Object.freeze({
+  free: 0.5,
+  passive: 2,
+  gear: 4,
+  currency: 5,
+})
+
+/** Lowest item level a trade search asks for. Project judgement. */
+export const TRADE_MIN_ILVL = 60
 
 /**
  * Damage grades, in the offence half's own units (0 to OFFENCE_WEIGHT), by where

@@ -31,6 +31,7 @@
 
 import { importPobExport, type PobBuildInfo } from './export.js'
 import type { DamageType } from '../model/types.js'
+import { RES_CAP_DEFAULT } from '../defense/constants.js'
 
 /** What a Path of Building code cannot tell you, stated rather than filled in. */
 export interface PobGap {
@@ -116,7 +117,7 @@ const RESIST_STATS: Record<PobResistance['type'], string> = {
  * 75 is the game default; a build that has raised its maximum resistances will
  * be understated here, which is why `gaps` says so.
  */
-const DEFAULT_RESIST_CAP = 75
+const DEFAULT_RESIST_CAP = RES_CAP_DEFAULT
 
 function num(stats: Record<string, number>, key: string): number | null {
   const value = stats[key]

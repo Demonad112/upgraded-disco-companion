@@ -43,7 +43,7 @@ describe('unknown figures are null, never 0 (B-1, B-2, B-3)', () => {
   })
 
   it('B-1: a known 0% resistance is still a real shortfall', () => {
-    const d = analyzeDefense({ defensiveStats: { fireResistance: 0 } })
+    const d = analyzeDefense({ defensiveStats: { fireResistance: 0, fireResistanceMax: 75 } })
     expect(resistanceShortfalls(d).map((r) => r.type)).toEqual(['fire'])
   })
 

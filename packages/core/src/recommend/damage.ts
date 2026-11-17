@@ -53,11 +53,8 @@ import {
 import { AFFIX_CAPACITY, OCCUPIES_AFFIX_SLOT, type ItemAnalysis, type ItemModAnalysis } from '../gear/analyze.js'
 import type { AffixKind, ModTiers } from '../gear/tiers.js'
 import type { EquippedItem } from '../model/slots.js'
-import { CRIT_UNINVESTED } from '../thresholds.js'
+import { CRIT_UNINVESTED, DAMAGE_TYPE_MIN_SHARE } from '../thresholds.js'
 import { effectiveCritMultiplier } from './offence.js'
-
-/** A damage type counts as "dealt" at this share of the hit. */
-const MIN_SHARE = 10
 
 export interface ReviewedSupport {
   name: string
@@ -233,6 +230,13 @@ export function scalesSkill(text: string, types: ReadonlySet<string>, dealt: Set
   const attack = types.has('Attack')
   const spell = types.has('Spell')
 
+  // A line limited to attacks or to spells does nothing for the other kind,
+  // whatever damage type it names. Only when the skill's types are known.
+  if (types.size > 0) {
+    if (!attack && /\b(?:with|to) attacks\b|\battack skills\b/.test(t)) return null
+    if (!spell && /\b(?:with|to) spells\b|\bspell skills\b/.test(t)) return null
+  }
+
   if (/level of all/.test(t)) {
     if (/spell/.test(t) && spell) return 'raises the level of spell skills'
     const kind = /(attack|melee|projectile|bow|spear)/.exec(t)?.[1]
@@ -275,7 +279,7 @@ export function reviewDamage(input: DamageReviewInput): DamageReview | null {
   }
   const types = typeSet ?? new Set<string>()
   const split = skill.damageSplit
-  const dealt = split.filter((s) => s.percent >= MIN_SHARE).map((s) => ({ type: s.type, percent: s.percent }))
+  const dealt = split.filter((s) => s.percent >= DAMAGE_TYPE_MIN_SHARE).map((s) => ({ type: s.type, percent: s.percent }))
   const dealtSet = new Set(dealt.map((d) => d.type))
   const crit = (effectiveCritMultiplier(skill) ?? 1) >= CRIT_UNINVESTED
 
