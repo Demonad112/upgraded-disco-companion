@@ -48,7 +48,7 @@ Do them in the order shown; they are independent. The step numbers stay the same
 
 ## Send to a session
 
-- [ ] **11. One character file for pending tests** (R60) (5 min; Yykiuy is done: `yykiuy-v51/v80.json`)
+- [ ] **11. One character file for pending tests** (R60) (5 min; Yykiuy is done: `yykiuy-v51.json`, `yykiuy-v80.json`)
   - Needed: a poe.ninja export of the level 94 Athrynas (the Yykiuy files are already in `packages/core/test/fixtures/`).
   - Save it as `packages/core/test/fixtures/athrynas-94-v<version>.json`, or attach it in a chat and ask a session to add it.
 

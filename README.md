@@ -43,7 +43,7 @@ Two consequences that surprise people, both deliberate:
 
 | | |
 |---|---|
-| `packages/core` | Pure analysis. No I/O, no framework — `fetch` is injected. 664 tests. |
+| `packages/core` | Pure analysis. No I/O, no framework — `fetch` is injected. 886 tests. |
 | `packages/data` | Generated game data artifacts and the scripts that extract them. See [PROVENANCE.md](packages/data/PROVENANCE.md). |
 | `apps/web` | Static Next.js export, deployed on Cloudflare Pages. Five routes. |
 | `services/ninja-proxy` | Serverless functions. Needed because poe.ninja sends no CORS headers. |
@@ -120,7 +120,7 @@ Verification, all of which should pass before any change is called done:
 
 ```bash
 npm run typecheck                  # builds core first; the script handles it
-npm test                           # 664 tests (core) + 92 (web)
+npm test                           # 886 tests (core) + 393 (web)
 npm run build                      # core -> dist, then the web static export
 ```
 

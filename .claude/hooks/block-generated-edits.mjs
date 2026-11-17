@@ -1,6 +1,7 @@
 // PreToolUse hook (Edit|Write): denies edits to generated files. Bash/PowerShell are not matched, so the regen
 // commands (the packages/data build:* scripts) still work. Exit 2 blocks the call and the
-// stderr text goes back to Claude.
+// stderr text goes back to Claude. package-lock.json is also blocked (npm writes it). Edits under the data
+// folders get a reminder to check the e2e specs, which pin those shapes.
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 
@@ -14,7 +15,26 @@ const SYNCED = [
 ].map((n) => `apps/web/public/${n}.json`);
 
 const DIRS = ['packages/data/generated/', 'apps/web/out/'];
-const FILES = ['apps/mcp/TOOLS.md', ...SYNCED];
+const FILES = [...SYNCED];
+
+export const LOCK_MESSAGE = 'package-lock.json is written by npm. Run npm install or npm ci instead of editing it.';
+export const E2E_REMINDER =
+  'Data shape reminder: grep apps/web/e2e for the old path or key and update the specs in the same commit.';
+const REMIND_DIRS = ['apps/web/src/data/', 'packages/data/scripts/'];
+
+const norm = (filePath) => filePath.replace(/\\/g, '/');
+
+export function isLockfile(filePath) {
+  if (typeof filePath !== 'string' || !filePath) return false;
+  const p = norm(filePath);
+  return p === 'package-lock.json' || p.endsWith('/package-lock.json');
+}
+
+export function wantsE2eReminder(filePath) {
+  if (typeof filePath !== 'string' || !filePath) return false;
+  const p = norm(filePath);
+  return REMIND_DIRS.some((d) => p.startsWith(d) || p.includes(`/${d}`));
+}
 
 export function isGenerated(filePath) {
   if (typeof filePath !== 'string' || !filePath) return false;
@@ -30,8 +50,16 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
   } catch {
     process.exit(0);
   }
-  if (isGenerated(input?.tool_input?.file_path)) {
+  const file = input?.tool_input?.file_path;
+  if (isGenerated(file)) {
     console.error(MESSAGE);
     process.exit(2);
+  }
+  if (isLockfile(file)) {
+    console.error(LOCK_MESSAGE);
+    process.exit(2);
+  }
+  if (wantsE2eReminder(file)) {
+    console.log(JSON.stringify({ hookSpecificOutput: { hookEventName: 'PreToolUse', additionalContext: E2E_REMINDER } }));
   }
 }

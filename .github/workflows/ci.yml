@@ -117,7 +117,8 @@ jobs:
         run: npm run e2e --workspace @poe2/web -- --trace off
       - name: Scroll guard (report-only)
         if: needs.changes.outputs.heavy == 'true'
-        # WQA3-9b: functional sky checks on the built site. Not required; make it blocking only after clean runs on main.
+        # WQA3-9b: functional sky checks on the built site. Not required. Still failing on main as of 2026-11-17
+        # ("animates when idle" paints 0), so it stays report-only until that is fixed (REMAINING-WORK B7-1).
         continue-on-error: true
         run: |
           BASE="/${GITHUB_REPOSITORY#*/}"
@@ -165,6 +166,10 @@ jobs:
         env:
           ROOT_BASE_PATH: '1'
         run: npm run build
+      - name: Route weight budgets
+        if: needs.changes.outputs.heavy == 'true'
+        # ORCH-2: route, lazy and per-chunk budgets from scripts/route-weight.mjs; exits 1 when one is over. Reuses the build above.
+        run: node scripts/route-weight.mjs
       - name: Lighthouse (mobile, all 8 routes, 2 runs)
         if: needs.changes.outputs.heavy == 'true'
         run: npx --yes @lhci/cli@0.14.0 autorun --config=lighthouserc.json --collect.numberOfRuns=2
