@@ -512,10 +512,12 @@ export function gearRecommendations({
 
     // The swaps `swapsNeeded` counted: largest candidate first, as summarizeSwaps does.
     const reach = (s: GearSwap) => s.candidates.find((c) => c.statId === shortfall.stat && c.reachableOnThisItem)
-    const counted = swaps
-      .filter((s) => reach(s) !== undefined)
-      .sort((a, b) => reach(b)!.max - reach(a)!.max)
-      .slice(0, needed ?? undefined)
+    // The finding describes `best`, so the check counts it first and fills the
+    // rest largest candidate first.
+    const counted = [
+      best,
+      ...swaps.filter((s) => s !== best && reach(s) !== undefined).sort((a, b) => reach(b)!.max - reach(a)!.max),
+    ].slice(0, needed ?? undefined)
     if (counted.length > 1) {
       const lost: Partial<Record<LedgerStat, number>> = {}
       const gain = { min: 0, max: 0 }
