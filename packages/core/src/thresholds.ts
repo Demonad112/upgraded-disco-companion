@@ -146,12 +146,12 @@ export const DATA_AGE_STALE_HOURS = 24
  * it, not a hardcoded 75 — a build that has raised its cap to 80 is not at cap
  * at 75, and saying otherwise would call a real gap closed.
  */
-export function targetFor(res: Pick<ResistanceState, 'type' | 'max'>): number {
+export function targetFor(res: Pick<ResistanceState, 'type'> & { max: number }): number {
   return res.type === 'chaos' ? CHAOS_TARGET : res.max
 }
 
 /** Whether a resistance clears its target. */
-export function isHealthy(res: Pick<ResistanceState, 'type' | 'max'> & { value: number }): boolean {
+export function isHealthy(res: Pick<ResistanceState, 'type'> & { max: number; value: number }): boolean {
   return res.value >= targetFor(res)
 }
 

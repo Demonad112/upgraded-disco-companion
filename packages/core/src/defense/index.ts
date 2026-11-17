@@ -29,12 +29,13 @@ export interface ResistanceState {
   type: Exclude<DamageType, 'physical'>
   /** Null when the payload did not report this resistance. Never 0 for unknown. */
   value: number | null
-  max: number
+  /** Null when the payload did not report the cap. Never assumed to be 75. */
+  max: number | null
   /** Points above the cap — wasted, and reallocatable. Null when unknown. */
   overCap: number | null
-  /** Points below the cap. 0 when capped. Null when the value is unknown. */
+  /** Points below the cap. 0 when capped. Null when the value or the cap is unknown. */
   underCap: number | null
-  /** Null when the value is unknown. */
+  /** Null when the value or the cap is unknown. */
   capped: boolean | null
 }
 
@@ -99,10 +100,10 @@ export interface DefenseSummary {
 }
 
 /** A resistance whose value the payload reported. */
-export type KnownResistance = ResistanceState & { value: number; overCap: number; underCap: number; capped: boolean }
+export type KnownResistance = ResistanceState & { value: number; max: number; overCap: number; underCap: number; capped: boolean }
 
 export function isKnownResistance(r: ResistanceState): r is KnownResistance {
-  return r.value !== null
+  return r.value !== null && r.max !== null
 }
 
 /** Resistances with a reported value. Unknown ones are excluded, never counted as 0. */
@@ -159,15 +160,16 @@ export function analyzeDefense(model: Pick<CharModel, 'defensiveStats'>): Defens
   const resistances: ResistanceState[] = (Object.keys(RES_KEYS) as Array<keyof typeof RES_KEYS>).map((type) => {
     const [valueKey, maxKey, overKey] = RES_KEYS[type]
     const value = num(s, valueKey)
-    const max = num(s, maxKey) ?? RES_CAP_DEFAULT
+    const max = num(s, maxKey)
     if (value === null) missing.push(valueKey)
+    if (max === null) missing.push(maxKey)
     return {
       type,
       value,
       max,
       overCap: value === null ? null : (num(s, overKey) ?? 0),
-      underCap: value === null ? null : Math.max(0, max - value),
-      capped: value === null ? null : value >= max,
+      underCap: value === null || max === null ? null : Math.max(0, max - value),
+      capped: value === null || max === null ? null : value >= max,
     }
   })
 

@@ -563,7 +563,7 @@ export function gearRecommendations({
         label: `${shortfall.type[0]!.toUpperCase()}${shortfall.type.slice(1)} resistance`,
         // ninja's own value and cap: a 76% lightning cap is not 75.
         from: resNow?.value ?? RESIST_CAP - shortfall.shortfall,
-        to: resNow?.value != null
+        to: resNow?.value != null && resNow.max !== null
           ? Math.min(resNow.max, resNow.value + candidate.closesShortfall)
           : Math.min(RESIST_CAP, RESIST_CAP - shortfall.shortfall + candidate.closesShortfall),
         delta: candidate.closesShortfall,

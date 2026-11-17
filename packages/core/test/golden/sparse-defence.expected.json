@@ -17,28 +17,28 @@
       {
         "type": "fire",
         "value": null,
-        "max": 75,
+        "max": null,
         "overCap": null,
         "underCap": null
       },
       {
         "type": "cold",
         "value": null,
-        "max": 75,
+        "max": null,
         "overCap": null,
         "underCap": null
       },
       {
         "type": "lightning",
         "value": null,
-        "max": 75,
+        "max": null,
         "overCap": null,
         "underCap": null
       },
       {
         "type": "chaos",
         "value": null,
-        "max": 75,
+        "max": null,
         "overCap": null,
         "underCap": null
       }

@@ -123,7 +123,7 @@ function needsFor(tier: number, required: number, defense: DefenseSummary, curre
   const out: PushNeed[] = []
   const res = defense.resistances.find((r) => r.type === type)
   const poolPct = Math.ceil((ratio - 1) * 100)
-  if (res && res.value !== null) {
+  if (res && res.value !== null && res.max !== null) {
     const target = Math.ceil(100 - (100 - res.value) / ratio)
     if (target <= res.max) {
       out.push({
@@ -200,7 +200,7 @@ export function planWaystones(input: {
       needs.push(...needsFor(t.tier, COMFORT_THRESHOLDS.comfortable * t.baseMonsterHit, input.defense, report.lowestMaximumHit))
     }
     for (const r of input.defense.resistances) {
-      if (r.type === 'chaos' || !r.underCap || r.value === null) continue
+      if (r.type === 'chaos' || !r.underCap || r.value === null || r.max === null) continue
       needs.push({
         stat: `${cap(r.type)} resistance`,
         from: r.value,

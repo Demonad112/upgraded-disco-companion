@@ -61,14 +61,14 @@ export const RUBRIC = Object.freeze({
  * Extra damage taken because a resistance is below its cap: (1 - res) / (1 - cap) - 1.
  * 0 at or over the cap. The cap is ninja's maximum as given.
  */
-export function resGapDamageTaken(r: Pick<ResistanceState, 'value' | 'max'> & { value: number }): number {
+export function resGapDamageTaken(r: Pick<ResistanceState, 'value' | 'max'> & { value: number; max: number }): number {
   const cap = Math.min(r.max, EFFECTIVE_RES_CEILING)
   if (r.value >= cap) return 0
   return (1 - r.value / 100) / (1 - cap / 100) - 1
 }
 
 /** 0-1 credit for one resistance: damage taken at the cap over damage taken now. */
-function resCredit(r: Pick<ResistanceState, 'value' | 'max'> & { value: number }): number {
+function resCredit(r: Pick<ResistanceState, 'value' | 'max'> & { value: number; max: number }): number {
   return 1 / (1 + resGapDamageTaken(r))
 }
 
@@ -106,7 +106,7 @@ export function defenceParts(
   const chaosRes = defense.resistances.find((r) => r.type === 'chaos')
   const chaos = keystones.chaosImmune
     ? w.chaos
-    : chaosRes && chaosRes.value !== null
+    : chaosRes && chaosRes.value !== null && chaosRes.max !== null
       ? w.chaos * resCredit({ value: chaosRes.value, max: chaosRes.max })
       : 0
 
@@ -280,7 +280,7 @@ export function assessBuild(input: BuildAssessmentInput): BuildAssessment {
     caveats.push('Chaos resistance not in the payload, so it was not graded.')
   } else if (chaos && chaos.value !== null && chaos.value < CHAOS_CRITICAL) {
     weaknesses.push({ text: `Negative chaos resistance (${chaos.value}%)`, severity: 'critical' })
-  } else if (chaos && chaos.value !== null && resGapDamageTaken({ value: chaos.value, max: chaos.max }) > 0) {
+  } else if (chaos && chaos.value !== null && chaos.max !== null && resGapDamageTaken({ value: chaos.value, max: chaos.max }) > 0) {
     const gap = resGapDamageTaken({ value: chaos.value, max: chaos.max })
     weaknesses.push({
       text: `Chaos resistance below its cap (${gapText({ type: 'chaos', value: chaos.value, max: chaos.max })})`,

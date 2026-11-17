@@ -56,3 +56,33 @@ describe('absent defence fields', () => {
     expect(zero.blockChance).toBe(0)
   })
 })
+
+describe('an absent resistance maximum', () => {
+  const d = analyzeDefense(sparse)
+
+  it('is null, not an assumed 75', () => {
+    for (const r of d.resistances) expect(r.max).toBeNull()
+  })
+
+  it('is listed as missing', () => {
+    expect(d.missing).toEqual(
+      expect.arrayContaining(['fireResistanceMax', 'coldResistanceMax', 'lightningResistanceMax', 'chaosResistanceMax']),
+    )
+  })
+
+  it('leaves the resistance unjudged: no shortfall, no cap state', () => {
+    for (const r of d.resistances) {
+      expect(r.underCap).toBeNull()
+      expect(r.capped).toBeNull()
+    }
+  })
+
+  it('keeps a reported cap as given', () => {
+    const raised = analyzeDefense({
+      defensiveStats: { ...sparse.defensiveStats, fireResistanceMax: 76 },
+    } as unknown as CharModel)
+    const fire = raised.resistances.find((r) => r.type === 'fire')!
+    expect(fire.max).toBe(76)
+    expect(fire.underCap).toBe(1)
+  })
+})
