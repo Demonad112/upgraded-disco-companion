@@ -233,6 +233,13 @@ export function scalesSkill(text: string, types: ReadonlySet<string>, dealt: Set
   const attack = types.has('Attack')
   const spell = types.has('Spell')
 
+  // A line limited to attacks or to spells does nothing for the other kind,
+  // whatever damage type it names. Only when the skill's types are known.
+  if (types.size > 0) {
+    if (!attack && /\b(?:with|to) attacks\b|\battack skills\b/.test(t)) return null
+    if (!spell && /\b(?:with|to) spells\b|\bspell skills\b/.test(t)) return null
+  }
+
   if (/level of all/.test(t)) {
     if (/spell/.test(t) && spell) return 'raises the level of spell skills'
     const kind = /(attack|melee|projectile|bow|spear)/.exec(t)?.[1]
