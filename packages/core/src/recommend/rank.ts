@@ -11,20 +11,11 @@ import type { DefenseSummary } from '../defense/index.js'
 import { whatIfDefense } from '../defense/whatif.js'
 import { NO_KEYSTONE_EFFECTS, type KeystoneEffects } from '../keystones/index.js'
 import { defenceParts } from '../score/index.js'
-import type { Cost, CostKind, Recommendation } from './types.js'
+import { COST_WEIGHT } from '../thresholds.js'
+import type { Cost, Recommendation } from './types.js'
 
-/**
- * Relative cost weights, the only copy. Judgement values, not data: free work
- * is weighted at half the cheapest paid kind. Gear means owned or swappable;
- * currency means it must be bought or crafted. Unknown cost has no weight: it
- * is its own group, ranked after every known cost.
- */
-export const COST_WEIGHT: Readonly<Record<Exclude<CostKind, 'unknown'>, number>> = Object.freeze({
-  free: 0.5,
-  passive: 2,
-  gear: 4,
-  currency: 5,
-})
+/** Relative cost weights: declared in thresholds.ts, re-exported for existing importers. */
+export { COST_WEIGHT }
 
 /** Significance per unit of cost. Unknown cost is not divided: it is ranked in its own group. */
 export function costScore(significance: number, cost: Pick<Cost, 'kind' | 'amount'>): number {

@@ -25,6 +25,7 @@
  */
 
 import type { DefenseSummary } from '../defense/index.js'
+import { COMFORT_THRESHOLDS } from '../thresholds.js'
 
 /** Waystone tier and the area level it opens. */
 export interface TierEntry {
@@ -59,12 +60,8 @@ export interface MonsterStatData {
 /** How comfortable a given headroom is. Thresholds are stated, not hidden. */
 export type Comfort = 'comfortable' | 'thin' | 'dangerous'
 
-export const COMFORT_THRESHOLDS = {
-  /** At or above this many base hits survived, call it comfortable. */
-  comfortable: 12,
-  /** Below this, one unlucky rare hit is lethal. */
-  dangerous: 6,
-} as const
+/** Declared in thresholds.ts; re-exported for existing importers. */
+export { COMFORT_THRESHOLDS }
 
 function comfortOf(headroom: number): Comfort {
   if (headroom >= COMFORT_THRESHOLDS.comfortable) return 'comfortable'

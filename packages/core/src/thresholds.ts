@@ -19,7 +19,7 @@
  */
 
 import type { ResistanceState } from './defense/index.js'
-import type { RecommendationCategory } from './recommend/types.js'
+import type { CostKind, RecommendationCategory } from './recommend/types.js'
 
 /**
  * Chaos resistance has no cap-driven breakpoint in PoE2 the way the elements
@@ -170,6 +170,39 @@ export const POOL_PINNACLE = 5000
 
 /** Share of the build score given to damage; defence gets the rest. */
 export const OFFENCE_WEIGHT = 0.5
+
+/** Share of the build score given to defence. */
+export const DEFENCE_WEIGHT = 0.5
+
+/** The defence parts of the build score; they sum to DEFENCE_WEIGHT. */
+export const DEFENCE_PART_WEIGHTS = Object.freeze({ maxHit: 0.3, elemental: 0.15, chaos: 0.05 })
+
+/** Map-tier headroom, in base monster hits survived. Project judgement. */
+export const COMFORT_THRESHOLDS = Object.freeze({
+  /** At or above this many base hits survived, call it comfortable. */
+  comfortable: 12,
+  /** Below this, one unlucky rare hit is lethal. */
+  dangerous: 6,
+})
+
+/** Below this share of full XP a map tier is "not worth it". Project judgement. */
+export const XP_WORTH_FLOOR = 0.8
+
+/**
+ * Relative cost weights, the only copy. Judgement values, not data: free work
+ * is weighted at half the cheapest paid kind. Gear means owned or swappable;
+ * currency means it must be bought or crafted. Unknown cost has no weight: it
+ * is its own group, ranked after every known cost.
+ */
+export const COST_WEIGHT: Readonly<Record<Exclude<CostKind, 'unknown'>, number>> = Object.freeze({
+  free: 0.5,
+  passive: 2,
+  gear: 4,
+  currency: 5,
+})
+
+/** Lowest item level a trade search asks for. Project judgement. */
+export const TRADE_MIN_ILVL = 60
 
 /**
  * Damage grades, in the offence half's own units (0 to OFFENCE_WEIGHT), by where

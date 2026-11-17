@@ -25,6 +25,8 @@ import {
   ARMOUR_NEGLIGIBLE,
   BLOCK_NEGLIGIBLE,
   CHAOS_CRITICAL,
+  DEFENCE_PART_WEIGHTS,
+  DEFENCE_WEIGHT,
   EVASION_SUBSTANTIAL,
   MAX_HIT_SCORE,
   OFFENCE_GRADE,
@@ -43,8 +45,8 @@ import {
  */
 export const RUBRIC = Object.freeze({
   /** Defence parts; they sum to the defence half. */
-  weights: Object.freeze({ maxHit: 0.3, elemental: 0.15, chaos: 0.05 }),
-  defenceWeight: 0.5,
+  weights: DEFENCE_PART_WEIGHTS,
+  defenceWeight: DEFENCE_WEIGHT,
   offenceWeight: OFFENCE_WEIGHT,
   /** Survivability part: linear on the lowest of the five max hits. */
   maxHit: MAX_HIT_SCORE,

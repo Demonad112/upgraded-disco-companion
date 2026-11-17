@@ -22,6 +22,7 @@
 
 import type { HoldingUpMap } from '../constraints/holding-up.js'
 import { RESIST_STAT } from '../gear/analyze.js'
+import { TRADE_MIN_ILVL } from '../thresholds.js'
 
 /** Internal stat id (e.g. `base_fire_damage_resistance_%`) to trade stat id. */
 export type TradeStatMap = Readonly<Record<string, string>>
@@ -211,7 +212,7 @@ export interface SearchStatInput {
  * (filters API and a prefilled ?q= link) on 2026-11-02. ilvl lives in type_filters,
  * not misc_filters.
  */
-export const TRADE_MIN_ILVL = 60
+export { TRADE_MIN_ILVL }
 export const TRADE_RARITIES = ['rare', 'magic', 'nonunique'] as const
 export type TradeRarity = (typeof TRADE_RARITIES)[number]
 
