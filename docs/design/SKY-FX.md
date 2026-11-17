@@ -8,7 +8,7 @@ the page sat idle. The causes were the sky's 24 fps loop and the wraith's endles
 - `lib/idle.ts` is the one idle signal: one set of passive listeners (pointermove, pointerdown, keydown, wheel,
   scroll). Blur, a mouse or pen leaving the window (`pointerout` with no `relatedTarget`; touch is ignored because it
   fires after every tap) and a hidden tab count as idle at once. The next input ends it.
-- `subscribeIdle(ms, cb)` and `isIdle(ms)`; `hooks/useIdle.ts` for React. After 10 s, `<html data-idle>`.
+- `subscribeIdle(ms, cb)` and `isIdle(ms)`. After 10 s, `<html data-idle>`.
 - The sky stops its rAF after 5 s idle (or on leaving) and keeps the last frame on screen. The next input resumes it
   from the same angle (the paused time is taken off the clock). `canvas[data-running]` is set while the loop runs.
 - Lite sky (half the stars, 15 fps) on 4 or fewer cores, 4 GB or less memory, or data saver: since P3 this is the Lite effects tier below.

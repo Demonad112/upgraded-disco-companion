@@ -14,7 +14,7 @@ So every variant gets a stable URL with no infrastructure work, and production (
 | Branch | `variant/<yyyymmdd>-<slug>`, e.g. `variant/20261101-ember-glass` |
 | Preview URL | `https://variant-20261101-ember-glass.upgraded-disco-companion.pages.dev/` (Pages lowercases and turns `/` into `-`; aliases are cut to 28 chars, so keep `<yyyymmdd>-<slug>` within 28: `variant/20261113-gear-combined` (30) got a truncated alias) |
 | Commit-pinned URL | the `<hash>.upgraded-disco-companion.pages.dev` URL from the Pages deployment, for "exactly this build" links |
-| Scope rule | a variant branch may change `apps/web/src/app/tokens.css` (after T19), `globals.css`, `components/fx/*` and presentational components. Work that needs `packages/*` goes on a `claude/*` branch instead. It must not change `packages/*`, `services/*`, `apps/mcp`, data, or tests' assertions about behaviour |
+| Scope rule | a variant branch may change `apps/web/src/app/tokens.css` (after T19), `globals.css`, `components/fx/*` and presentational components. Work that needs `packages/*` goes on a `claude/*` branch instead. It must not change `packages/*`, `services/*`, data, or tests' assertions about behaviour |
 | Screenshots | taken with `node scripts/screenshot.mjs` against the preview URL, stored **outside git** (e.g. `C:\Dev\data\poe2-variants\<slug>\`) or attached to the PR |
 | Promotion | open a PR from the variant branch to `main` and mark it ready (SESSION-PROTOCOL Finish 5). The owner reviews the preview and merges; sessions never merge. Production deploys on merge |
 | Retirement | close the PR and keep the branch (cheap); delete only with owner confirmation |

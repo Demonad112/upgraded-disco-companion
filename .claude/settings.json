@@ -38,7 +38,6 @@
       "Bash(npm run test:scripts)",
       "Bash(npm run e2e -w @poe2/web)",
       "Bash(npm run e2e -w @poe2/web *)",
-      "Bash(npm run tools -w @poe2/mcp)",
       "Bash(npm run build -w *)"
     ],
     "deny": [

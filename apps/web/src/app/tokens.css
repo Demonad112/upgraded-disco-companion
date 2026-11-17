@@ -4,7 +4,7 @@
  * imports it right after Tailwind; component rules stay there.
  *
  * Damage-type colours are NOT decorative — they were validated with the dataviz
- * palette validator against both surfaces (see DESIGN.md). Do not hand-tweak
+ * palette validator against both surfaces (DESIGN.md was removed; the rule lives in the CLAUDE.md Design section). Do not hand-tweak
  * them without re-running the validator.
  */
 

@@ -10,7 +10,6 @@
 import { beforeAll, describe, expect, it } from 'vitest'
 import type { Analysis } from '../src/analyze.js'
 import { analyzeCharacter } from '../src/analyze.js'
-import { checkBaseline, ninjaBaselineExpectations } from '../src/pob/baseline-gate.js'
 import { analyzePob } from './helpers/pob.js'
 import { findFixture } from './helpers/fixtures.js'
 
@@ -53,11 +52,6 @@ describe('Yykiuy (level 88 Martial Artist) evidence pack', () => {
     expect(stats.TotalDPS).toBeCloseTo(225_652, -1)
   })
 
-  it('the export’s own baseline reproduces poe.ninja, so simulation would be allowed', async () => {
-    const stats = await analyzePob(yykiuy!.model)
-    const gate = checkBaseline(ninjaBaselineExpectations(yykiuy!.model.defensiveStats), stats)
-    expect(gate.failing.map((f) => f.reason)).toEqual([])
-  })
 
   it('does not raise a banner for the unmapped stat id', () => {
     expect(a.warnings.join(' ')).not.toMatch(/disagree between poe.ninja/)

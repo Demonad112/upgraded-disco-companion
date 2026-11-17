@@ -3,7 +3,7 @@
   "compilerOptions": {
     "outDir": "dist",
     "rootDir": "src",
-    // The core runs in BOTH Node (MCP server) and the browser (web app), so it
+    // The core runs in the browser (web app) and in Node (tests), so it
     // must typecheck against both. Runtime-specific APIs are feature-detected,
     // never assumed — see pob/export.ts.
     "lib": ["ES2022", "DOM", "DOM.Iterable"],

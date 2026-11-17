@@ -4,7 +4,7 @@
  * Each shortfall is summarised on its own, so one wasted line that could be
  * recrafted into cold OR lightning is counted as "1 swap covers" for both.
  * The recommendations already fold that into one choice (mergeSameLineSwaps);
- * this pins it. The raw summary (MCP `shortfallSummary`) still counts the line
+ * this pins it. The raw summary (`summarizeSwaps`) still counts the line
  * once per stat: see REMAINING-WORK.
  */
 

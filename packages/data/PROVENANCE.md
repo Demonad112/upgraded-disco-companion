@@ -365,4 +365,4 @@ maximum resistances stay poe.ninja's values.
   `python-stuff/monk_gloves.txt` (MIT, via Path of Building). 85,855 B, 588 blocks.
 - **Build:** `npm run build:monk-gloves -w @poe2/data [url-or-path]`.
 - **Shape:** `{ modId, source, transformed[] }[]`, `modId` being the source mod id.
-- **Not synced to the web yet:** only the MCP server loads it (`apps/mcp/src/state.ts`).
+- **Not synced to the web yet.**

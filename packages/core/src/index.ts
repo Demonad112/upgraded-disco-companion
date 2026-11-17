@@ -1,8 +1,7 @@
 /**
  * @poe2/core — pure analysis. No I/O, no framework.
  *
- * Consumed by apps/mcp and apps/web. Those adapters render and serialise;
- * they never analyse.
+ * Consumed by apps/web, which renders; it never analyses.
  */
 
 export * from './model/types.js'
@@ -25,17 +24,8 @@ export * from './pob/export.js'
 export * from './pob/config.js'
 export * from './pob/main-skill.js'
 export * from './pob/skill-groups.js'
-export * from './pob/build.js'
 export * from './pob/analyze.js'
-export * from './pob/bridge.js'
-export * from './pob/baseline-gate.js'
-export * from './pob/probes.js'
-export * from './pob/mutation.js'
-export * from './pob/support-removal.js'
 export * from './pob/trade-stat-map.js'
-export * from './pob/per-skill-dps.js'
-export * from './pob/rank.js'
-export * from './pob/sensitivity.js'
 export * from './progress/index.js'
 export * from './provenance/index.js'
 export * from './recommend/index.js'

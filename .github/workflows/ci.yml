@@ -73,13 +73,12 @@ jobs:
       - name: Lint
         if: needs.changes.outputs.code == 'true'
         run: npm run lint
-      - name: Test core (with coverage floor), mcp and web
+      - name: Test core (with coverage floor) and web
         if: needs.changes.outputs.code == 'true'
         # Core runs once, under coverage: the 90% statements / 75% branches floors in packages/core/vitest.config.ts
         # fail the step. Same suites as `npm test`, without running core twice.
         run: |
           npm run test:coverage --workspace @poe2/core
-          npm run test --workspace @poe2/mcp
           npm run test --workspace @poe2/web
       - name: Test ninja-proxy
         if: needs.changes.outputs.code == 'true'
@@ -140,20 +139,6 @@ jobs:
           path: apps/web/e2e/visual.spec.ts-snapshots
           if-no-files-found: ignore
           retention-days: 14
-      - name: Build MCP server
-        if: needs.changes.outputs.code == 'true'
-        run: npm run build --workspace @poe2/mcp
-      - name: Verify MCP server over stdio
-        if: needs.changes.outputs.code == 'true'
-        # Spawns the real binary and drives it with actual protocol messages,
-        # asserting the values returned are the real character's.
-        run: node scripts/verify-mcp.mjs
-      - name: Check the generated tool table is up to date
-        if: needs.changes.outputs.code == 'true'
-        run: |
-          npm run tools --workspace @poe2/mcp
-          git diff --exit-code apps/mcp/TOOLS.md \
-            || (echo "TOOLS.md is stale — run 'npm run tools -w @poe2/mcp' and commit the result." && exit 1)
 
   lighthouse:
     needs: changes

@@ -2,8 +2,10 @@
 
 ### Start (before changing anything)
 1. Run `git fetch origin` and branch off an up-to-date `origin/main`.
-2. **Check the previous batch.** For each batch that has run since the last check (register §6 in
-   `docs/remaining/REMAINING-WORK.md` and the latest line in `docs/HISTORY.md`):
+   Then list worktrees (`git worktree list`), stashes (`git stash list`) and local branches (`git branch`), and report
+   them in the PR body. Don't delete or prune any of them.
+2. **Check the previous batch.** For each batch that has run since the last check (the latest lines in
+   `docs/HISTORY.md` and the batch's plan):
    - its PR is merged into `main`;
    - the merged PR's required checks were green at merge, and the latest CI run on `main` is green (pushes that change
      only Markdown skip CI, so look at the latest run, not the latest commit). A red merge or red `main` is a breakage:
@@ -11,8 +13,8 @@
    - its register rows are updated;
    - a spot-check of its "Done when" items holds on `main`. Spot-check only; don't redo the work.
 
-   Run `npm run typecheck` and `npm test` on `main` before your own changes. Note any failure that was already there, so it
-   isn't blamed on this batch.
+   Run `npm run typecheck` and `npm test` on `main` before your own changes only if the latest `main` CI run isn't green.
+   Note any failure that was already there, so it isn't blamed on this batch.
 3. **Open rows.** Read `docs/remaining/REMAINING-WORK.md` and take the rows assigned to this session's batch. Handle each:
    - **Question:** pick the recommended answer and give a one-line reason. Implement it if it is small (about 30 minutes or
      less), stays inside the ground rules, and touches no file owned by a parallel session.
@@ -34,14 +36,14 @@
    - `npm test`
    - `npm run build`
    - `node scripts/route-weight.mjs` (report br before and after for any route you touched)
-   - `npm run e2e -w @poe2/web -- --trace off` (to debug a failure, re-run that test with `--trace on`)
-   - per-workspace checks for what you touched: core → `npm run test:coverage -w @poe2/core`; mcp →
-     `npm run tools -w @poe2/mcp` with no diff; `services/ninja-proxy` → `npm test` there.
+   - `npm run e2e -w @poe2/web -- --trace off` (to debug a failure, re-run that test with `--trace on`). Local: e2e left to CI.
+   - per-workspace checks for what you touched: core → `npm run test:coverage -w @poe2/core`;
+     `services/ninja-proxy` → `npm test` there.
 
    The gate counts only if it tested something: no `writing actual` outside `e2e/visual.spec.ts` (screenshot tests are
    informational), and the skipped count is not higher
    than the last batch's. Every perf number states its profile (device, CPU/network throttle), live or local, and the run
-   count (at least 3 for a median).
+   count (at least 3 for a median). Perf medians are measured in cloud sessions only, not on this PC.
 
    Docs-only batches skip the gate.
 2. Update `docs/remaining/REMAINING-WORK.md`: close or update the rows this batch touched (closed rows move to
@@ -54,14 +56,11 @@
    Put the Pages preview URL at the top (`.github/pull_request_template.md`). After creating the PR, remove any session
    link the tooling appended to the body. The `guard` check (`scripts/check-pr-body.mjs`) cuts a session link out of
    the body and fails a PR whose title carries one.
-5. Mark the PR ready once the local gate passes (draft PRs skip e2e and Lighthouse). Book a scheduled check-in (about
-   15 minutes); when it fires, fix any failing check on the branch. Done means every required check is green.
-   A session may merge a PR itself only when all of these hold (owner rule, 2026-11-16): every required check is green
-   on the PR's current head; the PR has no merge conflict; its body does not say "do not merge without owner OK", or the
-   owner gave that OK in the chat; and it is the only open PR (with more than one open, merge only on the owner's OK in
-   the chat). Use a regular merge commit, not squash or rebase. Never force-push and never delete branches.
+5. Mark the PR ready once the local gate passes (draft PRs skip e2e and Lighthouse); the owner merges. Book a
+   scheduled check-in (about 15 minutes); when it fires, fix any failing check on the branch. Done means every
+   required check is green. Never force-push and never delete branches.
 
 ### IDs and owner queue
-- Session ID = prefix + the next free number for that prefix in `docs/HISTORY.md` and `REMAINING-WORK.md`, e.g. `PRO2`.
+- Session ID = prefix + the next free number for that prefix in `docs/HISTORY.md` and `REMAINING-WORK.md`, e.g. `PRO2`. Also run `git log --grep <prefix>` to catch ids used in commits that never reached those files.
 - Needs-owner items go in `docs/remaining/REMAINING-WORK.md` § Owner queue: one row each, with the recommended answer.
   Other rows link to it instead of repeating it.

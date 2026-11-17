@@ -1,10 +1,9 @@
 /**
  * The single analysis entry point.
  *
- * Both `apps/mcp` and `apps/web` call this and render the result. Neither
- * contains analysis logic of its own — that was V1's fatal structural flaw,
- * where a vendored copy of the analyser meant the web app and the MCP server
- * could only agree by coincidence.
+ * `apps/web` calls this and renders the result. The app contains no analysis
+ * logic of its own — that was V1's fatal structural flaw, where a vendored copy
+ * of the analyser let two consumers agree only by coincidence.
  */
 
 import { analyzeDefense, type DefenseSummary } from './defense/index.js'
