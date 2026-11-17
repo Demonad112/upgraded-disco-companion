@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { readFileSync } from 'node:fs'
 import { ModTiers, analyzeCharacter, analyzeItem, rankEasyWins, rankReplacements, type ModTierData } from '@poe2/core'
-import { easyWinNote } from '@/components/character/EasyWins'
+import { easyWinNote, sameAsTopFixes } from '@/components/character/EasyWins'
 
 const fixture = (name: string) =>
   JSON.parse(readFileSync(new URL(`../../../packages/core/test/fixtures/${name}.json`, import.meta.url), 'utf8'))
@@ -32,5 +32,14 @@ describe('easy wins on the page', () => {
     )
     // A measured gain is on the row's gain line; the note keeps to the effort.
     expect(easyWinNote({ ...base, id: 'b', action: '', cost: {} as never, grade: 0.12, missing: [] })).toBe('Craft')
+  })
+})
+
+describe('Easy wins vs Top fixes (B1-3)', () => {
+  it('hides only when every row is already a Top fix', () => {
+    expect(sameAsTopFixes(['a', 'b', 'c'], ['c', 'b', 'a'])).toBe(true)
+    expect(sameAsTopFixes(['a', 'b'], ['a', 'b', 'c'])).toBe(true)
+    expect(sameAsTopFixes(['a', 'd'], ['a', 'b', 'c'])).toBe(false)
+    expect(sameAsTopFixes([], ['a'])).toBe(false)
   })
 })

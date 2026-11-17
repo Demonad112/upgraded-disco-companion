@@ -114,6 +114,9 @@ describe('CF2 ranking (D1): Ephij vs Bameth follows Δgrade', () => {
     expect(rec.action).toMatch(/"of Bameth".*score \+0\.01; or "of Ephij".*score under \+0\.01/)
     expect(rec.measured!.grade).toBeCloseTo(bameth, 10)
     expect(rec.alsoCovers).toEqual(['res-lightning-under-cap'])
+    // B1-2: taking "of Bameth" leaves lightning 2 short, so that fix stays listed.
+    const light = a.recommendations.recommendations.find((r) => r.id === 'res-lightning-under-cap')
+    expect(light?.action).toBe('Raise lightning resistance by 2% to reach the 76% cap.')
   })
 })
 

@@ -63,6 +63,12 @@ describe('affix ladders', () => {
     // Absence of a rule is not permission.
     expect(tiers.canSpawn('ColdResist8', ['not_a_real_tag'])).toBe(false)
   })
+
+  it('says whether a base can roll a stat at all (B1-1: weapons roll no resistances)', () => {
+    expect(tiers.canRollStat('base_cold_damage_resistance_%', tiers.tagsForBase('Sapphire Ring')!)).toBe(true)
+    expect(tiers.canRollStat('base_cold_damage_resistance_%', tiers.tagsForBase('Militant Bow')!)).toBe(false)
+    expect(tiers.canRollStat('no_such_stat', tiers.tagsForBase('Sapphire Ring')!)).toBe(false)
+  })
 })
 
 describe('the real bow', () => {

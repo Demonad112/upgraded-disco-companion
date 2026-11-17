@@ -17,11 +17,7 @@
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   grid-auto-rows: minmax(84px, auto);
-  grid-template-areas:
-    'weapon helm amulet'
-    'weapon body offhand'
-    'ring1 body ring2'
-    'gloves belt boots';
+  /* Tiles flow in rank order (GearSlotGrid gridOrder, B1-8): no paper-doll areas, so no holes. */
   gap: 8px;
 }
 .relic-grid > li {

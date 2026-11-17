@@ -113,7 +113,7 @@ function SkillRow({ s, isPrimary, top, total }: { s: SkillDamage; isPrimary: boo
           />
           <Mini
             label="Crit"
-            value={s.critChance !== null ? `${s.critChance}%` : '—'}
+            value={s.critChance !== null ? `${s.critChance.toFixed(1)}%` : '—'}
             sub={s.critMultiplier !== null ? `×${s.critMultiplier}` : null}
           />
         </div>

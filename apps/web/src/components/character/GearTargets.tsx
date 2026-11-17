@@ -182,6 +182,12 @@ export function GearTargets({
     }
   }, [items, defense, attribution, state])
   const gaps = resistGaps(defense)
+  // Unknown base: assume it can roll the stat, as before. A known weapon base can't roll resistances (B1-1).
+  const rollable = (base: string) => (statId: string) => {
+    if (state.status !== 'ready') return true
+    const tags = state.tiers.tagsForBase(base)
+    return !tags || state.tiers.canRollStat(statId, tags)
+  }
   const map = useTradeMap(!!rows?.length && Object.keys(gaps).length + (rows?.length ?? 0) > 0)
   const [opened, setOpened] = useState<Record<number, boolean>>({})
   const firstSlot = rows?.[0]?.slotId
@@ -211,7 +217,7 @@ export function GearTargets({
             key={r.slotId}
             row={r}
             item={analyses.get(r.slotId)}
-            link={map ? weightedTradeLink(r, gaps, map, league || TRADE_LEAGUE) : null}
+            link={map ? weightedTradeLink(r, gaps, map, league || TRADE_LEAGUE, rollable(r.baseType)) : null}
             open={isOpen(r.slotId)}
             onToggle={() => toggle(r.slotId)}
             next={i === 0}
