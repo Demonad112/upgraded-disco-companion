@@ -7,7 +7,7 @@
  */
 
 import type { CSSProperties } from 'react'
-import type { DefenseSummary } from '@poe2/core'
+import { spareResistances, type DefenseSummary } from '@poe2/core'
 import { Tag, fmt } from './ui'
 import { Diamond, DMG_VAR, cap } from './character/dmg'
 import { ProvenanceBadge } from './shared/ProvenanceBadge'
@@ -94,7 +94,7 @@ const PAIR_FOOTER = 'mt-auto border-t border-line pt-3'
 function ResistanceMeters({ d }: { d: DefenseSummary }) {
   const seen = useFirstView<HTMLUListElement>()
   // The same over-cap figure the Overview's Spare to trade lists.
-  const spare = d.resistances.filter((r) => r.value !== null && r.overCap !== null && r.overCap > 0)
+  const spare = spareResistances(d)
   return (
     <section data-surface="data" className={PAIR_CARD} aria-label="Resistances">
       <h3 className="h3">Resistances</h3>

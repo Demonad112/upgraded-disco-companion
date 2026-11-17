@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { MAPPED_STATS, URL_MAX_LENGTH } from '@poe2/core'
-import { improvable, resistGaps, weightedTradeLink } from '../src/components/character/gearTargetsData'
+import { improvable, resistGaps, shownRows, weightedTradeLink } from '../src/components/character/gearTargetsData'
 
 const map = Object.fromEntries(MAPPED_STATS.map((m, i) => [m.internalId, `explicit.stat_${i}`]))
 
@@ -67,5 +67,15 @@ describe('gear slot grid order (B1-8)', () => {
     const items = [1, 4, 7, 3, 8, 9, 2, 11, 5, 15, 99].map((slotId) => ({ slotId, active: slotId !== 15 }))
     const rows = [{ slotId: 4 }, { slotId: 9 }, { slotId: 7 }]
     expect(gridOrder(items, rows).map((i) => i.slotId)).toEqual([4, 9, 7, 1, 3, 8, 2, 11, 5])
+  })
+
+  it('hides rows with no usable search while a resistance is short (HG1-10)', () => {
+    const rows = [{ slotId: 1 }, { slotId: 2 }] as never[]
+    const link = (r: { slotId: number }) => (r.slotId === 1 ? 'https://trade' : null)
+    expect(shownRows(rows, { fire: 5 }, link).map((r: { slotId: number }) => r.slotId)).toEqual([1])
+    // Nothing short: no row gets a weighted search, and the rows stay (tier upgrades are still worth showing).
+    expect(shownRows(rows, {}, () => null)).toHaveLength(2)
+    // The trade map is still loading: nothing to judge yet.
+    expect(shownRows(rows, { fire: 5 }, null)).toHaveLength(2)
   })
 })

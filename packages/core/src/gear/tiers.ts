@@ -231,6 +231,20 @@ export class ModTiers {
   }
 
   /**
+   * The highest single roll of `statId` any affix that can spawn on these tags
+   * reaches (item level ignored). Null when none can.
+   */
+  topRoll(statId: string, baseTags: Iterable<string>): number | null {
+    const tags = [...baseTags]
+    let top: number | null = null
+    for (const id of this.modsByStat().get(statId) ?? []) {
+      if (!this.canSpawn(id, tags)) continue
+      for (const [sid, , max] of this.data.mods[id]!.stats) if (sid === statId && (top === null || max > top)) top = max
+    }
+    return top
+  }
+
+  /**
    * The full ladder for a group on one item class, best tier first.
    *
    * Returns an empty ladder rather than throwing when nothing can spawn — an

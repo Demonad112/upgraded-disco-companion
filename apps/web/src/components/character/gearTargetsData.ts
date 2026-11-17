@@ -21,6 +21,16 @@ export function resistGaps(defense: Pick<DefenseSummary, 'resistances'>): Record
 export const improvable = (r: Pick<ReplacementPriority, 'reasons'>): boolean => r.reasons.length > 0
 
 /**
+ * HG1-10: while a resistance is short, a row whose search can't weigh it (a weapon, a base that can't roll the
+ * missing types) is hidden. With nothing short no row gets a weighted search, so all stay; with `linkFor` null (the
+ * trade map is still loading) nothing is judged yet.
+ */
+export function shownRows<R>(rows: R[], gaps: Record<string, number>, linkFor: ((r: R) => string | null) | null): R[] {
+  if (!linkFor || !Object.keys(gaps).length) return rows
+  return rows.filter((r) => linkFor(r) !== null)
+}
+
+/**
  * A prefilled trade2 search (`?q=`) for replacing one item, ranked by a weighted sum: every resistance the
  * character is still short of (and only those) counts 1 point per point, and the sum must reach the shortfall (at most two
  * rolls' worth). The resistances the item holds up are hard minimums (uncapped), so the swap does not open a new hole.

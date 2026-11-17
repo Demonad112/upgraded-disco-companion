@@ -22,7 +22,7 @@ import { Empty } from '../ui'
 import { BASE_PATH } from '@/lib/basePath'
 import { TRADE_LEAGUE } from '@/lib/constants'
 import type { ModTiersState } from '@/lib/useModTiers'
-import { improvable, resistGaps, weightedTradeLink } from './gearTargetsData'
+import { improvable, resistGaps, shownRows, weightedTradeLink } from './gearTargetsData'
 import { abbrev, isAffixLine, KIND_LABEL, rankImprovements, tierSummary, type Improvement } from './gearImprovements'
 import { useTradeMap } from './TopFixes'
 import { MapIcon } from '@/components/icons'
@@ -172,11 +172,12 @@ export function GearTargets({
   state: ModTiersState
   league?: string | null
 }) {
-  const { rows, analyses } = useMemo(() => {
+  const { rows: ranked, analyses } = useMemo(() => {
     if (state.status !== 'ready') return { rows: null, analyses: new Map<number, ItemAnalysis>() }
     const analysed = items.filter((i) => i.active).map((i) => analyzeItem(i, state.tiers, defense))
     return {
-      rows: rankReplacements(analysed, defense, attribution).ranked.filter(improvable),
+      // With the affix data: the shortfall a replacement can close first (HG1-10).
+      rows: rankReplacements(analysed, defense, attribution, state.tiers).ranked.filter(improvable),
       // ReplacementPriority has no per-line data, so the card joins it to the item analysis by slotId.
       analyses: new Map(analysed.map((a) => [a.slotId, a])),
     }
@@ -188,7 +189,9 @@ export function GearTargets({
     const tags = state.tiers.tagsForBase(base)
     return !tags || state.tiers.canRollStat(statId, tags)
   }
-  const map = useTradeMap(!!rows?.length && Object.keys(gaps).length + (rows?.length ?? 0) > 0)
+  const map = useTradeMap(!!ranked?.length && Object.keys(gaps).length + (ranked?.length ?? 0) > 0)
+  const linkFor = map ? (r: ReplacementPriority) => weightedTradeLink(r, gaps, map, league || TRADE_LEAGUE, rollable(r.baseType)) : null
+  const rows = ranked ? shownRows(ranked, gaps, linkFor) : null
   const [opened, setOpened] = useState<Record<number, boolean>>({})
   const firstSlot = rows?.[0]?.slotId
   const isOpen = (id: number) => opened[id] ?? id === firstSlot
@@ -217,7 +220,7 @@ export function GearTargets({
             key={r.slotId}
             row={r}
             item={analyses.get(r.slotId)}
-            link={map ? weightedTradeLink(r, gaps, map, league || TRADE_LEAGUE, rollable(r.baseType)) : null}
+            link={linkFor ? linkFor(r) : null}
             open={isOpen(r.slotId)}
             onToggle={() => toggle(r.slotId)}
             next={i === 0}
@@ -234,7 +237,7 @@ export function GearTargets({
           <h3 id="gear-targets-title" className="h3">
             Worth replacing
           </h3>
-          <p className="mt-1 text-xs text-ink-dim">Worst first. Each search weighs the resistances you&apos;re short of.</p>
+          <p className="mt-1 text-xs text-ink-dim">Items that can close a resistance gap first. Each search weighs the resistances you&apos;re short of.</p>
         </div>
         {rows?.length ? (
           <span className="tabular text-xs text-ink-mute">

@@ -1,6 +1,101 @@
 [
   {
     "rank": 1,
+    "slot": "Amulet",
+    "base": "Dusk Amulet",
+    "closes": {
+      "lightning": 2,
+      "chaos": 6
+    },
+    "reasons": [
+      "a replacement can close 2% lightning and 6% chaos of your resistance shortfall",
+      "1 line can only improve on a higher item-level base",
+      "2 tiers below the top, across its lines"
+    ]
+  },
+  {
+    "rank": 2,
+    "slot": "Helmet",
+    "base": "Grinning Mask",
+    "closes": {
+      "lightning": 2,
+      "chaos": 6
+    },
+    "reasons": [
+      "a replacement can close 2% lightning and 6% chaos of your resistance shortfall",
+      "9 tiers below the top, across its lines",
+      "1 line with resistance over the cap",
+      "corrupted — it can only be replaced, not crafted on"
+    ]
+  },
+  {
+    "rank": 3,
+    "slot": "Ring 2",
+    "base": "Unset Ring",
+    "closes": {
+      "lightning": 2,
+      "chaos": 6
+    },
+    "reasons": [
+      "a replacement can close 2% lightning and 6% chaos of your resistance shortfall",
+      "7 tiers below the top, across its lines",
+      "1 line with resistance over the cap"
+    ]
+  },
+  {
+    "rank": 4,
+    "slot": "Boots",
+    "base": "Quickslip Shoes",
+    "closes": {
+      "lightning": 2,
+      "chaos": 6
+    },
+    "reasons": [
+      "a replacement can close 2% lightning and 6% chaos of your resistance shortfall",
+      "6 tiers below the top, across its lines",
+      "2 lines with resistance over the cap"
+    ]
+  },
+  {
+    "rank": 5,
+    "slot": "Ring 1",
+    "base": "Amethyst Ring",
+    "closes": {
+      "lightning": 2,
+      "chaos": 6
+    },
+    "reasons": [
+      "a replacement can close 2% lightning and 6% chaos of your resistance shortfall",
+      "5 tiers below the top, across its lines"
+    ]
+  },
+  {
+    "rank": 6,
+    "slot": "Body Armour",
+    "base": "Sleek Jacket",
+    "closes": {
+      "lightning": 2,
+      "chaos": 6
+    },
+    "reasons": [
+      "a replacement can close 2% lightning and 6% chaos of your resistance shortfall",
+      "2 tiers below the top, across its lines"
+    ]
+  },
+  {
+    "rank": 7,
+    "slot": "Gloves",
+    "base": "Fists of Stone",
+    "closes": {
+      "lightning": 2,
+      "chaos": 6
+    },
+    "reasons": [
+      "a replacement can close 2% lightning and 6% chaos of your resistance shortfall"
+    ]
+  },
+  {
+    "rank": 8,
     "slot": "Main Hand",
     "base": "Skullcrusher Quarterstaff",
     "closes": {},
@@ -8,71 +103,5 @@
       "1 line can only improve on a higher item-level base",
       "8 tiers below the top, across its lines"
     ]
-  },
-  {
-    "rank": 2,
-    "slot": "Amulet",
-    "base": "Dusk Amulet",
-    "closes": {},
-    "reasons": [
-      "1 line can only improve on a higher item-level base",
-      "2 tiers below the top, across its lines"
-    ]
-  },
-  {
-    "rank": 3,
-    "slot": "Helmet",
-    "base": "Grinning Mask",
-    "closes": {},
-    "reasons": [
-      "9 tiers below the top, across its lines",
-      "1 line with resistance over the cap",
-      "corrupted — it can only be replaced, not crafted on"
-    ]
-  },
-  {
-    "rank": 4,
-    "slot": "Ring 2",
-    "base": "Unset Ring",
-    "closes": {},
-    "reasons": [
-      "7 tiers below the top, across its lines",
-      "1 line with resistance over the cap"
-    ]
-  },
-  {
-    "rank": 5,
-    "slot": "Boots",
-    "base": "Quickslip Shoes",
-    "closes": {},
-    "reasons": [
-      "6 tiers below the top, across its lines",
-      "2 lines with resistance over the cap"
-    ]
-  },
-  {
-    "rank": 6,
-    "slot": "Ring 1",
-    "base": "Amethyst Ring",
-    "closes": {},
-    "reasons": [
-      "5 tiers below the top, across its lines"
-    ]
-  },
-  {
-    "rank": 7,
-    "slot": "Body Armour",
-    "base": "Sleek Jacket",
-    "closes": {},
-    "reasons": [
-      "2 tiers below the top, across its lines"
-    ]
-  },
-  {
-    "rank": 8,
-    "slot": "Gloves",
-    "base": "Fists of Stone",
-    "closes": {},
-    "reasons": []
   }
 ]

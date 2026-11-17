@@ -1,91 +1,123 @@
 [
   {
     "rank": 1,
-    "slot": "Main Hand",
-    "base": "Militant Bow",
-    "closes": {},
-    "reasons": [
-      "3 lines can only improve on a higher item-level base",
-      "8 tiers below the top, across its lines"
-    ]
-  },
-  {
-    "rank": 2,
     "slot": "Helmet",
     "base": "Runeforged Jungle Tiara",
-    "closes": {},
+    "closes": {
+      "cold": 1,
+      "chaos": 27
+    },
     "reasons": [
+      "a replacement can close 1% cold and 27% chaos of your resistance shortfall",
       "2 lines can only improve on a higher item-level base",
       "6 tiers below the top, across its lines",
       "2 lines with resistance over the cap"
     ]
   },
   {
-    "rank": 3,
+    "rank": 2,
     "slot": "Ring 2",
     "base": "Emerald Ring",
-    "closes": {},
+    "closes": {
+      "cold": 1,
+      "chaos": 27
+    },
     "reasons": [
+      "a replacement can close 1% cold and 27% chaos of your resistance shortfall",
+      "10 tiers below the top, across its lines",
+      "1 line with resistance over the cap"
+    ]
+  },
+  {
+    "rank": 3,
+    "slot": "Body Armour",
+    "base": "Runeforged Hawker's Jacket",
+    "closes": {
+      "cold": 1,
+      "chaos": 27
+    },
+    "reasons": [
+      "a replacement can close 1% cold and 27% chaos of your resistance shortfall",
       "10 tiers below the top, across its lines",
       "1 line with resistance over the cap"
     ]
   },
   {
     "rank": 4,
-    "slot": "Body Armour",
-    "base": "Runeforged Hawker's Jacket",
-    "closes": {},
-    "reasons": [
-      "10 tiers below the top, across its lines",
-      "1 line with resistance over the cap"
-    ]
-  },
-  {
-    "rank": 5,
     "slot": "Belt",
     "base": "Long Belt",
-    "closes": {},
+    "closes": {
+      "cold": 1,
+      "chaos": 27
+    },
     "reasons": [
+      "a replacement can close 1% cold and 27% chaos of your resistance shortfall",
       "9 tiers below the top, across its lines",
       "1 line with resistance over the cap"
     ]
   },
   {
-    "rank": 6,
+    "rank": 5,
     "slot": "Gloves",
     "base": "Runeforged Polished Bracers",
-    "closes": {},
+    "closes": {
+      "cold": 1,
+      "chaos": 27
+    },
     "reasons": [
+      "a replacement can close 1% cold and 27% chaos of your resistance shortfall",
       "9 tiers below the top, across its lines"
     ]
   },
   {
-    "rank": 7,
+    "rank": 6,
     "slot": "Ring 1",
     "base": "Ruby Ring",
-    "closes": {},
+    "closes": {
+      "cold": 1,
+      "chaos": 27
+    },
     "reasons": [
+      "a replacement can close 1% cold and 27% chaos of your resistance shortfall",
       "8 tiers below the top, across its lines",
       "2 lines with resistance over the cap"
     ]
   },
   {
-    "rank": 8,
+    "rank": 7,
     "slot": "Amulet",
     "base": "Solar Amulet",
-    "closes": {},
+    "closes": {
+      "cold": 1,
+      "chaos": 27
+    },
     "reasons": [
+      "a replacement can close 1% cold and 27% chaos of your resistance shortfall",
       "6 tiers below the top, across its lines",
       "1 line with resistance over the cap"
     ]
   },
   {
-    "rank": 9,
+    "rank": 8,
     "slot": "Boots",
     "base": "Runeforged Wanderer Shoes",
+    "closes": {
+      "cold": 1,
+      "chaos": 27
+    },
+    "reasons": [
+      "a replacement can close 1% cold and 27% chaos of your resistance shortfall",
+      "6 tiers below the top, across its lines"
+    ]
+  },
+  {
+    "rank": 9,
+    "slot": "Main Hand",
+    "base": "Militant Bow",
     "closes": {},
     "reasons": [
-      "6 tiers below the top, across its lines"
+      "3 lines can only improve on a higher item-level base",
+      "8 tiers below the top, across its lines"
     ]
   },
   {
