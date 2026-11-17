@@ -523,7 +523,10 @@ export function gearRecommendations({
       const gain = { min: 0, max: 0 }
       for (const swap of counted) {
         for (const removed of swap.removes) {
-          if (removed.value === null) continue
+          if (removed.value === null) {
+            unknownRolls.add(id)
+            continue
+          }
           const stat = `${removed.type}Resistance` as LedgerStat
           lost[stat] = (lost[stat] ?? 0) - removed.value
         }
@@ -643,7 +646,7 @@ export function gearRecommendations({
         }
       }
       if (unknownRolls.has(rec.id)) {
-        notes.push('The roll on the removed line is not known, so what it costs is not included in this check.')
+        notes.push('The roll on a removed line is not known, so what it costs is not included in this check.')
       }
       if (notes.length) {
         // The reassurance that the loss is "smaller than it looks" holds only
