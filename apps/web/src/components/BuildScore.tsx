@@ -38,6 +38,25 @@ function Half({ label, value, of, unscored }: { label: string; value: number | n
   )
 }
 
+function KeystoneList({ title, intro, items }: { title: string; intro: string; items: KeystoneEffects['unverified'] }) {
+  if (!items.length) return null
+  return (
+    <div className="mt-4 border border-warn/40 p-4">
+      <h3 className="text-[length:var(--fs-11)] font-medium tracking-wide text-warn uppercase">{title}</h3>
+      <p className="mt-1 text-[length:var(--fs-11)] leading-relaxed text-ink-mute">
+        {intro}
+      </p>
+      <ul className="mt-2 space-y-1.5">
+        {items.map((u) => (
+          <li key={u.keystone} className="text-[length:var(--fs-11)] leading-relaxed text-ink-dim">
+            <span className="font-medium text-ink">{u.keystone}</span> — {u.reason}
+          </li>
+        ))}
+      </ul>
+    </div>
+  )
+}
+
 export function BuildScore({ assessment, keystones }: { assessment: BuildAssessment; keystones: KeystoneEffects }) {
   const critical = assessment.weaknesses.filter((w) => w.severity === 'critical')
   const warnings = assessment.weaknesses.filter((w) => w.severity === 'warning')
@@ -55,7 +74,12 @@ export function BuildScore({ assessment, keystones }: { assessment: BuildAssessm
       </p>
 
       <div className="mt-4 grid gap-4 sm:grid-cols-2">
-        <Half label="Defence" value={assessment.defence} of={0.5} />
+        <Half
+          label="Defence"
+          value={assessment.defence}
+          of={0.5}
+          {...(assessment.defenceUnscoredReason ? { unscored: assessment.defenceUnscoredReason } : {})}
+        />
         <Half
           label="Damage"
           value={assessment.offence}
@@ -142,6 +166,9 @@ export function BuildScore({ assessment, keystones }: { assessment: BuildAssessm
             {keystones.notes.map((n) => (
               <li key={n.keystone} className="bg-surface-sunken px-3 py-2">
                 <span className="text-xs font-medium text-ink">{n.keystone}</span>
+                {keystones.fromTree?.includes(n.keystone) ? (
+                  <span className="ml-2 text-[length:var(--fs-11)] text-ink-mute">from the tree, not confirmable</span>
+                ) : null}
                 <p className="mt-0.5 text-[length:var(--fs-11)] leading-relaxed text-ink-dim">{n.text}</p>
               </li>
             ))}
@@ -149,21 +176,16 @@ export function BuildScore({ assessment, keystones }: { assessment: BuildAssessm
         </div>
       ) : null}
 
-      {keystones.unverified.length ? (
-        <div className="mt-4 border border-warn/40 p-4">
-          <h3 className="text-[length:var(--fs-11)] font-medium tracking-wide text-warn uppercase">Allocated but not in effect</h3>
-          <p className="mt-1 text-[length:var(--fs-11)] leading-relaxed text-ink-mute">
-            These keystones are on the tree, but this character&rsquo;s stats contradict them, so they were ignored. poe.ninja may not have caught up with a tree change.
-          </p>
-          <ul className="mt-2 space-y-1.5">
-            {keystones.unverified.map((u) => (
-              <li key={u.keystone} className="text-[length:var(--fs-11)] leading-relaxed text-ink-dim">
-                <span className="font-medium text-ink">{u.keystone}</span> — {u.reason}
-              </li>
-            ))}
-          </ul>
-        </div>
-      ) : null}
+      <KeystoneList
+        title="Contradicted by your stats"
+        intro="Ignored: the stats rule these out. Re-import once poe.ninja reindexes the character after a tree change."
+        items={keystones.unverified.filter((u) => u.kind === 'contradicted')}
+      />
+      <KeystoneList
+        title="Not confirmed"
+        intro="On your tree, but poe.ninja didn’t report the stat that would confirm them, so they were left out. Check them in-game."
+        items={keystones.unverified.filter((u) => u.kind !== 'contradicted')}
+      />
       </div>
     </details>
   )

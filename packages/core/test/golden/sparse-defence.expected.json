@@ -63,13 +63,13 @@
   "assessment": {
     "score": null,
     "scoreRange": {
-      "min": 0.15,
-      "max": 0.5
+      "min": 0,
+      "max": 0.8
     },
     "tier": null,
     "tierRange": {
       "worst": "D",
-      "best": "B"
+      "best": "A"
     },
     "offenceUnscoredReason": "No ladder sample was available for this league and ascendancy, and this codebase does not carry invented damage thresholds to fall back on.",
     "weaknesses": [

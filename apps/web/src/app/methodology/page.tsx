@@ -72,7 +72,7 @@ export default function MethodologyPage() {
             ]}
           />
           <p>
-            Damage compares your best hitting skill with the ladder for your league and ascendancy. It scores 0.50 at the sample’s upper quarter or above, 0.40 from its median up, 0.28 from its lower quarter up and 0.15 below that.
+            Damage compares your best hitting skill with the ladder for your league and ascendancy. It scores 0.50 at the sample’s upper quarter or above, 0.40 from its median up and 0.28 from its lower quarter up. Below that it falls in proportion to your DPS ÷ the lower-quarter DPS, down to 0.
           </p>
           <Rows
             rows={[
@@ -83,11 +83,11 @@ export default function MethodologyPage() {
             ]}
           />
           <p>
-            When damage can’t be graded (no ladder sample or no hitting skill), the score runs from the defence half plus 0.15 (the lowest damage score) to the defence half plus 0.5, and the grade shows as a range such as{' '}
-            <span className="font-mono text-ink">D–B</span>. Guessing would invent a damage score, and scoring zero would punish the build for missing data.
+            When damage can’t be graded (no ladder sample or no hitting skill), the score runs from the defence half to the defence half plus 0.5. When poe.ninja reports no maximum hit, the range widens by the 0.30 that survivability is worth. Either way the grade shows as a range such as{' '}
+            <span className="font-mono text-ink">D–B</span>. Guessing would invent a score, and a single figure at the floor would punish the build for missing data.
           </p>
           <p>
-            The maximum-hit and resistance scales are this project’s judgement, not game constants. Your pool (life + energy shield, plus mana under Mind Over Matter) is shown but not graded.
+            The maximum-hit and resistance scales are this project’s judgement, not game constants. Your pool (life + energy shield, plus mana under Mind Over Matter, read from the passive tree) is shown but not graded.
           </p>
         </Section>
 

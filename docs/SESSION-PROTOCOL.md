@@ -21,8 +21,10 @@
    - **Recommendation, follow-up or bug:** the same rule applies. If it is larger, or the files belong to someone else,
      re-assign it in REMAINING-WORK to the batch that owns those files. Don't drop it.
    - **Needs owner:** don't implement it. Add it to the Owner queue (see below). This covers anything that changes a
-     design rule in `apps/web/CLAUDE.md`, CI behaviour or branch protection, touches `packages/*`, data files or dependencies,
-     removes or weakens a test assertion, or deletes branches. Owner answers recorded in a plan under `docs/plans/`
+     design rule in `apps/web/CLAUDE.md`, CI behaviour or branch protection, touches data files or dependencies, changes
+     policy in `packages/*` (data shape, score rubric weights, keystone trust), removes or weakens a test assertion,
+     or deletes branches. Any other `packages/*` change needs no owner OK when the PR shows a red-then-green test for
+     it and its golden diff (owner answer HG1-1, 2026-11-17). Owner answers recorded in a plan under `docs/plans/`
      or in the prompt's `Owner notes` count as approval for the kinds they name.
    - `Owner notes` in the prompt override everything. Apply them.
 4. If the check of the previous wave finds a real breakage, fix it first when it is small. If it is not small, stop and report

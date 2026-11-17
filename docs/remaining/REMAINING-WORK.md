@@ -25,8 +25,8 @@ Answers of 2026-11-15 are applied and the rows cleared: PRO1-3, WQA3-9b, WQA1-1 
 | RV1-3 | Custom domain | Your call. If yes, the same PR must add the domain to the proxy `ALLOWED_ORIGIN` (`services/ninja-proxy/api/_upstream.js`), the OG/sitemap base and, for a proxy move, `connect-src`; otherwise character import breaks on the new domain | RV1 |
 | RV1-4 | Move `services/ninja-proxy` from Vercel to a Cloudflare Worker | Defer: responses already carry edge `s-maxage` (character 60 s, ladder 1 h); revisit only if Vercel limits bite | RV1 |
 | RV1-5 | Rate limit on the public proxy (`/api/*`) | Add a Vercel Firewall rate-limit rule (account toggle, no code); CORS does not stop non-browser callers | RV1 |
-| CA1-8 | `rankSensitivity` (`pob/sensitivity.ts`) still returns readings with no poe.ninja baseline, only warning "unvalidated" | Apply the CA1-2 rule: no expectations, no readings | CA1 |
-| CA1-9 | An unknown maximum hit earns 0 in `defenceParts().total`, so the score is a point that assumes the worst survivability | Widen `scoreRange` by the max-hit weight when it is in `missing`, as offence already does | CA1 |
+| HG1-5 | Review §4: wraith and moving sky opt-in on phones | Keep both on desktop; under 480 px dock the wraith in the header (it covers the "Load another character" row and the patch banner at 390 px, unverified this session) and default the sky to still | HG1 |
+| HG1-6 | Review §4: cut this register to the Owner queue plus open rows | Yes: drop §5's moved-carry rows and the stale 2026-11-08 snapshot line; HISTORY rows link PRs instead of restating them | HG1 |
 
 ## 1. Decisions
 | ID | Question | Recommended | Origin | Status |
@@ -49,6 +49,9 @@ These rows run in the order of `OWNER-STEPS.md`.
 |---|---|---|---|---|---|
 | DATA-1 | `passive-tree.json` and the Soul Core entries in `mod-tiers.json` predate patch 0.5.5 and are unverified against it (`packages/data/PROVENANCE.md`) | M | PROVENANCE | Refresh with the 0.5.5 data; needs `packages/data` | open (waits on the 0.5.5 data) |
 | B4-1 | Gear "Find on trade" for a weapon: weigh its own mods. Today a base that can't roll resists gets no resist weights and falls back to the trade page; weighing weapon lines needs trade ids for those mods in `trade-map.json` (sync-data) | M | B4 (B1-1) | `packages/data` / sync-data scope | open |
+| HG1-9 | B3 "Fresh data and guardrails": tree-version check, then trust keystones from the tree unless contradicted (HG1-2), plus against poe.ninja (Yykiuy has 3 allocated nodes missing from PassiveTree-0.5), farm copy (`DecideStep.tsx:85` labels farm risk "Danger"; `methodology/page.tsx:197` still documents the pre-B2 danger formula), `/dashboard` 1440 px table overlap, wraith overlap at 390 px, one "What we couldn't check" panel | M | HG1 (review items 5, 7, 8, 9) | Farm copy lines confirmed on main; overlap items not re-walked | open |
+| HG1-10 | B2 "Gear that helps": rank gear by closable shortfall, hide rows with no usable search, don't offer over-cap as "spare to trade" when the max hits imply the resist is under cap; with B4-1 and CA1-7 | M | HG1 (review items 4, 6) | Not re-walked this session | open |
+| HG1-11 | Chat default model `claude-sonnet-5` (`packages/core/src/chat/provider.ts:89`) is likely not a real id; current Sonnet is `claude-sonnet-5-5` | S | HG1 (review minor) | Check the id against the API, then change it | open |
 | CA1-7 | Raw `summarizeSwaps` counts one recraftable line once per stat: one fire line that could go to cold or lightning reads "1 swap covers" for both. Recommendations already merge it (`mergeSameLineSwaps`, pinned by `gear-swap-summary-shared-line.test.ts`). Fix: assign each swap to one shortfall, or add a shared-line note | S | CA1 batch 4 | Repro red: `expected 2 to be less than or equal to 1` | open |
 | B7-1 | `scripts/scroll-audit.cjs` (CI "Scroll guard", report-only) fails on main: "animates when idle" / "resumes after scrolling stops" paint 0 in 0.8 s on phone and desktop (runs 2026-11-17 08:35 and 09:09). Fix the check or the sky, then drop `continue-on-error` in `ci.yml` | S | B7 | WQA3-9b | open |
 

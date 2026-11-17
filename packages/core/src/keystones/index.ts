@@ -40,18 +40,17 @@ export interface KeystoneEffects {
   manaIsPool: boolean
   /** Evasion rating functions as armour. */
   evasionIsArmour: boolean
-  /** This character cannot crit; crit modifiers do nothing. */
-  neverCrits: boolean
-  /** Only fire damage is dealt; other added-damage modifiers do nothing. */
-  fireOnly: boolean
-  /** Amulet modifiers benefit minions rather than the character. */
-  amuletToMinions: boolean
   /** Plain-language consequences worth showing, whatever else they change. */
   notes: KeystoneNote[]
   /** Allocated keystones whose effect the character's stats do not corroborate. */
   unverified: UnverifiedKeystone[]
   /** Keystones recognised and applied, in the order they are listed. */
   applied: string[]
+  /**
+   * Applied keystones whose effect no stat can confirm, so they rest on the
+   * passive tree alone. Shown as a caveat: a stale tree would make them wrong.
+   */
+  fromTree: string[]
 }
 
 export interface KeystoneNote {
@@ -81,15 +80,23 @@ type Verdict = { kind: UnverifiedKeystone['kind']; reason: string } | null
 const unknown = (stat: string): Verdict => ({ kind: 'unconfirmed', reason: `${stat} is not reported, so its effect cannot be confirmed` })
 
 interface KeystoneRule {
-  effects?: Partial<Omit<KeystoneEffects, 'notes' | 'unverified' | 'applied'>>
+  effects?: Partial<Omit<KeystoneEffects, 'notes' | 'unverified' | 'applied' | 'fromTree'>>
   /** Shown to the player as a consequence of having allocated this. */
   note?: string
   /**
    * Confirm the keystone is actually in effect before trusting it. Null means
    * the sheet confirms it; anything else says why it does not. A rule with
-   * effects and no check is never applied.
+   * effects and no check is never applied, unless `trust` is `'tree'`.
    */
   verify?: (defense: DefenseSummary) => Verdict
+  /**
+   * `'tree'`: apply the effects on the tree's word alone, because nothing on
+   * the sheet could confirm or refute them and the rule is game data. Listed in
+   * `fromTree` so the reader is told. Only for effects that never move the
+   * build grade: today the reported pool and the farm planner's "Danger for my
+   * build" mana layer, which is itself labelled unverified.
+   */
+  trust?: 'tree'
 }
 
 /**
@@ -129,22 +136,22 @@ const RULES: Readonly<Record<string, KeystoneRule>> = Object.freeze({
           : null,
   },
   'Resolute Technique': {
-    effects: { neverCrits: true },
     note: 'You never deal critical hits, so critical chance and critical damage modifiers do nothing. Accuracy is doubled instead.',
   },
   'Avatar of Fire': {
-    effects: { fireOnly: true },
     note: 'You deal no non-fire damage, so added cold, lightning and chaos damage modifiers do nothing.',
   },
   'Blackflame Covenant': {
     note: 'Fire spells convert all their fire damage to chaos, and their ignites deal chaos damage, so fire-damage advice applies to them as chaos.',
   },
   'Necromantic Talisman': {
-    effects: { amuletToMinions: true },
     note: 'Every bonus on your equipped amulet applies to your minions instead of you.',
   },
   'Mind Over Matter': {
+    // Nothing on the sheet shows where damage is taken from, and the pool it
+    // corrects is reported, not graded, so the tree is trusted and labelled.
     effects: { manaIsPool: true },
+    trust: 'tree',
     note: 'All damage is taken from mana before life, so your effective pool is larger than life and energy shield alone suggest — and mana recovery is 50% slower.',
   },
   'Blood Magic': {
@@ -192,12 +199,10 @@ export const NO_KEYSTONE_EFFECTS: Readonly<KeystoneEffects> = Object.freeze({
   esNotDefensive: false,
   manaIsPool: false,
   evasionIsArmour: false,
-  neverCrits: false,
-  fireOnly: false,
-  amuletToMinions: false,
   notes: NO_NOTES,
   unverified: NO_UNVERIFIED,
   applied: NO_APPLIED,
+  fromTree: NO_APPLIED,
 })
 
 /** Whether this codebase carries a correction for a keystone by name. */
@@ -208,7 +213,7 @@ export function hasKeystoneRule(name: string): boolean {
 /**
  * Fold every allocated keystone into one set of corrections, applying a
  * keystone's effects only when the character's stats corroborate them. No
- * check, no stats or an unknown stat all mean "not corroborated" (CA1-3).
+ * check, no stats or an unknown stat all mean "not corroborated" (CA1-3), except a rule that trusts the tree (B1).
  *
  * `keystones` accepts anything carrying a `name` — `resolveAllocation(...)
  * .keystones` from tree/index.ts is the intended source.
@@ -222,6 +227,7 @@ export function keystoneEffectsOf(
     notes: [],
     unverified: [],
     applied: [],
+    fromTree: [],
   }
 
   for (const keystone of keystones) {
@@ -229,7 +235,7 @@ export function keystoneEffectsOf(
     if (!rule) continue
 
     // A rule with no effects only adds a note and changes no figure.
-    const verdict: Verdict = !rule.effects
+    const verdict: Verdict = !rule.effects || rule.trust === 'tree'
       ? null
       : !rule.verify
         ? { kind: 'unconfirmed', reason: 'nothing on the character sheet can confirm its effect' }
@@ -247,11 +253,13 @@ export function keystoneEffectsOf(
     if (rule.effects) Object.assign(out, rule.effects)
     if (rule.note) out.notes.push({ keystone: keystone.name, text: rule.note })
     out.applied.push(keystone.name)
+    if (rule.effects && rule.trust === 'tree') out.fromTree.push(keystone.name)
   }
 
   out.notes.sort((a, b) => a.keystone.localeCompare(b.keystone))
   out.unverified.sort((a, b) => a.keystone.localeCompare(b.keystone))
   out.applied.sort((a, b) => a.localeCompare(b))
+  out.fromTree.sort((a, b) => a.localeCompare(b))
   return out
 }
 

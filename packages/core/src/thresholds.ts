@@ -206,9 +206,10 @@ export const TRADE_MIN_ILVL = 60
 
 /**
  * Damage grades, in the offence half's own units (0 to OFFENCE_WEIGHT), by where
- * the build's DPS falls among the observed ladder sample.
+ * the build's DPS falls among the observed ladder sample. Below p25 the grade is
+ * `p25 × dps / p25-DPS`, so it falls to 0 rather than holding a flat floor.
  */
-export const OFFENCE_GRADE = Object.freeze({ upperHalf: 0.5, median: 0.4, p25: 0.28, below: 0.15 })
+export const OFFENCE_GRADE = Object.freeze({ upperHalf: 0.5, median: 0.4, p25: 0.28 })
 
 /** Lowest build score that earns each tier; below TIER_C_MIN is D. */
 export const TIER_A_MIN = 0.75

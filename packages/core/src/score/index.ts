@@ -50,7 +50,7 @@ export const RUBRIC = Object.freeze({
   offenceWeight: OFFENCE_WEIGHT,
   /** Survivability part: linear on the lowest of the five max hits. */
   maxHit: MAX_HIT_SCORE,
-  /** Offence by ladder band. `below` is also the floor of the ungraded range. */
+  /** Offence by ladder band; below p25 the grade scales by dps / p25 down to 0, the floor of the ungraded range. */
   offence: OFFENCE_GRADE,
   /** A max hit under this fraction of the best marks a weak damage type. */
   weakHitRatio: WEAK_HIT_RATIO,
@@ -156,7 +156,8 @@ export interface BuildAssessment {
    * out of 1.0 punishes a build for evidence nobody could collect.
    *
    * With one half measured the honest answer is neither point but the interval
-   * between them, which is what `scoreRange` carries.
+   * between them, which is what `scoreRange` carries. An unknown maximum hit
+   * widens it the same way, by the max-hit weight (CA1-9).
    */
   score: number | null
   /** The bounds `score` lies within. Null when the score is known exactly. */
@@ -171,6 +172,8 @@ export interface BuildAssessment {
   weaknesses: Weakness[]
   /** The defensive half, out of 0.5. */
   defence: number
+  /** Why part of the defensive half went ungraded, when it did (CA1-9). */
+  defenceUnscoredReason: string | null
   /** The offensive half, out of 0.5. Null when it could not be assessed. */
   offence: number | null
   /** Why offence went unscored, when it did. */
@@ -212,7 +215,10 @@ function gradeOffence(dps: number, stat: LadderStat): number {
   if (band === 'top' || band === 'p75') return OFFENCE_GRADE.upperHalf
   if (band === 'median') return OFFENCE_GRADE.median
   if (band === 'p25') return OFFENCE_GRADE.p25
-  return OFFENCE_GRADE.below
+  // Below the lower quartile, credit falls in proportion to how far short the
+  // build is: dps / p25 of the p25 grade. Ladder arithmetic, not a cutoff, so
+  // 1 DPS earns nothing and a hair under p25 earns almost the full p25 grade.
+  return Math.round(OFFENCE_GRADE.p25 * Math.max(0, dps / stat.p25) * 100) / 100
 }
 
 export function assessBuild(input: BuildAssessmentInput): BuildAssessment {
@@ -382,6 +388,11 @@ export function assessBuild(input: BuildAssessmentInput): BuildAssessment {
     }
   }
 
+  for (const name of keystones.fromTree) {
+    caveats.push(
+      `${name} is counted from the passive tree: the character sheet cannot confirm it, so a stale tree would make the pool wrong.`,
+    )
+  }
   for (const unverified of keystones.unverified) {
     caveats.push(
       `${unverified.keystone} is allocated but its effect is not corroborated — ${unverified.reason}. Its corrections were not applied.`,
@@ -394,12 +405,20 @@ export function assessBuild(input: BuildAssessmentInput): BuildAssessment {
   const defence = Math.round(parts.total * 100) / 100
 
   // With both halves measured the score is a point. With only defence measured
-  // it is the interval [defence + lowest damage grade, defence + 0.5]: every
+  // it is the interval [defence + 0, defence + 0.5]: every
   // value damage could still be worth. Neither end is asserted as the answer.
   const round = (n: number) => Math.round(Math.min(1, Math.max(0, n)) * 100) / 100
-  const score = offence === null ? null : round(defence + offence)
+  // An unknown maximum hit is the same: it could be worth anything from 0 to the
+  // max-hit weight, so it widens the range rather than scoring as 0 (CA1-9).
+  const hitUnknown = parts.missing.includes('maxHit')
+  const score = offence !== null && !hitUnknown ? round(defence + offence) : null
   const scoreRange =
-    offence === null ? { min: round(defence + RUBRIC.offence.below), max: round(defence + RUBRIC.offenceWeight) } : null
+    score !== null
+      ? null
+    : {
+        min: round(defence + (offence ?? 0)),
+        max: round(defence + (offence ?? RUBRIC.offenceWeight) + (hitUnknown ? RUBRIC.weights.maxHit : 0)),
+      }
   const tier = score === null ? null : tierFor(score)
   const tierRange = scoreRange ? { worst: tierFor(scoreRange.min), best: tierFor(scoreRange.max) } : null
 
@@ -412,10 +431,16 @@ export function assessBuild(input: BuildAssessmentInput): BuildAssessment {
   } else if (elementalCritical) {
     note = 'Uncapped elemental resistances are the biggest thing holding this back.'
   } else if (offence === null && tierRange) {
+    const alsoHit = hitUnknown ? ' and on the largest survivable hit, which poe.ninja did not report' : ''
     note =
       tierRange.worst === tierRange.best
         ? `Graded on defences alone, which put this at ${tierRange.worst} whatever the damage turns out to be — ${offenceUnscoredReason}`
-        : `Defences alone put this between ${tierRange.worst} and ${tierRange.best}; where it lands depends on damage, which was not graded — ${offenceUnscoredReason}`
+        : `Defences alone put this between ${tierRange.worst} and ${tierRange.best}; where it lands depends on damage, which was not graded${alsoHit} — ${offenceUnscoredReason}`
+  } else if (hitUnknown && tierRange) {
+    note =
+      tierRange.worst === tierRange.best
+        ? `Graded ${tierRange.worst} whatever the largest survivable hit turns out to be; poe.ninja did not report it.`
+        : `Between ${tierRange.worst} and ${tierRange.best}: poe.ninja did not report the largest hit this character survives, so survivability was not graded.`
   } else if (ladderDps && damage < ladderDps.median) {
     note = 'Defences hold up; damage is the weaker half of this build.'
   } else {
@@ -434,6 +459,9 @@ export function assessBuild(input: BuildAssessmentInput): BuildAssessment {
     strengths,
     weaknesses,
     defence,
+    defenceUnscoredReason: hitUnknown
+      ? 'Survivability not graded: poe.ninja reported no maximum hit, so up to 0.30 more may belong here.'
+      : null,
     offence,
     offenceUnscoredReason,
     pool: { total: pool.total, chaos: pool.chaos, label: poolLabel, excluded: pool.excluded },

@@ -133,15 +133,31 @@ test.describe('quick picks', () => {
   test('axe is clean on both screens and on the sheet', async ({ page }) => {
     await page.goto('dashboard/')
     await page.waitForLoadState('networkidle')
+    // Axe reads colours as painted, so a fade still running (the sheet, the
+    // 150 ms .farm-num fade-in) reads as low contrast on a slow runner. Wait
+    // for every finite, time-based animation to finish before each scan.
+    const settled = () =>
+      page.waitForFunction(() =>
+        document
+          .getAnimations()
+          .every(
+            (a) =>
+              a.playState !== 'running' ||
+              !(a.timeline instanceof DocumentTimeline) || // scroll-driven (the astrolabe dial) never ends
+              a.effect?.getTiming().iterations === Infinity,
+          ),
+      )
+    await settled()
     let r = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa']).analyze()
     expect(r.violations.map((v) => v.id)).toEqual([])
     await page.getByRole('button', { name: 'Set up Breach + Genesis Tree' }).click()
     await expect(page.getByTestId('qp-setup')).toBeVisible()
+    await settled()
     r = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa']).analyze()
     expect(r.violations.map((v) => v.id)).toEqual([])
     await page.locator('[data-chip]').first().click()
     await expect(page.getByTestId('qp-sheet')).toBeVisible()
-    await page.waitForTimeout(400) // the sheet's 150 ms fade, so axe reads final colours
+    await settled()
     r = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa']).analyze()
     expect(r.violations.map((v) => v.id)).toEqual([])
   })

@@ -179,3 +179,11 @@ Measured at 390×844, 4× CPU, ~1.6 Mbps / 165 ms, local brotli server, reduced 
 |---|---|---|
 | PV1-1 | PoB2 MCP fork with must-haves 1–6 | removed: MCP and the PoB2 bridge deleted (owner approval 2026-11-16) |
 | PV1-2 | Engine parity, proof stats, config robustness (R63) | removed: it depended on PV1-1 |
+| CA1-8 | `rankSensitivity` returns readings with no poe.ninja baseline | removed: #204 deleted `pob/sensitivity.ts` (HG1, 2026-11-17) |
+| CA1-9 | An unknown maximum hit earns 0, so the score is a point | done (HG1, 2026-11-17): the score is a range widened by the max-hit weight |
+| HG1-1 | Review §4: replace "packages/\*, data or weaker tests need the owner" | answered 2026-11-17: adopted; written into SESSION-PROTOCOL step 3 and CLAUDE.md |
+| HG1-2 | Review §4: trust a keystone from the tree unless the stats contradict it or the tree data lags | answered 2026-11-17: yes, once the tree-version check in HG1-9 lands; do both in B3 |
+| HG1-4 | Review §4: drop constant-pinning and source-reading tests (`thresholds-moved-constants.test.ts`, `thresholds-rubric-constants.test.ts`) | answered 2026-11-17: done in #205 (identity checks and game constants kept) |
+| HG1-7 | Review §4: possible force-push of `main` (review container started at `bf53e09`, the #141 merge, not an ancestor of `main`) | answered 2026-11-17: owner checks GitHub Settings → Branches → `main` has "Do not allow force pushes" |
+| HG1-8 | Review §4: sessions merging their own PRs (#196) | moot: #204 changed the rule to "the owner merges"; no session self-merges |
+| HG1-3 | Review §4: freeze work on PoB rank / sensitivity | moot: #204 deleted that code |
