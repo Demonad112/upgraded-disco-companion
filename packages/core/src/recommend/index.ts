@@ -672,17 +672,39 @@ export function recommend(
 
   // Questions aren't findings — a build with only questions is a sound build.
   const actionable = recommendations.filter((r) => r.category !== 'question')
-  const buildIsSound = actionable.length === 0
+  // "Sound" names what was checked, so it needs those inputs. A rule that could
+  // not run for lack of data found nothing; that is not a pass.
+  const unchecked = uncheckedInputs(ctx)
+  const buildIsSound = actionable.length === 0 && unchecked.length === 0
 
   return {
     recommendations,
     unresolved,
     suppressed: ctx.suppressed,
     buildIsSound,
-    summary: buildIsSound
-      ? 'No clear weaknesses found: resistances are capped, no damage type is far weaker than the rest and gear is consistent. This build is in good shape.'
-      : `${actionable.length} actionable ${actionable.length === 1 ? 'improvement' : 'improvements'} found, ranked by score gain per unit of cost.`,
+    summary: actionable.length
+      ? `${actionable.length} actionable ${actionable.length === 1 ? 'improvement' : 'improvements'} found, ranked by score gain per unit of cost.`
+      : unchecked.length
+        ? `Not fully checked: ${listOf(unchecked)} ${unchecked.length === 1 ? 'is' : 'are'} not in the payload. Nothing else needs fixing.`
+        : 'No clear weaknesses found: resistances are capped, no damage type is far weaker than the rest and gear is consistent. This build is in good shape.',
   }
+}
+
+/** "a", "a and b", "a, b and c". */
+function listOf(parts: string[]): string {
+  return parts.length <= 1 ? parts.join('') : `${parts.slice(0, -1).join(', ')} and ${parts[parts.length - 1]}`
+}
+
+/**
+ * The inputs the "build is sound" summary rests on that the payload did not
+ * carry: each resistance, the per-type maximum hits, and the equipped gear.
+ */
+function uncheckedInputs(ctx: Pick<Context, 'defense' | 'items'>): string[] {
+  const out = ctx.defense.resistances.filter((r) => r.value === null).map((r) => `${r.type} resistance`)
+  // The weakest-type rule needs two types to compare.
+  if (ctx.defense.maxHits.length < 2) out.push('the maximum hit for each damage type')
+  if (!ctx.items.some((i) => i.active)) out.push('equipped gear')
+  return out
 }
 
 /** Re-exported so callers can project stats without reaching into model/. */
