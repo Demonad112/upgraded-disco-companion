@@ -13,6 +13,7 @@ import { TrialOfChaosPanel } from "@/components/checklist/TrialOfChaosPanel";
 import { EssenceCraftingPanel } from "@/components/checklist/EssenceCraftingPanel";
 import { NextStepCard } from "@/components/checklist/NextStepCard";
 import { ChecklistTools } from "@/components/checklist/ChecklistTools";
+import { ProgressTransfer } from "@/components/checklist/ProgressTransfer";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { stepsByPhase } from "@/lib/roadmapOrder";
 import { stepSummaries } from "@/lib/stepSummary";
@@ -50,6 +51,8 @@ export default function ChecklistPage() {
           <CommonMistakesPanel />
         </section>
       </div>
+
+      <ProgressTransfer />
 
       <ChecklistPhaseNav />
 

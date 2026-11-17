@@ -165,7 +165,7 @@ Measured at 390×844, 4× CPU, ~1.6 Mbps / 165 ms, local brotli server, reduced 
 | LHCI-A11Y | CI accessibility 0.92–0.94 vs 1.0 in the cloud. Cause: the Lighthouse build's `GITHUB_ACTIONS: ''` is ignored by Actions, so basePath stayed on, every stylesheet 404'd and Lighthouse scored an unstyled page (link blue on white, 17–21 px targets). Fixed with `ROOT_BASE_PATH=1`; gate raised to 0.95; reports upload and failing audits print to the log | done |
 | LHCI-LCP | Owner approved the ratchet (2026-11-16): LCP gate stays `error` at `<= 3600` ms (worst today 3,414 ms); permanent; PERF-LCP was dropped (owner, 2026-11-16) because the simulated LCP counts the async framework JS requested before the real paint (0.14–0.2 s), so trimming bytes cannot reach 2500 | closed |
 | PERF-LCP | Dropped on owner OK (2026-11-16): 3600 ms stays the gate. Fonts trimmed instead: Inter and Geist Mono weight axes cut to the weights in use (48,432 → 35,424 and 23,108 → 15,492 B) | closed |
-| RV1-6 | Progress export / import: dropped by the owner (2026-11-16) | closed |
+| RV1-6 | Progress export / import: reinstated by the owner (2026-11-17) and built as B10: JSON file from the Checklist (checklist, Atlas, dashboard, farm, gem tier; no character history or prefs), strict validation, Merge or Replace | done |
 
 ## Closed in B2 (2026-11-16)
 | ID | Item | Recommended / notes | Status |
