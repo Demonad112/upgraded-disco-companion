@@ -1,0 +1,100 @@
+[
+  {
+    "rank": 1,
+    "slot": "Main Hand",
+    "base": "Militant Bow",
+    "closes": {},
+    "reasons": [
+      "3 lines can only improve on a higher item-level base",
+      "8 tiers below the top, across its lines"
+    ]
+  },
+  {
+    "rank": 2,
+    "slot": "Helmet",
+    "base": "Runeforged Jungle Tiara",
+    "closes": {},
+    "reasons": [
+      "2 lines can only improve on a higher item-level base",
+      "6 tiers below the top, across its lines",
+      "2 lines with resistance over the cap"
+    ]
+  },
+  {
+    "rank": 3,
+    "slot": "Ring 2",
+    "base": "Emerald Ring",
+    "closes": {},
+    "reasons": [
+      "10 tiers below the top, across its lines",
+      "1 line with resistance over the cap"
+    ]
+  },
+  {
+    "rank": 4,
+    "slot": "Body Armour",
+    "base": "Runeforged Hawker's Jacket",
+    "closes": {},
+    "reasons": [
+      "10 tiers below the top, across its lines",
+      "1 line with resistance over the cap"
+    ]
+  },
+  {
+    "rank": 5,
+    "slot": "Belt",
+    "base": "Long Belt",
+    "closes": {},
+    "reasons": [
+      "9 tiers below the top, across its lines",
+      "1 line with resistance over the cap"
+    ]
+  },
+  {
+    "rank": 6,
+    "slot": "Gloves",
+    "base": "Runeforged Polished Bracers",
+    "closes": {},
+    "reasons": [
+      "9 tiers below the top, across its lines"
+    ]
+  },
+  {
+    "rank": 7,
+    "slot": "Ring 1",
+    "base": "Ruby Ring",
+    "closes": {},
+    "reasons": [
+      "8 tiers below the top, across its lines",
+      "2 lines with resistance over the cap"
+    ]
+  },
+  {
+    "rank": 8,
+    "slot": "Amulet",
+    "base": "Solar Amulet",
+    "closes": {},
+    "reasons": [
+      "6 tiers below the top, across its lines",
+      "1 line with resistance over the cap"
+    ]
+  },
+  {
+    "rank": 9,
+    "slot": "Boots",
+    "base": "Runeforged Wanderer Shoes",
+    "closes": {},
+    "reasons": [
+      "6 tiers below the top, across its lines"
+    ]
+  },
+  {
+    "rank": 10,
+    "slot": "Off Hand",
+    "base": "Volant Quiver",
+    "closes": {},
+    "reasons": [
+      "2 tiers below the top, across its lines"
+    ]
+  }
+]

@@ -11,7 +11,7 @@
  */
 
 import type { CharModel } from '../model/types.js'
-import { analyzeDefense, knownResistances, resistanceShortfalls, type DefenseSummary } from '../defense/index.js'
+import { analyzeDefense, resistanceShortfalls, spareResistances, type DefenseSummary } from '../defense/index.js'
 import { analyzeDps, type AnalyzeDpsOptions, type DpsSummary } from '../dps/index.js'
 import { NO_KEYSTONE_EFFECTS, type KeystoneEffects } from '../keystones/index.js'
 import { indexBreakdowns, projectStat, statSources, type BreakdownIndex } from '../model/breakdowns.js'
@@ -91,7 +91,8 @@ function resistanceRules(ctx: Context): Recommendation[] {
   const out: Recommendation[] = []
   // Unknown resistances are neither a shortfall nor a donor.
   const under = resistanceShortfalls(ctx.defense)
-  const over = knownResistances(ctx.defense).filter((r) => r.overCap > 0)
+  // Spare only: an over-cap figure the max hits put under cap is not given away (HG1-10).
+  const over = spareResistances(ctx.defense)
 
   for (const res of under) {
     // Chaos Inoculation grants outright immunity to chaos damage. A chaos

@@ -601,28 +601,35 @@ export function summarizeSwaps(
 ): { stat: string; type: string; shortfall: number; swapsNeeded: number | null; note: string }[] {
   const out = []
 
-  for (const res of resistanceShortfalls(defense)) {
+  // CA1-7: each swap goes to one shortfall. Largest shortfall first; a swap it
+  // uses is not counted again for the next one.
+  const used = new Map<number, string>()
+  const shortfalls = resistanceShortfalls(defense).slice().sort((a, b) => b.underCap - a.underCap)
+  for (const res of shortfalls) {
     const statId = RESIST_STAT[res.type]
     if (!statId) continue
 
     // Best available candidate per swap, for this stat only. Each item can
     // contribute at most one — they are separate affix slots on separate items.
-    const perSwap = swaps
+    const offers = swaps
       // The guaranteed (minimum) roll: "N swaps cover it" must hold on low rolls.
-      .map((s) => s.candidates.filter((c) => c.statId === statId && c.reachableOnThisItem)[0]?.min ?? 0)
-      .filter((v) => v > 0)
-      .sort((a, b) => b - a)
+      .map((s, index) => ({ index, value: s.candidates.filter((c) => c.statId === statId && c.reachableOnThisItem)[0]?.min ?? 0 }))
+      .filter((o) => o.value > 0)
+    const free = offers.filter((o) => !used.has(o.index)).sort((a, b) => b.value - a.value)
+    const takenBy = [...new Set(offers.filter((o) => used.has(o.index)).map((o) => used.get(o.index)!))]
 
     let running = 0
     let needed: number | null = null
-    for (let i = 0; i < perSwap.length; i++) {
-      running += perSwap[i]!
+    for (let i = 0; i < free.length; i++) {
+      running += free[i]!.value
       if (running >= res.underCap) {
         needed = i + 1
         break
       }
     }
+    for (const o of free.slice(0, needed ?? free.length)) used.set(o.index, res.type)
 
+    const elsewhere = takenBy.length ? ` The other swaps that could give it are already counted for ${takenBy.join(' and ')}.` : ''
     out.push({
       stat: statId,
       type: res.type,
@@ -631,9 +638,11 @@ export function summarizeSwaps(
       note:
         needed !== null
           ? `${needed} of these swap${needed === 1 ? '' : 's'} would cover the ${res.underCap}% ${res.type} shortfall. The rest are spare capacity, not extra need.`
-          : perSwap.length
-            ? `All ${perSwap.length} available swaps together give ${running}%, short of the ${res.underCap}% needed. ${res.type} resistance also needs a source outside these items.`
-            : `No wasted modifier on your gear can be traded for ${res.type} resistance. It needs a new item, a passive, or a rune.`,
+          : free.length
+            ? `All ${free.length} remaining swaps together give ${running}%, short of the ${res.underCap}% needed.${elsewhere} ${res.type} resistance also needs a source outside these items.`
+            : takenBy.length
+              ? `Every swap that could give ${res.type} resistance is already counted for ${takenBy.join(' and ')}. It needs a new item, a passive, or a rune.`
+              : `No wasted modifier on your gear can be traded for ${res.type} resistance. It needs a new item, a passive, or a rune.`,
     })
   }
 

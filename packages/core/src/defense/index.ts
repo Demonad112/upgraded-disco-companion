@@ -111,6 +111,19 @@ export function knownResistances(d: Pick<DefenseSummary, 'resistances'>): KnownR
   return d.resistances.filter(isKnownResistance)
 }
 
+/**
+ * Over-cap resistances that are spare to trade (HG1-10): a resistance whose
+ * implied value from poe.ninja's max hits is under its cap is not spare, even
+ * when the sheet shows it over cap, so it is neither listed nor used as a donor.
+ */
+export function spareResistances(d: Pick<DefenseSummary, 'resistances'> & Partial<Pick<DefenseSummary, 'impliedResistances'>>): KnownResistance[] {
+  return knownResistances(d).filter((r) => {
+    if (r.overCap <= 0) return false
+    const implied = d.impliedResistances?.find((i) => i.type === r.type && i.status === 'implied')?.implied
+    return !(implied && implied.max < r.max)
+  })
+}
+
 /** Known resistances below their cap. An unknown resistance is not a shortfall. */
 export function resistanceShortfalls(d: Pick<DefenseSummary, 'resistances'>): KnownResistance[] {
   return knownResistances(d).filter((r) => r.underCap > 0)
