@@ -17,6 +17,8 @@ const populated: Trade2StatsSnapshot = {
     { id: 'explicit.t_light', text: '+#% to Lightning Resistance', type: 'explicit' },
     { id: 'implicit.t_fire', text: '+#% to Fire Resistance', type: 'implicit' },
     { id: 'explicit.t_other', text: '+#% to Chaos Resistance Something', type: 'explicit' },
+    { id: 'pseudo.t_fire', text: '+#% total to Fire Resistance', type: 'pseudo' },
+    { id: 'pseudo.t_chaos', text: '+#% total to Chaos Resistance', type: 'pseudo' },
   ],
 }
 
@@ -30,8 +32,17 @@ describe('normaliseStatText', () => {
 })
 
 describe('resolveTradeStatMapFromSnapshot', () => {
-  it('maps exact matches of the chosen type and leaves the rest null with a reason', () => {
+  it('defaults to the pseudo totals, which count every source on the item (R65)', () => {
     const r = resolveTradeStatMapFromSnapshot(populated)
+    const by = Object.fromEntries(r.map((x) => [x.internalId, x]))
+    expect(by['base_fire_damage_resistance_%']!.tradeId).toBe('pseudo.t_fire')
+    expect(by['base_chaos_damage_resistance_%']!.tradeId).toBe('pseudo.t_chaos')
+    expect(by['base_fire_damage_resistance_%']!.text).toBe('+#% total to Fire Resistance') // the line that matched
+    expect(by['base_cold_damage_resistance_%']).toMatchObject({ tradeId: null, reason: 'no-match' })
+  })
+
+  it('maps exact matches of the chosen type and leaves the rest null with a reason', () => {
+    const r = resolveTradeStatMapFromSnapshot(populated, 'explicit')
     expect(r).toHaveLength(MAPPED_STATS.length)
     const by = Object.fromEntries(r.map((x) => [x.internalId, x]))
     expect(by['base_fire_damage_resistance_%']).toMatchObject({
@@ -60,7 +71,7 @@ describe('resolveTradeStatMapFromSnapshot', () => {
     const r = resolveTradeStatMapFromSnapshot({
       ...populated,
       entries: [...populated.entries, { id: 'explicit.t_fire2', text: '+#% to fire resistance', type: 'explicit' }],
-    })
+    }, 'explicit')
     expect(r.find((x) => x.internalId === 'base_fire_damage_resistance_%')).toMatchObject({
       tradeId: null,
       reason: 'ambiguous',

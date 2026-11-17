@@ -13,7 +13,7 @@ import { fileURLToPath } from 'node:url'
 
 import { analyzeCharacter, unwrapCharModel } from '../src/analyze.js'
 import { decodePobExport } from '../src/pob/export.js'
-import { describePobConfig, isBossDps, NO_POB_CONFIG, readPobConfig, readPobInputs } from '../src/pob/config.js'
+import { describePobConfig, humaniseCondition, isBossDps, NO_POB_CONFIG, readPobConfig, readPobInputs } from '../src/pob/config.js'
 import { PassiveTree, type PassiveTreeData } from '../src/tree/index.js'
 
 const fixturePath = fileURLToPath(new URL('./fixtures/athrynas-v43.json', import.meta.url))
@@ -119,7 +119,7 @@ describe('conditionals', () => {
     const found = readPobConfig('<Input name="conditionSomethingNewInPatch7" boolean="true"/>')
     expect(found.conditionals).toEqual([])
     expect(found.unlabelledConditionals).toEqual(['conditionSomethingNewInPatch7'])
-    expect(describePobConfig(found)).toContain('1 condition holds (conditionSomethingNewInPatch7)')
+    expect(describePobConfig(found)).toContain('1 condition holds (something new in patch7)')
   })
 
   it('ignores conditionals that are switched off', () => {
@@ -170,5 +170,13 @@ describe('through the full analysis', () => {
     const analysis = await analyzeCharacter(bare, { tree })
     expect(analysis.pobConfig).toBeNull()
     expect(analysis.assessment.caveats).toEqual([])
+  })
+})
+
+describe('humaniseCondition (B1-7)', () => {
+  it('turns an unlabelled condition id into words, never the raw id', () => {
+    expect(humaniseCondition('conditionEnemyFooBar')).toBe('enemy: foo bar')
+    expect(humaniseCondition('conditionSomethingNewInPatch7')).toBe('something new in patch7')
+    expect(humaniseCondition('condition')).toBe('condition')
   })
 })

@@ -172,3 +172,4 @@ Measured at 390×844, 4× CPU, ~1.6 Mbps / 165 ms, local brotli server, reduced 
 |---|---|---|---|
 | R10 | Farm-planner danger calibration | Rated the 8 unrated Waystone mods, normalised each stat by its max roll, rank by Net, show Danger as Low / Medium / High | done: no run log needed (owner OK, 2026-11-16) |
 | R40 | 50-map run log for danger calibration | Dropped: danger is rated from mod type, not measured; `R40-RUN-LOG.md`, `r40-run-log.csv` and OWNER-STEPS step 6 deleted | done |
+| R65 | Trade-map pseudo-resist ids | `resolveTradeStatMapFromSnapshot` defaults to the snapshot's `pseudo.pseudo_total_*_resistance` ids (count hybrid, all-res, implicit and rune lines); gear searches weigh only resists the base can roll (B1-1) | done in B4 (2026-11-16) |

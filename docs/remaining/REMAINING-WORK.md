@@ -27,6 +27,7 @@ Answers of 2026-11-15 (`docs/plans/FINISH-PLAN.md`) are applied and the rows cle
 | RV1-3 | Custom domain | Your call. If yes, the same PR must add the domain to the proxy `ALLOWED_ORIGIN` (`services/ninja-proxy/api/_upstream.js`), the OG/sitemap base and, for a proxy move, `connect-src`; otherwise character import breaks on the new domain | RV1 |
 | RV1-4 | Move `services/ninja-proxy` from Vercel to a Cloudflare Worker | Defer: responses already carry edge `s-maxage` (character 60 s, ladder 1 h); revisit only if Vercel limits bite | RV1 |
 | RV1-5 | Rate limit on the public proxy (`/api/*`) | Add a Vercel Firewall rate-limit rule (account toggle, no code); CORS does not stop non-browser callers | RV1 |
+| CG1-1 | Run `scripts/route-weight.mjs` in CI (route, lazy and per-chunk budgets are only checked locally today) | One step in the existing `lighthouse` job after "Build web": `node scripts/route-weight.mjs`, reusing that build (no new job, no second build) | CG1 (#196 leftovers) |
 
 ## 1. Decisions
 | ID | Question | Recommended | Origin | Status |
@@ -47,10 +48,10 @@ These rows run in the §6 owner-pass order.
 ## 3. Code and CI follow-ups (class C)
 | ID | Item | Size | Origin | Notes | Status |
 |---|---|---|---|---|---|
-| R65 | F7: trade-map uses explicit single-resist ids; pseudo totals count every source | M | PV1 | one live trade2 check first | open; Batch 2 (needs one live trade2 check first) |
+| B4-1 | Gear "Find on trade" for a weapon: weigh its own mods. Today a base that can't roll resists gets no resist weights and falls back to the trade page; weighing weapon lines needs trade ids for those mods in `trade-map.json` (sync-data) | M | B4 (B1-1) | `packages/data` / sync-data scope | open |
 
 ## 4. Standing rules (no work)
-- Route budgets live in `scripts/route-weight.mjs` (source of truth; brotli, first load, the `noModule` polyfill chunk excluded; exits 1 when a route is over): `/` 158,000 · `/checklist` 167,000 · `/character` 209,000 · `/atlas` 177,000 · `/dashboard` 188,000 · `/trade` 162,000 · `/methodology` 156,000 · `/whats-new` 154,000 B; any other route 190,000. Raise one only on purpose, with the reason in the PR. Also pins the lazy chunks (none named by any route HTML) at 178,000 B br. Not run in CI. Any change to home JS reports before and after.
+- Route budgets live in `scripts/route-weight.mjs` (source of truth; brotli, first load, the `noModule` polyfill chunk excluded; exits 1 when a route is over): `/` 160,000 · `/checklist` 167,000 · `/character` 209,000 · `/atlas` 179,000 · `/dashboard` 188,000 · `/trade` 162,000 · `/methodology` 156,000 · `/whats-new` 154,000 B; any other route 190,000. Raise one only on purpose, with the reason in the PR. Also pins the lazy chunks (none named by any route HTML) at 191,000 B br. Not run in CI. Any change to home JS reports before and after.
 - Perf bar: keep a change only if it saves ≥ 5 % br on its file or route, or removes real runtime work.
 - New tokens go in `tokens.css`. Canvas code reads only colours from tokens.
 - A bare `.card` outside home needs `data-surface="data"`.
@@ -101,7 +102,6 @@ Batches are in `docs/plans/FINISH-PLAN.md`. Rows keep their carry IDs. One line 
 
 | ID | Row | Batch |
 |---|---|---|
-| R65 | See §3 (trade-map pseudo-resist ids); blocked on the live trade2 check and read access to `packages/data/trade2-stats.json` | 2b (out of scope for b2b; needs the live check) |
 | WQA3-9b | `scripts/scroll-audit.cjs` runs in CI report-only (`continue-on-error`); make it blocking only after a few clean runs on `main` | done in Batch 1 |
 | PV1-2 | Engine parity, proof stats, config robustness (R63) | parked on PV1-1 |
 | CF2-2 | Monster physical damage per area level has no second source | parked (no second source) |

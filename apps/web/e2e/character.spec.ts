@@ -60,7 +60,14 @@ test('gear lists only what can be improved, each with a weighted-sum trade searc
   await expect(gear.locator('details')).toHaveCount(0)
   const rows = gear.locator('[data-gear-targets] > li')
   if (await rows.count()) {
-    const link = gear.locator('a[data-trade="weighted"]').first()
+    // B1-1: the fixture's #1 is a weapon, which can't roll resistances, so it falls back to the plain trade page.
+    const weapon = rows.first()
+    await expect(weapon.getByRole('link', { name: /Find on trade/ })).toHaveAttribute('href', /\/trade\/$/)
+    await expect(weapon.locator('a[data-trade="weighted"]')).toHaveCount(0)
+    // The helmet can, so it carries the weighted-sum search.
+    const helmet = rows.filter({ hasText: 'Helmet' }).first()
+    await helmet.getByRole('button', { name: /^Helmet/ }).click()
+    const link = helmet.locator('a[data-trade="weighted"]')
     await expect(link).toBeVisible({ timeout: 15_000 })
     const q = JSON.parse(new URL((await link.getAttribute('href'))!).searchParams.get('q')!)
     expect(q.query.stats.some((g: { type: string }) => g.type === 'weight')).toBe(true)

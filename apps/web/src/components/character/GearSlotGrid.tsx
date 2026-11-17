@@ -11,19 +11,17 @@ import type { EquippedItem, ItemAnalysis, ReplacementPriority } from '@poe2/core
 import { ProOnly } from '@/components/shared/ProToggle'
 import { tierSummary } from './gearImprovements'
 
-const AREA: Record<number, string> = {
-  1: 'helm',
-  4: 'amulet',
-  7: 'weapon',
-  15: 'weapon',
-  3: 'body',
-  6: 'offhand',
-  16: 'offhand',
-  8: 'ring1',
-  11: 'belt',
-  9: 'ring2',
-  2: 'gloves',
-  5: 'boots',
+/** Slots the grid shows, in the order unranked tiles follow the ranked ones (the old paper-doll reading order). */
+const SLOT_ORDER = [7, 15, 1, 4, 3, 6, 16, 8, 9, 2, 11, 5]
+
+/**
+ * Tiles in reading order (B1-8): ranked items by rank (1, 2, 3 …), then the rest in slot order. The old paper-doll
+ * areas left a hole beside the amulet when a two-hander emptied the off hand, and read ranks out of order.
+ */
+export function gridOrder<T extends Pick<EquippedItem, 'slotId' | 'active'>>(items: T[], rows: Pick<ReplacementPriority, 'slotId'>[]): T[] {
+  const rank = new Map(rows.map((r, i) => [r.slotId, i]))
+  const key = (i: T) => rank.get(i.slotId) ?? rows.length + SLOT_ORDER.indexOf(i.slotId)
+  return items.filter((i) => i.active && SLOT_ORDER.includes(i.slotId)).sort((a, b) => key(a) - key(b))
 }
 
 const RARITY_EDGE: Record<string, string> = {
@@ -57,7 +55,7 @@ export function GearSlotGrid({
   analyses: Map<number, ItemAnalysis>
   onPick: (slotId: number) => void
 }) {
-  const placed = items.filter((i) => i.active && AREA[i.slotId])
+  const placed = gridOrder(items, rows)
   if (!placed.length) return null
   const rank = new Map(rows.map((r, i) => [r.slotId, i]))
   const top = rows.slice(0, 2)
@@ -68,7 +66,7 @@ export function GearSlotGrid({
         {placed.map((i) => {
           const n = rank.get(i.slotId)
           const ranked = n !== undefined
-          const style = { gridArea: AREA[i.slotId], '--edge': RARITY_EDGE[i.rarity] ?? 'var(--ink-mute)' } as React.CSSProperties
+          const style = { '--edge': RARITY_EDGE[i.rarity] ?? 'var(--ink-mute)' } as React.CSSProperties
           const inner = (
             <>
               <span className="relic-slot-label">{i.slotLabel}</span>
@@ -82,7 +80,7 @@ export function GearSlotGrid({
             </>
           )
           return (
-            <li key={i.slotId} style={{ gridArea: AREA[i.slotId] }}>
+            <li key={i.slotId}>
               {ranked ? (
                 <button type="button" className="relic-slot" data-top={n < 2 || undefined} style={style} onClick={() => onPick(i.slotId)}>
                   {inner}
