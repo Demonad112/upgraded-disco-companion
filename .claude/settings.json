@@ -69,6 +69,7 @@
       "PowerShell(git push --force *)",
       "PowerShell(git push -f *)",
       "PowerShell(Remove-Item * -Recurse -Force*)",
+      "PowerShell(Remove-Item * -Force -Recurse*)",
       "Read(**/.env)",
       "Read(**/.env.local)",
       "Read(**/.env.*.local)",
