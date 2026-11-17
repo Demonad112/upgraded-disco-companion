@@ -1,39 +1,19 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
-
 ## Layout
 
-npm workspaces (`packages/*`, `apps/*`), Node >=22 (`.nvmrc`), TypeScript strict.
-
-- `packages/core` (`@poe2/core`) — all analysis logic. Pure: no I/O, no framework; `fetch` and the Path of Building transport are injected.
-- `packages/data` (`@poe2/data`) — generated game-data JSON in `generated/` plus the scripts that rebuild it (`build:*`). See `packages/data/PROVENANCE.md`.
-- `apps/web` (`@poe2/web`) — Next.js static export (`output: 'export'`). No API routes.
-- `services/ninja-proxy` — serverless poe.ninja proxy (CORS workaround). **Not a workspace**: own `package.json`, installed and tested separately.
+npm workspaces (`packages/*`, `apps/*`), Node >=22, TypeScript strict. `packages/core` is pure (no I/O; `fetch` is injected); `packages/data/generated/` is generated (rebuild with the `build:*` scripts, see `packages/data/PROVENANCE.md`); `services/ninja-proxy` is **not a workspace** (own `package.json`, tested separately).
 
 ## Commands
 
-```bash
-npm ci
-npm run typecheck        # builds @poe2/core first, then typechecks every workspace
-npm run lint             # eslint, every workspace with a lint script (web today)
-npm run check            # typecheck + lint + test, no build
-npm run check:all        # check + script tests + ninja-proxy tests (every CI suite except build/e2e/Lighthouse)
-npm test                 # core + web vitest
-npm run build            # core -> dist, then web static export to apps/web/out
-npm run dev              # Next dev server (builds core and syncs data first)
-
-npm test -w @poe2/core -- test/<file>.test.ts      # single file
-npm test -w @poe2/core -- -t "<test name>"         # single test by name
-npm run test:coverage -w @poe2/core                # enforces 90% statements / 75% branches
-npm run e2e -w @poe2/web                           # Playwright smoke tests against apps/web/out (build first)
-
-cd services/ninja-proxy && npm test                # node:test, separate from the root run
-```
+- `npm run typecheck` builds `@poe2/core` first. The web app resolves core to its built `dist/`, so on a fresh checkout build core before running `tsc` in an app.
+- `npm run check:all` = typecheck + lint + test + script tests + ninja-proxy tests (every CI suite except build, e2e and Lighthouse).
+- `npm run test:coverage -w @poe2/core` enforces 90% statements / 75% branches. `npm run e2e -w @poe2/web` runs against `apps/web/out` (build first).
+- `cd services/ninja-proxy && npm test` is separate from the root run.
 
 ## Architecture
 
-- **Single analysis implementation.** `apps/web` imports `@poe2/core`. The app resolves `@poe2/core` to its built `dist/`, so core has to be built before typechecking or building it (the root scripts and `prebuild` hooks handle this; running `tsc` in an app on a fresh checkout does not).
+- **Single analysis implementation.** `apps/web` imports `@poe2/core`.
 - **poe.ninja numbers are used as given.** Missing inputs produce an explicit "missing" result, not a guess. The build score can be a range (e.g. `D–B`) rather than a letter for this reason, and there are deliberately no DPS threshold constants. A recommendation's ΔDPS (`measured.dps`) stays null unless poe.ninja supplies the figure; the site never simulates a swap.
 - **Data flow for the web app.** `packages/data/generated/*` is copied into `apps/web/public` by `sync-data` (generated, gitignored). `next.config.ts` hashes those files into `NEXT_PUBLIC_DATA_VERSION`, which keys the service-worker caches.
 - **Character import.** The browser cannot call poe.ninja (no CORS, preflight 405), so it goes through `services/ninja-proxy`. The base URL is `NEXT_PUBLIC_NINJA_PROXY_BASE`, inlined at build time, defaulting to `https://poe2-v3-ninja-proxy.vercel.app` (`apps/web/src/lib/proxy.ts`). Any other value must also be added to `connect-src` in `apps/web/public/_headers`.
@@ -41,23 +21,13 @@ cd services/ninja-proxy && npm test                # node:test, separate from th
 - **PoB (Path of Building)** code under `packages/core/src/pob/` only decodes exports and reads their config, main skill and skill groups. There is no live PoB bridge.
 - Web state is client-side only (`localStorage`); reference content lives in hand-edited files in `apps/web/src/data/`.
 
-## Design (decided; change only with the owner)
+## Design and Cloudflare Pages
 
-Dark palette; headings in uppercase EB Garamond, metric labels in uppercase Geist Mono (finding, step and strategy titles are sentence case); square corners everywhere, no script fonts, no rounded shapes; gold constellation sky rotating slowly; clear glass on home and hero, bars and data panels are solid (`--data-fill` is opaque; no text legible through them), the sky stays in the margins, hero and home; thread connectors only on `[data-links]` sequences; phones use a bottom tab bar ordered Character, Farm, Atlas, Checklist (the `/dashboard` route is labelled "Farm"); Threads-style tool cards; sky dimmed behind blocks with a footer toggle (`poe2-sky-dim`); lighter sky on phones (width-based); "Up next" block kept; the hooded wraith companion (original art, blue eyes, square speech bubble; `docs/design/WRAITH.md`) sits top-right under the nav on desktop and phones (64 px desktop, 80 px phones, pale outline rim), with a footer toggle. Light theme is deferred; cursor effects deferred except the desktop lantern.
-
-- Never restyle the live site directly. Design variants go on `variant/<yyyymmdd>-<slug>` branches and are reviewed on their Cloudflare Pages preview URL (`docs/VARIANT-STRATEGY.md`).
-- Prefer the `:root` tokens in `apps/web/src/app/tokens.css` (imported by `globals.css`) over hex values in components.
+In `apps/web/CLAUDE.md` (design rules are decided; change only with the owner).
 
 ## Dependency bumps
 
 See `docs/DEPENDENCY-BUMPS.md` (per-workspace checks; never split CI per workspace).
-
-## Cloudflare Pages
-
-- Build `npm run build`, output `apps/web/out`, Node 22. No Functions or wrangler config; headers live in `apps/web/public/_headers`.
-- `npm run build` ends with `apps/web/scripts/csp-hashes.mjs`, which writes the inline-script hashes into `out/_headers` (`script-src` has no `'unsafe-inline'`). A new inline `<script>` needs no edit, but a page served without that step has no scripts.
-- Local parity check: `npm run preview -w @poe2/web` (`wrangler@4 pages dev out`). There is no `next start`: the app is a static export.
-- Open work: `docs/remaining/REMAINING-WORK.md`.
 
 ## Sessions
 Every session follows docs/SESSION-PROTOCOL.md; finished work in docs/HISTORY.md, open rows in docs/remaining/REMAINING-WORK.md.

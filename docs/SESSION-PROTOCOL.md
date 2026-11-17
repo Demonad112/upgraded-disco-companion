@@ -21,7 +21,7 @@
    - **Recommendation, follow-up or bug:** the same rule applies. If it is larger, or the files belong to someone else,
      re-assign it in REMAINING-WORK to the batch that owns those files. Don't drop it.
    - **Needs owner:** don't implement it. Add it to the Owner queue (see below). This covers anything that changes a
-     design rule in `CLAUDE.md`, CI behaviour or branch protection, touches data files or dependencies, changes
+     design rule in `apps/web/CLAUDE.md`, CI behaviour or branch protection, touches data files or dependencies, changes
      policy in `packages/*` (data shape, score rubric weights, keystone trust), removes or weakens a test assertion,
      or deletes branches. Any other `packages/*` change needs no owner OK when the PR shows a red-then-green test for
      it and its golden diff (owner answer HG1-1, 2026-11-17). Owner answers recorded in a plan under `docs/plans/`
