@@ -48,6 +48,7 @@ import {
   analyzeItem,
   findResistanceSwaps,
   summarizeSwaps,
+  type GearSwap,
   type ItemAnalysis,
   type ItemModAnalysis,
 } from '../gear/analyze.js'
@@ -444,6 +445,12 @@ export function gearRecommendations({
   /** What each emitted swap changes, for the cumulative check below. */
   const changes: LedgerChange[] = []
   const unknownRolls = new Set<string>()
+  /**
+   * Every swap a finding counts on when it says "N swaps cover the gap", as one
+   * change. The finding describes one swap, but its count spends the overcap
+   * once per swap, so the check has to cover all of them.
+   */
+  const countedOn = new Map<string, { change: LedgerChange; swaps: number }>()
   /** Which line each swap recrafts, so findings about the same line can merge. */
   const meta = new Map<
     string,
@@ -502,6 +509,29 @@ export function gearRecommendations({
     const prior = typeof deltas[gained] === 'number' ? (deltas[gained] as number) : 0
     deltas[gained] = { min: prior + candidate.min, max: prior + candidate.max }
     changes.push({ id, label: `Recraft ${best.replace.text} on ${best.itemName}`, deltas })
+
+    // The swaps `swapsNeeded` counted: largest candidate first, as summarizeSwaps does.
+    const reach = (s: GearSwap) => s.candidates.find((c) => c.statId === shortfall.stat && c.reachableOnThisItem)
+    const counted = swaps
+      .filter((s) => reach(s) !== undefined)
+      .sort((a, b) => reach(b)!.max - reach(a)!.max)
+      .slice(0, needed ?? undefined)
+    if (counted.length > 1) {
+      const lost: Partial<Record<LedgerStat, number>> = {}
+      const gain = { min: 0, max: 0 }
+      for (const swap of counted) {
+        for (const removed of swap.removes) {
+          if (removed.value === null) continue
+          const stat = `${removed.type}Resistance` as LedgerStat
+          lost[stat] = (lost[stat] ?? 0) - removed.value
+        }
+        gain.min += reach(swap)!.min
+        gain.max += reach(swap)!.max
+      }
+      const all: LedgerChange['deltas'] = { ...lost }
+      all[gained] = { min: (lost[gained] ?? 0) + gain.min, max: (lost[gained] ?? 0) + gain.max }
+      countedOn.set(id, { change: { id, label: `The ${counted.length} recrafts counted on`, deltas: all }, swaps: counted.length })
+    }
     meta.set(id, {
       key: `${best.slotId}|${best.replace.id ?? best.replace.text}`,
       type: shortfall.type,
@@ -597,6 +627,16 @@ export function gearRecommendations({
           // Only worth saying when taking the other swaps too makes it worse.
           if (!soloSame || soloSame.afterWorst !== v.afterWorst) {
             notes.push(`With the other recraft findings: ${v.message}`)
+          }
+        }
+      }
+      const all = countedOn.get(rec.id)
+      if (all) {
+        for (const v of applyLedger(totals, [all.change]).violations) {
+          const soloSame = solo.find((s) => s.stat === v.stat)
+          // Only worth saying when the further swaps make it worse than one alone.
+          if (!soloSame || soloSame.afterWorst !== v.afterWorst) {
+            notes.push(`Taking the ${all.swaps} swaps this counts on: ${v.message}`)
           }
         }
       }
