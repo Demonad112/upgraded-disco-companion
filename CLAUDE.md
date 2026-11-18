@@ -9,7 +9,7 @@ npm workspaces (`packages/*`, `apps/*`), Node >=22, TypeScript strict. `packages
 - `npm run typecheck` builds `@poe2/core` first. The web app resolves core to its built `dist/`, so on a fresh checkout build core before running `tsc` in an app.
 - `npm run check:all` = typecheck + lint + test + script tests + ninja-proxy tests (every CI suite except build, e2e and Lighthouse).
 - `npm run test:coverage -w @poe2/core` enforces 90% statements / 75% branches. `npm run e2e -w @poe2/web` runs against `apps/web/out` (build first).
-- Commit and push with the `commit-commands` plugin (enabled in `.claude/settings.json`): `/commit-commands:commit`, `/commit-commands:commit-push-pr`. Handoff: `/wrapup`.
+- Commit and push with the `commit-commands` plugin (enabled in `.claude/settings.json`): `/commit-commands:commit`, `/commit-commands:commit-push-pr`.
 
 ## Architecture
 
