@@ -211,7 +211,12 @@ function Pools({ d }: { d: DefenseSummary }) {
           value={fmt(d.armour)}
           hint={d.physicalDamageReduction !== null ? `${d.physicalDamageReduction}% phys reduction` : undefined}
         />
-        <PoolTile label="Deflection" value={fmt(d.deflectionRating)} hint={`${fmt(d.deflectChance)}% · ${fmt(d.deflectEffect)}% effect`} />
+        <PoolTile label="Deflection" value={fmt(d.deflectionRating)} hint={
+            d.deflectChance !== null && d.deflectEffect !== null
+              ? `${fmt(d.deflectChance)}% · ${fmt(d.deflectEffect)}% effect`
+              : undefined
+          }
+        />
       </div>
       <p className="mt-4 text-xs leading-relaxed text-ink-mute">
         Chaos removes twice as much energy shield as it deals, so the raw chaos pool is{' '}

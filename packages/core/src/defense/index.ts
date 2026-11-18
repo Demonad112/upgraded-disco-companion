@@ -89,12 +89,13 @@ export interface DefenseSummary {
   /** Null when the payload did not report it. */
   blockChance: number | null
 
-  /** 0.5 mechanics V1 had no model for. */
-  deflectionRating: number
-  deflectChance: number
-  deflectEffect: number
+  /** 0.5 mechanics V1 had no model for. Null when the payload did not report them. */
+  deflectionRating: number | null
+  deflectChance: number | null
+  deflectEffect: number | null
 
-  spirit: number
+  /** Null when the payload did not report it. */
+  spirit: number | null
   /** Stats the payload omitted entirely, so callers can say what's missing. */
   missing: string[]
 }
@@ -244,11 +245,11 @@ export function analyzeDefense(model: Pick<CharModel, 'defensiveStats'>): Defens
     evadeChance: num(s, 'evadeChance'),
     blockChance,
 
-    deflectionRating: num(s, 'deflectionRating') ?? 0,
-    deflectChance: num(s, 'deflectChance') ?? 0,
-    deflectEffect: num(s, 'deflectEffect') ?? 0,
+    deflectionRating: num(s, 'deflectionRating'),
+    deflectChance: num(s, 'deflectChance'),
+    deflectEffect: num(s, 'deflectEffect'),
 
-    spirit: num(s, 'spirit') ?? 0,
+    spirit: num(s, 'spirit'),
     missing,
   }
 }
