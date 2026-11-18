@@ -74,7 +74,7 @@ export function shareCardData(a: Analysis, grade: ShareCardData['grade'], diff: 
       { label: 'Life', value: defense.life },
       { label: 'Energy shield', value: defense.energyShield },
       { label: 'Main skill DPS', value: dps.primary?.totalDps ?? null, caption: dps.primary?.name },
-      { label: 'Spirit', value: defense.spirit > 0 ? defense.spirit : null },
+      { label: 'Spirit', value: defense.spirit !== null && defense.spirit > 0 ? defense.spirit : null },
     ],
     findings: a.recommendations.recommendations
       .filter((r) => r.category !== 'question')
