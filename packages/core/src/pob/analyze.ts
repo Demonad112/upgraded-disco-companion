@@ -66,11 +66,12 @@ export interface PobAnalysis {
     ehpOverstatementRatio: number | null
     maxHits: PobMaxHit[]
     resistances: PobResistance[]
-    life: number
-    energyShield: number
-    mana: number
-    armour: number
-    evasion: number
+    /** Null when the code does not export the stat: absent, never 0. */
+    life: number | null
+    energyShield: number | null
+    mana: number | null
+    armour: number | null
+    evasion: number | null
     physicalDamageReduction: number | null
   }
   damage: {
@@ -206,11 +207,11 @@ export async function analyzeFromPob(code: string): Promise<PobAnalysis> {
       ehpOverstatementRatio: ehp !== null && lowest && lowest.value > 0 ? Number((ehp / lowest.value).toFixed(2)) : null,
       maxHits,
       resistances,
-      life: num(stats, 'Life') ?? 0,
-      energyShield: num(stats, 'EnergyShield') ?? 0,
-      mana: num(stats, 'Mana') ?? 0,
-      armour: num(stats, 'Armour') ?? 0,
-      evasion: num(stats, 'Evasion') ?? 0,
+      life: num(stats, 'Life'),
+      energyShield: num(stats, 'EnergyShield'),
+      mana: num(stats, 'Mana'),
+      armour: num(stats, 'Armour'),
+      evasion: num(stats, 'Evasion'),
       physicalDamageReduction: num(stats, 'PhysicalDamageReduction'),
     },
     damage: {
