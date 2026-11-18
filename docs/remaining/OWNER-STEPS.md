@@ -55,6 +55,14 @@ Do them in the order shown; they are independent. The step numbers stay the same
 - [x] **12. Say OK or no to core tests** (PL1-1) (OK, 2026-11-08)
   - Batches N3 and F2 add tests under `packages/core/test` only, with no source or data change. Recommended: OK.
 
+## Character import and ladder (NP1)
+
+- [x] **13. Copy two poe.ninja request URLs** (NP1-1) (done 2026-11-18, both HARs received)
+  - Result: both new paths sit under `/api/protected/` and need the browser's poe.ninja cookies, so the proxy can't use them.
+- [ ] **14. Ask poe.ninja for API access** (NP1-1) (10 min) — character import by URL and the ladder grade stay down until then
+  - Ask on poe.ninja's Discord or Patreon for an API key or an allowlisted User-Agent for a non-commercial PoE2 companion. Mention it calls the character model and builds search, a few requests per user action, cached 30 min.
+  - Paste the answer into a session chat with "NP1-1". Until then, paste-JSON and PoB-code imports keep working.
+
 ## Optional
 
 - [ ] **5. Trade site extras** (R43) (done 2026-11-08 except the console realm; only that check is left)

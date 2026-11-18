@@ -161,7 +161,7 @@ export function clearResponseCache() {
 
 /**
  * Runs `produce()` once per key at a time and keeps a 200 or 404 result for
- * RESPONSE_TTL_MS. Errors (including 503) are shared with callers that were
+ * RESPONSE_TTL_MS, unless the result says `store: false`. Errors (including 503) are shared with callers that were
  * already waiting but never stored, so the next request tries upstream again.
  * `produce` returns `{ status, json | body, headers }`; a throw is shared too.
  */
@@ -174,7 +174,7 @@ export function coalesced(key, produce, { now = Date.now, ttlMs = RESPONSE_TTL_M
   const p = (async () => {
     try {
       const result = await produce()
-      if (result.status === 200 || result.status === 404) {
+      if ((result.status === 200 || result.status === 404) && result.store !== false) {
         responses.set(key, { at: now(), result })
         if (responses.size > MAX_RESPONSES) responses.delete(responses.keys().next().value)
       }

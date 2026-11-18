@@ -32,7 +32,7 @@ This function does the two-step read server-side and hands back the raw payload.
 ```
 GET /api/character?account=Name-1234&league=runesofaldur&character=Athrynas
 → 200 { "type": "found", "charModel": { … } }
-→ 404 { "error": "…" }   character unknown, private, or unindexed
+→ 404 { "error": "…" }   character unknown, private, or unindexed; or poe.ninja withheld the model (NP1-1)
 → 502 { "error": "…" }   poe.ninja failed
 → 504 { "error": "…" }   poe.ninja timed out
 ```
@@ -96,6 +96,21 @@ Deploy it anywhere that runs a JS function, then point the web app at it.
 Not supported. poe.ninja answers the character `model` and builds `search`
 endpoints with a Cloudflare managed challenge (403) when the request comes from
 Cloudflare Workers egress, so the proxy has to run elsewhere (Vercel here).
+
+Re-measured 2026-11-18 with a probe Worker (colo IAD): `data/index-state`,
+`data/snapshot-versions` and the `events/character` stream answer 200, but
+every `/poe2/api/profile/*` and `/poe2/api/builds/*` request gets
+`403` with `cf-mitigated: challenge`. A Pages Function uses the same egress,
+so it is blocked as well. See RV1-4.
+
+### Checking a deployment
+
+`node scripts/verify-live.mjs <base URL>` calls health, the ladder for each app
+league and the Athrynas import with the app's `Origin`, and exits 1 on any
+failure. Every unit test mocks poe.ninja, so this is the only check that sees
+an upstream move (2026-11-18: the snapshot list moved to
+`/poe2/api/data/snapshot-versions?league=<slug>`, and the model and builds
+search moved under `/api/protected/`, which needs browser cookies; see NP1-1 in `docs/remaining/REMAINING-WORK.md`).
 
 ### Wiring it up
 
