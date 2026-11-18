@@ -256,10 +256,12 @@ export function snapshotVersionsUrl(slug) {
 
 /**
  * The builds search URL for a snapshot. Kept in one place because poe.ninja
- * moves it: on 2026-11-18 every `/poe2/api/builds/*` path answered 404 while
- * the snapshot list above still worked. The current path is visible only in
- * the network calls of poe.ninja's own builds page (DevTools → Network →
- * the protobuf "search" request); see docs/remaining/OWNER-STEPS.md.
+ * moves it. On 2026-11-18 every `/poe2/api/builds/*` path answered 404; the
+ * owner's HAR of poe.ninja's builds page shows the search now at
+ * `/api/protected/poe2/builds/<version>/search?overview=<snapshotName>`,
+ * fetched with the browser's `cf_clearance` and session cookies, the same
+ * bot-protected namespace as the character model (NP1-1). The proxy does not
+ * replay cookies, so this keeps the old path until poe.ninja grants access.
  */
 export function buildSearchUrl(snap, className) {
   const params = new URLSearchParams({ overview: snap.snapshotName });

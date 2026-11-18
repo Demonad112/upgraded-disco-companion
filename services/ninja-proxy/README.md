@@ -110,7 +110,7 @@ league and the Athrynas import with the app's `Origin`, and exits 1 on any
 failure. Every unit test mocks poe.ninja, so this is the only check that sees
 an upstream move (2026-11-18: the snapshot list moved to
 `/poe2/api/data/snapshot-versions?league=<slug>`, and the model and builds
-search paths now 404; see NP1-1 in `docs/remaining/REMAINING-WORK.md`).
+search moved under `/api/protected/`, which needs browser cookies; see NP1-1 in `docs/remaining/REMAINING-WORK.md`).
 
 ### Wiring it up
 
