@@ -53,41 +53,43 @@ test.describe('strategy rows', () => {
   })
 })
 
-// Phones keep the map in a sheet that "Open map" opens (PX7); from 721px up it is on the page.
+// The map is on the page at every width; on phones the list is a sheet that the peek bar's List button opens.
 async function openMap(page: import('@playwright/test').Page) {
   await page.goto('atlas/')
-  if ((page.viewportSize()?.width ?? 1280) <= 720) await page.getByRole('button', { name: 'Open map' }).click()
+}
+async function openList(page: import('@playwright/test').Page) {
+  if ((page.viewportSize()?.width ?? 1280) <= 720) await page.getByRole('button', { name: 'List', exact: true }).click()
 }
 
 test.describe('atlas map panel', () => {
-  test('the legend sits in the panel as Route, Traps and Ticked toggles', async ({ page }) => {
+  test('the legend sits on the map as Route line, Traps and Ticked toggles', async ({ page }) => {
     await openMap(page)
     const legend = page.getByRole('list', { name: 'Map legend' })
-    for (const name of ['Route', 'Traps', 'Ticked']) {
+    for (const name of ['Route line', 'Traps', 'Ticked']) {
       const toggle = legend.getByRole('button', { name })
       await expect(toggle).toHaveAttribute('aria-pressed', 'true')
       await toggle.click()
       await expect(toggle).toHaveAttribute('aria-pressed', 'false')
     }
-    await expect(page.locator('section[aria-label="Atlas tree map"]').getByRole('list', { name: 'Map legend' })).toBeVisible()
+    await expect(page.locator('#atlas-map').getByRole('list', { name: 'Map legend' })).toBeVisible()
   })
 
-  test('on a phone the map is a dialog: Escape and back close it, focus stays inside', async ({ page }) => {
+  test('on a phone the list is a dialog: Escape and back close it, focus stays inside', async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 })
     await page.goto('atlas/')
-    const dialog = page.getByRole('dialog', { name: 'Atlas tree map' })
+    const dialog = page.getByRole('dialog', { name: 'Atlas guide list' })
     await expect(dialog).toHaveCount(0)
-    await page.getByRole('button', { name: 'Open map' }).click()
+    await page.getByRole('button', { name: 'List', exact: true }).click()
     await expect(dialog).toBeVisible()
     // Tab never leaves the dialog.
     for (let i = 0; i < 25; i++) {
       await page.keyboard.press('Tab')
-      expect(await page.evaluate(() => !!document.activeElement?.closest('section[aria-label="Atlas tree map"]'))).toBe(true)
+      expect(await page.evaluate(() => !!document.activeElement?.closest('section[aria-label="Atlas guide list"]'))).toBe(true)
     }
     await page.keyboard.press('Escape')
     await expect(dialog).toHaveCount(0)
     expect(new URL(page.url()).pathname).toMatch(/atlas\/?$/)
-    await page.getByRole('button', { name: 'Open map' }).click()
+    await page.getByRole('button', { name: 'List', exact: true }).click()
     await expect(dialog).toBeVisible()
     await page.goBack()
     await expect(dialog).toHaveCount(0)
@@ -110,7 +112,7 @@ test.describe('atlas map panel', () => {
   test('map controls zoom and fit by button and by key', async ({ page }) => {
     await openMap(page)
     const ctl = page.getByRole('group', { name: 'Map zoom' })
-    await expect(ctl.getByRole('button')).toHaveCount(3)
+    await expect(ctl.getByRole('button')).toHaveCount(4)
     const canvas = page.locator('#atlas-map canvas')
     const shot = () => canvas.screenshot()
     await page.waitForTimeout(300)
@@ -138,11 +140,46 @@ test.describe('atlas map panel', () => {
 
   test('the map panel uses no backdrop-filter', async ({ page }) => {
     await page.goto('atlas/')
+    await openList(page)
     await page.getByRole('button', { name: 'Show Trapped Subordinate on the Atlas tree' }).click()
     const filters = await page.locator('#atlas-map, #atlas-map *').evaluateAll((els) =>
       els.map((e) => getComputedStyle(e).backdropFilter).filter((f) => f && f !== 'none'),
     )
     expect(filters).toEqual([])
+  })
+})
+
+test.describe('atlas map controls and phone layout', () => {
+  test('Route line hides the legs, Locate keeps the zoom, Follow is off by default', async ({ page }) => {
+    await openMap(page)
+    await expect(page.getByRole('button', { name: 'Follow' })).toHaveAttribute('aria-pressed', 'false')
+    // Legs are drawn from the start node: the legend lists them and the bar names the current step's leg.
+    if ((page.viewportSize()?.width ?? 1280) > 720) await expect(page.getByRole('list', { name: 'Route legs' })).toContainText('Leg 1')
+    await expect(page.getByRole('group', { name: 'Route steps' })).toContainText(/leg \d/)
+    const route = page.getByRole('list', { name: 'Map legend' }).getByRole('button', { name: 'Route line' })
+    const canvas = page.locator('#atlas-map canvas')
+    await page.waitForTimeout(400)
+    const on = await canvas.screenshot()
+    await route.click()
+    await page.waitForTimeout(150)
+    expect((await canvas.screenshot()).equals(on)).toBe(false)
+    await page.getByRole('button', { name: 'Locate step' }).click()
+  })
+
+  test('on a phone the map fills the screen above a bottom peek bar with the step and List', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 })
+    await page.goto('atlas/')
+    const peek = page.getByRole('group', { name: 'Route steps' })
+    await expect(peek).toBeVisible()
+    await expect(peek).toContainText('1 of 17')
+    await peek.getByRole('button', { name: 'Next step' }).click()
+    await expect(peek).toContainText('2 of 17')
+    await page.evaluate(() => document.getElementById('atlas-stage')!.scrollIntoView())
+    const map = await page.locator('#atlas-map').boundingBox()
+    const bar = await peek.boundingBox()
+    expect(map!.y + map!.height).toBeLessThanOrEqual(bar!.y + 1)
+    expect(map!.height).toBeGreaterThan(400)
+    expect(await page.locator('.atlas-full-btn').isVisible()).toBe(false)
   })
 })
 

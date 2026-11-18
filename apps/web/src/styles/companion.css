@@ -17,9 +17,9 @@
 .wraith > * {
   pointer-events: auto;
 }
-/* A full-screen sheet or modal is open (the Atlas map sheet sits inside #main's stacking context, under the figure):
+/* A full-screen sheet or modal is open (the Atlas list sheet and full screen sit inside #main's stacking context, under the figure):
    step aside so the figure never covers its controls. Native <dialog>s are in the top layer already. */
-:root:has([aria-modal='true'], .atlas-sheet[data-open]) .wraith {
+:root:has([aria-modal='true'], .atlas-list[data-open], .atlas-stage[data-full]) .wraith {
   visibility: hidden;
 }
 

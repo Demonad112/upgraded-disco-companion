@@ -115,7 +115,8 @@ test.describe('MP1 motion polish', () => {
     expect(await animationOf(brand.locator('.text-gradient-gold'))).toBe('foil-sweep, foil-hover')
   })
 
-  test('Atlas nodes below the fold wait for the scroll; nodes on screen are drawn', async ({ page }) => {
+  test('Atlas nodes below the fold wait for the scroll; nodes on screen are drawn', async ({ page, isMobile }) => {
+    if (isMobile) return // phones keep the list in a sheet, not in the page flow
     await page.goto('atlas/')
     const nodes = page.locator('[data-reveal="node"]')
     await expect(nodes.first()).toBeVisible()

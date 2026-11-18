@@ -2,20 +2,30 @@ import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { expect, test } from './fixtures'
 
+// Phones keep the list in a bottom sheet that the peek bar's List button opens; from 721px up it is on the page.
+async function openList(page: import('@playwright/test').Page) {
+  if ((page.viewportSize()?.width ?? 1280) <= 720) await page.getByRole('button', { name: 'List', exact: true }).click()
+}
+
 test('an Atlas "Map" button focuses that node on the tree', async ({ page }) => {
   await page.goto('atlas/')
   // The button is in the static HTML, so a click can land before React attaches its handler and do nothing. The
-  // tree canvas renders only after a client fetch that starts once the page has hydrated: wait for it first. Attached,
-  // not visible: on phones it sits in the closed map sheet until the click opens it.
+  // tree canvas renders only after a client fetch that starts once the page has hydrated: wait for it first.
   await expect(page.locator('[aria-label^="Atlas passive tree:"]')).toBeAttached()
+  await openList(page)
   await page.getByRole('button', { name: 'Show Trapped Subordinate on the Atlas tree' }).click()
   await expect(page.getByText('Showing Trapped Subordinate')).toBeVisible()
 })
 
-test('ticking an Atlas node moves the allocation bar', async ({ page }) => {
+test('ticking an Atlas node moves the allocation bar and the command bar to the next step', async ({ page }) => {
   await page.goto('atlas/')
+  await expect(page.locator('[aria-label^="Atlas passive tree:"]')).toBeAttached()
+  const steps = page.getByRole('group', { name: 'Route steps' })
+  await expect(steps).toContainText('1 of 17')
+  await openList(page)
   await page.getByRole('checkbox', { name: 'Allocated Trapped Subordinate' }).check()
   await expect(page.getByRole('tab', { name: /Path 1\/17/ })).toBeVisible()
+  await expect(steps).toContainText('2 of 17')
 })
 
 test('Help me choose marks suggested farms once every answer is given', async ({ page }) => {
