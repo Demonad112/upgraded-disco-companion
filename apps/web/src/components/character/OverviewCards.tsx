@@ -2,15 +2,18 @@
 
 /** Supporting cards: spare to trade (Gear), resist glance (Defence), tree-data note (Advanced). */
 
-import { resolveAllocation, type Analysis, type PassiveTree } from '@poe2/core'
+import { resolveAllocation, spareResistances, type Analysis, type PassiveTree } from '@poe2/core'
 import { DefenceChecklist } from './DefenceChecklist'
 import { Diamond, cap } from './dmg'
 import { Empty, Tag, fmt } from '../ui'
 import { ProvenanceBadge } from '../shared/ProvenanceBadge'
 
-/** Resistances over cap. "Spare" is max(0, uncapped − cap), i.e. the existing overCap figure; labelled derived. */
+/**
+ * Resistances over cap. "Spare" is max(0, uncapped − cap), i.e. the existing overCap figure; labelled derived. One the
+ * max hits put under cap is left out (HG1-10, `spareResistances`).
+ */
 function SpareToTrade({ analysis }: { analysis: Analysis }) {
-  const spare = analysis.defense.resistances.filter((r) => r.overCap !== null && r.overCap > 0)
+  const spare = spareResistances(analysis.defense)
   return (
     <section aria-label="Spare to trade" className="flex min-w-0 flex-col">
       <div className="flex items-baseline justify-between gap-3">

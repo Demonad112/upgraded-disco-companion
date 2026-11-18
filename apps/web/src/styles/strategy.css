@@ -54,7 +54,7 @@
 /* --- Strategy rows -----------------------------------------------------------
    Phones: tier | name + facts | chevron. From 900 px one aligned grid:
    tier | name | invest | risk | stage | mechanics | chevron. .strat-facts is `display: contents` there, so its
-   three children take their own columns. */
+   three children take their own columns. The risk column fits "Farm risk Medium" (HG1-9: 7.5rem overflowed at 1440 px). */
 .strat-row {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr) auto;
@@ -82,7 +82,7 @@
 }
 @media (min-width: 900px) {
   .strat-row {
-    grid-template-columns: auto minmax(0, 1.5fr) 8.5rem 7.5rem 9.5rem minmax(0, 1fr) auto;
+    grid-template-columns: auto minmax(0, 1.5fr) 8.5rem 10rem 9.5rem minmax(0, 1fr) auto;
     column-gap: 14px;
   }
   .strat-facts {

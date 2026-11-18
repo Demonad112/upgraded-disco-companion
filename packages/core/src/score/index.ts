@@ -390,7 +390,7 @@ export function assessBuild(input: BuildAssessmentInput): BuildAssessment {
 
   for (const name of keystones.fromTree) {
     caveats.push(
-      `${name} is counted from the passive tree: the character sheet cannot confirm it, so a stale tree would make the pool wrong.`,
+      `${name} is counted from the passive tree: the character sheet cannot confirm it, so a stale tree would make its correction wrong.`,
     )
   }
   for (const unverified of keystones.unverified) {

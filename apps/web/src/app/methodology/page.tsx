@@ -193,13 +193,13 @@ export default function MethodologyPage() {
           </p>
           <Rows
             rows={[
-              ['Reward', 'Σ (stat total × the preset’s weight for that stat). A stat with no weight in the preset adds nothing.'],
-              ['Danger', 'Σ (stat total × the stat’s danger rating). Only stats the data rates as hazards count.'],
+              ['Reward', 'Σ (stat total ÷ its max roll × 100 × the preset’s weight for that stat). A stat with no weight in the preset adds nothing.'],
+              ['Danger', 'Σ (stat total ÷ its max roll × 100 × the stat’s danger rating). Only stats the data rates as hazards count; shown as Low, Medium or High, or “No danger mods”.'],
               ['Net', 'Reward − Danger × the danger setting: 1.5 for Play safe, 1 for Balanced, 0.5 for Greedy.'],
             ]}
           />
           <p>
-            Totals add by default, “less” stats multiply and flags count. Rolls scale with the Atlas passives you tick, and changes show as a percentage of the starting figure (“new” when that is 0).
+            Dividing by the max roll keeps big-number stats from outweighing small ones; a full roll counts 100. Farm risk on a farm tile is that farm’s own rating, not this Danger. Totals add by default, “less” stats multiply and flags count. Rolls scale with the Atlas passives you tick, and changes show as a percentage of the starting figure (“new” when that is 0).
           </p>
           <p>
             Weights and danger ratings (0 to 3 per defence layer) come from a fact-check of patch 0.5.5 and are relative judgements; the footnote counts the unverified ones. With “Danger for my build” on, the rating averages the layers your last imported character relies on.

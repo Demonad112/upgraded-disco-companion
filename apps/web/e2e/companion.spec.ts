@@ -107,7 +107,7 @@ test.describe('companion', () => {
     await expect(launcher(page)).toBeHidden()
   })
 
-  for (const [w, h, size] of [[390, 844, 80], [1440, 900, 64]] as const) {
+  for (const [w, h, size] of [[600, 900, 80], [1440, 900, 64]] as const) {
     test(`sits top-right at ${size}px and fits the screen at ${w}`, async ({ page }) => {
       await seen(page)
       await page.setViewportSize({ width: w, height: h })
@@ -141,6 +141,32 @@ test.describe('companion', () => {
       expect(scroll).toBeLessThanOrEqual(0)
     })
   }
+
+  // HG1-5: under 480 px it docks in the header at 48 px, centred in the nav row, and scrolls away with the nav.
+  test('docks in the header at 48px at 390', async ({ page }) => {
+    await seen(page)
+    await page.setViewportSize({ width: 390, height: 844 })
+    await page.goto('')
+    await expect
+      .poll(async () => {
+        const f = (await launcher(page).boundingBox())!
+        const n = (await page.locator('nav').first().boundingBox())!
+        return f.y >= n.y - 1 && f.y + f.height <= n.y + n.height + 1
+      })
+      .toBe(true)
+    const fig = (await launcher(page).boundingBox())!
+    expect(Math.round(fig.height)).toBe(48)
+    expect(Math.abs(fig.x + fig.width / 2 - 195)).toBeLessThanOrEqual(2)
+    await launcher(page).click()
+    const box = (await bubble(page).boundingBox())!
+    expect(box.x).toBeGreaterThanOrEqual(0)
+    expect(box.x + box.width).toBeLessThanOrEqual(390)
+    expect(box.y).toBeGreaterThanOrEqual(fig.y + fig.height)
+    await page.locator('.wraith-close').click()
+    await page.evaluate(() => window.scrollTo(0, 600))
+    await expect.poll(async () => (await launcher(page).boundingBox())?.y ?? -999).toBeLessThan(0)
+    await expect(page.locator('aside.wraith')).not.toHaveClass(/is-away/)
+  })
 })
 
 test.describe('companion motion', () => {
@@ -164,14 +190,14 @@ test.describe('companion motion', () => {
   })
 })
 
-/** COMP-1: on phones the figure slides off the edge while the page scrolls down and returns on scroll up or after 1 s still. */
+/** COMP-1: on phones from 480 to 720 px (under 480 it is docked, HG1-5) the figure slides off the edge while the page scrolls down and returns on scroll up or after 1 s still. */
 test.describe('companion scroll away', () => {
   const aside = (page: Page) => page.locator('aside.wraith')
   const scrollTo = (page: Page, y: number) => page.evaluate((top) => window.scrollTo(0, top), y)
 
   test.beforeEach(async ({ page }) => {
     await seen(page)
-    await page.setViewportSize({ width: 390, height: 844 })
+    await page.setViewportSize({ width: 600, height: 900 })
     await page.goto('checklist/')
     await expect(launcher(page)).toBeVisible()
   })
@@ -188,7 +214,7 @@ test.describe('companion scroll away', () => {
     // Scrolling has stopped: back, top-right.
     await expect(launcher(page)).toBeVisible({ timeout: 4000 })
     const fig = (await launcher(page).boundingBox())!
-    expect(fig.x + fig.width).toBeGreaterThan(390 - 40)
+    expect(fig.x + fig.width).toBeGreaterThan(600 - 40)
     expect(fig.y).toBeLessThan(160)
   })
 

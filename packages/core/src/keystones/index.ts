@@ -213,7 +213,8 @@ export function hasKeystoneRule(name: string): boolean {
 /**
  * Fold every allocated keystone into one set of corrections, applying a
  * keystone's effects only when the character's stats corroborate them. No
- * check, no stats or an unknown stat all mean "not corroborated" (CA1-3), except a rule that trusts the tree (B1).
+ * check, no stats or an unknown stat all mean "not corroborated" (CA1-3), except a rule that trusts the tree (B1),
+ * or `treeCurrent` (the tree-version check passed, HG1-2): then only a contradiction blocks it.
  *
  * `keystones` accepts anything carrying a `name` — `resolveAllocation(...)
  * .keystones` from tree/index.ts is the intended source.
@@ -221,6 +222,7 @@ export function hasKeystoneRule(name: string): boolean {
 export function keystoneEffectsOf(
   keystones: ReadonlyArray<{ name: string }>,
   defense?: DefenseSummary,
+  options: { treeCurrent?: boolean } = {},
 ): KeystoneEffects {
   const out: KeystoneEffects = {
     ...NO_KEYSTONE_EFFECTS,
@@ -242,7 +244,10 @@ export function keystoneEffectsOf(
         : !defense
           ? { kind: 'unconfirmed', reason: 'no character stats were given to confirm its effect' }
           : rule.verify(defense)
-    if (verdict) {
+    // HG1-2: with the tree known to be current, the tree's word stands unless
+    // the sheet contradicts it. The keystone is listed in `fromTree`.
+    const fromTree = verdict?.kind === 'unconfirmed' && options.treeCurrent === true
+    if (verdict && !fromTree) {
       // Not confirmed. Neither its corrections nor its note can be trusted, so
       // record why instead — a note stating "maximum life is 1" beside a life
       // of 1,823 is worse than silence.
@@ -253,7 +258,7 @@ export function keystoneEffectsOf(
     if (rule.effects) Object.assign(out, rule.effects)
     if (rule.note) out.notes.push({ keystone: keystone.name, text: rule.note })
     out.applied.push(keystone.name)
-    if (rule.effects && rule.trust === 'tree') out.fromTree.push(keystone.name)
+    if (rule.effects && (rule.trust === 'tree' || fromTree)) out.fromTree.push(keystone.name)
   }
 
   out.notes.sort((a, b) => a.keystone.localeCompare(b.keystone))

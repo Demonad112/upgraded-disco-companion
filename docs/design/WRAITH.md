@@ -6,7 +6,7 @@ Locked by the owner on 2026-11-15 (Figma file "Wraith companion v2"). Code: `app
 ## Picks
 | Topic | Pick |
 |---|---|
-| Launcher | Full figure, frameless, 64 px tall on desktop and 80 px on phones (owner, 2026-11-16: 56 px read too small); a static radial halo inside the SVG stands in for the shadow (P2, 2026-11-15: CSS `filter: drop-shadow` dropped); a pale rim (`.wr-rim`, `--wraith-rim`) traces the cloak so the figure stands out on the dark page |
+| Launcher | Full figure, frameless, 64 px tall on desktop and 80 px on phones (owner, 2026-11-16: 56 px read too small), 48 px when docked under 480 px (HG1-5); a static radial halo inside the SVG stands in for the shadow (P2, 2026-11-15: CSS `filter: drop-shadow` dropped); a pale rim (`.wr-rim`, `--wraith-rim`) traces the cloak so the figure stands out on the dark page |
 | Eyes | Blue only (`--wraith-eye`, `--wraith-eye-glow`); asleep dims them |
 | Open | Square speech bubble beside the figure, 150 ms fade; no panel effect |
 | Panel | Solid fill, gold hairline, square tail pointing at the figure |
@@ -20,7 +20,7 @@ Locked by the owner on 2026-11-15 (Figma file "Wraith companion v2"). Code: `app
 | Questions | Menu → Questions: why the grade is a range, how the numbers work (/methodology), what changed (/whats-new) |
 | Idle | Float, eye flicker and blink, wander off the edge and back; dozes after 2 quiet minutes |
 | Dropped | Eyes follow cursor, lean to choice, hem sway, wisps, gold and dim mood colours |
-| Placement | Top-right under the nav (and under the patch banner while it shows) on desktop and phones (owner, 2026-11-16; phones were bottom-right above the tab bar). On phones the bubble drops below the figure at full width, tail on top |
+| Placement | Top-right under the nav (and under the patch banner while it shows) on desktop and phones (owner, 2026-11-16; phones were bottom-right above the tab bar). On phones the bubble drops below the figure at full width, tail on top. Under 480 px (HG1-5, owner 2026-11-17) it docks in the header, centred in the nav row, and scrolls with the page |
 
 ## Art
 One master SVG, `viewBox 0 0 120 180`, no filters (the glow is a radial gradient). Layers, back to front: hem, cloak,
@@ -37,7 +37,7 @@ opacity .85) so the figure reads on the dark page. Figma's SVG export renames la
 | Hop (tip) | −9 px, rebound −4 px | 2.4 s, 3 times, then rests |
 | Asleep | one droop: body translateY 3 px rotate 4° (origin 60 140); eyes scaleY .25, dimmed; then still (no float) | 600 ms ease-in-out |
 | Rim on tip | `.wr-rim` stroke-opacity .55 → .9 and stroke 6 → 7.5 while it hops, calm otherwise (no filter) | the hop's 2.4 s × 3, same clock as the hop; off under reduced motion and `data-fx=still` |
-| Scroll away (phones ≤ 720 px) | the whole figure slides 200 ms off the right edge and fades while the page scrolls down past 48 px; back on scroll up (≥ 4 px) or 1 s after the scroll stops | `transform` + `opacity`; passive rAF-throttled scroll listener that reads only `scrollY`; never while the bubble is open, it hops, or it has focus; reduced motion and `data-fx=still`: fade only |
+| Scroll away (phones 480–720 px; docked under 480) | the whole figure slides 200 ms off the right edge and fades while the page scrolls down past 48 px; back on scroll up (≥ 4 px) or 1 s after the scroll stops | `transform` + `opacity`; passive rAF-throttled scroll listener that reads only `scrollY`; never while the bubble is open, it hops, or it has focus; reduced motion and `data-fx=still`: fade only |
 | Wander | out past the screen edge, arc back | 5 s; at most every 2 min; never while open, hopping, asleep or idle |
 | Idle | `:root[data-idle]` (10 s without input, or the window left; `lib/idle.ts`) pauses every loop where it is | until the next input |
 

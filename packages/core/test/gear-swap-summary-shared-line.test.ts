@@ -4,8 +4,8 @@
  * Each shortfall is summarised on its own, so one wasted line that could be
  * recrafted into cold OR lightning is counted as "1 swap covers" for both.
  * The recommendations already fold that into one choice (mergeSameLineSwaps);
- * this pins it. The raw summary (`summarizeSwaps`) still counts the line
- * once per stat: see REMAINING-WORK.
+ * this pins it. CA1-7: the raw summary (`summarizeSwaps`) now gives each swap
+ * to one shortfall, so the line counts once.
  */
 
 import { describe, expect, it } from 'vitest'
@@ -67,5 +67,13 @@ describe('one wasted line that two shortfalls could use', () => {
     expect(onLine).toHaveLength(1)
     expect(onLine[0]!.action).toContain('one line, so it is one choice')
     expect(onLine[0]!.action).toMatch(/cold 60% → 75%.*; or .*lightning 60% → 75%/)
+  })
+
+  it('counts the line for one shortfall only in the raw summary (CA1-7)', () => {
+    const summary = summarizeSwaps(swaps, defense)
+    const covered = summary.filter((s) => s.swapsNeeded !== null)
+    expect(covered.length).toBeLessThanOrEqual(1)
+    const other = summary.find((s) => s.swapsNeeded === null)!
+    expect(other.note).toMatch(/already counted for (cold|lightning)/)
   })
 })

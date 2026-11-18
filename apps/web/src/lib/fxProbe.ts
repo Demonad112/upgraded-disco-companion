@@ -1,4 +1,4 @@
-import { applyTier, appliedTier, fxStore, TIERS, type FxState, type Tier } from './fxTier'
+import { applyTier, appliedTier, fxStore, PHONE_STILL_PX, TIERS, type FxState, type Tier } from './fxTier'
 
 /**
  * Auto effects tier, measured after first paint (a lazy chunk; lib/fxTier
@@ -26,8 +26,9 @@ export const isSoftware = (renderer: string | null) => renderer === null || SOFT
 export const lowHardware = (nav: Nav) =>
   !!nav.connection?.saveData || (nav.hardwareConcurrency || 8) <= 4 || (nav.deviceMemory ?? 8) <= 4
 
-export const detectTier = (renderer: string | null, nav: Nav): Tier =>
-  isSoftware(renderer) ? 'still' : lowHardware(nav) ? 'lite' : 'full'
+/** `width`: the viewport width; under PHONE_STILL_PX the sky defaults to still (HG1-5). */
+export const detectTier = (renderer: string | null, nav: Nav, width = Infinity): Tier =>
+  isSoftware(renderer) || width < PHONE_STILL_PX ? 'still' : lowHardware(nav) ? 'lite' : 'full'
 
 const rank = (t: Tier) => TIERS.indexOf(t)
 export const lowest = (a: Tier, b: Tier): Tier => (rank(a) >= rank(b) ? a : b)
@@ -108,7 +109,7 @@ function toast(text: string) {
 
 /** Runs both checks; called once per page load in idle time after first paint. */
 export async function probe(): Promise<void> {
-  setAuto(nextAuto(fxStore.get(), detectTier(readRenderer(), navigator as Navigator & Nav)))
+  setAuto(nextAuto(fxStore.get(), detectTier(readRenderer(), navigator as Navigator & Nav, window.innerWidth)))
   let checked = false
   try {
     checked = sessionStorage.getItem(CHECKED) === '1'

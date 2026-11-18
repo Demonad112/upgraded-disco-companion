@@ -1,5 +1,5 @@
-/* Wraith companion (components/companion). Fixed top-right under the nav: 64px on desktop, 80px on phones (owner,
-   2026-11-16: it read too small at 56px). On phones the bubble drops below the figure at full width. Motion is transform and opacity only; under reduced motion the figure is static and text appears whole.
+/* Wraith companion (components/companion). Fixed top-right under the nav: 64px on desktop, 80px from 480 to 720 px (owner,
+   2026-11-16: it read too small at 56px); docked in the header at 48px under 480 px (HG1-5). On phones the bubble drops below the figure at full width. Motion is transform and opacity only; under reduced motion the figure is static and text appears whole.
    Timings: docs/design/WRAITH.md (carry files are retired). */
 
 .wraith {
@@ -317,5 +317,32 @@
   .wraith-art .wr-eyes,
   .wraith-art .wr-glow {
     transition: opacity 150ms ease !important;
+  }
+}
+
+/* HG1-5 (owner, 2026-11-17): under 480 px the figure docks in the header, centred in the empty middle of the nav
+   row (logo left, search and patch right), at 48 px. It scrolls with the page like the nav, so it never sits over
+   content, and the scroll-away slide is off. The bubble opens below it, centred. */
+@media (max-width: 479.98px) {
+  .wraith {
+    --wraith-size: 48px;
+    position: absolute;
+    top: calc(var(--banner-h, 0px) + (var(--nav-h) - var(--wraith-size)) / 2);
+    right: auto;
+    left: 50%;
+    translate: -50% 0;
+    align-items: center;
+    transition: none;
+  }
+  .wraith.is-away {
+    transform: none;
+    opacity: 1;
+    visibility: visible;
+  }
+  .wraith-bubble {
+    width: min(22rem, calc(100vw - 32px));
+  }
+  .wraith-bubble::after {
+    right: calc(50% - 6px);
   }
 }

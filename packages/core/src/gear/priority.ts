@@ -18,11 +18,19 @@
  *   4. open affix slots;
  * and, between items that tie on all four, the one whose removal opens the
  * smaller resistance hole first — it's the easier swap.
+ *
+ * HG1-10: with the affix data, all of that comes after the resistance
+ * shortfall a replacement could close (`closes`): the points the character is
+ * still short of, per type, that the best roll this base can carry would add
+ * over what the item rolls now, capped at the shortfall. A weapon that can't
+ * roll resistance closes nothing, so it no longer heads the list while the
+ * character is short.
  */
 
-import type { DefenseSummary } from '../defense/index.js'
+import { resistanceShortfalls, type DefenseSummary } from '../defense/index.js'
 import type { AttributionReport } from '../model/attribution.js'
-import { AFFIX_CAPACITY, OCCUPIES_AFFIX_SLOT, type ItemAnalysis } from './analyze.js'
+import { AFFIX_CAPACITY, OCCUPIES_AFFIX_SLOT, RESIST_STAT, type ItemAnalysis } from './analyze.js'
+import type { ModTiers } from './tiers.js'
 import { removalDeficits } from './replace.js'
 
 export interface ReplacementPriority {
@@ -51,6 +59,11 @@ export interface ReplacementPriority {
   removalCost: Record<string, number>
   /** Resistance types whose removal cost is unknown because the breakdown cannot attribute them. */
   removalCostUnknown: string[]
+  /**
+   * Resistance shortfall points a replacement could close, per type (HG1-10).
+   * Empty without the affix data, or when the base can't roll the missing types.
+   */
+  closes: Record<string, number>
   /** Plain-language reasons, in the order above. Empty when nothing measurable was found. */
   reasons: string[]
 }
@@ -63,12 +76,29 @@ export interface ReplacementRanking {
 }
 
 const ORDERED_BY =
-  'Lines that need a new base to improve first, then total tiers below the top, then wasted lines, then open affix slots. ' +
+  'With the affix data, the resistance shortfall a replacement could close first. Then lines that need a new base to improve first, then total tiers below the top, then wasted lines, then open affix slots. ' +
   'Ties go to the item whose removal opens the smaller resistance hole.'
 
 const sum = (r: Record<string, number>) => Object.values(r).reduce((a, b) => a + b, 0)
 
-function assess(item: ItemAnalysis, defense: DefenseSummary, attribution: AttributionReport): ReplacementPriority {
+/** Shortfall points the best roll on this base would add over what the item rolls now, per under-cap type. */
+function closable(item: ItemAnalysis, defense: DefenseSummary, tiers: ModTiers | undefined): Record<string, number> {
+  const out: Record<string, number> = {}
+  const tags = tiers?.tagsForBase(item.baseType)
+  if (!tiers || !tags) return out
+  for (const res of resistanceShortfalls(defense)) {
+    const statId = RESIST_STAT[res.type]
+    if (!statId) continue
+    const top = tiers.topRoll(statId, tags)
+    if (top === null) continue
+    const now = Math.max(0, ...item.mods.flatMap((m) => m.rolled.filter((r) => r.id === statId).map((r) => r.value)))
+    const room = Math.min(res.underCap, top - now)
+    if (room > 0) out[res.type] = room
+  }
+  return out
+}
+
+function assess(item: ItemAnalysis, defense: DefenseSummary, attribution: AttributionReport, tiers?: ModTiers): ReplacementPriority {
   const wasted = item.mods.filter((m) => m.waste).map((m) => ({ text: m.text, reason: m.waste!.reason }))
   const needsNewBase = item.mods
     .filter((m) => m.upgrades.length && !m.upgrades.some((u) => u.reachableOnThisItem))
@@ -92,8 +122,11 @@ function assess(item: ItemAnalysis, defense: DefenseSummary, attribution: Attrib
     if (deficit - already > 0) removalCost[type] = deficit - already
   }
 
+  const closes = closable(item, defense, tiers)
   const reasons: string[] = []
   const plural = (n: number, one: string, many = `${one}s`) => `${n} ${n === 1 ? one : many}`
+  const closing = Object.entries(closes)
+  if (closing.length) reasons.push(`a replacement can close ${closing.map(([t, v]) => `${v}% ${t}`).join(' and ')} of your resistance shortfall`)
   if (needsNewBase.length) reasons.push(`${plural(needsNewBase.length, 'line')} can only improve on a higher item-level base`)
   if (tiersBelowTop) reasons.push(`${plural(tiersBelowTop, 'tier')} below the top, across its lines`)
   if (wasted.length) reasons.push(`${plural(wasted.length, 'line')} with resistance over the cap`)
@@ -115,6 +148,7 @@ function assess(item: ItemAnalysis, defense: DefenseSummary, attribution: Attrib
     unresolved,
     removalCost,
     removalCostUnknown,
+    closes,
     reasons,
   }
 }
@@ -124,13 +158,16 @@ export function rankReplacements(
   items: ItemAnalysis[],
   defense: DefenseSummary,
   attribution: AttributionReport,
+  /** The affix data. With it, items are ranked first by the shortfall a replacement could close (HG1-10). */
+  tiers?: ModTiers,
 ): ReplacementRanking {
-  const assessed = items.filter((i) => i.active).map((i) => assess(i, defense, attribution))
+  const assessed = items.filter((i) => i.active).map((i) => assess(i, defense, attribution, tiers))
   const unranked = assessed.filter((a) => a.rarity === 'Unique')
   const ranked = assessed
     .filter((a) => a.rarity !== 'Unique')
     .sort(
       (a, b) =>
+        sum(b.closes) - sum(a.closes) ||
         b.needsNewBase.length - a.needsNewBase.length ||
         b.tiersBelowTop - a.tiersBelowTop ||
         b.wasted.length - a.wasted.length ||

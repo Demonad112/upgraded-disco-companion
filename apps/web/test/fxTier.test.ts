@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { detectTier, isSoftware, lowerTier, nextAuto, slowShare, tooSlow } from '@/lib/fxProbe'
-import { acceptFx } from '@/lib/fxTier'
+import { acceptFx, FX_TIER_BOOTSTRAP, PHONE_STILL_PX } from '@/lib/fxTier'
 
 const GPU = 'ANGLE (NVIDIA, NVIDIA GeForce RTX 3060 Direct3D11 vs_5_0 ps_5_0, D3D11)'
 const strong = { hardwareConcurrency: 8, deviceMemory: 8 }
@@ -22,6 +22,16 @@ describe('renderer check', () => {
     expect(detectTier(GPU, { hardwareConcurrency: 8, deviceMemory: 4 })).toBe('lite')
     expect(detectTier(GPU, { ...strong, connection: { saveData: true } })).toBe('lite')
     expect(detectTier(GPU, {})).toBe('full')
+  })
+
+  it('defaults phones under 480 px to a still sky (HG1-5); desktop unchanged', () => {
+    expect(PHONE_STILL_PX).toBe(480)
+    expect(detectTier(GPU, strong, 390)).toBe('still')
+    expect(detectTier(GPU, strong, 479)).toBe('still')
+    expect(detectTier(GPU, strong, 480)).toBe('full')
+    expect(detectTier(GPU, strong, 1440)).toBe('full')
+    // The pre-paint guess agrees, so a phone never paints a moving frame first.
+    expect(FX_TIER_BOOTSTRAP).toContain('innerWidth<480')
   })
 })
 

@@ -271,6 +271,36 @@ export function resolveAllocation(tree: PassiveTree, allocation: PassiveAllocati
 }
 
 /**
+ * Whether the shipped tree data matches the character's tree (HG1-9).
+ *
+ * poe.ninja reports allocated node ids, not a tree version, so the version is
+ * checked by coverage: every allocated id (live and all three sets) must be in
+ * the data. Any missing id means the data predates the character's tree, and
+ * nothing that rests on the tree's word alone may be trusted.
+ */
+export interface TreeCheck {
+  /** `unchecked`: no tree data was given. */
+  status: 'current' | 'stale' | 'unchecked'
+  treeName: string | null
+  /** Allocated ids the data lacks, ascending. */
+  missing: number[]
+}
+
+export const TREE_UNCHECKED: Readonly<TreeCheck> = Object.freeze({ status: 'unchecked', treeName: null, missing: [] as number[] })
+
+export function checkTreeVersion(tree: PassiveTree, resolved: ResolvedAllocation): TreeCheck {
+  const missing = [
+    ...new Set([
+      ...resolved.unresolvedIds,
+      ...resolved.unresolvedBySet.main,
+      ...resolved.unresolvedBySet.set1,
+      ...resolved.unresolvedBySet.set2,
+    ]),
+  ].sort((a, b) => a - b)
+  return { status: missing.length ? 'stale' : 'current', treeName: tree.treeName, missing }
+}
+
+/**
  * Shortest path from any allocated node to `target`, walking unallocated nodes.
  *
  * Returns the nodes that would need allocating, target last — so `length` is

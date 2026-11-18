@@ -18,6 +18,7 @@ import { ChangedSincePanel } from './ChangedSincePanel'
 import { EasyWins } from './EasyWins'
 import { CharacterTabs, type TabDef } from './CharacterTabs'
 import { CopyLink } from './CopyLink'
+import { CouldntCheck } from './CouldntCheck'
 import { ShareCard } from './ShareCard'
 import { Showcase } from './Showcase'
 import { TopFixes, TopFixesPlaceholder } from './TopFixes'
@@ -91,11 +92,7 @@ function OverviewPanel({
         <TopFixesPlaceholder />
       )}
       {fixesReady ? <EasyWins analysis={a} tiersState={tiersState} proDetail={proDetail} /> : null}
-      {a.warnings.map((w) => (
-        <p key={w} data-surface="data" className="card border-warn/50 text-xs leading-relaxed text-warn">
-          {w}
-        </p>
-      ))}
+      <CouldntCheck analysis={a} />
       <BuildScore assessment={a.assessment} keystones={a.keystones} />
     </Panel>
   )

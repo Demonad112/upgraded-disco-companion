@@ -11,7 +11,7 @@ export const UP_PX = 4
 export const HOP_MS = 3 * 2400
 
 export interface ScrollStep {
-  /** `(max-width: 720px)` matches. */
+  /** `(min-width: 480px) and (max-width: 720px)` matches: under 480 px the figure is docked in the header (HG1-5). */
   phone: boolean
   /** Bubble open, or the hop is playing right now (not merely pending: B1-4). */
   blocked: boolean
