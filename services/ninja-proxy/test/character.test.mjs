@@ -38,7 +38,7 @@ test('a frame without a version is not-found', async () => {
 // model URL for it answers. The first model fetch can 404 while the same URL
 // returns 200 a second later.
 
-import { loadCharacter } from '../api/character.js'
+import { loadCharacter, MODEL_BLOCKED_MESSAGE } from '../api/character.js'
 import { clearBodyCache, clearResponseCache, coalesced } from '../api/_upstream.js'
 
 function ninjaWithModelStatuses(statuses, calls = []) {
@@ -68,6 +68,21 @@ test('a model 404 that persists after the retry is answered 404 and marked not t
     sleepImpl: async () => {},
   })
   assert.equal(out.status, 404)
+  assert.equal(out.store, false)
+  // Shown verbatim by the import bar: action first, and it names the paths that still work.
+  assert.equal(out.json.error, MODEL_BLOCKED_MESSAGE)
+  assert.match(out.json.error, /Path of Building/)
+  assert.ok(out.json.error.length <= 140, 'caddy cap: about 140 characters')
+})
+
+test('a model 403 (Cloudflare challenge) gets the same message, not a bare status', async () => {
+  clearBodyCache()
+  const out = await loadCharacter('A-1', 'league', 'Char', {
+    fetchImpl: ninjaWithModelStatuses([403]),
+    sleepImpl: async () => {},
+  })
+  assert.equal(out.status, 502)
+  assert.equal(out.json.error, MODEL_BLOCKED_MESSAGE)
   assert.equal(out.store, false)
 })
 

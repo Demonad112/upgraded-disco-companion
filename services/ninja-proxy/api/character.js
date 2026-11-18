@@ -51,6 +51,14 @@ export function modelUrl(acct, league, character, version) {
   return `${NINJA}/poe2/api/profile/characters/${e(acct)}/${e(league)}/${e(character)}/model/${e(version)}`
 }
 
+/**
+ * What the import bar shows when poe.ninja will not hand over the model:
+ * since 2026-11-18 it sits behind a Cloudflare challenge (NP1-1), so a server
+ * gets 404 on the old path and 403 on the new one. Caddy copy (docs/COPY.md).
+ */
+export const MODEL_BLOCKED_MESSAGE =
+  'poe.ninja now blocks automated imports. Paste a Path of Building code or the character JSON instead.'
+
 const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
 
 /**
@@ -171,7 +179,10 @@ export async function loadCharacter(acct, league, character, { fetchImpl, sleepI
     }
     if (model.status === 404) {
       // Not stored: the next request should see the model as soon as it exists.
-      return { status: 404, json: { error: 'Character model not found.' }, headers: { 'Cache-Control': 'no-store' }, store: false }
+      return { status: 404, json: { error: MODEL_BLOCKED_MESSAGE }, headers: { 'Cache-Control': 'no-store' }, store: false }
+    }
+    if (model.status === 403) {
+      return { status: 502, json: { error: MODEL_BLOCKED_MESSAGE }, headers: { 'Cache-Control': 'no-store' }, store: false }
     }
     if (!model.ok) {
       if (isBusyStatus(model.status)) return busyResult(model)

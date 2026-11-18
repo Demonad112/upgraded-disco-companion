@@ -32,7 +32,7 @@ This function does the two-step read server-side and hands back the raw payload.
 ```
 GET /api/character?account=Name-1234&league=runesofaldur&character=Athrynas
 → 200 { "type": "found", "charModel": { … } }
-→ 404 { "error": "…" }   character unknown, private, or unindexed
+→ 404 { "error": "…" }   character unknown, private, or unindexed; or poe.ninja withheld the model (NP1-1)
 → 502 { "error": "…" }   poe.ninja failed
 → 504 { "error": "…" }   poe.ninja timed out
 ```
