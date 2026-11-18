@@ -97,6 +97,12 @@ Not supported. poe.ninja answers the character `model` and builds `search`
 endpoints with a Cloudflare managed challenge (403) when the request comes from
 Cloudflare Workers egress, so the proxy has to run elsewhere (Vercel here).
 
+Re-measured 2026-11-18 with a probe Worker (colo IAD): `data/index-state`,
+`data/snapshot-versions` and the `events/character` stream answer 200, but
+every `/poe2/api/profile/*` and `/poe2/api/builds/*` request gets
+`403` with `cf-mitigated: challenge`. A Pages Function uses the same egress,
+so it is blocked as well. See RV1-4.
+
 ### Checking a deployment
 
 `node scripts/verify-live.mjs <base URL>` calls health, the ladder for each app
