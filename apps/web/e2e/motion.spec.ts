@@ -1,4 +1,4 @@
-import { expect, test } from './fixtures'
+import { expect, openList, test } from './fixtures'
 
 /** W15-2: card-hover pulse and hero draw-in. Both are CSS, so the tests read computed animation names. */
 const animationOf = (loc: ReturnType<import('@playwright/test').Page['locator']>) =>
@@ -109,23 +109,28 @@ test.describe('MP1 motion polish', () => {
     const gold = page.locator('h1.hero-title .text-gradient-gold')
     expect(await animationOf(gold)).toBe('foil-sweep')
     expect(await gold.evaluate((el) => getComputedStyle(el).backgroundImage.split('linear-gradient').length - 1)).toBe(2)
-    if (isMobile) return
+    if (isMobile) return // hover has no touch equivalent; the sweep itself was asserted above
     const brand = page.locator('nav.site-nav a').first()
     await brand.hover()
     expect(await animationOf(brand.locator('.text-gradient-gold'))).toBe('foil-sweep, foil-hover')
   })
 
   test('Atlas nodes below the fold wait for the scroll; nodes on screen are drawn', async ({ page, isMobile }) => {
-    if (isMobile) return // phones keep the list in a sheet, not in the page flow
     await page.goto('atlas/')
+    if (isMobile) await openList(page) // phones keep the list in a sheet: its own scroller is the one that reveals rows
     const nodes = page.locator('[data-reveal="node"]')
     await expect(nodes.first()).toBeVisible()
     if (!(await page.evaluate(() => CSS.supports('animation-timeline: view()')))) return
     expect(await animationOf(nodes.first())).toBe('reveal-rise')
     const last = nodes.last()
     expect(Number(await last.evaluate((el) => getComputedStyle(el).opacity))).toBeLessThan(1)
-    await last.scrollIntoViewIfNeeded()
-    await page.evaluate(() => window.scrollBy(0, 200))
+    if (isMobile) {
+      // Scroll the sheet's scroller, not the page behind it.
+      await page.locator('[data-atlas-scroll]').evaluate((el) => el.scrollTo(0, el.scrollHeight))
+    } else {
+      await last.scrollIntoViewIfNeeded()
+      await page.evaluate(() => window.scrollBy(0, 200))
+    }
     await expect.poll(() => last.evaluate((el) => Number(getComputedStyle(el).opacity))).toBe(1)
   })
 

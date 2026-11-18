@@ -22,6 +22,10 @@ export function AtlasMapSheet({ children }: { children: ReactNode }) {
   const { listOpen, setListOpen } = useAtlasMap()
   const phone = useSyncExternalStore(subscribePhone, isPhone, () => false)
   const modal = listOpen && phone
+  // The open flag must not outlive the phone layout: on a wider viewport it would hide the wraith (companion.css).
+  useEffect(() => {
+    if (!phone && listOpen) setListOpen(false)
+  }, [phone, listOpen, setListOpen])
   const closeRef = useRef<HTMLButtonElement>(null)
   const sheetRef = useRef<HTMLElement>(null)
 

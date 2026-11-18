@@ -42,9 +42,25 @@ export function AtlasStage({ aside }: { aside: ReactNode }) {
     const html = document.documentElement
     const was = html.style.overflow
     html.style.overflow = 'hidden'
+    // Focus containment: everything outside the stage (header, footer, page title, other <main> children) is inert.
+    const stage = stageRef.current
+    const inerted: HTMLElement[] = []
+    for (let node: HTMLElement | null = stage; node && node !== document.body; node = node.parentElement) {
+      for (const sibling of node.parentElement?.children ?? []) {
+        if (sibling !== node && sibling instanceof HTMLElement && !sibling.hasAttribute('inert')) {
+          sibling.setAttribute('inert', '')
+          inerted.push(sibling)
+        }
+      }
+    }
+    const exitBtn = document.querySelector<HTMLElement>('.atlas-full-btn')
+    exitBtn?.focus({ preventScroll: true })
     return () => {
       window.removeEventListener('keydown', onKey)
       html.style.overflow = was
+      for (const el of inerted) el.removeAttribute('inert')
+      // Back to the button that opened it (the same one, now labelled "Full screen").
+      document.querySelector<HTMLElement>('.atlas-full-btn')?.focus({ preventScroll: true })
     }
   }, [full, setFull])
 

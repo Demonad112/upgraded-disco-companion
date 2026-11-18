@@ -1,4 +1,4 @@
-import { expect, test } from './fixtures'
+import { expect, openList, test } from './fixtures'
 
 test('the phone tab bar says Farm and every label fits at 280px', async ({ page }) => {
   await page.setViewportSize({ width: 280, height: 640 })
@@ -57,9 +57,6 @@ test.describe('strategy rows', () => {
 async function openMap(page: import('@playwright/test').Page) {
   await page.goto('atlas/')
 }
-async function openList(page: import('@playwright/test').Page) {
-  if ((page.viewportSize()?.width ?? 1280) <= 720) await page.getByRole('button', { name: 'List', exact: true }).click()
-}
 
 test.describe('atlas map panel', () => {
   test('the legend sits on the map as Route line, Traps and Ticked toggles', async ({ page }) => {
@@ -79,7 +76,7 @@ test.describe('atlas map panel', () => {
     await page.goto('atlas/')
     const dialog = page.getByRole('dialog', { name: 'Atlas guide list' })
     await expect(dialog).toHaveCount(0)
-    await page.getByRole('button', { name: 'List', exact: true }).click()
+    await openList(page)
     await expect(dialog).toBeVisible()
     // Tab never leaves the dialog.
     for (let i = 0; i < 25; i++) {
@@ -89,11 +86,62 @@ test.describe('atlas map panel', () => {
     await page.keyboard.press('Escape')
     await expect(dialog).toHaveCount(0)
     expect(new URL(page.url()).pathname).toMatch(/atlas\/?$/)
-    await page.getByRole('button', { name: 'List', exact: true }).click()
+    await openList(page)
     await expect(dialog).toBeVisible()
     await page.goBack()
     await expect(dialog).toHaveCount(0)
     expect(new URL(page.url()).pathname).toMatch(/atlas\/?$/)
+  })
+
+  test('a tick ends a Map-button focus and the map moves to the next step', async ({ page }) => {
+    await openMap(page)
+    const map = page.locator('#atlas-map')
+    await expect(page.locator('[aria-label^="Atlas passive tree:"]')).toBeAttached()
+    await expect(map).toHaveAttribute('data-cx', /.+/)
+    await openList(page)
+    await page.getByRole('button', { name: 'Show Trapped Subordinate on the Atlas tree' }).click()
+    await expect(page.getByText('Showing Trapped Subordinate')).toBeVisible()
+    // Wait for the focus framing to settle, then note where the map is.
+    const centre = async () => `${await map.getAttribute('data-cx')},${await map.getAttribute('data-cy')}`
+    let last = ''
+    await expect.poll(async () => { const now = await centre(); const settled = now === last; last = now; return settled }).toBe(true)
+    const focused = await centre()
+    await page.getByRole('group', { name: 'Route steps' }).getByRole('button', { name: 'Tick', exact: true }).click()
+    await expect(page.getByRole('group', { name: 'Route steps' })).toContainText('2 of 17')
+    await expect(page.getByText('Showing Trapped Subordinate')).toHaveCount(0)
+    await expect.poll(centre).not.toBe(focused)
+  })
+
+  test('full screen keeps focus inside the stage, and Escape returns it to the Full screen button', async ({ page }) => {
+    await openMap(page)
+    // Full screen is a desktop layout: phones don't offer it.
+    if ((page.viewportSize()?.width ?? 1280) <= 720) {
+      await expect(page.locator('.atlas-full-btn')).toBeHidden()
+      return
+    }
+    const full = page.getByRole('button', { name: 'Full screen', exact: true })
+    await full.click()
+    const exit = page.getByRole('button', { name: 'Exit full screen' })
+    await expect(exit).toBeFocused()
+    for (let i = 0; i < 30; i++) {
+      await page.keyboard.press('Tab')
+      expect(await page.evaluate(() => !!document.activeElement?.closest('#atlas-stage'))).toBe(true)
+    }
+    expect(await page.evaluate(() => [...document.querySelectorAll('header, footer, h1')].every((el) => el.closest('[inert]') || el.closest('#atlas-stage')))).toBe(true)
+    await page.keyboard.press('Escape')
+    await expect(page.locator('#atlas-stage[data-full]')).toHaveCount(0)
+    await expect(page.getByRole('button', { name: 'Full screen', exact: true })).toBeFocused()
+    await expect(page.locator('[inert]')).toHaveCount(0)
+  })
+
+  test('the wraith is back after a phone-width List sheet is resized to desktop', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 })
+    await page.goto('atlas/')
+    await openList(page)
+    await expect(page.locator('.atlas-list[data-open]')).toHaveCount(1)
+    await page.setViewportSize({ width: 1280, height: 800 })
+    await expect(page.locator('.atlas-list[data-open]')).toHaveCount(0)
+    await expect(page.locator('.wraith')).toBeVisible()
   })
 
   test('search shows a result count and has a clear button', async ({ page }) => {

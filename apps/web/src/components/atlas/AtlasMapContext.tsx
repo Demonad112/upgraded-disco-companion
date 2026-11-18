@@ -132,17 +132,26 @@ export function AtlasMapProvider({ children }: { children: ReactNode }) {
     return start === undefined ? [] : routeLegs(atlas.tree, start, route)
   }, [atlas, route])
 
-  const selectStep = setSelected
+  // A step change (tick, Prev / Next, a tooltip's "next") ends a Map-button focus, so the map follows the new step.
+  const clear = useCallback(() => setRequest(null), [])
+  const selectStep = useCallback(
+    (id: string | null) => {
+      setRequest(null)
+      setSelected(id)
+    },
+    [],
+  )
   const prev = useCallback(() => {
     const r = route[currentIdx - 1]
-    if (r) setSelected(r.id)
-  }, [route, currentIdx])
+    if (r) selectStep(r.id)
+  }, [route, currentIdx, selectStep])
   const next = useCallback(() => {
     const r = route[currentIdx + 1]
-    if (r) setSelected(r.id)
-  }, [route, currentIdx])
+    if (r) selectStep(r.id)
+  }, [route, currentIdx, selectStep])
   const tick = useCallback(() => {
     if (!current) return
+    setRequest(null)
     if (current.kind === 'cluster') toggleCluster(current.id)
     else toggleFork(current.id)
   }, [current, toggleCluster, toggleFork])
@@ -155,7 +164,6 @@ export function AtlasMapProvider({ children }: { children: ReactNode }) {
     const stage = document.getElementById('atlas-stage')
     if (stage && map && !mostlyInView(map)) stage.scrollIntoView({ behavior: 'smooth', block: 'start' })
   }, [])
-  const clear = useCallback(() => setRequest(null), [])
 
   const value = useMemo<AtlasMapContextValue>(
     () => ({

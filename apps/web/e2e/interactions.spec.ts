@@ -1,11 +1,6 @@
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
-import { expect, test } from './fixtures'
-
-// Phones keep the list in a bottom sheet that the peek bar's List button opens; from 721px up it is on the page.
-async function openList(page: import('@playwright/test').Page) {
-  if ((page.viewportSize()?.width ?? 1280) <= 720) await page.getByRole('button', { name: 'List', exact: true }).click()
-}
+import { expect, openList, test } from './fixtures'
 
 test('an Atlas "Map" button focuses that node on the tree', async ({ page }) => {
   await page.goto('atlas/')

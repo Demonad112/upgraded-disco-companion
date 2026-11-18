@@ -1,3 +1,5 @@
+import { readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
 import { PROFILE_URL, expect, openTab, test } from './fixtures'
 
 const importUrl = `character/?import=${encodeURIComponent(PROFILE_URL)}`
@@ -49,6 +51,28 @@ test('a failed import keeps the box open with the URL and the error', async ({ p
   await expect(page.locator('main [role=alert]:not(:empty)').first()).toBeVisible({ timeout: 15_000 })
   await expect(page.locator('main details').first()).toHaveAttribute('open')
   await expect(page.getByLabel('poe.ninja character URL')).toHaveValue(PROFILE_URL)
+})
+
+test('a blocked import offers the paste box in one click, and a PoB code pasted there analyses', async ({ page }) => {
+  const payload = JSON.parse(readFileSync(resolve('../../packages/core/test/fixtures/athrynas-v43.json'), 'utf8'))
+  const code: string = (payload.charModel ?? payload).pathOfBuildingExport
+  await page.route('**/api/character**', (route) =>
+    route.fulfill({
+      status: 403,
+      contentType: 'application/json',
+      body: '{"error":"poe.ninja now blocks automated imports. Paste a Path of Building code or the character JSON instead."}',
+    }),
+  )
+  await page.goto('character/')
+  await page.getByLabel('poe.ninja character URL').fill(PROFILE_URL)
+  await page.getByRole('button', { name: 'Analyse', exact: true }).click()
+  await expect(page.locator('main [role=alert]:not(:empty)').first()).toBeVisible({ timeout: 15_000 })
+  await page.getByRole('button', { name: 'Paste a code instead' }).click()
+  const box = page.getByLabel('Character model JSON or Path of Building code')
+  await expect(box).toBeFocused()
+  await box.fill(code)
+  await page.getByRole('button', { name: 'Analyse pasted data' }).click()
+  await expect(page.getByText('Imported from a Path of Building code')).toBeVisible({ timeout: 30_000 })
 })
 
 test('gear lists only what can be improved, each with a weighted-sum trade search', async ({ page }) => {
