@@ -417,11 +417,23 @@
 .atlas-stage[data-full] .atlas-bar {
   position: relative;
 }
+/* VR1-1: tabs and Exit on the first row, the step line and its buttons on a row of their own, so the name isn't cut. */
+@media (min-width: 721px) {
+  .atlas-stage[data-full] .atlas-bar-step {
+    order: 1;
+    flex-basis: 100%;
+  }
+  .atlas-stage[data-full] .atlas-full-btn {
+    margin-left: auto;
+  }
+}
 .atlas-stage[data-full] .atlas-map-area {
   height: 100%;
   min-height: 0;
   margin-bottom: 0;
 }
+/* The root sits between the area and the map; without a height the map's 100% resolves to auto and keeps its old size. */
+.atlas-stage[data-full] .atlas-root,
 .atlas-stage[data-full] .atlas-map {
   height: 100%;
 }

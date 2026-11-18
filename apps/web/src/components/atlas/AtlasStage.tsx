@@ -45,19 +45,30 @@ export function AtlasStage({ aside }: { aside: ReactNode }) {
     // Focus containment: everything outside the stage (header, footer, page title, other <main> children) is inert.
     const stage = stageRef.current
     const inerted: HTMLElement[] = []
-    for (let node: HTMLElement | null = stage; node && node !== document.body; node = node.parentElement) {
-      for (const sibling of node.parentElement?.children ?? []) {
-        if (sibling !== node && sibling instanceof HTMLElement && !sibling.hasAttribute('inert')) {
-          sibling.setAttribute('inert', '')
-          inerted.push(sibling)
-        }
+    const shut = (el: Node, keep: Node) => {
+      if (el !== keep && el instanceof HTMLElement && !el.hasAttribute('inert')) {
+        el.setAttribute('inert', '')
+        inerted.push(el)
       }
+    }
+    // Nodes that mount later beside the stage's ancestors (the wraith loads on idle, toasts, portals) are shut too.
+    const keepIn = new Map<Node, Node>()
+    const late = new MutationObserver((records) => {
+      for (const r of records) for (const added of r.addedNodes) shut(added, keepIn.get(r.target)!)
+    })
+    for (let node: HTMLElement | null = stage; node && node !== document.body; node = node.parentElement) {
+      const parent = node.parentElement
+      if (!parent) break
+      for (const sibling of parent.children) shut(sibling, node)
+      keepIn.set(parent, node)
+      late.observe(parent, { childList: true })
     }
     const exitBtn = document.querySelector<HTMLElement>('.atlas-full-btn')
     exitBtn?.focus({ preventScroll: true })
     return () => {
       window.removeEventListener('keydown', onKey)
       html.style.overflow = was
+      late.disconnect()
       for (const el of inerted) el.removeAttribute('inert')
       // Back to the button that opened it (the same one, now labelled "Full screen").
       document.querySelector<HTMLElement>('.atlas-full-btn')?.focus({ preventScroll: true })

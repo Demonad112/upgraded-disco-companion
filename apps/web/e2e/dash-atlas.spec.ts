@@ -128,10 +128,34 @@ test.describe('atlas map panel', () => {
       expect(await page.evaluate(() => !!document.activeElement?.closest('#atlas-stage'))).toBe(true)
     }
     expect(await page.evaluate(() => [...document.querySelectorAll('header, footer, h1')].every((el) => el.closest('[inert]') || el.closest('#atlas-stage')))).toBe(true)
+    // Nodes that mount after entry (the wraith loads on idle, toasts, portals) are kept out too.
+    await page.evaluate(() => {
+      const late = document.createElement('button')
+      late.id = 'late-node'
+      document.body.append(late)
+    })
+    await expect(page.locator('#late-node')).toHaveAttribute('inert', '')
     await page.keyboard.press('Escape')
     await expect(page.locator('#atlas-stage[data-full]')).toHaveCount(0)
     await expect(page.getByRole('button', { name: 'Full screen', exact: true })).toBeFocused()
     await expect(page.locator('[inert]')).toHaveCount(0)
+  })
+
+  test('full screen gives the step name its own row, so it is not cut above 1024px (VR1-1)', async ({ page }) => {
+    test.skip((page.viewportSize()?.width ?? 1280) <= 720, 'full screen is a desktop layout')
+    await openMap(page)
+    await page.getByRole('button', { name: 'Full screen', exact: true }).click()
+    const name = page.locator('.atlas-step-name')
+    for (const width of [1025, 1280, 1440]) {
+      await page.setViewportSize({ width, height: 900 })
+      for (const drawer of [true, false]) {
+        const toggle = drawer ? page.getByRole('button', { name: 'Show list' }) : page.getByRole('button', { name: 'Hide the list' })
+        if (await toggle.isVisible()) await toggle.click()
+        await expect
+          .poll(() => name.evaluate((el) => el.scrollWidth - el.clientWidth), { message: `${width}px, list ${drawer ? 'shown' : 'hidden'}` })
+          .toBeLessThanOrEqual(0)
+      }
+    }
   })
 
   test('the wraith is back after a phone-width List sheet is resized to desktop', async ({ page }) => {
