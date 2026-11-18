@@ -216,3 +216,8 @@ One line each; reopen only when the trigger happens.
 | R53 | 280 px determinism test | Only if CI flakes |
 | WQA3-2b / WQA3-14 | OffscreenCanvas sky | A real-device trace |
 | PXC-4 | Sky rAF pause when covered | A route fully covered by blocks |
+
+## Closed 2026-11-18 (B3-1)
+| ID | Item | … | Status |
+|---|---|---|---|
+| B3-1 | The Advanced tab still shows its own "Tree data is behind" card (`OverviewCards.tsx:102`) next to the B3 "What we couldn't check" panel, so a stale tree is reported twice. Fix: drop the card and let the panel carry the tree check | S | #209 Limits | apps/web only; recommended answer: remove the card, keep the panel as the single place | done: card and `TreeDataNote` removed; "What we couldn't check" is the only tree report |

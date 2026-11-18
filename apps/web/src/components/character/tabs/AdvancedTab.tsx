@@ -8,16 +8,13 @@ import { AuditPanel } from '@/components/AuditPanel'
 import { Reconciliation } from '@/components/Reconciliation'
 import { TreePanel } from '@/components/tree/TreePanel'
 import { CharacterNotes } from '../CharacterNotes'
-import { TreeDataNote } from '../OverviewCards'
 import { Panel } from './Panel'
 import type { PanelProps } from './types'
 
 export default function AdvancedTab({ analysis: a, tiersState, treeState }: PanelProps) {
-  const treeForNote = treeState.status === 'ready' ? treeState.tree : null
   const overcapped = a.attribution.stats.filter((st) => st.overcap > 0)
   return (
     <Panel id="advanced" title="Advanced">
-      <TreeDataNote analysis={a} tree={treeForNote} />
       <div className="flex items-center">
         <PanelControls targetId="checks-list" />
       </div>
