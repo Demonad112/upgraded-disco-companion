@@ -230,7 +230,6 @@
   --leg-4: #f0e442;
   --leg-5: #f07a3a;
   --leg-6: #a78bfa;
-  --atlas-peek-h: 5.75rem;
 }
 .atlas-leg-legend {
   position: absolute;
@@ -262,6 +261,8 @@
 /* ---- Stage (AR3): "bar bar" "map map" "list aside". ---- */
 .atlas-stage {
   --atlas-bar-h: 7rem;
+  /* On the stage, not .atlas-map: the loading skeleton sizes itself from it too, and a missing var collapses its height (CLS). */
+  --atlas-peek-h: 5.75rem;
   display: grid;
   grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
   grid-template-areas:
