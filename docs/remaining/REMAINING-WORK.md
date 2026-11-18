@@ -23,8 +23,10 @@ Answers of 2026-11-17 (HG1-1, -2, -4, -5, -6) are applied. Answers of 2026-11-15
 | RV1-1 | Cloudflare Pages build caching (Settings → Builds & deployments) | Turn it on: free, no code, repeat builds skip `npm ci` | RV1 (external review, 2026-11-15) |
 | RV1-2 | Cloudflare Web Analytics (Settings → Web Analytics) | Turn it on after RV1 merges: the CSP now allows `static.cloudflareinsights.com` and `cloudflareinsights.com`; before that the injected beacon was blocked | RV1 |
 | RV1-3 | Custom domain | Your call. If yes, the same PR must add the domain to the proxy `ALLOWED_ORIGIN` (`services/ninja-proxy/api/_upstream.js`), the OG/sitemap base and, for a proxy move, `connect-src`; otherwise character import breaks on the new domain | RV1 |
-| RV1-4 | Move `services/ninja-proxy` from Vercel to a Cloudflare Worker | Defer: responses already carry edge `s-maxage` (character 60 s, ladder 1 h); revisit only if Vercel limits bite | RV1 |
+| RV1-4 | Move `services/ninja-proxy` from Vercel to a Cloudflare Worker | **Answered 2026-11-18: move it** (replaces "Defer"). Separate Worker on `workers.dev`, deployed by Workers Builds; Vercel stays as rollback for a week. Work tracked as NP1 | RV1, owner 2026-11-18 |
 | RV1-5 | Rate limit on the public proxy (`/api/*`) | Add a Vercel Firewall rate-limit rule (account toggle, no code); CORS does not stop non-browser callers | RV1 |
+| NP1-1 | poe.ninja moved the character model and the builds search (2026-11-18): every `/poe2/api/profile/characters/<acct>/<league>/<char>/model/<v>` and `/poe2/api/builds/*` URL answers 404, so import and ladder are down on the live site | Do owner step 13 (copy the two request URLs from poe.ninja's own pages in DevTools); a session then changes `modelUrl` and `buildSearchUrl` and records fixtures | NP1 |
+| NP1-2 | Scheduled live smoke check (CI change): every proxy test mocks poe.ninja, so today's upstream move went unnoticed | Yes: a daily `schedule:` workflow running `node services/ninja-proxy/scripts/verify-live.mjs <proxy base>` (health, ladder per league, Athrynas import, Origin = pages.dev); failure opens no issue, the red run is the signal | NP1 |
 
 ## Open rows (class C)
 | ID | Item | Size | Origin | Notes | Status |

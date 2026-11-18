@@ -55,6 +55,15 @@ Do them in the order shown; they are independent. The step numbers stay the same
 - [x] **12. Say OK or no to core tests** (PL1-1) (OK, 2026-11-08)
   - Batches N3 and F2 add tests under `packages/core/test` only, with no source or data change. Recommended: OK.
 
+## Character import and ladder (NP1)
+
+- [ ] **13. Copy two poe.ninja request URLs** (NP1-1) (3 min) — character import and ladder are down until this is done
+  - Why: on 2026-11-18 poe.ninja moved the character model and the builds search. Both new addresses show up only in its own page's network calls, and that page blocks automated browsers, so a session can't see them.
+  - In desktop Chrome, open `https://poe.ninja/poe2/profile/Demonad112-2589/character/Athrynas`, press F12 → **Network** → filter `api`, then reload.
+    Copy the full URL of the request that returns the character (the large JSON one, about 100 KB+).
+  - Open `https://poe.ninja/poe2/builds/runesofaldur` with the Network tab still open. Copy the full URL of the request whose name contains `search` (binary response).
+  - Paste both URLs into a session chat with "NP1-1". The fix is one function each (`modelUrl` in `services/ninja-proxy/api/character.js`, `buildSearchUrl` in `api/ladder.js`).
+
 ## Optional
 
 - [ ] **5. Trade site extras** (R43) (done 2026-11-08 except the console realm; only that check is left)

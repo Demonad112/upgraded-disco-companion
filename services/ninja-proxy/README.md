@@ -97,6 +97,15 @@ Not supported. poe.ninja answers the character `model` and builds `search`
 endpoints with a Cloudflare managed challenge (403) when the request comes from
 Cloudflare Workers egress, so the proxy has to run elsewhere (Vercel here).
 
+### Checking a deployment
+
+`node scripts/verify-live.mjs <base URL>` calls health, the ladder for each app
+league and the Athrynas import with the app's `Origin`, and exits 1 on any
+failure. Every unit test mocks poe.ninja, so this is the only check that sees
+an upstream move (2026-11-18: the snapshot list moved to
+`/poe2/api/data/snapshot-versions?league=<slug>`, and the model and builds
+search paths now 404; see NP1-1 in `docs/remaining/REMAINING-WORK.md`).
+
 ### Wiring it up
 
 Set `NEXT_PUBLIC_NINJA_PROXY_BASE` (no trailing slash) as a build environment

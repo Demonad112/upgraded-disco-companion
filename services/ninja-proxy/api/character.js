@@ -34,6 +34,24 @@ const TIMEOUT_MS = 18_000
 // poe.ninja keeps the version stream open and sends nothing for a character it
 // has not indexed. Without this the read waits for the overall timeout.
 export const FIRST_FRAME_MS = 12_000
+// poe.ninja can announce a version on the stream a moment before the model URL
+// for it answers: the first fetch 404s, the same URL is 200 shortly after.
+export const MODEL_RETRY_MS = 1_500
+
+/**
+ * The character model for one version. Kept in one place because poe.ninja
+ * moves it: on 2026-11-18 this path answered 404 for every character and
+ * version tried, while the version stream and the account listing
+ * (`/poe2/api/profile/characters/<acct>/<n>`) still worked. The current path
+ * is visible in the network calls of poe.ninja's own character page; see
+ * docs/remaining/OWNER-STEPS.md.
+ */
+export function modelUrl(acct, league, character, version) {
+  const e = encodeURIComponent
+  return `${NINJA}/poe2/api/profile/characters/${e(acct)}/${e(league)}/${e(character)}/model/${e(version)}`
+}
+
+const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
 
 /**
  * Read the first `data:` frame from an SSE stream and return its `version`.
@@ -99,7 +117,7 @@ export default async function handler(req, res) {
   // poe.ninja renders accounts as Name#1234 but its API path wants Name-1234.
   const acct = String(account).replace('#', '-')
   // Identical requests share one upstream round trip and its answer for a minute.
-  const result = await coalesced(`${acct}\n${league}\n${character}`, () => load(acct, league, character))
+  const result = await coalesced(`${acct}\n${league}\n${character}`, () => loadCharacter(acct, league, character))
 
   for (const [k, v] of Object.entries(result.headers ?? {})) res.setHeader(k, v)
   if (result.etag) {
@@ -114,8 +132,12 @@ export default async function handler(req, res) {
   return res.status(result.status).json(result.json)
 }
 
-/** The two-step fetch for one character, as `{ status, json | body, headers, etag? }`. Never throws. */
-async function load(acct, league, character) {
+/**
+ * The two-step fetch for one character, as `{ status, json | body, headers,
+ * etag?, store? }`. Never throws. `store: false` asks `coalesced` not to keep
+ * the result. `fetchImpl` / `sleepImpl` are for tests.
+ */
+export async function loadCharacter(acct, league, character, { fetchImpl, sleepImpl = wait } = {}) {
   const e = encodeURIComponent
   const controller = new AbortController()
   const timer = setTimeout(() => controller.abort(), TIMEOUT_MS)
@@ -124,6 +146,7 @@ async function load(acct, league, character) {
     const versionResult = await readVersion(
       `${NINJA}/poe2/api/events/character/${e(acct)}/${e(league)}/${e(character)}`,
       controller.signal,
+      { fetchImpl },
     )
 
     if (versionResult.busy) return busyResult(versionResult.busy)
@@ -138,9 +161,18 @@ async function load(acct, league, character) {
       return { status: 502, json: { error: `Could not read the character version (${versionResult.error}).` } }
     }
 
-    const modelUrl = `${NINJA}/poe2/api/profile/characters/${e(acct)}/${e(league)}/${e(character)}/model/${versionResult.version}`
-    const model = await revalidatingFetch(modelUrl, { signal: controller.signal })
-    if (model.status === 404) return { status: 404, json: { error: 'Character model not found.' } }
+    const url = modelUrl(acct, league, character, versionResult.version)
+    let model = await revalidatingFetch(url, { signal: controller.signal }, { fetchImpl })
+    if (model.status === 404) {
+      // Retried once: right after a version event the model is often not there yet.
+      await model.body?.cancel?.().catch(() => {})
+      await sleepImpl(MODEL_RETRY_MS)
+      model = await revalidatingFetch(url, { signal: controller.signal }, { fetchImpl })
+    }
+    if (model.status === 404) {
+      // Not stored: the next request should see the model as soon as it exists.
+      return { status: 404, json: { error: 'Character model not found.' }, headers: { 'Cache-Control': 'no-store' }, store: false }
+    }
     if (!model.ok) {
       if (isBusyStatus(model.status)) return busyResult(model)
       return { status: 502, json: { error: `poe.ninja returned ${model.status} for the model.` } }

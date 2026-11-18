@@ -223,7 +223,8 @@ export function summarise(values) {
 // --- handler ----------------------------------------------------------------
 
 /**
- * The index-state snapshot entry for a league.
+ * The snapshot-versions entry for a league (also used on index-state's
+ * buildLeagues, which share the `url` / `name` / `displayName` fields).
  *
  * Matches the slug first (`url`, what core sends as `league`). If nothing
  * matches, falls back to the display name core sends as `name` (or the
@@ -246,6 +247,61 @@ export function findSnapshot(snapshotVersions, league, displayName = league) {
       return typeof name === "string" && name.trim().toLowerCase() === wanted;
     }) ?? null
   );
+}
+
+/** Where poe.ninja lists a league's ladder snapshots (moved out of index-state, 2026-11-18). */
+export function snapshotVersionsUrl(slug) {
+  return `${NINJA_BASE}/poe2/api/data/snapshot-versions?league=${encodeURIComponent(slug)}`;
+}
+
+/**
+ * The builds search URL for a snapshot. Kept in one place because poe.ninja
+ * moves it: on 2026-11-18 every `/poe2/api/builds/*` path answered 404 while
+ * the snapshot list above still worked. The current path is visible only in
+ * the network calls of poe.ninja's own builds page (DevTools → Network →
+ * the protobuf "search" request); see docs/remaining/OWNER-STEPS.md.
+ */
+export function buildSearchUrl(snap, className) {
+  const params = new URLSearchParams({ overview: snap.snapshotName });
+  if (className) params.set("class", className);
+  return `${NINJA_BASE}/poe2/api/builds/${encodeURIComponent(snap.version)}/search?${params}`;
+}
+
+async function fetchJson(url, opts) {
+  const res = await politeFetch(url, { signal: opts.signal }, opts);
+  if (!res.ok) return { res };
+  return { res, json: await res.json() };
+}
+
+/** Upstream failure as `{ busy }` (throttled / 5xx) or `{ error }` (anything else). */
+function failure(what, res) {
+  return isBusyStatus(res.status) ? { busy: res } : { error: `${what} returned ${res.status}` };
+}
+
+/**
+ * The current snapshot for a league as `{ snap }` (null when poe.ninja has
+ * none), `{ busy }` or `{ error }`.
+ *
+ * snapshot-versions only answers an exact slug, so a miss falls back to
+ * index-state: a build league whose display name (or slug) matches what core
+ * sent gives the slug to ask for. poe.ninja's own index says what a league
+ * is called, so the proxy asks it instead of guessing.
+ */
+export async function resolveSnapshot(league, displayName = league, opts = {}) {
+  const first = await fetchJson(snapshotVersionsUrl(league), opts);
+  if (!first.json) return failure("snapshot-versions", first.res);
+  const direct = findSnapshot(first.json, league, displayName);
+  if (direct) return { snap: direct };
+
+  const idx = await fetchJson(`${NINJA_BASE}/poe2/api/data/index-state`, opts);
+  if (!idx.json) return failure("index-state", idx.res);
+  const leagues = [...(idx.json.buildLeagues ?? []), ...(idx.json.oldBuildLeagues ?? [])];
+  const entry = findSnapshot(leagues, league, displayName);
+  if (!entry?.url || entry.url === league) return { snap: null };
+
+  const second = await fetchJson(snapshotVersionsUrl(entry.url), opts);
+  if (!second.json) return failure("snapshot-versions", second.res);
+  return { snap: findSnapshot(second.json, entry.url, displayName) };
 }
 
 /** Answers 503 + Retry-After for a throttled or failing upstream. */
@@ -276,23 +332,19 @@ export default async function handler(req, res) {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
   try {
-    const idxRes = await politeFetch(`${NINJA_BASE}/poe2/api/data/index-state`, { signal: controller.signal });
-    if (!idxRes.ok) {
-      if (isBusyStatus(idxRes.status)) return sendBusy(res, idxRes);
-      res.status(502).json({ error: `index-state returned ${idxRes.status}` });
+    const found = await resolveSnapshot(league, leagueName || league, { signal: controller.signal });
+    if (found.busy) return sendBusy(res, found.busy);
+    if (found.error) {
+      res.status(502).json({ error: found.error });
       return;
     }
-    const idx = await idxRes.json();
-    const snap = findSnapshot(idx.snapshotVersions, league, leagueName || league);
+    const snap = found.snap;
     if (!snap) {
       res.status(404).json({ error: `no ladder snapshot for league "${league}"` });
       return;
     }
 
-    const params = new URLSearchParams({ overview: snap.snapshotName });
-    if (className) params.set("class", className);
-    const searchUrl = `${NINJA_BASE}/poe2/api/builds/${snap.version}/search?${params}`;
-
+    const searchUrl = buildSearchUrl(snap, className);
     const searchRes = await politeFetch(searchUrl, { signal: controller.signal });
     if (!searchRes.ok) {
       if (isBusyStatus(searchRes.status)) return sendBusy(res, searchRes);
