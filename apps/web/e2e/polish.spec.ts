@@ -50,6 +50,7 @@ test.describe('small controls have a 24px tap area', () => {
 
   test('Atlas "Map" buttons', async ({ page }) => {
     await page.goto('atlas/')
+    if ((page.viewportSize()?.width ?? 1280) <= 720) await page.getByRole('button', { name: 'List', exact: true }).click()
     expect(await tapsWithin24px(page.getByRole('button', { name: 'Show Trapped Subordinate on the Atlas tree' }))).toBe(true)
   })
 

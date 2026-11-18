@@ -1,7 +1,6 @@
 'use client'
 
 import { useEffect, useRef, useSyncExternalStore, type ReactNode } from 'react'
-import { Button } from '@/components/shared/controls'
 import { useAtlasMap } from './AtlasMapContext'
 
 const PHONE = '(max-width: 720px)'
@@ -15,14 +14,14 @@ const isPhone = () => window.matchMedia(PHONE).matches
 const FOCUSABLE = 'button:not([disabled]), input:not([disabled]), [href], [tabindex]:not([tabindex="-1"])'
 
 /**
- * The map's frame. From 721px up it is the plain card it always was (inline, or the sticky right column). On phones
- * (styles/atlas.css) it is a full-screen dialog that a row's Map button opens: focus stays inside while it is open,
- * Escape and Close shut it, and so does the back gesture (opening pushes one history entry).
+ * The guide list's frame. From 721px up it is the "list" area of the stage (inline, or the left drawer in full
+ * screen). On phones (styles/atlas.css) it is a bottom sheet that the peek bar's List button opens: focus stays inside
+ * while it is open, Escape and Close shut it, and so does the back gesture (opening pushes one history entry).
  */
 export function AtlasMapSheet({ children }: { children: ReactNode }) {
-  const { open, setOpen } = useAtlasMap()
+  const { listOpen, setListOpen } = useAtlasMap()
   const phone = useSyncExternalStore(subscribePhone, isPhone, () => false)
-  const modal = open && phone
+  const modal = listOpen && phone
   const closeRef = useRef<HTMLButtonElement>(null)
   const sheetRef = useRef<HTMLElement>(null)
 
@@ -32,10 +31,10 @@ export function AtlasMapSheet({ children }: { children: ReactNode }) {
     closeRef.current?.focus({ preventScroll: true })
     // One history entry per opening, so back closes the sheet instead of leaving /atlas.
     let pushed = true
-    window.history.pushState({ atlasMap: true }, '')
+    window.history.pushState({ atlasList: true }, '')
     const onPop = () => {
       pushed = false
-      setOpen(false)
+      setListOpen(false)
     }
     window.addEventListener('popstate', onPop)
     return () => {
@@ -43,13 +42,13 @@ export function AtlasMapSheet({ children }: { children: ReactNode }) {
       if (pushed) window.history.back()
       opener?.focus({ preventScroll: true })
     }
-  }, [modal, setOpen])
+  }, [modal, setListOpen])
 
   const onKeyDown = (e: React.KeyboardEvent<HTMLElement>) => {
     if (!modal) return
     if (e.key === 'Escape') {
       e.stopPropagation()
-      setOpen(false)
+      setListOpen(false)
       return
     }
     if (e.key !== 'Tab') return
@@ -68,31 +67,21 @@ export function AtlasMapSheet({ children }: { children: ReactNode }) {
 
   return (
     <>
-      <div className="atlas-backdrop" data-open={open || undefined} onClick={() => setOpen(false)} aria-hidden="true" />
+      <div className="atlas-backdrop" data-open={listOpen || undefined} onClick={() => setListOpen(false)} aria-hidden="true" />
       <section
         ref={sheetRef}
         data-surface="data"
-        data-open={open || undefined}
-        className="atlas-sheet card p-3 sm:p-4 lg:sticky lg:top-18 lg:col-start-2 lg:row-start-1"
-        aria-label="Atlas tree map"
+        data-open={listOpen || undefined}
+        className="atlas-list"
+        aria-label="Atlas guide list"
         {...(modal ? { role: 'dialog', 'aria-modal': true } : {})}
         onKeyDown={onKeyDown}
       >
-        <button ref={closeRef} type="button" className="atlas-sheet-close btn btn-secondary" onClick={() => setOpen(false)}>
-          Close map
+        <button ref={closeRef} type="button" className="atlas-sheet-close btn btn-secondary" onClick={() => setListOpen(false)}>
+          Close list
         </button>
         {children}
       </section>
     </>
-  )
-}
-
-/** Phones only (styles/atlas.css): opens the map sheet without picking a node. */
-export function OpenMapButton() {
-  const { setOpen } = useAtlasMap()
-  return (
-    <Button size="sm" className="atlas-open-map" onClick={() => setOpen(true)}>
-      Open map
-    </Button>
   )
 }

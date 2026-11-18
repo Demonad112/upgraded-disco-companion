@@ -86,3 +86,10 @@ export function visibleBounds(vp: Viewport, width: number, height: number, pad =
   const halfH = (height / 2 + pad) / vp.scale
   return { minX: vp.cx - halfW, maxX: vp.cx + halfW, minY: vp.cy - halfH, maxY: vp.cy + halfH }
 }
+
+/** Keep the viewport centre inside an extent, so a drag can't lose the tree off screen. */
+export function clampToExtent(vp: Viewport, extent: Extent): Viewport {
+  const cx = Math.min(extent.maxX, Math.max(extent.minX, vp.cx))
+  const cy = Math.min(extent.maxY, Math.max(extent.minY, vp.cy))
+  return cx === vp.cx && cy === vp.cy ? vp : { ...vp, cx, cy }
+}

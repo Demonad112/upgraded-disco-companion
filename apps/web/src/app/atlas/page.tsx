@@ -1,17 +1,14 @@
 import type { Metadata } from "next";
 import { pageMeta } from '@/lib/pageMeta'
-import { AtlasSequenceTracker } from "@/components/atlas/AtlasSequenceTracker";
 import { WarningPanel } from "@/components/shared/WarningPanel";
 import { BiomePanel } from "@/components/atlas/BiomePanel";
 import { RegexPanel } from "@/components/atlas/RegexPanel";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { AtlasMapProvider } from "@/components/atlas/AtlasMapContext";
-import { AtlasTreeMap } from "@/components/atlas/AtlasTreeMap";
-import { AtlasMapSheet, OpenMapButton } from "@/components/atlas/AtlasMapSheet";
-import { AtlasGuideTabs } from "@/components/atlas/AtlasGuideTabs";
+import { AtlasStage } from "@/components/atlas/AtlasStage";
 import { commonMistakes } from "@/data/commonMistakes";
 
-export const metadata: Metadata = pageMeta('Atlas Tree Planner', 'Which Atlas nodes to take, in order. Tap Map to find one on the tree.')
+export const metadata: Metadata = pageMeta('Atlas Tree Planner', 'Which Atlas nodes to take, in order, with the route drawn on the tree.')
 
 export default function AtlasPage() {
   return (
@@ -22,31 +19,18 @@ export default function AtlasPage() {
           eyebrow="Atlas passive tree"
           title="Atlas Tree"
           accent="Planner"
-          description="Which Atlas nodes to take, in order. Tap Map to find one on the tree."
+          description="Which Atlas nodes to take, in order. Tick one and the map moves to the next."
         />
 
-        <OpenMapButton />
-
-        <AtlasSequenceTracker />
-
-        {/* Phones keep map-then-guide. From lg the guide takes the left column
-            and the map sticks in the right one, so "Map" on any row frames the
-            node without scrolling back up to find the tree. */}
-        <div className="flex flex-col gap-5 lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)] lg:items-start">
-          <AtlasMapSheet>
-            <AtlasTreeMap />
-          </AtlasMapSheet>
-
-          <div className="flex min-w-0 flex-col gap-5 lg:col-start-1 lg:row-start-1">
-            <WarningPanel mistakes={commonMistakes} stage="atlas" title="Atlas mistakes" />
-
-            <AtlasGuideTabs />
-
-            <BiomePanel />
-
-            <RegexPanel />
-          </div>
-        </div>
+        <AtlasStage
+          aside={
+            <>
+              <WarningPanel mistakes={commonMistakes} stage="atlas" title="Atlas mistakes" />
+              <BiomePanel />
+              <RegexPanel />
+            </>
+          }
+        />
       </div>
     </AtlasMapProvider>
   );

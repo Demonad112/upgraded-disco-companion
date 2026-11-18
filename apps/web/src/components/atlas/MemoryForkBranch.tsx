@@ -4,17 +4,19 @@ import type { MemoryFork } from "@/lib/types";
 import { ProOnly } from "@/components/shared/ProToggle";
 import { SourceFlag } from "@/components/shared/SourceFlag";
 import { useAtlasProgress } from "@/hooks/useAtlasProgress";
-import { ShowOnTreeButton } from "./AtlasMapContext";
+import { ShowOnTreeButton, useAtlasMap } from "./AtlasMapContext";
 
 export function MemoryForkBranch({ fork }: { fork: MemoryFork }) {
   const { isForkAllocated, toggleFork } = useAtlasProgress();
   const allocated = isForkAllocated(fork.id);
+  const { current } = useAtlasMap();
 
   return (
     <div
       id={fork.id}
       data-reveal="branch"
       data-surface="data"
+      data-current={current?.id === fork.id || undefined}
       className={`card relative scroll-mt-40 flex-1 !p-3.5 transition-colors ${
         allocated ? "!border-good/40" : "hover:border-line-strong"
       }`}

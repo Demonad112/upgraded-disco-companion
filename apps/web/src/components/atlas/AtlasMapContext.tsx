@@ -1,13 +1,19 @@
 'use client'
 
 /**
- * Lets any row on the Atlas page ask the map to show a node: "Show on tree"
- * buttons call `focus(names)`, the map frames and pulses them.
+ * State shared by the Atlas command bar, the map, the guide list and every row's "Map" button.
+ *
+ * One current step: the selected step (Prev / Next / a map tooltip), else the first one not ticked yet. Any tick
+ * clears the selection, so the current step becomes the next unticked one and the map pans to it.
  */
 
-import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from 'react'
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
+import { NODE_KIND } from '@poe2/core'
 import { Button } from '@/components/shared/controls'
-import type { AtlasTab } from '@/lib/atlasRoute'
+import { useAtlasProgress } from '@/hooks/useAtlasProgress'
+import { routeLegs, type RouteLeg } from '@/lib/atlasLegs'
+import { routeSteps, type AtlasTab, type RouteStep } from '@/lib/atlasRoute'
+import { useAtlasTree, type AtlasTree } from '@/lib/useAtlasTree'
 
 export type { AtlasTab }
 
@@ -19,19 +25,47 @@ interface FocusRequest {
   nonce: number
 }
 
+type AtlasTreeState = ReturnType<typeof useAtlasTree>
+
+/** A route step with its tree node ids resolved. */
+export interface RouteItem extends RouteStep {
+  nodes: number[]
+}
+
 interface AtlasMapContextValue {
-  /** Phones: the map is a sheet that opens from a row's Map button. Ignored from 721px up, where the map is on the page. */
-  open: boolean
-  setOpen: (open: boolean) => void
+  tab: AtlasTab
+  setTab: (tab: AtlasTab) => void
+  /** The loaded tree, shared so the bar and the map read one copy. */
+  atlasState: AtlasTreeState
+  /** The open tab's numbered steps, with node ids. Empty on Mechanics and Traps. */
+  route: RouteItem[]
+  /** Legs for `route`, in step order (empty until the tree loads). */
+  legs: RouteLeg[]
+  isTaken: (step: RouteStep) => boolean
+  current: RouteItem | null
+  /** Index of `current` in `route`, -1 when there is none. */
+  currentIdx: number
+  takenCount: number
+  selectStep: (id: string | null) => void
+  prev: () => void
+  next: () => void
+  /** Toggles the current step. */
+  tick: () => void
   request: FocusRequest | null
   focus: (names: string[], label?: string) => void
   clear: () => void
-  /** Set by AtlasGuideTabs. */
-  tab: AtlasTab
-  setTab: (tab: AtlasTab) => void
+  /** Full screen (desktop): the stage covers the viewport. */
+  full: boolean
+  setFull: (full: boolean) => void
+  /** Full screen: the list drawer is shown. */
+  drawer: boolean
+  setDrawer: (open: boolean) => void
+  /** Phones: the list is a sheet opened from the bottom bar. */
+  listOpen: boolean
+  setListOpen: (open: boolean) => void
 }
 
-/** True when at least 60% of the element's height is on screen (the sticky desktop map). */
+/** True when at least 60% of the element's height is on screen. */
 function mostlyInView(el: HTMLElement): boolean {
   const r = el.getBoundingClientRect()
   const visible = Math.min(r.bottom, window.innerHeight) - Math.max(r.top, 0)
@@ -40,20 +74,96 @@ function mostlyInView(el: HTMLElement): boolean {
 
 const Ctx = createContext<AtlasMapContextValue | null>(null)
 
+function idsFor(atlas: AtlasTree, names: string[]): number[] {
+  const out = new Set<number>()
+  for (const name of names) for (const id of atlas.byName.get(name) ?? []) out.add(id)
+  return [...out]
+}
+
 export function AtlasMapProvider({ children }: { children: ReactNode }) {
+  const atlasState = useAtlasTree()
+  const { isClusterAllocated, isForkAllocated, toggleCluster, toggleFork, allocatedCount } = useAtlasProgress()
   const [request, setRequest] = useState<FocusRequest | null>(null)
-  const [open, setOpen] = useState(false)
-  const [tab, setTab] = useState<AtlasTab>('path')
+  const [tab, setTabRaw] = useState<AtlasTab>('path')
+  const [selected, setSelected] = useState<string | null>(null)
+  const [full, setFull] = useState(false)
+  const [drawer, setDrawer] = useState(true)
+  const [listOpen, setListOpen] = useState(false)
+
+  const setTab = useCallback((next: AtlasTab) => {
+    setTabRaw(next)
+    setSelected(null)
+  }, [])
+
+  const atlas = atlasState.status === 'ready' ? atlasState.atlas : null
+  const route = useMemo<RouteItem[]>(
+    () => routeSteps(tab).map((s) => ({ ...s, nodes: atlas ? idsFor(atlas, s.treeNodes) : [] })),
+    [atlas, tab],
+  )
+  const isTaken = useCallback(
+    (s: RouteStep) => (s.kind === 'cluster' ? isClusterAllocated(s.id) : isForkAllocated(s.id)),
+    [isClusterAllocated, isForkAllocated],
+  )
+
+  // Any tick (or untick) drops the selection: current falls back to the first step still to take.
+  const lastCount = useRef(allocatedCount)
+  useEffect(() => {
+    if (lastCount.current === allocatedCount) return
+    lastCount.current = allocatedCount
+    setSelected(null)
+  }, [allocatedCount])
+
+  const selectedIdx = selected ? route.findIndex((r) => r.id === selected) : -1
+  const firstOpen = route.findIndex((r) => !isTaken(r))
+  const currentIdx = route.length === 0 ? -1 : selectedIdx >= 0 ? selectedIdx : firstOpen >= 0 ? firstOpen : route.length - 1
+  const current = currentIdx >= 0 ? route[currentIdx]! : null
+  const takenCount = route.filter(isTaken).length
+
+  const legs = useMemo<RouteLeg[]>(() => {
+    if (!atlas) return []
+    let start: number | undefined
+    for (const n of atlas.tree.allNodes()) {
+      if (n.kind === NODE_KIND.start) {
+        start = n.id
+        break
+      }
+    }
+    start ??= route.find((r) => r.nodes.length)?.nodes[0]
+    return start === undefined ? [] : routeLegs(atlas.tree, start, route)
+  }, [atlas, route])
+
+  const selectStep = setSelected
+  const prev = useCallback(() => {
+    const r = route[currentIdx - 1]
+    if (r) setSelected(r.id)
+  }, [route, currentIdx])
+  const next = useCallback(() => {
+    const r = route[currentIdx + 1]
+    if (r) setSelected(r.id)
+  }, [route, currentIdx])
+  const tick = useCallback(() => {
+    if (!current) return
+    if (current.kind === 'cluster') toggleCluster(current.id)
+    else toggleFork(current.id)
+  }, [current, toggleCluster, toggleFork])
+
   const focus = useCallback((names: string[], label?: string) => {
     setRequest({ names, label: label ?? names.join(', '), nonce: Date.now() })
-    setOpen(true)
-    // On a phone the sheet is the map: nothing to scroll to.
-    if (window.matchMedia('(max-width: 720px)').matches) return
+    setListOpen(false)
+    // The map sits above the list, so a row's Map button scrolls it back under the sticky bar when it is mostly off screen.
     const map = document.getElementById('atlas-map')
-    if (map && !mostlyInView(map)) map.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    const stage = document.getElementById('atlas-stage')
+    if (stage && map && !mostlyInView(map)) stage.scrollIntoView({ behavior: 'smooth', block: 'start' })
   }, [])
   const clear = useCallback(() => setRequest(null), [])
-  const value = useMemo(() => ({ open, setOpen, request, focus, clear, tab, setTab }), [open, request, focus, clear, tab])
+
+  const value = useMemo<AtlasMapContextValue>(
+    () => ({
+      tab, setTab, atlasState, route, legs, isTaken, current, currentIdx, takenCount, selectStep, prev, next, tick,
+      request, focus, clear, full, setFull, drawer, setDrawer, listOpen, setListOpen,
+    }),
+    [tab, setTab, atlasState, route, legs, isTaken, current, currentIdx, takenCount, selectStep, prev, next, tick, request, focus, clear, full, drawer, listOpen],
+  )
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>
 }
 
@@ -64,7 +174,6 @@ export function useAtlasMap(): AtlasMapContextValue {
 }
 
 /** The pin button every guide row carries when it names real tree nodes. */
-/** `ariaLabel` overrides the accessible name where the same node has a second Map button (the Up next card). */
 export function ShowOnTreeButton({ names, label, ariaLabel }: { names?: string[]; label: string; ariaLabel?: string }) {
   const { focus } = useAtlasMap()
   if (!names?.length) return null

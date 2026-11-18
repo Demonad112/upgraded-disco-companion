@@ -23,12 +23,26 @@ export interface AtlasPalette {
   guide: string
   trap: string
   allocated: string
+  /** Route leg colours (--leg-1..6), cycled by leg number. */
+  legs: string[]
   surface: string
   text: string
   focus: string
   /** Resolved font-family (canvas can't read CSS variables). */
   font: string
 }
+
+export interface RenderLeg {
+  /** Attachment node first, target last. */
+  path: number[]
+  /** 1-based leg number. */
+  leg: number
+  /** The step's target node (where its number badge sits). */
+  target: number
+  state: 'done' | 'current' | 'next'
+}
+
+const legColour = (p: AtlasPalette, leg: number) => p.legs[(leg - 1) % p.legs.length] ?? p.guide
 
 interface AtlasRenderOptions {
   tree: PassiveTree
@@ -43,6 +57,8 @@ interface AtlasRenderOptions {
   hovered: number | null
   /** Order numbers by node id for the open guide tab, drawn as badges. */
   numbers?: Map<number, number>
+  /** Route legs, drawn over the base edges: ticked solid, upcoming dashed, current brighter. */
+  legs?: RenderLeg[]
   /** 0..1 phase of the focus pulse; null when not animating. */
   pulse: number | null
 }
@@ -97,6 +113,33 @@ export function renderAtlas(ctx: CanvasRenderingContext2D, o: AtlasRenderOptions
     ctx.lineTo(pc.x, pc.y)
   }
   ctx.stroke()
+
+  // --- route legs -----------------------------------------------------------
+  if (o.legs?.length) {
+    const w = Math.max(2, 2.6 * zoomFactor(vp.scale) * 0.7)
+    for (const state of ['next', 'done', 'current'] as const) {
+      for (const l of o.legs) {
+        if (l.state !== state) continue
+        ctx.strokeStyle = legColour(p, l.leg)
+        ctx.lineWidth = state === 'current' ? w * 1.6 : w
+        ctx.globalAlpha = state === 'current' ? 1 : state === 'done' ? 0.9 : 0.6
+        ctx.setLineDash(state === 'next' ? [w * 2, w * 1.6] : [])
+        ctx.beginPath()
+        for (let i = 1; i < l.path.length; i++) {
+          const na = tree.node(l.path[i - 1]!)
+          const nc = tree.node(l.path[i]!)
+          if (!na || !nc || (!inView(na) && !inView(nc))) continue
+          const pa = at(na)
+          const pc = at(nc)
+          ctx.moveTo(pa.x, pa.y)
+          ctx.lineTo(pc.x, pc.y)
+        }
+        ctx.stroke()
+      }
+    }
+    ctx.setLineDash([])
+    ctx.globalAlpha = 1
+  }
 
   // --- nodes ----------------------------------------------------------------
   for (const node of tree.allNodes()) {
@@ -161,8 +204,10 @@ export function renderAtlas(ctx: CanvasRenderingContext2D, o: AtlasRenderOptions
     ctx.font = `700 10px ${p.font}`
     ctx.textAlign = 'center'
     ctx.textBaseline = 'middle'
+    const badgeLeg = new Map((o.legs ?? []).map((l) => [l.target, l.leg]))
     for (const r of placeBadges(inputs, width, height)) {
-      ctx.fillStyle = p.guide
+      const leg = badgeLeg.get(r.id)
+      ctx.fillStyle = leg ? legColour(p, leg) : p.guide
       ctx.fillRect(r.x, r.y, r.w, r.h)
       ctx.fillStyle = p.surface
       ctx.fillText(r.label, r.x + r.w / 2, r.y + r.h / 2 + 0.5)
