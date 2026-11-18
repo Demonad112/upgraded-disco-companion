@@ -1,8 +1,8 @@
 'use client'
 
-/** Supporting cards: spare to trade (Gear), resist glance (Defence), tree-data note (Advanced). */
+/** Supporting cards: spare to trade (Gear), resist glance (Defence). */
 
-import { resolveAllocation, spareResistances, type Analysis, type PassiveTree } from '@poe2/core'
+import { spareResistances, type Analysis } from '@poe2/core'
 import { DefenceChecklist } from './DefenceChecklist'
 import { Diamond, cap } from './dmg'
 import { Empty, Tag, fmt } from '../ui'
@@ -90,25 +90,5 @@ export function DefencesGlance({ analysis }: { analysis: Analysis }) {
       </div>
       <DefenceChecklist analysis={analysis} />
     </section>
-  )
-}
-
-/** Shown only when allocated nodes are missing from the tool's tree data. */
-export function TreeDataNote({ analysis, tree }: { analysis: Analysis; tree: PassiveTree | null }) {
-  if (!tree) return null
-  const missing = resolveAllocation(tree, analysis.passives).unresolvedIds
-  if (!missing.length) return null
-  return (
-    <aside data-surface="data" className="card border-warn/50" aria-label="Tree data is behind">
-      <h3 className="eyebrow text-warn">Tree data is behind</h3>
-      <p className="mt-2 text-sm leading-relaxed text-ink-dim">
-        {missing.length} passive node{missing.length === 1 ? '' : 's'} on this character {missing.length === 1 ? "isn't" : "aren't"} in
-        the tool&rsquo;s tree data yet, so {missing.length === 1 ? 'its effect isn' : 'their effects aren'}&rsquo;t counted. Keystone and
-        notable findings may be missing something.
-      </p>
-      <p className="tabular mt-2 font-mono text-[length:var(--fs-11)] break-words text-ink-mute">
-        Node ids: {missing.join(', ')} · tree data: {tree.treeName}
-      </p>
-    </aside>
   )
 }
