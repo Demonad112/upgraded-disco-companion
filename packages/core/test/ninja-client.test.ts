@@ -302,16 +302,38 @@ describe('ETag revalidation of the character model (direct mode)', () => {
     expect((err as Error).message).not.toContain('proxy.example')
   })
 
-  it("passes on the proxy's own explanation of a 504", async () => {
-    const fetchImpl: FetchLike = async () => ({
-      ok: false,
-      status: 504,
-      text: async () => '',
-      json: async () => ({ error: 'poe.ninja took too long to respond.' }),
+  // docs/COPY.md: at most two sentences, action first. The proxy's explanation is the message; the status code is
+  // only the fallback when the proxy gives none.
+  const failing = (status: number, json: () => Promise<unknown>): FetchLike => async () => ({
+    ok: false,
+    status,
+    text: async () => '',
+    json,
+  })
+
+  it("passes on the proxy's own explanation of a 504, without a status prefix", async () => {
+    const client = new NinjaClient({
+      fetch: failing(504, async () => ({ error: 'poe.ninja took too long to respond.' })),
+      proxyBaseUrl: 'https://proxy.example',
     })
-    const client = new NinjaClient({ fetch: fetchImpl, proxyBaseUrl: 'https://proxy.example' })
-    await expect(client.fetchCharacter('A-1', 'standard', 'B')).rejects.toThrow(
-      'The import service returned 504. poe.ninja took too long to respond.',
-    )
+    await expect(client.fetchCharacter('A-1', 'standard', 'B')).rejects.toThrow(/^poe\.ninja took too long to respond\.$/)
+  })
+
+  it("shows the proxy's 403 explanation as is: two sentences, the paste action last", async () => {
+    const blocked = 'poe.ninja now blocks automated imports. Paste a Path of Building code or the character JSON instead.'
+    const client = new NinjaClient({ fetch: failing(403, async () => ({ error: blocked })), proxyBaseUrl: 'https://proxy.example' })
+    const err = await client.fetchCharacter('A-1', 'standard', 'B').catch((e: unknown) => e)
+    expect(err).toMatchObject({ reason: 'bad-response' })
+    expect((err as Error).message).toBe(blocked)
+  })
+
+  it('falls back to the status code when the proxy gives no explanation', async () => {
+    const client = new NinjaClient({
+      fetch: failing(500, async () => {
+        throw new Error('not JSON')
+      }),
+      proxyBaseUrl: 'https://proxy.example',
+    })
+    await expect(client.fetchCharacter('A-1', 'standard', 'B')).rejects.toThrow(/^The import service returned 500\.$/)
   })
 })

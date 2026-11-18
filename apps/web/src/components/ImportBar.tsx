@@ -149,8 +149,10 @@ export async function importProfile(
     return { ok: true, kind: 'ninja', data, url: target }
   } catch (err) {
     opts.onBusy?.(null)
+    // `busy` is set by the last response's status (429/503), so this holds whatever text the proxy sent with it.
+    const stillBusy = (busy as { retryAfter: number | null } | null) !== null
     const message =
-      err instanceof NinjaError && /returned (429|503)\b/.test(err.message)
+      err instanceof NinjaError && stillBusy
         ? 'poe.ninja is still busy after three retries. Try again in a minute, or paste the character data instead.'
         : err instanceof NinjaError
           ? err.message

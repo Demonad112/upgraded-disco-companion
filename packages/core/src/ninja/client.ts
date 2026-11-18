@@ -262,11 +262,12 @@ export class NinjaClient {
         throw new NinjaError('not-found', detail)
       }
       if (!res.ok) {
-        // The proxy explains its own 502/504 ("poe.ninja took too long"); say so.
+        // The proxy explains its own failures ("poe.ninja took too long"); show that alone (docs/COPY.md: two
+        // sentences, action first). The status code is only the fallback when it gives no explanation.
         let detail = `The import service returned ${res.status}.`
         try {
           const body = (await res.json()) as { error?: unknown }
-          if (typeof body?.error === 'string') detail = `${detail} ${body.error}`
+          if (typeof body?.error === 'string' && body.error.trim()) detail = body.error
         } catch {
           /* non-JSON body; keep the default */
         }

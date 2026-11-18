@@ -128,6 +128,13 @@ test.describe('atlas map panel', () => {
       expect(await page.evaluate(() => !!document.activeElement?.closest('#atlas-stage'))).toBe(true)
     }
     expect(await page.evaluate(() => [...document.querySelectorAll('header, footer, h1')].every((el) => el.closest('[inert]') || el.closest('#atlas-stage')))).toBe(true)
+    // Nodes that mount after entry (the wraith loads on idle, toasts, portals) are kept out too.
+    await page.evaluate(() => {
+      const late = document.createElement('button')
+      late.id = 'late-node'
+      document.body.append(late)
+    })
+    await expect(page.locator('#late-node')).toHaveAttribute('inert', '')
     await page.keyboard.press('Escape')
     await expect(page.locator('#atlas-stage[data-full]')).toHaveCount(0)
     await expect(page.getByRole('button', { name: 'Full screen', exact: true })).toBeFocused()
