@@ -32,6 +32,7 @@ Status is `done`, `answered` or `parked`. A parked row comes back only if the ow
 | ID | Action | Origin | Status |
 |---|---|---|---|
 | R41 | Deploy ninja-proxy: `cd services/ninja-proxy && vercel --prod` (CORS allowlist T20; cache/coalesce/503 L1) | L1-1 / A8 | done: proxy deployed 2026-11-06, root returns 200 |
+| AR2–AR8 | Atlas redesign: one current step, sticky command bar, colour-coded route legs, Locate/Follow/FIT, full screen, phone map + list sheet | AR1 | done 2026-11-18: see HISTORY (AR). |
 | R48 | Delete logs of failed guard runs (41174630514 and two on #58); they still hold the session URL | SB4-1 | done: logs of all 26 failed guard runs deleted 2026-11-06 |
 
 ## 4. Code and data follow-ups (class C)

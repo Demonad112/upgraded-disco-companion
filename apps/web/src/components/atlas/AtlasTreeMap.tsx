@@ -15,14 +15,12 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { TreeNode } from '@poe2/core'
 import { atlasClusters, memoryForks } from '@/data/atlasTree'
 import { atlasTrapNodes } from '@/data/trapNodes'
-import { nextStep, routeSteps, type RouteStep } from '@/lib/atlasRoute'
 import { useAtlasProgress } from '@/hooks/useAtlasProgress'
-import { useAtlasTree, type AtlasTree } from '@/lib/useAtlasTree'
-import { extentOf, fitExtent, treeToScreen, type Viewport } from '../tree/geometry'
+import type { AtlasTree } from '@/lib/useAtlasTree'
+import { clampToExtent, extentOf, fitExtent, treeToScreen, type Viewport } from '../tree/geometry'
 import { sizeCanvas, usePanZoom } from '../tree/usePanZoom'
 import { hitTestAtlas, renderAtlas, type AtlasPalette } from './atlasRender'
-import { useAtlasMap } from './AtlasMapContext'
-import { usePrefs } from '@/hooks/usePrefs'
+import { useAtlasMap, type RouteItem } from './AtlasMapContext'
 import { Button, Input } from '@/components/shared/controls'
 
 function readPalette(el: HTMLElement): AtlasPalette {
@@ -35,6 +33,7 @@ function readPalette(el: HTMLElement): AtlasPalette {
     guide: v('--accent', 'currentColor'),
     trap: v('--danger', 'currentColor'),
     allocated: v('--good', 'currentColor'),
+    legs: [1, 2, 3, 4, 5, 6].map((i) => v(`--leg-${i}`, 'currentColor')),
     surface: v('--surface-sunken', 'currentColor'),
     text: v('--ink', 'currentColor'),
     focus: v('--accent', 'currentColor'),
@@ -49,11 +48,6 @@ function idsFor(atlas: AtlasTree, names: Iterable<string>): Set<number> {
   return out
 }
 
-/** A route step with its tree node ids resolved. */
-interface RouteItem extends RouteStep {
-  nodes: number[]
-}
-
 const NONE: Set<number> = new Set()
 
 const TAB_NOUN: Record<string, string> = { path: 'Path', forks: 'Fork', late: 'Late game' }
@@ -63,9 +57,9 @@ const subtreeLabel = (t: string | undefined) =>
   !t ? null : SUBTREE_LABEL[t] ?? t.replace(/^Biome/, 'Biome: ').replace(/([a-z])([A-Z])/g, '$1 $2')
 
 export function AtlasTreeMap() {
-  const state = useAtlasTree()
+  const { atlasState: state } = useAtlasMap()
   if (state.status === 'loading') {
-    return <div className="skeleton h-[22rem] sm:h-[29rem] lg:h-[calc(100dvh-12rem)] lg:min-h-[24rem]" role="status" aria-label="Loading the Atlas tree" />
+    return <div className="skeleton atlas-map-skeleton" role="status" aria-label="Loading the Atlas tree" />
   }
   if (state.status === 'error') {
     return (
@@ -79,19 +73,26 @@ export function AtlasTreeMap() {
 
 function AtlasMapCanvas({ atlas }: { atlas: AtlasTree }) {
   const { tree } = atlas
-  const { request, focus, clear, tab } = useAtlasMap()
+  const { request, focus, clear, tab, route, legs, current, isTaken, selectStep } = useAtlasMap()
   const { isClusterAllocated, isForkAllocated, toggleCluster, toggleFork } = useAtlasProgress()
-  const { proDetail } = usePrefs()
 
   const wrapRef = useRef<HTMLDivElement>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const [size, setSize] = useState({ width: 0, height: 0 })
-  const [viewport, setViewport] = useState<Viewport | null>(null)
+  const [viewport, setViewportRaw] = useState<Viewport | null>(null)
+  // Panning can't lose the tree: the centre stays inside the tree's extent.
+  const setViewport = useCallback<React.Dispatch<React.SetStateAction<Viewport | null>>>(
+    (u) => setViewportRaw((prev) => {
+      const nextVp = typeof u === 'function' ? u(prev) : u
+      return nextVp ? clampToExtent(nextVp, tree.extent) : nextVp
+    }),
+    [tree],
+  )
   const [hovered, setHovered] = useState<TreeNode | null>(null)
   const tipRef = useRef<HTMLDivElement>(null)
   const [query, setQuery] = useState('')
-  const [step, setStep] = useState(0)
   const [show, setShow] = useState({ route: true, traps: true, ticked: true })
+  const [follow, setFollow] = useState(false)
 
   // --- what to mark ---------------------------------------------------------
   const guide = useMemo(
@@ -100,10 +101,6 @@ function AtlasMapCanvas({ atlas }: { atlas: AtlasTree }) {
   )
   // Only the open tab is numbered: Path = early-progression clusters by order, Late game = general clusters,
   // Memory forks = file order. Mechanics and Traps have no sequence, so no numbers.
-  const route = useMemo<RouteItem[]>(
-    () => routeSteps(tab).map((step) => ({ ...step, nodes: [...idsFor(atlas, step.treeNodes)] })),
-    [atlas, tab],
-  )
   const numbers = useMemo(() => {
     const m = new globalThis.Map<number, number>()
     for (const r of route) for (const id of r.nodes) if (!m.has(id)) m.set(id, r.num)
@@ -123,10 +120,7 @@ function AtlasMapCanvas({ atlas }: { atlas: AtlasTree }) {
       ]),
     [atlas, isClusterAllocated, isForkAllocated],
   )
-  const taken = (r: RouteStep) => (r.kind === 'cluster' ? isClusterAllocated(r.id) : isForkAllocated(r.id))
-  // The step the stepper is on: its nodes are ringed and named. A Map button's request takes over while it lasts.
-  const current = route[Math.min(step, route.length - 1)]
-  const nextIdx = nextStep(route, taken) ? route.findIndex((r) => !taken(r)) : -1
+  // The current step's nodes are ringed and named. A Map button's request takes over while it lasts.
   const focused = useMemo(
     () => (request ? idsFor(atlas, request.names) : current ? new Set(current.nodes) : new Set<number>()),
     [atlas, request, current],
@@ -146,7 +140,7 @@ function AtlasMapCanvas({ atlas }: { atlas: AtlasTree }) {
 
   const fitAll = useCallback(() => {
     if (size.width && size.height) setViewport(fitExtent(tree.extent, size.width, size.height, 0.06))
-  }, [tree, size.width, size.height])
+  }, [tree, size.width, size.height, setViewport])
 
   // The nodes the open tab is about: its sequence, the mechanic clusters, or the traps.
   const tabIds = useMemo(() => {
@@ -164,23 +158,24 @@ function AtlasMapCanvas({ atlas }: { atlas: AtlasTree }) {
     const extent = extentOf(points, 500)
     if (extent) setViewport(fitExtent(extent, size.width, size.height, 0.1))
     else fitAll()
-  }, [tabIds, tree, size.width, size.height, fitAll])
+  }, [tabIds, tree, size.width, size.height, fitAll, setViewport])
 
-  // Zoom to one step of the route; the stepper bar tracks it.
-  const frameStep = useCallback(
-    (i: number) => {
-      const it = route[i]
+  // Pan (keeping the zoom) to the centre of a step's nodes; with Follow on, zoom to them as well.
+  const goToStep = useCallback(
+    (it: RouteItem | null | undefined, zoom: boolean) => {
       if (!it || !size.width || !size.height) return
-      setStep(i)
       const points = it.nodes.map((id) => tree.node(id)).filter((n): n is TreeNode => !!n)
       const extent = extentOf(points, 700)
-      if (extent) setViewport(fitExtent(extent, size.width, size.height, 0.1))
+      if (!extent) return
+      if (zoom) setViewport(fitExtent(extent, size.width, size.height, 0.1))
+      else setViewport((vp) => (vp ? { ...vp, cx: (extent.minX + extent.maxX) / 2, cy: (extent.minY + extent.maxY) / 2 } : vp))
     },
-    [route, tree, size.width, size.height],
+    [tree, size.width, size.height, setViewport],
   )
 
-  // Open on the next node to take, or framed to the tab when there is no route; reframe when the tab changes., and reframe when the tab changes.
+  // A tab change reframes to the tab's nodes; after that the map only follows the current step.
   const framedTab = useRef<string | null>(null)
+  const lastStep = useRef<string | null>(null)
   useEffect(() => {
     if (!size.width || !size.height || framedTab.current === tab) return
     const first = framedTab.current === null
@@ -188,13 +183,22 @@ function AtlasMapCanvas({ atlas }: { atlas: AtlasTree }) {
     if (first && request) return // a Map button got here first; let it frame its node
     clear()
     setHovered(null)
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- framing waits on the size a ResizeObserver reports
-    if (nextIdx >= 0) frameStep(nextIdx)
-    else {
-      setStep(0)
-      fitRoute()
-    }
-  }, [tab, size.width, size.height, request, clear, fitRoute, frameStep, nextIdx])
+    fitRoute()
+    // Pan to the step on the next effect run (it keys on the step id below).
+    lastStep.current = null
+  }, [tab, size.width, size.height, request, clear, fitRoute])
+
+  // The current step changed (a tick, Prev / Next, a tab change): pan to it. Zoom only when Follow is on.
+  const currentKey = current ? `${tab}:${current.id}` : null
+  useEffect(() => {
+    if (!size.width || !size.height || !current || framedTab.current !== tab || lastStep.current === currentKey) return
+    lastStep.current = currentKey
+    if (request) return
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- panning waits on the size a ResizeObserver reports
+    goToStep(current, follow)
+    // `follow` toggling alone shouldn't move the map.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentKey, size.width, size.height, tab, request, goToStep])
 
   // The canvas paint, kept in a ref so the focus pulse can repaint without a render.
   const pulseRef = useRef<number | null>(null)
@@ -229,6 +233,22 @@ function AtlasMapCanvas({ atlas }: { atlas: AtlasTree }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [request?.nonce])
 
+  // Legs for the painter: each with its state (ticked, current, upcoming).
+  const legPaths = useMemo(() => {
+    const byId = new globalThis.Map(route.map((r) => [r.id, r]))
+    return legs.map((l) => {
+      const step = byId.get(l.stepId)
+      return {
+        path: l.path,
+        leg: l.leg,
+        target: l.path[l.path.length - 1]!,
+        state: step && isTaken(step) ? ('done' as const) : step && step.id === current?.id ? ('current' as const) : ('next' as const),
+      }
+    })
+  }, [legs, route, isTaken, current])
+
+  const legChips = useMemo(() => [...new Set(legs.map((l) => l.leg))], [legs])
+
   // --- painting -------------------------------------------------------------
   // CSS colours change only with the size (breakpoint) or a reload; reading them
   // on every hover or pan step was a getComputedStyle per frame.
@@ -250,17 +270,18 @@ function AtlasMapCanvas({ atlas }: { atlas: AtlasTree }) {
         width: size.width,
         height: size.height,
         palette: paletteRef.current.palette,
-        guide: show.route ? guide : NONE,
+        guide,
         trap: show.traps ? trap : NONE,
         allocated: show.ticked ? allocated : NONE,
         focused,
         hovered: hovered?.id ?? null,
-        ...(show.route ? { numbers } : {}),
+        numbers,
+        legs: show.route ? legPaths : [],
         pulse: pulseRef.current,
       })
     }
     paintRef.current()
-  }, [tree, viewport, size, guide, trap, allocated, focused, hovered, numbers, show])
+  }, [tree, viewport, size, guide, trap, allocated, focused, hovered, numbers, show, legPaths])
 
   // --- interaction ----------------------------------------------------------
   const pick = (sx: number, sy: number) => {
@@ -269,27 +290,16 @@ function AtlasMapCanvas({ atlas }: { atlas: AtlasTree }) {
   }
   const { onPointerDown, onPointerMove, onPointerUp, zoomBy } = usePanZoom(canvasRef, size, setViewport, pick)
 
-  const showRoute = () => {
-    clear()
-    setHovered(null)
-    fitRoute()
-  }
+  // FIT frames the whole tree; Locate pans to the current step and keeps the zoom.
   const showWhole = () => {
     clear()
     setHovered(null)
     fitAll()
   }
-
-  const tickStep = () => {
-    if (!current) return
-    const done = taken(current)
-    if (current.kind === 'cluster') toggleCluster(current.id)
-    else toggleFork(current.id)
-    if (done) return
-    // Ticked: move on to the next step still to take.
-    const i = route.findIndex((r, j) => j !== route.indexOf(current) && j > route.indexOf(current) && !taken(r))
-    const any = i >= 0 ? i : route.findIndex((r) => r !== current && !taken(r))
-    if (any >= 0) frameStep(any)
+  const locate = () => {
+    clear()
+    setHovered(null)
+    goToStep(current, false)
   }
 
   // Tooltip actions, for nodes on the open tab's route.
@@ -299,9 +309,9 @@ function AtlasMapCanvas({ atlas }: { atlas: AtlasTree }) {
     if (!item) return
     const target = route[(route.indexOf(item) + 1) % route.length]
     const node = target?.nodes.map((id) => tree.node(id)).find((n): n is TreeNode => !!n)
-    if (!node) return
+    if (!target || !node) return
     clear()
-    setViewport((vp) => (vp ? { ...vp, cx: node.x, cy: node.y } : vp)) // a jump, never an animated pan
+    selectStep(target.id) // the current step moves, and the map pans to it
     setHovered(node)
   }
   const tipAt = hovered && viewport ? treeToScreen(hovered.x, hovered.y, viewport, size.width, size.height) : null
@@ -326,9 +336,11 @@ function AtlasMapCanvas({ atlas }: { atlas: AtlasTree }) {
 
   const onMapKey = (e: React.KeyboardEvent<HTMLDivElement>) => {
     if (e.ctrlKey || e.metaKey || e.altKey) return
+    if (e.target instanceof HTMLInputElement) return // typing in the search box is not a map key
     if (e.key === '+' || e.key === '=') zoomBy(1.4)
     else if (e.key === '-' || e.key === '_') zoomBy(1 / 1.4)
-    else if (e.key === '0') showRoute()
+    else if (e.key === '0') showWhole()
+    else if (e.key === 'l' || e.key === 'L') locate()
     else return
     e.preventDefault()
   }
@@ -344,77 +356,15 @@ function AtlasMapCanvas({ atlas }: { atlas: AtlasTree }) {
     : []
 
   return (
-    <div className="atlas-root space-y-2.5">
-      <div className="atlas-head">
-        <ul className="atlas-legend" aria-label="Map legend">
-          {(
-            [
-              ['route', 'Route', 'guide'],
-              ['traps', 'Traps', 'trap'],
-              ['ticked', 'Ticked', 'ticked'],
-            ] as const
-          ).map(([key, label, kind]) => (
-            <li key={key}>
-              <button type="button" aria-pressed={show[key]} onClick={() => setShow((v) => ({ ...v, [key]: !v[key] }))}>
-                <span className="atlas-swatch" data-kind={kind} aria-hidden="true" />
-                {label}
-              </button>
-            </li>
-          ))}
-        </ul>
-        <div className="atlas-search">
-          <Input
-            type="search"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === 'Escape' && query) {
-                e.preventDefault()
-                setQuery('')
-              }
-            }}
-            placeholder="Find a node — name or effect"
-            aria-label="Find an Atlas node"
-            aria-describedby="atlas-search-count"
-          />
-          {query ? (
-            <button type="button" className="atlas-search-clear" onClick={() => setQuery('')} aria-label="Clear search">
-              ✕
-            </button>
-          ) : null}
-          <p id="atlas-search-count" className="atlas-search-count" role="status">
-            {searching ? (total ? `${total} ${total === 1 ? 'match' : 'matches'}${total > results.length ? `, showing ${results.length}` : ''}` : 'No matches') : ''}
-          </p>
-          {results.length ? (
-            <ul className="absolute inset-x-0 top-[calc(var(--tap-min)+4px)] z-20 overflow-hidden border border-line bg-surface-raised shadow-[var(--lift-raised)]">
-              {results.map((n) => (
-                <li key={n.name}>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      focus([n.name], n.name)
-                      setQuery('')
-                    }}
-                    className="flex w-full items-baseline justify-between gap-3 px-3 py-2 text-left text-sm hover:bg-surface-overlay"
-                  >
-                    <span className="truncate text-ink">{n.name}</span>
-                    <span className="shrink-0 text-[length:var(--fs-11)] text-ink-mute">{subtreeLabel(atlas.subtree.get(n.id))}</span>
-                  </button>
-                </li>
-              ))}
-            </ul>
-          ) : null}
-        </div>
-      </div>
-
+    <div className="atlas-root">
       <div
         id="atlas-map"
         ref={wrapRef}
         role="group"
         tabIndex={0}
-        aria-label="Atlas map. Keys: plus to zoom in, minus to zoom out, 0 to fit the route."
+        aria-label="Atlas map. Keys: plus to zoom in, minus to zoom out, 0 to fit the whole tree, L to find the current step."
         onKeyDown={onMapKey}
-        className="atlas-map relative h-[22rem] w-full scroll-mt-32 touch-none overflow-hidden border border-line bg-surface-sunken select-none sm:h-[29rem] lg:h-[calc(100dvh-12rem)] lg:min-h-[24rem]"
+        className="atlas-map relative w-full touch-none overflow-hidden border border-line bg-surface-sunken select-none"
       >
         <canvas
           ref={canvasRef}
@@ -431,11 +381,80 @@ function AtlasMapCanvas({ atlas }: { atlas: AtlasTree }) {
           aria-label={`Atlas passive tree: ${guide.size} guide nodes, ${trap.size} trap nodes, ${allocated.size} ticked. Drag to pan, scroll or pinch to zoom.`}
         />
 
+        <div className="atlas-tools">
+          <ul className="atlas-legend" aria-label="Map legend">
+            {(
+              [
+                ['route', 'Route line', 'guide'],
+                ['traps', 'Traps', 'trap'],
+                ['ticked', 'Ticked', 'ticked'],
+              ] as const
+            ).map(([key, label, kind]) => (
+              <li key={key}>
+                <button type="button" aria-pressed={show[key]} onClick={() => setShow((v) => ({ ...v, [key]: !v[key] }))}>
+                  <span className="atlas-swatch" data-kind={kind} aria-hidden="true" />
+                  {label}
+                </button>
+              </li>
+            ))}
+            <li>
+              <button type="button" aria-pressed={follow} onClick={() => setFollow((v) => !v)} title="Zoom in on each step as it changes">
+                <span className="atlas-swatch" data-kind="follow" aria-hidden="true" />
+                Follow
+              </button>
+            </li>
+          </ul>
+          <div className="atlas-search">
+            <Input
+              type="search"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Escape' && query) {
+                  e.preventDefault()
+                  setQuery('')
+                }
+              }}
+              placeholder="Find a node — name or effect"
+              aria-label="Find an Atlas node"
+              aria-describedby="atlas-search-count"
+            />
+            {query ? (
+              <button type="button" className="atlas-search-clear" onClick={() => setQuery('')} aria-label="Clear search">
+                ✕
+              </button>
+            ) : null}
+            <p id="atlas-search-count" className="atlas-search-count" role="status">
+              {searching ? (total ? `${total} ${total === 1 ? 'match' : 'matches'}${total > results.length ? `, showing ${results.length}` : ''}` : 'No matches') : ''}
+            </p>
+            {results.length ? (
+              <ul className="absolute inset-x-0 top-[calc(var(--tap-min)+4px)] z-20 overflow-hidden border border-line bg-surface-raised shadow-[var(--lift-raised)]">
+                {results.map((n) => (
+                  <li key={n.name}>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        focus([n.name], n.name)
+                        setQuery('')
+                      }}
+                      className="flex w-full items-baseline justify-between gap-3 px-3 py-2 text-left text-sm hover:bg-surface-overlay"
+                    >
+                      <span className="truncate text-ink">{n.name}</span>
+                      <span className="shrink-0 text-[length:var(--fs-11)] text-ink-mute">{subtreeLabel(atlas.subtree.get(n.id))}</span>
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            ) : null}
+          </div>
+        </div>
+
         <div className="map-ctl" role="group" aria-label="Map zoom">
           {[
             { label: 'Zoom in', key: '+', text: '+', on: () => zoomBy(1.4) },
             { label: 'Zoom out', key: '-', text: '−', on: () => zoomBy(1 / 1.4) },
-            { label: 'Fit route', key: '0', text: 'fit', on: showRoute },
+            { label: 'Locate step', key: 'L', text: '◎', on: locate },
+            { label: 'Fit whole tree', key: '0', text: 'fit', on: showWhole },
           ].map((b) => (
             <button key={b.label} type="button" onClick={b.on} aria-label={b.label} aria-keyshortcuts={b.key}>
               <span className={b.text === 'fit' ? 'map-fit-text' : undefined} aria-hidden="true">
@@ -448,8 +467,19 @@ function AtlasMapCanvas({ atlas }: { atlas: AtlasTree }) {
           ))}
         </div>
 
+        {show.route && legChips.length ? (
+          <ul className="atlas-leg-legend" aria-label="Route legs">
+            {legChips.map((l) => (
+              <li key={l}>
+                <span className="atlas-leg-chip" style={{ background: `var(--leg-${((l - 1) % 6) + 1})` }} aria-hidden="true" />
+                Leg {l}
+              </li>
+            ))}
+          </ul>
+        ) : null}
+
         {request ? (
-          <div className="absolute top-2 left-2 flex max-w-[70%] items-center gap-2 border border-accent-line bg-surface-raised/90 px-2.5 py-1 text-xs text-ink">
+          <div className="absolute bottom-2 left-1/2 flex max-w-[50%] -translate-x-1/2 items-center gap-2 border border-accent-line bg-surface-raised/90 px-2.5 py-1 text-xs text-ink">
             <span className="truncate">Showing {request.label}</span>
             <button type="button" onClick={clear} aria-label="Clear" className="hit-area text-ink-mute hover:text-ink">
               ✕
@@ -508,35 +538,6 @@ function AtlasMapCanvas({ atlas }: { atlas: AtlasTree }) {
           </div>
         ) : null}
       </div>
-
-      {current ? (
-        <div className="atlas-stepper" role="group" aria-label="Route steps">
-          <span className="atlas-stepper-count tabular">
-            {route.indexOf(current) + 1} of {route.length}
-          </span>
-          <span className="atlas-stepper-name">{current.name}</span>
-          <div className="atlas-stepper-btns">
-            <Button size="sm" onClick={() => frameStep(route.indexOf(current) - 1)} disabled={route.indexOf(current) === 0}>
-              ← Prev
-            </Button>
-            <Button size="sm" onClick={() => frameStep(route.indexOf(current) + 1)} disabled={route.indexOf(current) === route.length - 1}>
-              Next →
-            </Button>
-            <Button size="sm" variant={taken(current) ? 'secondary' : 'primary'} aria-pressed={taken(current)} onClick={tickStep}>
-              {taken(current) ? '✓ Ticked' : 'Tick'}
-            </Button>
-          </div>
-        </div>
-      ) : null}
-
-      <p className="text-[length:var(--fs-11)] leading-relaxed text-ink-mute">
-        {proDetail ? (
-          <Button size="sm" onClick={showWhole} className="mr-2">
-            Whole tree
-          </Button>
-        ) : null}
-        Node positions and effects come from the game&apos;s data, via poe2db. Green marks what you&apos;ve ticked here, not what&apos;s on your account.
-      </p>
     </div>
   )
 }

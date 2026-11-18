@@ -6,7 +6,7 @@ import { ProOnly } from "@/components/shared/ProToggle";
 import { SourceFlag } from "@/components/shared/SourceFlag";
 import { useAtlasProgress } from "@/hooks/useAtlasProgress";
 import { Tag } from "@/components/ui";
-import { ShowOnTreeButton } from "./AtlasMapContext";
+import { ShowOnTreeButton, useAtlasMap } from "./AtlasMapContext";
 
 /** Descriptions longer than this are clamped to two lines until expanded. */
 const LONG = 120;
@@ -14,6 +14,8 @@ const LONG = 120;
 export function ClusterNode({ cluster }: { cluster: AtlasCluster }) {
   const { isClusterAllocated, toggleCluster } = useAtlasProgress();
   const allocated = isClusterAllocated(cluster.id);
+  const { current } = useAtlasMap();
+  const isCurrent = current?.id === cluster.id;
   const [expanded, setExpanded] = useState(false);
   const long = cluster.description.length > LONG;
 
@@ -23,6 +25,7 @@ export function ClusterNode({ cluster }: { cluster: AtlasCluster }) {
       data-reveal="node"
       data-surface="data"
       data-taken={allocated || undefined}
+      data-current={isCurrent || undefined}
       className={`scroll-mt-40 border px-3 py-2.5 shadow-[var(--lift)] transition-colors max-sm:py-1.5 ${
         allocated ? "border-good/40" : "border-line hover:border-line-strong"
       }`}

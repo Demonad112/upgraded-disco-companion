@@ -1,12 +1,21 @@
-/* U11b Atlas: the map panel's header (legend with counts, search), the vertical map controls and the node chip.
-   Component: atlas/AtlasTreeMap.tsx. No backdrop-filter anywhere: the fills are near-opaque instead. */
+/* Atlas: the stage layout (command bar, map, list, aside), the map's tools overlay, the vertical map controls and the node chip.
+   Components: atlas/AtlasStage.tsx, AtlasCommandBar.tsx, AtlasTreeMap.tsx. No backdrop-filter anywhere: the fills are near-opaque instead. */
 
-.atlas-head {
+.atlas-tools {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  z-index: 15;
   display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px 16px;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  width: min(22rem, calc(100% - var(--tap-min) - 24px));
+}
+.atlas-tools .atlas-search {
+  width: 100%;
+  max-width: none;
+  flex: none;
 }
 .atlas-legend {
   display: flex;
@@ -31,7 +40,7 @@
   min-height: var(--tap-min);
   padding: 0 8px;
   border: 1px solid var(--line);
-  background: transparent;
+  background: color-mix(in srgb, var(--raised) 92%, transparent);
   color: var(--ink-mute);
   font: inherit;
   cursor: pointer;
@@ -55,6 +64,11 @@
 .atlas-swatch[data-kind='trap'] {
   color: var(--danger);
   transform: rotate(45deg);
+}
+.atlas-swatch[data-kind='follow'] {
+  color: var(--accent);
+  border-radius: 0;
+  background: radial-gradient(currentColor 0 2px, transparent 2.5px);
 }
 .atlas-swatch[data-kind='ticked'] {
   color: var(--good);
@@ -187,103 +201,6 @@
   }
 }
 
-/* Phones (PX7): the map is a bottom sheet opened by a row's Map button (or "Open map"). It is laid out while shut, off
-   screen, so the canvas already has a size when a node is framed. From 721px up none of this applies. */
-.atlas-open-map,
-.atlas-sheet-close,
-.atlas-backdrop {
-  display: none;
-}
-@media (max-width: 720px) {
-  .atlas-open-map {
-    display: inline-flex;
-    align-self: flex-start;
-    min-height: var(--tap-min);
-  }
-  .atlas-backdrop {
-    display: block;
-    position: fixed;
-    inset: 0;
-    z-index: 55;
-    background: var(--qp-backdrop);
-    opacity: 0;
-    visibility: hidden;
-    transition: opacity var(--qp-sheet-motion);
-  }
-  .atlas-backdrop[data-open] {
-    opacity: 1;
-    visibility: visible;
-  }
-  .atlas-sheet {
-    position: fixed;
-    inset: auto 0 0 0;
-    z-index: 60;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    height: 100dvh;
-    overflow: hidden;
-    padding: calc(12px + env(safe-area-inset-top, 0px)) var(--gutter) calc(12px + env(safe-area-inset-bottom, 0px));
-    border-width: 0;
-    background: var(--surface);
-    visibility: hidden;
-    transform: translateY(100%);
-    transition: transform var(--qp-sheet-motion) ease-out, visibility 0s linear var(--qp-sheet-motion);
-  }
-  .atlas-sheet[data-open] {
-    visibility: visible;
-    transform: none;
-    transition: transform var(--qp-sheet-motion) ease-out;
-  }
-  .atlas-sheet-close {
-    display: inline-flex;
-    align-self: flex-end;
-    min-height: var(--tap-min);
-  }
-  .atlas-sheet .atlas-root {
-    display: flex;
-    flex: 1;
-    flex-direction: column;
-    min-height: 0;
-  }
-  .atlas-sheet .atlas-map {
-    flex: 1;
-    height: auto;
-    min-height: 12rem;
-  }
-}
-@media (prefers-reduced-motion: reduce) {
-  .atlas-sheet,
-  .atlas-backdrop {
-    transition: none;
-  }
-}
-
-/* PXV parity: the "Up next" tracker (atlas/AtlasSequenceTracker.tsx). The next path node on the left, the overall
-   gauge on the right from sm up; stacked on phones. Same card, padding and eyebrow as checklist/NextStepCard. */
-.atlas-next {
-  display: grid;
-  gap: 16px 32px;
-  padding: var(--card-pad);
-}
-@media (min-width: 640px) {
-  .atlas-next {
-    grid-template-columns: minmax(0, 1fr) minmax(220px, 34%);
-    align-items: end;
-  }
-}
-.atlas-next-gauge {
-  border-top: 1px solid var(--line);
-  padding-top: 12px;
-}
-@media (min-width: 640px) {
-  .atlas-next-gauge {
-    border-top: 0;
-    border-left: 1px solid var(--line);
-    padding: 0 0 0 24px;
-  }
-}
-
 /* Trap group labels inside the Traps tab: the shared metric label, with room above. */
 .atlas-group-label {
   margin: 12px 0 6px;
@@ -305,33 +222,322 @@
   }
 }
 
-/* Focus variant: the "1 of 17" stepper pinned under the map (atlas/AtlasTreeMap.tsx). Solid data fill, square corners. */
-.atlas-stepper {
+/* Route leg colours (AR4): colour-blind-safe on the dark map. The painter reads --leg-1..6; the legend chips use them too. */
+.atlas-map {
+  --leg-1: #56b4e9;
+  --leg-2: #e69f00;
+  --leg-3: #cc79a7;
+  --leg-4: #f0e442;
+  --leg-5: #f07a3a;
+  --leg-6: #a78bfa;
+  --atlas-peek-h: 5.75rem;
+}
+.atlas-leg-legend {
+  position: absolute;
+  bottom: 8px;
+  left: 8px;
+  z-index: 5;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 10px;
+  max-width: 60%;
+  margin: 0;
+  padding: 4px 8px;
+  list-style: none;
+  border: 1px solid var(--line);
+  background: color-mix(in srgb, var(--raised) 92%, transparent);
+  color: var(--ink-dim);
+  font-size: var(--fs-11);
+}
+.atlas-leg-legend li {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+.atlas-leg-chip {
+  width: 14px;
+  height: 4px;
+}
+
+/* ---- Stage (AR3): "bar bar" "map map" "list aside". ---- */
+.atlas-stage {
+  --atlas-bar-h: 7rem;
+  display: grid;
+  grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
+  grid-template-areas:
+    'bar bar'
+    'map map'
+    'list aside';
+  align-items: start;
+  column-gap: 20px;
+}
+.atlas-bar {
+  grid-area: bar;
+  position: sticky;
+  top: 0;
+  z-index: 30;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 6px 12px;
-  padding: 8px 10px;
+  gap: 6px 14px;
+  padding: 6px 10px 8px;
   border: 1px solid var(--line);
   background: var(--data-fill);
 }
-.atlas-stepper-count {
+.atlas-bar-tabs {
+  min-width: 0;
+  flex: 0 1 auto;
+}
+.atlas-bar-step {
+  display: flex;
+  min-width: 0;
+  flex: 1 1 18rem;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px 12px;
+}
+.atlas-bar-step[data-empty] {
+  display: none;
+}
+.atlas-step-info {
+  display: flex;
+  min-width: 0;
+  flex: 1 1 8rem;
+  align-items: baseline;
+  gap: 8px;
+}
+.atlas-step-count {
+  flex: none;
   color: var(--accent);
   font-size: var(--fs-12);
   font-weight: 600;
   letter-spacing: 0.06em;
   text-transform: uppercase;
 }
-.atlas-stepper-name {
+.atlas-step-name {
   min-width: 0;
-  flex: 1 1 8rem;
   overflow: hidden;
   color: var(--ink);
   font-size: var(--fs-14);
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.atlas-stepper-btns {
+.atlas-step-leg {
+  color: var(--ink-mute);
+}
+.atlas-step-btns {
   display: flex;
   gap: 6px;
+}
+.atlas-list-btn,
+.atlas-sheet-close,
+.atlas-backdrop,
+.atlas-drawer-open {
+  display: none;
+}
+.atlas-progress {
+  position: absolute;
+  inset: auto 0 0 0;
+  height: 2px;
+  background: var(--line);
+}
+.atlas-progress span {
+  display: block;
+  height: 100%;
+  background: var(--accent);
+}
+.atlas-map-area {
+  grid-area: map;
+  min-width: 0;
+  margin-bottom: 16px;
+}
+.atlas-map,
+.atlas-map-skeleton {
+  height: max(24rem, calc(100dvh - var(--atlas-bar-h)));
+}
+.atlas-list {
+  grid-area: list;
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px;
+  border: 1px solid var(--line);
+  background: var(--data-fill);
+}
+.atlas-list-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+/* The list's own scroll box: about five or six rows tall, keeping the current row in view (AtlasGuidePanel). */
+.atlas-list-scroll {
+  max-height: 30rem;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding-right: 4px;
+}
+.atlas-list [data-current] {
+  border-color: var(--accent-line) !important;
+  box-shadow: inset 3px 0 0 var(--accent);
+}
+.atlas-aside {
+  grid-area: aside;
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* ---- Full screen (AR6): the same DOM as a fixed grid, list drawer on the left, bar over the map. ---- */
+.atlas-stage[data-full] {
+  position: fixed;
+  inset: 0;
+  z-index: 70;
+  grid-template-columns: 22rem minmax(0, 1fr);
+  grid-template-rows: auto minmax(0, 1fr);
+  grid-template-areas:
+    'list bar'
+    'list map';
+  align-items: stretch;
+  column-gap: 0;
+  background: var(--surface);
+}
+.atlas-stage[data-full]:not([data-drawer]) {
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-areas:
+    'bar'
+    'map';
+}
+.atlas-stage[data-full]:not([data-drawer]) .atlas-list {
+  display: none;
+}
+.atlas-stage[data-full] .atlas-bar {
+  position: relative;
+}
+.atlas-stage[data-full] .atlas-map-area {
+  height: 100%;
+  min-height: 0;
+  margin-bottom: 0;
+}
+.atlas-stage[data-full] .atlas-map {
+  height: 100%;
+}
+.atlas-stage[data-full] .atlas-list {
+  min-height: 0;
+  overflow: hidden;
+  border-width: 0 1px 0 0;
+}
+.atlas-stage[data-full] .atlas-list-scroll {
+  flex: 1;
+  max-height: none;
+}
+.atlas-stage[data-full] .atlas-aside {
+  display: none;
+}
+.atlas-stage[data-full] .atlas-drawer-open {
+  position: fixed;
+  bottom: 12px;
+  left: 12px;
+  z-index: 75;
+  display: inline-flex;
+}
+
+/* ---- Phones (AR7): the map fills the screen; a bottom peek bar carries the step; the list is a sheet. ---- */
+@media (max-width: 720px) {
+  .atlas-stage {
+    display: block;
+  }
+  .atlas-full-btn,
+  .atlas-progress {
+    display: none;
+  }
+  .atlas-bar-step,
+  .atlas-bar-step[data-empty] {
+    position: fixed;
+    inset: auto 0 calc(var(--tabbar-h) + env(safe-area-inset-bottom, 0px)) 0;
+    z-index: 40;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    padding: 6px var(--gutter);
+    border-top: 1px solid var(--line-strong);
+    background: var(--data-fill);
+  }
+  .atlas-step-info {
+    flex: 1 1 100%;
+  }
+  .atlas-list-btn {
+    display: inline-flex;
+    margin-left: auto;
+  }
+  .atlas-map,
+  .atlas-map-skeleton {
+    height: max(
+      18rem,
+      calc(100dvh - var(--atlas-bar-h) - var(--atlas-peek-h) - var(--tabbar-h) - env(safe-area-inset-bottom, 0px))
+    );
+  }
+  .atlas-map-area {
+    margin-bottom: 12px;
+  }
+  .atlas-leg-legend {
+    display: none;
+  }
+  .atlas-aside {
+    padding-bottom: calc(var(--atlas-peek-h) + 12px);
+  }
+  .atlas-backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 55;
+    background: var(--qp-backdrop);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity var(--qp-sheet-motion);
+  }
+  .atlas-backdrop[data-open] {
+    opacity: 1;
+    visibility: visible;
+  }
+  .atlas-list {
+    position: fixed;
+    inset: auto 0 calc(var(--tabbar-h) + env(safe-area-inset-bottom, 0px)) 0;
+    z-index: 60;
+    height: 70dvh;
+    overflow: hidden;
+    padding: 12px var(--gutter);
+    border-width: 1px 0 0;
+    background: var(--surface);
+    visibility: hidden;
+    transform: translateY(100%);
+    transition: transform var(--qp-sheet-motion) ease-out, visibility 0s linear var(--qp-sheet-motion);
+  }
+  .atlas-list[data-open] {
+    visibility: visible;
+    transform: none;
+    transition: transform var(--qp-sheet-motion) ease-out;
+  }
+  .atlas-sheet-close {
+    display: inline-flex;
+    align-self: flex-end;
+    min-height: var(--tap-min);
+  }
+  .atlas-list-scroll {
+    flex: 1;
+    max-height: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .atlas-list,
+  .atlas-backdrop {
+    transition: none;
+  }
+}
+
+/* The stage's own scroll target: the sticky bar sits at the very top, so don't leave room for the site header. */
+#atlas-stage {
+  scroll-margin-top: 0;
 }
