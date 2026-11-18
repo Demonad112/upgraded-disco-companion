@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { pageMeta } from '@/lib/pageMeta'
 import { commonMistakes } from "@/data/commonMistakes";
 import { FarmPlanner } from "@/components/farm/FarmPlanner";
+import { TierHeadroom } from "@/components/farm/TierHeadroom";
 import { DashboardTabs } from "@/components/dashboard/DashboardTabs";
 import { WarningPanel } from "@/components/shared/WarningPanel";
 import { SectionTitle } from "@/components/shared/SectionTitle";
@@ -25,6 +26,8 @@ export default function DashboardPage() {
         <SectionTitle>Farm planner</SectionTitle>
         <FarmPlanner />
       </section>
+
+      <TierHeadroom />
 
       <WarningPanel mistakes={commonMistakes} stage="dashboard" />
 
