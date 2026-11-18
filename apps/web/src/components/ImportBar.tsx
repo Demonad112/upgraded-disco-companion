@@ -172,6 +172,8 @@ export function ImportBar({
   const [url, setUrl] = useState('')
   const [paste, setPaste] = useState('')
   const [error, setError] = useState<string | null>(null)
+  // A failed URL import that a pasted code can stand in for (blocked, busy, offline): offer the paste box in one click.
+  const [canPaste, setCanPaste] = useState(false)
   const recents = useLocalStore(recentCharacters)
   const [busyInfo, setBusyInfo] = useState<BusyInfo | null>(null)
   const abortRef = useRef<AbortController | null>(null)
@@ -183,6 +185,7 @@ export function ImportBar({
 
   async function runImport(target: string) {
     setError(null)
+    setCanPaste(false)
     setMode('url')
     setUrl(target)
     const invalid = checkProfileUrl(target)
@@ -204,6 +207,7 @@ export function ImportBar({
     }
     if (!result.ok) {
       setError(result.error)
+      setCanPaste(result.canPaste)
       setBusy(false)
     }
     onResult(result)
@@ -286,6 +290,7 @@ export function ImportBar({
             <Textarea
               value={paste}
               onChange={(e) => setPaste(e.target.value)}
+              id="import-paste"
               rows={4}
               placeholder='Paste a character model JSON, or a Path of Building export code'
               aria-label="Character model JSON or Path of Building code"
@@ -331,6 +336,20 @@ export function ImportBar({
           <p role="alert" className="mt-2 text-xs leading-relaxed text-danger">
             {error}
           </p>
+        ) : null}
+        {error && canPaste && mode === 'url' ? (
+          <Button
+            size="sm"
+            className="mt-2"
+            onClick={() => {
+              setMode('paste')
+              setCanPaste(false)
+              // The paste box mounts on the next render; focus it there.
+              requestAnimationFrame(() => document.getElementById('import-paste')?.focus())
+            }}
+          >
+            Paste a code instead
+          </Button>
         ) : null}
 
         <p className="mt-2 text-[length:var(--fs-11)] leading-relaxed text-ink-mute">

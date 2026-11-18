@@ -192,8 +192,8 @@ function AtlasMapCanvas({ atlas }: { atlas: AtlasTree }) {
   const currentKey = current ? `${tab}:${current.id}` : null
   useEffect(() => {
     if (!size.width || !size.height || !current || framedTab.current !== tab || lastStep.current === currentKey) return
+    if (request) return // a Map-button focus holds the map; a step change ends it first (AtlasMapContext)
     lastStep.current = currentKey
-    if (request) return
     // eslint-disable-next-line react-hooks/set-state-in-effect -- panning waits on the size a ResizeObserver reports
     goToStep(current, follow)
     // `follow` toggling alone shouldn't move the map.
@@ -362,6 +362,8 @@ function AtlasMapCanvas({ atlas }: { atlas: AtlasTree }) {
         ref={wrapRef}
         role="group"
         tabIndex={0}
+        data-cx={viewport ? Math.round(viewport.cx) : undefined}
+        data-cy={viewport ? Math.round(viewport.cy) : undefined}
         aria-label="Atlas map. Keys: plus to zoom in, minus to zoom out, 0 to fit the whole tree, L to find the current step."
         onKeyDown={onMapKey}
         className="atlas-map relative w-full touch-none overflow-hidden border border-line bg-surface-sunken select-none"

@@ -30,6 +30,14 @@ export const CHARACTER_TABS = {
 export type CharacterTabId = keyof typeof CHARACTER_TABS
 
 /**
+ * Atlas: phones keep the guide list in a bottom sheet that the command bar's List button opens; from 721px up it is on
+ * the page, so this does nothing there.
+ */
+export async function openList(page: Page) {
+  if ((page.viewportSize()?.width ?? 1280) <= 720) await page.getByRole('button', { name: 'List', exact: true }).click()
+}
+
+/**
  * Opens a character tab (clicks it, so the hash and aria-selected move as a user's would) and waits for its panel.
  * Call it before asserting anything outside Overview.
  */
