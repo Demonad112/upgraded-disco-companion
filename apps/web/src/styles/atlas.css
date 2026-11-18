@@ -432,6 +432,8 @@
   min-height: 0;
   margin-bottom: 0;
 }
+/* The root sits between the area and the map; without a height the map's 100% resolves to auto and keeps its old size. */
+.atlas-stage[data-full] .atlas-root,
 .atlas-stage[data-full] .atlas-map {
   height: 100%;
 }
