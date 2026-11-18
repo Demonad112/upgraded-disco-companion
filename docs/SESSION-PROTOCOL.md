@@ -53,7 +53,7 @@
    so the owner can answer it in a later prompt's `Owner notes`. Only record things worth acting on, not every thought.
    Do not create carry files.
 3. When a batch or plan is fully closed, add 1–2 sentences for it to `docs/HISTORY.md`, then delete its plan file.
-4. Commit with `git commit -F <file>` and push. Open one PR with these sections: **Summary**, **Previous wave check**,
+4. Commit and push. Open one PR with these sections: **Summary**, **Previous wave check**,
    **Open rows handled**, **Gate**, **Screenshots** (list them; keep the images out of git), **Limits**, **Needs owner**.
    Put the Pages preview URL at the top (`.github/pull_request_template.md`). After creating the PR, remove any session
    link the tooling appended to the body. The `guard` check (`scripts/check-pr-body.mjs`) cuts a session link out of

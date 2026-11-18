@@ -9,6 +9,7 @@ npm workspaces (`packages/*`, `apps/*`), Node >=22, TypeScript strict. `packages
 - `npm run typecheck` builds `@poe2/core` first. The web app resolves core to its built `dist/`, so on a fresh checkout build core before running `tsc` in an app.
 - `npm run check:all` = typecheck + lint + test + script tests + ninja-proxy tests (every CI suite except build, e2e and Lighthouse).
 - `npm run test:coverage -w @poe2/core` enforces 90% statements / 75% branches. `npm run e2e -w @poe2/web` runs against `apps/web/out` (build first).
+- Commit and push with the `commit-commands` plugin (enabled in `.claude/settings.json`): `/commit-commands:commit`, `/commit-commands:commit-push-pr`. Handoff: `/wrapup`.
 
 ## Architecture
 
@@ -53,8 +54,5 @@ The SessionStart hook runs `npm ci` when `package-lock.json` changed since the l
   several files at once; cap listings and data dumps (`| head`), but never truncate errors or failing tests;
   compact or hand off at a task boundary, never mid-task.
 - Don't sit watching PRs or CI: use a scheduled check-in or PR Auto-fix and come back later, but every session ends with its PR ready and a scheduled check-in that confirms the required checks are green.
-- Suggest a plugin, connector or tool only when the task needs one.
-- If an attachment the owner mentions isn't visible, say so before starting.
 - Visual work: before opening the PR, ask whether to run a screenshot check; if yes, post the 390 px and 1440 px
   Playwright screenshots in chat (images stay out of git).
-- The owner is proficient in Python; skip the basics.
