@@ -80,3 +80,60 @@ test('finds a snapshot by slug first, then by display name', () => {
   assert.equal(findSnapshot(versions, 'hcforbiddenrites'), null)
   assert.equal(findSnapshot(undefined, 'forbiddenrites'), null)
 })
+
+// --- snapshot lookup (poe.ninja moved it, 2026-11-18) ------------------------
+//
+// index-state no longer carries `snapshotVersions`; the list now comes from
+// /poe2/api/data/snapshot-versions?league=<slug>. Both fixtures are real
+// responses recorded on 2026-11-18.
+
+import { resolveSnapshot, snapshotVersionsUrl } from '../api/ladder.js'
+
+const snapshotFixture = readFileSync(fileURLToPath(new URL('./fixtures/snapshot-versions-runesofaldur.json', import.meta.url)), 'utf8')
+const indexFixture = readFileSync(fileURLToPath(new URL('./fixtures/index-state-2026-11-18.json', import.meta.url)), 'utf8')
+
+/** Serves the recorded responses: snapshot-versions answers only its own slug, like the live API. */
+function recordedNinja(calls = []) {
+  return async (url) => {
+    calls.push(String(url))
+    const u = new URL(url)
+    const json = (body) => new Response(body, { status: 200, headers: { 'content-type': 'application/json' } })
+    if (u.pathname === '/poe2/api/data/snapshot-versions') {
+      return json(u.searchParams.get('league') === 'runesofaldur' ? snapshotFixture : '[]')
+    }
+    if (u.pathname === '/poe2/api/data/index-state') return json(indexFixture)
+    return new Response('', { status: 404 })
+  }
+}
+
+test('the recorded index-state has no snapshotVersions any more (why the old lookup always missed)', () => {
+  const idx = JSON.parse(indexFixture)
+  assert.equal(idx.snapshotVersions, undefined)
+  assert.ok(Array.isArray(idx.buildLeagues))
+})
+
+test('resolves a league slug through snapshot-versions (recorded response)', async () => {
+  const calls = []
+  const out = await resolveSnapshot('runesofaldur', 'runesofaldur', { fetchImpl: recordedNinja(calls) })
+  assert.equal(out.snap.version, '1418-20261118-42123')
+  assert.equal(out.snap.snapshotName, 'runes-of-aldur')
+  assert.deepEqual(calls, [snapshotVersionsUrl('runesofaldur')])
+})
+
+test('a display name resolves to its slug via index-state buildLeagues, then snapshot-versions', async () => {
+  const calls = []
+  const out = await resolveSnapshot('runes-of-aldur-wrong', 'Runes of Aldur', { fetchImpl: recordedNinja(calls) })
+  assert.equal(out.snap?.snapshotName, 'runes-of-aldur')
+  assert.equal(calls.length, 3)
+})
+
+test('an unknown league is a miss, not an error', async () => {
+  const out = await resolveSnapshot('nosuchleague', 'nosuchleague', { fetchImpl: recordedNinja() })
+  assert.deepEqual(out, { snap: null })
+})
+
+test('a throttled snapshot-versions answer is passed on as busy', async () => {
+  const fetchImpl = async () => new Response('', { status: 429, headers: { 'retry-after': '9' } })
+  const out = await resolveSnapshot('runesofaldur', 'runesofaldur', { fetchImpl, sleepImpl: async () => {} })
+  assert.equal(out.busy?.status, 429)
+})

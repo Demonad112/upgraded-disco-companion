@@ -222,3 +222,9 @@ One line each; reopen only when the trigger happens.
 | ID | Item | … | Status |
 |---|---|---|---|
 | B3-1 | The Advanced tab still shows its own "Tree data is behind" card (`OverviewCards.tsx:102`) next to the B3 "What we couldn't check" panel, so a stale tree is reported twice. Fix: drop the card and let the panel carry the tree check | S | #209 Limits | apps/web only; recommended answer: remove the card, keep the panel as the single place | done: card and `TreeDataNote` removed; "What we couldn't check" is the only tree report |
+
+## NP1 answers (2026-11-18)
+| ID | Question | Recommended | Origin | Status |
+|---|---|---|---|---|
+| RV1-4 | Move `services/ninja-proxy` from Vercel to a Cloudflare Worker | Keep Vercel: a probe Worker got `403 cf-mitigated: challenge` from poe.ninja on `/poe2/api/profile/*` and `/poe2/api/builds/*` (a Pages Function shares that egress) | RV1, NP1 | answered 2026-11-18: keep Vercel. Reopen if poe.ninja stops challenging Cloudflare egress (rerun the probe in PR #214) |
+| NP1-2 | Daily scheduled live smoke check (`services/ninja-proxy/scripts/verify-live.mjs`) in CI | Yes | NP1 | answered 2026-11-18: no. The script stays for manual runs |
