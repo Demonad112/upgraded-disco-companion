@@ -165,15 +165,16 @@ export function buildChatContext(analysis: Analysis, options: ChatContextOptions
 /** Render a Path-of-Building-sourced analysis. Fewer facts, same rules. */
 export function buildPobChatContext(analysis: PobAnalysis): string {
   const d = analysis.defense
+  const shown = (v: number | null) => (v === null ? 'not exported' : String(v))
   return [
     '## CHARACTER',
     `Level ${analysis.identity.level ?? '?'} ${analysis.identity.ascendancy ?? analysis.identity.className ?? ''}`,
     'Source: a Path of Building export code. Every figure is Path of Building\'s own computation.',
     '',
     '## SURVIVABILITY',
-    `Lowest maximum hit taken: ${d.lowestMaximumHit} ${d.lowestMaximumHitType ?? ''}`,
-    `Effective health pool (averaged — do NOT lead with this): ${d.effectiveHealthPool}`,
-    `Life ${d.life}, energy shield ${d.energyShield}, armour ${d.armour}, evasion ${d.evasion}`,
+    `Lowest maximum hit taken: ${shown(d.lowestMaximumHit)}${d.lowestMaximumHitType ? ` ${d.lowestMaximumHitType}` : ''}`,
+    `Effective health pool (averaged — do NOT lead with this): ${shown(d.effectiveHealthPool)}`,
+    `Life ${shown(d.life)}, energy shield ${shown(d.energyShield)}, armour ${shown(d.armour)}, evasion ${shown(d.evasion)}`,
     ...d.resistances.map(
       (r) =>
         `  ${r.type}: ${r.value}% of ${r.max}%` +
@@ -182,7 +183,7 @@ export function buildPobChatContext(analysis: PobAnalysis): string {
     ),
     '',
     '## DAMAGE',
-    `Total DPS ${analysis.damage.totalDps} (for the skill Path of Building had selected — there is no per-skill breakdown in a code)`,
+    `Total DPS ${shown(analysis.damage.totalDps)} (for the skill Path of Building had selected — there is no per-skill breakdown in a code)`,
     '',
     '## PASSIVES',
     `${analysis.passives.count} nodes allocated`,

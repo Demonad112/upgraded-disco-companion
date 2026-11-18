@@ -24,3 +24,12 @@ describe('a sparse Path of Building code', () => {
     expect(pob.defense.evasion).toBeNull()
   })
 })
+
+describe('the chat context for a sparse Path of Building code', () => {
+  it('says a figure was not exported instead of printing null', async () => {
+    const text = buildPobChatContext(await analyzeFromPob(sparse))
+    expect(text).not.toMatch(/\bnull\b|\bundefined\b/)
+    expect(text).toMatch(/Lowest maximum hit taken: not exported/)
+    expect(text).toMatch(/Total DPS not exported/)
+  })
+})
