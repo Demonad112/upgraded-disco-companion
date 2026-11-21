@@ -14,7 +14,18 @@ const statLabel = (id: string) => id.replace(/_/g, ' ').replace(/\+%|%/g, '%').t
 
 export function GearFitLine({ fit }: { fit: GearFit | undefined }) {
   if (!fit) return <p className="text-sm text-ink-mute">Gear fit: not available (needs the affix data).</p>
-  if (fit.score === null) return <p className="text-sm text-ink-mute">Gear fit: missing. {fit.missing}</p>
+  if (fit.score === null) {
+    return (
+      <div className="text-sm text-ink-mute" data-gear-fit>
+        <p>Gear fit: missing. {fit.missing}</p>
+        {fit.unscored.length || fit.wasted.length ? (
+          <ProOnly>
+            <FitDetail fit={fit} listUnscored />
+          </ProOnly>
+        ) : null}
+      </div>
+    )
+  }
   return (
     <div className="text-sm" data-gear-fit>
       <p>
@@ -23,17 +34,32 @@ export function GearFitLine({ fit }: { fit: GearFit | undefined }) {
       </p>
       <p className="text-xs text-ink-mute">{GEAR_FIT_BASIS}</p>
       <ProOnly>
-        <ul className="mt-1 text-xs text-ink-mute">
-          {fit.absent.length ? <li>Not rolled: {fit.absent.map((a) => statLabel(a.statId)).join(', ')}</li> : null}
-          {fit.wasted.map((w) => (
-            <li key={w.text}>
-              {w.amount} wasted on {w.text}: {w.reason}
-            </li>
-          ))}
-          {fit.unscored.length ? <li>{fit.unscored.length} line{fit.unscored.length === 1 ? '' : 's'} not scored (no weight, no ceiling or not understood).</li> : null}
-        </ul>
+        <FitDetail fit={fit} />
       </ProOnly>
     </div>
+  )
+}
+
+/** Pro detail under a fit. With `listUnscored`, each left-out line is named with its reason (a missing score). */
+function FitDetail({ fit, listUnscored = false }: { fit: GearFit; listUnscored?: boolean }) {
+  return (
+    <ul className="mt-1 text-xs text-ink-mute">
+      {fit.absent.length ? <li>Not rolled: {fit.absent.map((a) => statLabel(a.statId)).join(', ')}</li> : null}
+      {fit.wasted.map((w) => (
+        <li key={w.text}>
+          {w.amount} wasted on {w.text}: {w.reason}
+        </li>
+      ))}
+      {listUnscored
+        ? fit.unscored.map((u, i) => (
+            <li key={`${u.id}-${i}`}>
+              Not scored: {u.text}. {u.detail}
+            </li>
+          ))
+        : fit.unscored.length
+          ? <li>{fit.unscored.length} line{fit.unscored.length === 1 ? '' : 's'} not scored (no weight, no ceiling or not understood).</li>
+          : null}
+    </ul>
   )
 }
 

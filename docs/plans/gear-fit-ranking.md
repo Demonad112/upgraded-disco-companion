@@ -14,7 +14,23 @@ Input is an analysis already done: `ItemAnalysis[]` from `analyzeItem`, the char
 | 5 Compare target | `gear/compare-target.ts` | Already worn, empty slot, weaker ring by Gear fit (both offered when a score is missing), two-hander against main plus off hand. Jewels are not equipped slots, so they are "unknown". Choosing a target does not rank anything. |
 | 6 Pareto view | `recommend/pareto.ts` | A view beside `rank.ts`, same cost scalar. Unknown cost or unmeasured gain is `unplaced`, never dominated or dominating. Gain labels are `exact` or `missing` (no bounds exist today). |
 
-Not built yet: the web UI (waits on Owner queue GF1-1), items 7 to 10, and the profile-driven dead-stat check (GF1-5).
+Built since: the web UI (`GearFitReadout.tsx`; `paretoView` and `compareTarget` get no UI, GF1-4). Items 7 to 10 are not built. The Minion dead-stat question is closed (GF1-5, no widening).
+
+## GF1-6 run-through: Yykiuy (level 88 Martial Artist, `yykiuy-v80.json`)
+
+Fixture matches the owner's PoB2 numbers (life 1,477, ES 2,922, evasion 8,704, EHP 18,456). Main skill Falling Thunder, tagged Attack. Nothing below is simulated.
+
+| Piece | Result | Reads right? |
+|---|---|---|
+| Archetype | defence `evasion` (armour 0, evasion 8,704), offence `attack` | Half. ES 2,922 is under 2 × life (2,954) by 32, so the evasion + ES build is labelled evasion. Nothing reads the label (GF1-3) |
+| Weights | local evasion, local ES and evasion/ES % at 1.0; resistances, added damage, life, Int at 0.67 | Yes, they come from the worn items |
+| Fit, scored | Woe Cowl 67.9, Mind Spur 50.3, Skull Song 47.5 (best on base 44.4), Behemoth Band 47.7, Demon Pendant 46.6, Mind Keep 42.7, Viper Whorl 39 | Yes |
+| Fit, Damnation Grip | was 0 of 100 with six lines "not understood" (extra-as damage, Surpassing projectile, mana on kill, +1 Melee) | **No, fixed:** now "missing, none of its 6 lines could be scored", lines kept |
+| Fit, Mageblood | missing: unique, no affix budget | Yes |
+| Wasted | Woe Cowl fire 5; Mind Spur cold 36, fire 5; Viper Whorl cold 29 | Each true alone, not together: cold 36 + 29 against 59 over cap, fire 5 + 5 against 5 (GF1-7) |
+| Veto notes | None at risk on all nine swaps. Woe Cowl and Behemoth Band print "Can't check: gem attribute requirements". Demon Pendant's +47 spirit and Mind Spur's 35% movement speed are carried by the plan's spec at their minimums, so no note | Yes. Reserved spirit stays "can't check" (not in the payload). The owner's PoB figure is 146 of 147 reserved, so losing the +47 would be a hard veto; the site cannot say so |
+| Compare target | Not run | The owner's numbers hold no candidate item; none invented |
+
 
 ---
 

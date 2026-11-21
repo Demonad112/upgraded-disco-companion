@@ -258,6 +258,8 @@ function openAffixRule(analysed: ItemAnalysis[]): Recommendation[] {
 export function deadReason(text: string, skill: MainSkillContext): string | null {
   const t = text.toLowerCase()
   if (/skill speed|level of/.test(t)) return null
+  // A Minion skill's own tags say nothing about what its minions attack or cast with (GF1-5): no verdict.
+  if (skill.types.has('Minion')) return null
   const attack = skill.types.has('Attack')
   const spell = skill.types.has('Spell')
   if (attack && !spell && (/cast speed/.test(t) || /spell damage/.test(t))) {

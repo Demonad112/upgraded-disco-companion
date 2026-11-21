@@ -105,6 +105,13 @@ describe('CF1 item 3: dead stats', () => {
     expect(rec.evidence.some((e) => e.kind === 'item' && e.itemName === 'Demon Pendant')).toBe(true)
   })
 
+  it('GF1-5: a Minion main skill gets no dead-stat verdict (its minions have their own attack and spell lines)', () => {
+    const ctx = (types: string[]) => ({ name: 'Skill', types: new Set(types), dealt: new Set<string>(), crit: false })
+    expect(deadReason('Minions have 20% increased Attack Speed', ctx(['Spell', 'Minion']))).toBeNull()
+    expect(deadReason('20% increased Projectile Damage', ctx(['Spell', 'Minion']))).toBeNull()
+    expect(deadReason('20% increased Attack Speed', ctx(['Spell']))).toContain('spell')
+  })
+
   it('CF2-4: flags projectile and melee lines only when the skill lacks that tag', () => {
     const ctx = (types: string[]) => ({ name: 'Skill', types: new Set(types), dealt: new Set<string>(), crit: false })
     expect(deadReason('20% increased Projectile Damage', ctx(['Attack', 'Melee']))).toContain('projectile')
