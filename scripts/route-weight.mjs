@@ -9,7 +9,7 @@ const out = 'apps/web/out'
 const BUDGET = {
   'index.html': 160_000, // CMP2: +1,140 B br on every route (companion host shell and CSS)
   'checklist/index.html': 167_000,
-  'character/index.html': 209_000,
+  'character/index.html': 211_000, // GF1: +~300 B br (Gear fit report wired into analyzeCharacter, swap veto notes)
   'atlas/index.html': 179_000, // CMP2 (as index)
   'dashboard/index.html': 188_000,
   'trade/index.html': 162_000,
