@@ -1,12 +1,14 @@
 name: PR body guard
 
+# The job is named `guard` because the `main` ruleset requires a check with that name. It no longer scans PR text;
+# it self-tests the Claude hooks. Rename or delete it only together with the ruleset.
+
 on:
   pull_request:
     types: [opened, edited, synchronize, reopened]
 
 permissions:
   contents: read
-  pull-requests: write # the guard cuts a session link out of the PR body
 
 jobs:
   guard:
@@ -14,14 +16,5 @@ jobs:
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@v5
-      - name: Self-test the guard
-        run: node --test scripts/check-pr-body.test.mjs .claude/hooks/*.test.mjs
-      - name: No session info in PR title or body
-        # Reads the PR number from $GITHUB_EVENT_PATH and the current title and body from the API, so a re-run after
-        # an edit checks the edited text. Only the (masked) token goes through `env:`; title and body never do (the
-        # runner prints env values in the log), and there is no `${{ }}` in the script text (injection).
-        # PR_GUARD_FIX: a body hit is fixed through the API instead of failing; a title hit still fails.
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-          PR_GUARD_FIX: '1'
-        run: node scripts/check-pr-body.mjs
+      - name: Self-test the Claude hooks
+        run: node --test .claude/hooks/*.test.mjs

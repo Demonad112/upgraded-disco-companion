@@ -41,23 +41,18 @@ function applyPatch(base: Record<string, unknown>, ops: Op[]): Record<string, un
   return doc
 }
 
-const VARIANTS: { name: string; patch: string | null; knownIssue?: string }[] = [
+const VARIANTS: { name: string; patch: string | null }[] = [
   { name: 'recorded-athrynas-v43', patch: null },
   { name: 'no-pob-export', patch: 'no-pob-export' },
-  {
-    name: 'sparse-defence',
-    patch: 'sparse-defence',
-    knownIssue: 'B1: absent resistances appear as 0 in `defence.resistances`; `holdingUp.resistances` marks them unknown.',
-  },
+  { name: 'sparse-defence', patch: 'sparse-defence' },
   { name: 'second-weapon-set', patch: 'second-weapon-set' },
   { name: 'no-skills', patch: 'no-skills' },
 ]
 
-async function view(doc: Record<string, unknown>, knownIssue?: string) {
+async function view(doc: Record<string, unknown>) {
   const a = await analyzeCharacter(doc)
   const holding = holdingUp({ model: a.model, defense: a.defense, attribution: a.attribution, items: a.items, pobStats: a.pobStats })
   return {
-    ...(knownIssue ? { knownIssue } : {}),
     identity: a.identity,
     defence: {
       lowestMaximumHit: a.defense.lowestMaximumHit,
@@ -100,7 +95,7 @@ describe('golden outputs', () => {
       const doc = v.patch
         ? applyPatch(recorded, (JSON.parse(readFileSync(here(`./golden/${v.patch}.patch.json`), 'utf8')) as { ops: Op[] }).ops)
         : recorded
-      const out = await view(doc, v.knownIssue)
+      const out = await view(doc)
       await expect(`${JSON.stringify(out, null, 2)}\n`).toMatchFileSnapshot(`./golden/${v.name}.expected.json`)
     })
   }

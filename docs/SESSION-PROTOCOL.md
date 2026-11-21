@@ -55,9 +55,8 @@
 3. When a batch or plan is fully closed, add 1–2 sentences for it to `docs/HISTORY.md`, then delete its plan file.
 4. Commit and push. Open one PR with these sections: **Summary**, **Previous wave check**,
    **Open rows handled**, **Gate**, **Screenshots** (list them; keep the images out of git), **Limits**, **Needs owner**.
-   Put the Pages preview URL at the top (`.github/pull_request_template.md`). After creating the PR, remove any session
-   link the tooling appended to the body. The `guard` check (`scripts/check-pr-body.mjs`) cuts a session link out of
-   the body and fails a PR whose title carries one.
+   Put the Pages preview URL at the top (`.github/pull_request_template.md`). Use the attribution the tooling supplies
+   for commits and PR bodies as given.
 5. Mark the PR ready once the local gate passes (draft PRs skip e2e and Lighthouse); the owner merges. Book a
    scheduled check-in (about 15 minutes); when it fires, fix any failing check on the branch. Done means every
    required check is green. Never force-push and never delete branches.
