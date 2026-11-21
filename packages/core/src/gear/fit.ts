@@ -157,10 +157,10 @@ export function fitItem(item: ItemAnalysis, tiers: ModTiers, weights: readonly S
     lines.push({ modId: mod.id, text: mod.text, statIds: used, weight, ratio: round1(ratio * 100) / 100, points: round1((100 * weight * ratio) / denominator) })
   }
 
-  // Nothing scorable is not a score of 0: say so and keep the lines that were left out (GF1-6).
+  // Nothing scorable is not a score of 0: say so and keep the lines left out and the waste measured (GF1-6).
   if (lines.length === 0) {
     const n = unscored.length
-    return { ...noScore(item, n === 0 ? 'It has no affix lines to score.' : `None of ${n === 1 ? 'its 1 line' : `its ${n} lines`} could be scored.`), unscored }
+    return { ...noScore(item, n === 0 ? 'It has no affix lines to score.' : `None of ${n === 1 ? 'its 1 line' : `its ${n} lines`} could be scored.`), unscored, wasted }
   }
 
   const clamp = (x: number) => Math.max(0, Math.min(100, round1((100 * x) / denominator)))
