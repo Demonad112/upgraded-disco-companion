@@ -42,7 +42,7 @@ PreToolUse hook: `block-generated-edits.mjs` denies Edit/Write on generated data
 
 ## Working style
 
-- **Attribution.** Use the commit trailers and PR footer the tooling supplies, as given.
+- **Attribution.** Use the commit trailers and PR footer the tooling supplies, except never a Claude session URL (`claude.ai/code/session_…`): no `Claude-Session:` trailer, no session link in PR bodies, comments, code or docs.
 - Answer open questions yourself with your best recommendation, act on it, and state each answer and its reason in
   your reply. The exceptions are the Needs-owner kinds in `docs/SESSION-PROTOCOL.md` (design rules, CI or branch
   protection, data/dependencies, `packages/*` policy, weaker tests, branch deletion; other core changes need only a
