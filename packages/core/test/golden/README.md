@@ -6,7 +6,7 @@
 |---|---|
 | `recorded-athrynas-v43` | The **recorded** capture in `../fixtures/athrynas-v43.json`, unmodified. |
 | `no-pob-export` | **Derived.** Same character with the embedded Path of Building export removed. |
-| `sparse-defence` | **Derived.** `defensiveStats` cut to life and energy shield, breakdowns removed. Records known issue B1 (absent resistances are reported as 0 by the defence summary); `holdingUp` marks them unknown. This file documents current behaviour, not correct behaviour. |
+| `sparse-defence` | **Derived.** `defensiveStats` cut to life and energy shield, breakdowns removed. Absent resistances come out as null (missing), not 0, in both the defence summary and `holdingUp`. |
 | `second-weapon-set` | **Derived.** The second weapon set made live. |
 | `no-skills` | **Derived.** Per-skill damage removed. |
 

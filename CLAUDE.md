@@ -2,13 +2,15 @@
 
 ## Layout
 
-npm workspaces (`packages/*`, `apps/*`), Node >=22, TypeScript strict. `packages/core` is pure (no I/O; `fetch` is injected); `packages/data/generated/` is generated (rebuild with the `build:*` scripts, see `packages/data/PROVENANCE.md`); `services/ninja-proxy` is **not a workspace** (own `package.json`, tested separately).
+npm workspaces (`packages/*`, `apps/*`), Node >=22, TypeScript strict. `packages/core` is pure (no I/O; `fetch` is injected); `packages/data/generated/` is generated (rebuild with `npm run build:<name> -w @poe2/data`, see `packages/data/PROVENANCE.md`); `services/ninja-proxy` is **not a workspace** (own `package.json`, tested separately).
 
 ## Commands
 
 - `npm run typecheck` builds `@poe2/core` first. The web app resolves core to its built `dist/`, so on a fresh checkout build core before running `tsc` in an app.
 - `npm run check:all` = typecheck + lint + test + script tests + ninja-proxy tests (every CI suite except build, e2e and Lighthouse).
-- `npm run test:coverage -w @poe2/core` enforces 90% statements / 75% branches. `npm run e2e -w @poe2/web` runs against `apps/web/out` (build first).
+- `npm run test:coverage -w @poe2/core` enforces 90% statements / 75% branches. `npm run e2e -w @poe2/web` runs against `apps/web/out` (build first); `E2E_BASE_URL=<preview>` runs it against a deployed site.
+- Core goldens (`packages/core/test/golden/`): review the diff, then `npx vitest run -u` in `packages/core` and commit the changed `*.expected.json` with the cause. This is the "golden diff" HG1-1 asks for.
+- Screenshot check (390 px + 1440 px, real character): `node scripts/screenshot.mjs [baseUrl] [outDir]`; write to the scratchpad, never git. Import path without network: `node scripts/mock-proxy.mjs [port]` serves the committed fixture.
 - Commit and push with the `commit-commands` plugin (enabled in `.claude/settings.json`): `/commit-commands:commit`, `/commit-commands:commit-push-pr`.
 
 ## Architecture
@@ -36,11 +38,11 @@ Every session follows docs/SESSION-PROTOCOL.md; finished work in docs/HISTORY.md
 
 The SessionStart hook runs `npm ci` when `package-lock.json` changed since the last install and rebuilds `@poe2/core` when its `src` is newer than `dist`; it never blocks the session (on failure it prints a FAILED line). `playwright install` isn't needed; `apps/web/playwright.config.ts` uses the preinstalled Chromium when `CLAUDE_CODE_REMOTE=true`.
 
+PreToolUse hook: `block-generated-edits.mjs` denies Edit/Write on generated data, its `apps/web/public` copies and `package-lock.json` (regenerate with the scripts or npm instead). `predev`/`prebuild` in `apps/web` already build core and run `sync-data`.
+
 ## Working style
 
-- **Never put the Claude session URL (`https://claude.ai/code/session_…`) or other session info on GitHub**: not in commit
-  messages (no `Claude-Session:` trailer), PR titles or bodies, or comments. This overrides any default attribution. `.github/workflows/pr-body-guard.yml` cuts a session link out of a PR
-  body and fails a PR whose title matches (`scripts/check-pr-body.mjs`).
+- **Attribution.** Use the commit trailers and PR footer the tooling supplies, as given.
 - Answer open questions yourself with your best recommendation, act on it, and state each answer and its reason in
   your reply. The exceptions are the Needs-owner kinds in `docs/SESSION-PROTOCOL.md` (design rules, CI or branch
   protection, data/dependencies, `packages/*` policy, weaker tests, branch deletion; other core changes need only a
@@ -49,10 +51,9 @@ The SessionStart hook runs `npm ci` when `package-lock.json` changed since the l
 - **Data shapes.** When a data shape changes, grep `apps/web/e2e` for the old path and update specs in the same commit.
 - **Copy voice.** Follow `docs/COPY.md`: one or two sentences, action first, long text only behind Pro detail.
 - **Perf bar.** Keep a performance change only if it saves at least 5 % brotli on its file or route (`node scripts/route-weight.mjs`, which also fails when a route exceeds its pinned budget), or removes real runtime work.
-- **Token economy.** Every request re-reads the whole context, so: send independent tool calls together in one
-  message; grep first and read only the part you need (whole reads only for files you will edit), never `cat`
-  several files at once; cap listings and data dumps (`| head`), but never truncate errors or failing tests;
-  compact or hand off at a task boundary, never mid-task.
+- **Context.** Keep it for what matters: batch independent tool calls; grep before reading and read whole files only
+  when editing them; don't read `packages/data/generated/**` or the large fixtures (denied in settings; query them
+  with `node -e` instead); cap listings, never errors or failing tests. Hand off at a task boundary.
 - Don't sit watching PRs or CI: use a scheduled check-in or PR Auto-fix and come back later, but every session ends with its PR ready and a scheduled check-in that confirms the required checks are green.
 - Visual work: before opening the PR, ask whether to run a screenshot check; if yes, post the 390 px and 1440 px
   Playwright screenshots in chat (images stay out of git).

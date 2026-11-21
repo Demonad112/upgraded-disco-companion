@@ -1,5 +1,4 @@
 {
-  "knownIssue": "B1: absent resistances appear as 0 in `defence.resistances`; `holdingUp.resistances` marks them unknown.",
   "identity": {
     "name": "Athrynas",
     "account": "Demonad112#2589",
