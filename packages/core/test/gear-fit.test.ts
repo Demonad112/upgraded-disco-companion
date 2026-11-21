@@ -175,10 +175,25 @@ describe('fitItem', () => {
   })
 
   it('does not count resistance the build provably wastes', () => {
-    const wasteful = ring(9, [mod('ResTop', RES, 40, { waste: { amount: 20, stat: RES, reason: 'over cap' } })])
+    const wasteful = ring(9, [mod('ResTop', RES, 40, { waste: { amount: 20, stat: RES, overCap: 20, reason: 'over cap' } })])
     const clean = ring(9, [mod('ResTop', RES, 20)])
     expect(fitItem(wasteful, tiers, weights).score).toBe(fitItem(clean, tiers, weights).score)
-    expect(fitItem(wasteful, tiers, weights).wasted).toEqual([{ text: `${RES} 40`, amount: 20, reason: 'over cap' }])
+    expect(fitItem(wasteful, tiers, weights).wasted).toEqual([{ text: `${RES} 40`, statId: RES, amount: 20, overCap: 20, reason: 'over cap', sharedWith: [] }])
+  })
+
+  it('spends one resistance over-cap once across items (GF1-7)', () => {
+    // 59 over cap; each line alone is true (36 and 29), together only 59 can be wasted.
+    const a = ring(1, [mod('ResTop', RES, 36, { waste: { amount: 36, stat: RES, overCap: 59, reason: 'r' } })])
+    const b = ring(2, [mod('ResTop', RES, 29, { waste: { amount: 29, stat: RES, overCap: 59, reason: 'r' } })])
+    const c = ring(3, [mod('ResTop', RES, 30, { waste: { amount: 30, stat: RES, overCap: 59, reason: 'r' } })])
+    const items = gearFitReport({ items: [a, b, c], tiers, defensive: null, skillTypes: null }).items
+    const w = items.flatMap((i) => i.wasted)
+    expect(w.map((x) => x.amount)).toEqual([36, 23, 0])
+    expect(w.reduce((s, x) => s + x.amount, 0)).toBe(59)
+    expect(w[0]!.sharedWith).toEqual([])
+    expect(w[1]!.sharedWith).toEqual(['Ring 1'])
+    expect(w[2]!.sharedWith).toEqual(['Ring 1', 'Ring 2'])
+    expect(w[1]!.statId).toBe(RES)
   })
 
   it('treats a negative roll as a penalty, never as zero', () => {

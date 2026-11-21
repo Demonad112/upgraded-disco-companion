@@ -52,6 +52,19 @@ export interface UnscoredLine {
   detail: string
 }
 
+export interface WastedLine {
+  text: string
+  /** The resistance stat the waste was measured on. */
+  statId: string
+  /** Points of this line that do nothing, after earlier items took their share. */
+  amount: number
+  /** The character's over-cap on that stat, the most that can be wasted in total. */
+  overCap: number
+  reason: string
+  /** Slots listed earlier that already use up part of the same over-cap. */
+  sharedWith: string[]
+}
+
 export interface GearFit {
   slotId: number
   slotLabel: string
@@ -63,8 +76,11 @@ export interface GearFit {
   /** Why no score was made. Null when one was. */
   missing: string | null
   lines: FitLine[]
-  /** Lines with a provable waste, with the points that do nothing. */
-  wasted: { text: string; amount: number; reason: string }[]
+  /**
+   * Lines with a provable waste, with the points that do nothing. Within a report the
+   * points of one stat are spent once: later lines read less and name `sharedWith`.
+   */
+  wasted: WastedLine[]
   /** Highest-weighted stats that can roll here and are absent, best first. */
   absent: { statId: string; weight: number }[]
   unscored: UnscoredLine[]
@@ -91,7 +107,7 @@ export function fitItem(item: ItemAnalysis, tiers: ModTiers, weights: readonly S
 
   const unscored: UnscoredLine[] = []
   const lines: FitLine[] = []
-  const wasted: GearFit['wasted'] = []
+  const wasted: WastedLine[] = []
   const carried = new Set<string>()
   let earned = 0
   let earnedCeiling = 0
@@ -103,7 +119,7 @@ export function fitItem(item: ItemAnalysis, tiers: ModTiers, weights: readonly S
       unscored.push({ kind: 'not-understood', text: mod.text, id: mod.id ?? mod.text, detail: mod.unresolved ?? 'No tier data for this line.' })
       continue
     }
-    if (mod.waste) wasted.push({ text: mod.text, amount: mod.waste.amount, reason: mod.waste.reason })
+    if (mod.waste) wasted.push({ text: mod.text, statId: mod.waste.stat, amount: mod.waste.amount, overCap: mod.waste.overCap, reason: mod.waste.reason, sharedWith: [] })
 
     const ratios: number[] = []
     const ceilingRatios: number[] = []
@@ -183,7 +199,29 @@ export function gearFitReport(input: GearFitInput): GearFitReport {
   return {
     archetype: inferArchetype(input),
     weights,
-    items: input.items.filter((i) => i.active).map((i) => fitItem(i, input.tiers, weights)),
+    items: shareOverCap(input.items.filter((i) => i.active).map((i) => fitItem(i, input.tiers, weights))),
     basis: GEAR_FIT_BASIS,
   }
+}
+
+/**
+ * Each line's waste is measured alone against the full over-cap, so two items can
+ * each claim the same points. Spend the over-cap once, in slot order (GF1-7). A
+ * later line keeps what is left and names the slots that already used some. The
+ * score is untouched: it already leaves the measured waste out of each line.
+ */
+function shareOverCap(fits: GearFit[]): GearFit[] {
+  const left = new Map<string, number>()
+  const users = new Map<string, string[]>()
+  return fits.map((fit) => ({
+    ...fit,
+    wasted: fit.wasted.map((w) => {
+      const remaining = left.get(w.statId) ?? w.overCap
+      const amount = Math.min(w.amount, remaining)
+      const sharedWith = [...(users.get(w.statId) ?? [])]
+      left.set(w.statId, remaining - amount)
+      if (amount > 0) users.set(w.statId, [...sharedWith.filter((s) => s !== fit.slotLabel), fit.slotLabel])
+      return { ...w, amount, sharedWith }
+    }),
+  }))
 }

@@ -28,6 +28,7 @@ export function GearFitLine({ fit }: { fit: GearFit | undefined }) {
           {fit.wasted.map((w) => (
             <li key={w.text}>
               {w.amount} wasted on {w.text}: {w.reason}
+              {w.sharedWith.length ? ` Shared with ${w.sharedWith.join(', ')}: ${w.overCap}% over cap in total.` : ''}
             </li>
           ))}
           {fit.unscored.length ? <li>{fit.unscored.length} line{fit.unscored.length === 1 ? '' : 's'} not scored (no weight, no ceiling or not understood).</li> : null}

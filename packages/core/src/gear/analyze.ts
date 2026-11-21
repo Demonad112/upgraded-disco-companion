@@ -141,7 +141,7 @@ export interface ItemModAnalysis {
    * Points of this mod that are provably doing nothing, with the reason.
    * Null when nothing measurable is wasted.
    */
-  waste: { amount: number; stat: string; reason: string } | null
+  waste: { amount: number; stat: string; /** The over-cap this was measured against; shared by every item carrying the stat. */ overCap: number; reason: string } | null
   /** Why no tier could be resolved. Null when it was. */
   unresolved: string | null
 }
@@ -269,7 +269,7 @@ export function structuredMods(item: EquippedItem): { id: string; stats: Record<
 function wasteFor(
   stats: RolledStat[],
   defense: DefenseSummary | null,
-): { amount: number; stat: string; reason: string } | null {
+): { amount: number; stat: string; overCap: number; reason: string } | null {
   if (!defense) return null
 
   for (const stat of stats) {
@@ -292,6 +292,7 @@ function wasteFor(
     return {
       amount,
       stat: stat.id,
+      overCap: overcap,
       reason:
         `${label} ${isAllEle ? 'are' : 'is'} ${overcap}% above the cap, and this mod grants ${stat.value}%. ` +
         `At least ${amount}% of it is doing nothing.`,
