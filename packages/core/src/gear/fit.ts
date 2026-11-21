@@ -52,6 +52,24 @@ export interface UnscoredLine {
   detail: string
 }
 
+export interface WastedLine {
+  text: string
+  /** The resistance stat the waste was measured on. */
+  statId: string
+  /** Points of this line that do nothing, after earlier lines took their share. */
+  amount: number
+  /** Points measured on this item alone; what the score leaves out. */
+  alone: number
+  /** The character's over-cap on that stat, the most that can be wasted in total. */
+  overCap: number
+  /** Over-cap per resistance type the line feeds (three types for all-elemental). */
+  overCapBy: Readonly<Record<string, number>>
+  /** Why, in the shared amount once other lines use part of the over-cap. */
+  reason: string
+  /** Other slots, listed earlier, that already use up part of the same over-cap. */
+  sharedWith: string[]
+}
+
 export interface GearFit {
   slotId: number
   slotLabel: string
@@ -63,8 +81,11 @@ export interface GearFit {
   /** Why no score was made. Null when one was. */
   missing: string | null
   lines: FitLine[]
-  /** Lines with a provable waste, with the points that do nothing. */
-  wasted: { text: string; amount: number; reason: string }[]
+  /**
+   * Lines with a provable waste, with the points that do nothing. Within a report the
+   * points of one stat are spent once: later lines read less and name `sharedWith`.
+   */
+  wasted: WastedLine[]
   /** Highest-weighted stats that can roll here and are absent, best first. */
   absent: { statId: string; weight: number }[]
   unscored: UnscoredLine[]
@@ -91,7 +112,7 @@ export function fitItem(item: ItemAnalysis, tiers: ModTiers, weights: readonly S
 
   const unscored: UnscoredLine[] = []
   const lines: FitLine[] = []
-  const wasted: GearFit['wasted'] = []
+  const wasted: WastedLine[] = []
   const carried = new Set<string>()
   let earned = 0
   let earnedCeiling = 0
@@ -103,7 +124,10 @@ export function fitItem(item: ItemAnalysis, tiers: ModTiers, weights: readonly S
       unscored.push({ kind: 'not-understood', text: mod.text, id: mod.id ?? mod.text, detail: mod.unresolved ?? 'No tier data for this line.' })
       continue
     }
-    if (mod.waste) wasted.push({ text: mod.text, amount: mod.waste.amount, reason: mod.waste.reason })
+    if (mod.waste) {
+      const { amount, stat, overCap, overCapBy, reason } = mod.waste
+      wasted.push({ text: mod.text, statId: stat, amount, alone: amount, overCap, overCapBy, reason, sharedWith: [] })
+    }
 
     const ratios: number[] = []
     const ceilingRatios: number[] = []
@@ -139,6 +163,12 @@ export function fitItem(item: ItemAnalysis, tiers: ModTiers, weights: readonly S
     earned += weight * ratio
     earnedCeiling += weight * mean(ceilingRatios)
     lines.push({ modId: mod.id, text: mod.text, statIds: used, weight, ratio: round1(ratio * 100) / 100, points: round1((100 * weight * ratio) / denominator) })
+  }
+
+  // Nothing scorable is not a score of 0: say so and keep the lines left out and the waste measured (GF1-6).
+  if (lines.length === 0) {
+    const n = unscored.length
+    return { ...noScore(item, n === 0 ? 'It has no affix lines to score.' : `None of ${n === 1 ? 'its 1 line' : `its ${n} lines`} could be scored.`), unscored, wasted }
   }
 
   const clamp = (x: number) => Math.max(0, Math.min(100, round1((100 * x) / denominator)))
@@ -177,7 +207,47 @@ export function gearFitReport(input: GearFitInput): GearFitReport {
   return {
     archetype: inferArchetype(input),
     weights,
-    items: input.items.filter((i) => i.active).map((i) => fitItem(i, input.tiers, weights)),
+    items: shareOverCap(input.items.filter((i) => i.active).map((i) => fitItem(i, input.tiers, weights))),
     basis: GEAR_FIT_BASIS,
   }
+}
+
+/**
+ * Each line's waste is measured alone against the full over-cap, so two lines can
+ * each claim the same points. Spend each resistance type's over-cap once, in slot
+ * order (GF1-7); an all-elemental line draws on fire, cold and lightning together.
+ * A later line keeps what is left, names the other slots that used some, and its
+ * reason is rewritten to match. The score is untouched: it leaves out the waste
+ * measured on the item alone (`alone`), so it does not depend on slot order.
+ */
+function shareOverCap(fits: GearFit[]): GearFit[] {
+  const left = new Map<string, number>()
+  const users = new Map<string, string[]>()
+  return fits.map((fit) => ({
+    ...fit,
+    wasted: fit.wasted.map((w) => {
+      const types = Object.keys(w.overCapBy)
+      const before = types.map((t) => left.get(t) ?? w.overCapBy[t]!)
+      const remaining = Math.max(0, Math.min(...before))
+      const amount = Math.min(w.amount, remaining)
+      const sharedWith = [...new Set(types.flatMap((t) => users.get(t) ?? []))].filter((s) => s !== fit.slotLabel)
+      types.forEach((t, i) => {
+        left.set(t, before[i]! - amount)
+        if (amount > 0) users.set(t, [...(users.get(t) ?? []).filter((s) => s !== fit.slotLabel), fit.slotLabel])
+      })
+      const used = w.overCap - remaining
+      if (used <= 0) return { ...w, amount, sharedWith }
+      return { ...w, amount, sharedWith, reason: sharedReason(w, amount, used, sharedWith) }
+    }),
+  }))
+}
+
+function sharedReason(w: WastedLine, amount: number, used: number, sharedWith: string[]): string {
+  const types = Object.keys(w.overCapBy)
+  const res = types.length > 1 ? 'all elemental resistances' : `${types[0]} resistance`
+  const who = sharedWith.length ? sharedWith.join(', ') : 'other lines on this item'
+  const verb = sharedWith.length === 1 ? 'uses' : 'use'
+  const scoreNote = amount < w.alone ? ` The score leaves out ${w.alone}%, measured on this item alone.` : ''
+  if (amount === 0) return `None of this line is wasted: ${who} already ${verb} all ${w.overCap}% of ${res} over the cap.${scoreNote}`
+  return `${res[0]!.toUpperCase()}${res.slice(1)} ${types.length > 1 ? 'are' : 'is'} ${w.overCap}% above the cap; ${who} already ${verb} ${used}% of it, so ${amount}% of this line is doing nothing.${scoreNote}`
 }

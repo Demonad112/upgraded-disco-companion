@@ -65,7 +65,7 @@ Do them in the order shown; they are independent. The step numbers stay the same
 
 ## PoB comparison run
 
-- [ ] **15. Run one PoB code through the site and through PoB2** (NP1-6b, GF1-6) (15 min)
+- [ ] **15. Run one PoB code through the site and through PoB2** (NP1-6b, GF1-3) (15 min)
   - Follow `docs/plans/pob-character-analysis.md` §4: `node scripts/pob-sheet.mjs code.txt`, then send §5's prompt to your PoB2 MCP with the same code.
   - Paste both outputs into a session with "tune from the PoB comparison".
 

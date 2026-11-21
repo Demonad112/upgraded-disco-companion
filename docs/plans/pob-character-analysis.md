@@ -1,7 +1,7 @@
 # Plan: PoB code character analysis, checked against real PoB2
 
 Status: open. Owner: run the comparison (§4) and paste the two outputs back; a session tunes from there.
-Rows: NP1-6b, AL1-1, GF1 item 8 (targets), GF1-5 / GF1-6 and owner step 11 (minion second pass).
+Rows: NP1-6b, AL1-1, GF1-8 (targets), and owner step 11 (minion second pass, which revisits the closed GF1-5 and GF1-6 with minion evidence).
 
 ## 1. Goal
 
@@ -213,22 +213,22 @@ Each difference becomes a line in this plan's §9 log (code hash, field, site, P
 
 `apps/web/src/lib/atlasLegs.ts:63`: when the BFS frontier (`reached`) already holds every target of a step, skip the step and leave `leg` alone, so "leg L" never lands on a step with no path. Red test: a step whose nodes are all reached gets no `RouteLeg` and does not advance the leg number. This is web only, with no core change.
 
-### W4 (last): second pass on a minion character (owner step 11, GF1-5, GF1-6)
+### W4 (last): second pass on a minion character (owner step 11; revisits GF1-5 and GF1-6)
 
 Run once W1 to W3 are in.
 
 1. The owner exports a **minion** build code from PoB2 and runs §4 again.
 2. Check what changes for minions:
    - PoB's `TotalDPS` for a minion skill is the minion's DPS. Check that the Damage tab labels it as minion damage, and that the crit and DoT findings are not applied to the player's numbers.
-   - **GF1-5:** for each gear line, decide whether it is dead for a minion build. "Minions deal X% increased damage" counts; player-only attack or spell lines do not, unless the skill is a player skill. Add only the rules the run proves.
-   - **GF1-6:** a Gear fit run on real numbers. Record where `ARCHETYPE` and `GEAR_FIT` mislead, and update their provenance (`ASSUMED_CONSTANTS`, `sampleSize`) with what was seen.
-3. Close GF1-5 and GF1-6, or reword them with the evidence.
+   - **GF1-5 (closed: a Minion main skill gets no dead-stat verdict):** with a real minion code, decide which gear lines are dead for it. "Minions deal X% increased damage" counts; player-only attack or spell lines do not, unless the skill is a player skill. Add only the rules the run proves, each with a red test.
+   - **GF1-6 (closed on Yykiuy):** run Gear fit again on the minion build. Record where `ARCHETYPE` and `GEAR_FIT` mislead (GF1-3), and update their provenance (`ASSUMED_CONSTANTS`, `sampleSize`) with what was seen. Run the compare target if the owner names a candidate item.
+3. Record the result as a new row (or rows) in the register, citing the closed GF1-5 and GF1-6.
 
 ## 8. Done when
 
 - On two codes (the owner's main build and the minion build), every read-through field matches PoB2 exactly, or differs only by a recorded config or version reason.
 - Every "missing" on the site is either missing in PoB too, or is listed in `sourceGaps`.
-- W1 to W4 are closed in the register.
+- NP1-6b, GF1-8 and AL1-1 are closed, and the minion pass is recorded.
 
 ## 9. Comparison log
 

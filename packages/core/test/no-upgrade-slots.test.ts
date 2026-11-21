@@ -64,7 +64,7 @@ describe('slotsWithNoFlaggedUpgrade', () => {
   })
 
   it('does not list a slot with a better tier or wasted points', () => {
-    const items = [item(1, [mod({ upgrades: [better] })]), item(2, [mod({ waste: { amount: 3, stat: 's', reason: 'r' } })])]
+    const items = [item(1, [mod({ upgrades: [better] })]), item(2, [mod({ waste: { amount: 3, stat: 's', overCap: 3, overCapBy: { fire: 3 }, reason: 'r' } })])]
     expect(slotsWithNoFlaggedUpgrade(items, [])).toEqual([])
   })
 
