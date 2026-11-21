@@ -214,6 +214,14 @@ describe('fitItem', () => {
     expect(fit.unscored.map((u) => u.kind)).toEqual(['not-understood'])
   })
 
+  it('GF1-6: a missing score still reports the waste it measured', () => {
+    // Fire res is wasted but carries no weight here, so the item has no scorable line.
+    const lifeOnly = weights.filter((w) => w.statId === LIFE)
+    const fit = fitItem(ring(9, [mod('ResTop', RES, 30, { waste: { amount: 10, stat: RES, reason: 'over cap' } })]), tiers, lifeOnly)
+    expect(fit.score).toBeNull()
+    expect(fit.wasted).toEqual([{ text: `${RES} 30`, amount: 10, reason: 'over cap' }])
+  })
+
   it('lists reduction stats and stats the item level cannot roll as unscored', () => {
     const reduction = mod('LifeTop', LIFE, -20, { rolled: [{ id: LIFE, value: -20, min: -30, max: -10, quality: null }] })
     expect(fitItem(ring(9, [reduction]), tiers, weights).unscored.map((u) => u.kind)).toEqual(['reduction'])
