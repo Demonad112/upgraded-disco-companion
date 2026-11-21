@@ -1,6 +1,6 @@
 # Status (GF1)
 
-Built (core only, not wired into `analyzeCharacter`, so no golden changed): items 1 to 3 of §3.
+Built (core only, no UI): items 1 to 6 of §3. `Analysis.gearFit` carries items 1 to 3 (null without `tiers`); no recorded golden serialises it, so none changed.
 
 | Item | Module | Notes |
 |---|---|---|
@@ -10,7 +10,11 @@ Built (core only, not wired into `analyzeCharacter`, so no golden changed): item
 
 Input is an analysis already done: `ItemAnalysis[]` from `analyzeItem`, the character's `defensiveStats` and the main skill's tags. Nothing re-runs the analysis, simulates a swap or reads ladder data.
 
-Not built yet: wiring into `analyzeCharacter` and the web UI (needs the Owner queue answers GF1-1 and GF1-2), items 4 to 10.
+| 4 Veto notes | `gear/veto.ts`, `ReplacementPlan.vetoes` | Movement speed, spirit and Str/Dex/Int totals exist in `defensiveStats`; item attribute requirements are on each item. Reserved spirit and gem requirements are not in the payload, so they print "Can't check: <input>". Base-bound implicit lines are not counted as lost. Spec lines are credited at their minimum roll. `planReplacement` takes the sheet as `sheet`. |
+| 5 Compare target | `gear/compare-target.ts` | Already worn, empty slot, weaker ring by Gear fit (both offered when a score is missing), two-hander against main plus off hand. Jewels are not equipped slots, so they are "unknown". Choosing a target does not rank anything. |
+| 6 Pareto view | `recommend/pareto.ts` | A view beside `rank.ts`, same cost scalar. Unknown cost or unmeasured gain is `unplaced`, never dominated or dominating. Gain labels are `exact` or `missing` (no bounds exist today). |
+
+Not built yet: the web UI (waits on Owner queue GF1-1), items 7 to 10, and the profile-driven dead-stat check (GF1-5).
 
 ---
 

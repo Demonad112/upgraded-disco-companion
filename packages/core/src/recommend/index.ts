@@ -47,6 +47,7 @@ export * from './axis.js'
 export * from './easy-wins.js'
 
 export * from './rank.js'
+export * from './pareto.js'
 
 function score(impact: Impact | null, cost: Cost): number {
   // Findings without a quantifiable impact rank last among actionable items —

@@ -32,6 +32,7 @@ import {
   type ItemModAnalysis,
 } from './analyze.js'
 import type { AffixKind, LadderEntry, ModTiers } from './tiers.js'
+import { swapVetoes, type VetoNote, type VetoSheet } from './veto.js'
 
 const ALL_ELEMENTAL = 'base_resist_all_elements_%'
 const ELEMENTS = ['fire', 'cold', 'lightning'] as const
@@ -103,6 +104,8 @@ export interface ReplacementPlan {
    * free suffix slots where possible; otherwise listed here, not as follow-ups.
    */
   existingShortfalls: { type: string; points: number; placedInSpec: boolean }[]
+  /** Movement speed, spirit and attribute checks. Notes only: never feed ordering or grade. */
+  vetoes: VetoNote[]
   notes: string[]
 }
 
@@ -218,6 +221,8 @@ export interface ReplacementInput {
    * straight to follow-ups on other items.
    */
   omitResistances?: readonly string[]
+  /** poe.ninja's `defensiveStats`, for the veto notes. Without it they read "can't check". */
+  sheet?: VetoSheet | null
 }
 
 export function planReplacement({
@@ -229,6 +234,7 @@ export function planReplacement({
   tiers,
   maxIlvl,
   omitResistances = [],
+  sheet,
 }: ReplacementInput): ReplacementPlan {
   const notes: string[] = []
   const baseTags = tiers.tagsForBase(target.baseType)
@@ -508,6 +514,12 @@ export function planReplacement({
     followUps,
     uncovered,
     existingShortfalls,
+    vetoes: swapVetoes({
+      target,
+      spec,
+      others: rawItems.filter((r) => r.active && r.slotId !== target.slotId),
+      sheet,
+    }),
     notes,
   }
 }

@@ -16,7 +16,7 @@ import { ModTiers, type ModTierData } from '../src/gear/tiers.js'
 import { analyzeItem, type ItemAnalysis, type ItemModAnalysis } from '../src/gear/analyze.js'
 import { inferArchetype } from '../src/gear/archetype.js'
 import { deriveStatWeights } from '../src/gear/weights.js'
-import { fitItem, gearFitReport } from '../src/gear/fit.js'
+import { fitItem, gearFitReport, GEAR_FIT_BASIS } from '../src/gear/fit.js'
 import type { CharModel } from '../src/model/types.js'
 
 const LIFE = 'base_maximum_life'
@@ -241,7 +241,27 @@ describe('on the recorded character', () => {
         expect(f.ceiling).toBeLessThanOrEqual(f.score + 1e-9)
       }
     }
-    // The readout stays out of the analysis result itself.
-    expect(JSON.stringify(analysis)).not.toMatch(/"ceiling"/)
+  })
+
+  it('is wired into analyzeCharacter as a labelled readout that feeds neither order nor grade', async () => {
+    const plain = await analyzeCharacter(payload)
+    expect(plain.gearFit).toBeNull()
+
+    const withTiers = await analyzeCharacter(payload, { tiers: real })
+    const fit = withTiers.gearFit
+    expect(fit).not.toBeNull()
+    expect(fit!.basis).toBe(GEAR_FIT_BASIS)
+    expect(fit!.items.length).toBe(withTiers.items.filter((i) => i.active).length)
+    // No catalog, so the main skill's types are unknown: that half is missing, not guessed.
+    expect(fit!.archetype.offence).toBeNull()
+    expect(fit!.archetype.missing.length).toBeGreaterThan(0)
+    expect(fit!.archetype.defence).toBe('evasion')
+
+    // GF1-2: never an input to recommendation order or the grade.
+    const strip = (a: typeof withTiers) => JSON.stringify({ r: a.recommendations.recommendations.map((r) => r.id), g: a.assessment })
+    const noFit = { ...withTiers, gearFit: null }
+    expect(strip(noFit)).toBe(strip(withTiers))
+    expect(JSON.stringify(withTiers.recommendations)).not.toMatch(/"ceiling"/)
+    expect(JSON.stringify(withTiers.assessment)).not.toMatch(/gearFit|"ceiling"/)
   })
 })
