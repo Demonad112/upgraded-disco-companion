@@ -175,10 +175,59 @@ describe('fitItem', () => {
   })
 
   it('does not count resistance the build provably wastes', () => {
-    const wasteful = ring(9, [mod('ResTop', RES, 40, { waste: { amount: 20, stat: RES, reason: 'over cap' } })])
+    const wasteful = ring(9, [mod('ResTop', RES, 40, { waste: { amount: 20, stat: RES, overCap: 20, overCapBy: { fire: 20 }, reason: 'over cap' } })])
     const clean = ring(9, [mod('ResTop', RES, 20)])
     expect(fitItem(wasteful, tiers, weights).score).toBe(fitItem(clean, tiers, weights).score)
-    expect(fitItem(wasteful, tiers, weights).wasted).toEqual([{ text: `${RES} 40`, amount: 20, reason: 'over cap' }])
+    expect(fitItem(wasteful, tiers, weights).wasted).toEqual([{ text: `${RES} 40`, statId: RES, amount: 20, alone: 20, overCap: 20, overCapBy: { fire: 20 }, reason: 'over cap', sharedWith: [] }])
+  })
+
+  it('spends one resistance over-cap once across items (GF1-7)', () => {
+    // 59 over cap; each line alone is true (36 and 29), together only 59 can be wasted.
+    const a = ring(1, [mod('ResTop', RES, 36, { waste: { amount: 36, stat: RES, overCap: 59, overCapBy: { fire: 59 }, reason: 'r' } })])
+    const b = ring(2, [mod('ResTop', RES, 29, { waste: { amount: 29, stat: RES, overCap: 59, overCapBy: { fire: 59 }, reason: 'r' } })])
+    const c = ring(3, [mod('ResTop', RES, 30, { waste: { amount: 30, stat: RES, overCap: 59, overCapBy: { fire: 59 }, reason: 'r' } })])
+    const items = gearFitReport({ items: [a, b, c], tiers, defensive: null, skillTypes: null }).items
+    const w = items.flatMap((i) => i.wasted)
+    expect(w.map((x) => x.amount)).toEqual([36, 23, 0])
+    expect(w.reduce((s, x) => s + x.amount, 0)).toBe(59)
+    expect(w[0]!.sharedWith).toEqual([])
+    expect(w[1]!.sharedWith).toEqual(['Ring 1'])
+    expect(w[2]!.sharedWith).toEqual(['Ring 1', 'Ring 2'])
+    expect(w[1]!.statId).toBe(RES)
+  })
+
+  it('GF1-7: rewrites the reason to the shared amount and keeps a 0-point row with why', () => {
+    const a = ring(1, [mod('ResTop', RES, 36, { waste: { amount: 36, stat: RES, overCap: 59, overCapBy: { fire: 59 }, reason: 'alone' } })])
+    const b = ring(2, [mod('ResTop', RES, 29, { waste: { amount: 29, stat: RES, overCap: 59, overCapBy: { fire: 59 }, reason: 'alone' } })])
+    const c = ring(3, [mod('ResTop', RES, 30, { waste: { amount: 30, stat: RES, overCap: 59, overCapBy: { fire: 59 }, reason: 'alone' } })])
+    const w = gearFitReport({ items: [a, b, c], tiers, defensive: null, skillTypes: null }).items.flatMap((i) => i.wasted)
+    expect(w[0]!.reason).toBe('alone')
+    expect(w[1]!.reason).toMatch(/Ring 1 already uses 36% of it, so 23% of this line is doing nothing/)
+    expect(w[1]!.reason).toMatch(/score leaves out 29%/)
+    expect(w[2]!.amount).toBe(0)
+    expect(w[2]!.alone).toBe(30)
+    expect(w[2]!.reason).toMatch(/None of this line is wasted/)
+    expect(w[2]!.reason).not.toMatch(/At least 30%/)
+  })
+
+  it('GF1-7: an all-elemental line and a fire line draw on the same fire over-cap', () => {
+    const ALL = 'base_resist_all_elements_%'
+    const fire = ring(1, [mod('ResTop', RES, 36, { waste: { amount: 36, stat: RES, overCap: 59, overCapBy: { fire: 59 }, reason: 'r' } })])
+    const allEle = ring(2, [mod('ResTop', ALL, 30, { waste: { amount: 30, stat: ALL, overCap: 59, overCapBy: { fire: 59, cold: 70, lightning: 80 }, reason: 'r' } })])
+    const w = gearFitReport({ items: [fire, allEle], tiers, defensive: null, skillTypes: null }).items.flatMap((i) => i.wasted)
+    expect(w.map((x) => x.amount)).toEqual([36, 23])
+    expect(w[1]!.sharedWith).toEqual(['Ring 1'])
+  })
+
+  it('GF1-7: never names a line\'s own slot in sharedWith', () => {
+    const two = ring(1, [
+      mod('ResTop', RES, 30, { waste: { amount: 30, stat: RES, overCap: 40, overCapBy: { fire: 40 }, reason: 'r' } }),
+      mod('ResTop', RES, 25, { text: 'second', waste: { amount: 25, stat: RES, overCap: 40, overCapBy: { fire: 40 }, reason: 'r' } }),
+    ])
+    const w = gearFitReport({ items: [two], tiers, defensive: null, skillTypes: null }).items[0]!.wasted
+    expect(w.map((x) => x.amount)).toEqual([30, 10])
+    expect(w[1]!.sharedWith).toEqual([])
+    expect(w[1]!.reason).toMatch(/other lines on this item already use 30% of it/)
   })
 
   it('treats a negative roll as a penalty, never as zero', () => {
@@ -217,9 +266,9 @@ describe('fitItem', () => {
   it('GF1-6: a missing score still reports the waste it measured', () => {
     // Fire res is wasted but carries no weight here, so the item has no scorable line.
     const lifeOnly = weights.filter((w) => w.statId === LIFE)
-    const fit = fitItem(ring(9, [mod('ResTop', RES, 30, { waste: { amount: 10, stat: RES, reason: 'over cap' } })]), tiers, lifeOnly)
+    const fit = fitItem(ring(9, [mod('ResTop', RES, 30, { waste: { amount: 10, stat: RES, overCap: 10, overCapBy: { fire: 10 }, reason: 'over cap' } })]), tiers, lifeOnly)
     expect(fit.score).toBeNull()
-    expect(fit.wasted).toEqual([{ text: `${RES} 30`, amount: 10, reason: 'over cap' }])
+    expect(fit.wasted.map((w) => w.amount)).toEqual([10])
   })
 
   it('lists reduction stats and stats the item level cannot roll as unscored', () => {

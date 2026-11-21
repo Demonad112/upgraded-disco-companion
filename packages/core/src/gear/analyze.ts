@@ -121,6 +121,17 @@ export interface UpgradeOption {
   lowerIsBetter: boolean
 }
 
+/** Points of one resistance line that do nothing, measured on this item alone. */
+export interface ModWaste {
+  amount: number
+  stat: string
+  /** The over-cap this was measured against (the smallest of the three for all-elemental). */
+  overCap: number
+  /** The character's over-cap per resistance type this line feeds; every item carrying the type draws on it. */
+  overCapBy: Readonly<Record<string, number>>
+  reason: string
+}
+
 export interface ItemModAnalysis {
   /** Mod id, when poe.ninja supplied one. */
   id: string | null
@@ -141,7 +152,7 @@ export interface ItemModAnalysis {
    * Points of this mod that are provably doing nothing, with the reason.
    * Null when nothing measurable is wasted.
    */
-  waste: { amount: number; stat: string; reason: string } | null
+  waste: ModWaste | null
   /** Why no tier could be resolved. Null when it was. */
   unresolved: string | null
 }
@@ -269,7 +280,7 @@ export function structuredMods(item: EquippedItem): { id: string; stats: Record<
 function wasteFor(
   stats: RolledStat[],
   defense: DefenseSummary | null,
-): { amount: number; stat: string; reason: string } | null {
+): ModWaste | null {
   if (!defense) return null
 
   for (const stat of stats) {
@@ -292,6 +303,8 @@ function wasteFor(
     return {
       amount,
       stat: stat.id,
+      overCap: overcap,
+      overCapBy: Object.fromEntries(types.map((t, i) => [t, overcaps[i]!])),
       reason:
         `${label} ${isAllEle ? 'are' : 'is'} ${overcap}% above the cap, and this mod grants ${stat.value}%. ` +
         `At least ${amount}% of it is doing nothing.`,

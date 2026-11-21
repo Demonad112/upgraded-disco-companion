@@ -27,7 +27,7 @@ Fixture matches the owner's PoB2 numbers (life 1,477, ES 2,922, evasion 8,704, E
 | Fit, scored | Woe Cowl 67.9, Mind Spur 50.3, Skull Song 47.5 (best on base 44.4), Behemoth Band 47.7, Demon Pendant 46.6, Mind Keep 42.7, Viper Whorl 39 | Yes |
 | Fit, Damnation Grip | was 0 of 100 with six lines "not understood" (extra-as damage, Surpassing projectile, mana on kill, +1 Melee) | **No, fixed:** now "missing, none of its 6 lines could be scored", lines kept |
 | Fit, Mageblood | missing: unique, no affix budget | Yes |
-| Wasted | Woe Cowl fire 5; Mind Spur cold 36, fire 5; Viper Whorl cold 29 | Each true alone, not together: cold 36 + 29 against 59 over cap, fire 5 + 5 against 5 (GF1-7) |
+| Wasted | Woe Cowl fire 5; Mind Spur cold 36, fire 5; Viper Whorl cold 29 | Each true alone, not together: cold 36 + 29 against 59 over cap, fire 5 + 5 against 5 (GF1-7, fixed: the over-cap is now spent once, cold 36 + 23, fire 5 + 0) |
 | Veto notes | None at risk on all nine swaps. Woe Cowl and Behemoth Band print "Can't check: gem attribute requirements". Demon Pendant's +47 spirit and Mind Spur's 35% movement speed are carried by the plan's spec at their minimums, so no note | Yes. Reserved spirit stays "can't check" (not in the payload). The owner's PoB figure is 146 of 147 reserved, so losing the +47 would be a hard veto; the site cannot say so |
 | Compare target | Not run | The owner's numbers hold no candidate item; none invented |
 
