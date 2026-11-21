@@ -232,14 +232,18 @@ export class ModTiers {
 
   /**
    * The highest single roll of `statId` any affix that can spawn on these tags
-   * reaches (item level ignored). Null when none can.
+   * reaches. Null when none can. With `maxIlvl`, only affixes whose required
+   * item level fits it count, so "best this item could have rolled" and "best
+   * that exists on this base" are both answerable.
    */
-  topRoll(statId: string, baseTags: Iterable<string>): number | null {
+  topRoll(statId: string, baseTags: Iterable<string>, maxIlvl?: number): number | null {
     const tags = [...baseTags]
     let top: number | null = null
     for (const id of this.modsByStat().get(statId) ?? []) {
+      const mod = this.data.mods[id]!
+      if (maxIlvl !== undefined && mod.lvl > maxIlvl) continue
       if (!this.canSpawn(id, tags)) continue
-      for (const [sid, , max] of this.data.mods[id]!.stats) if (sid === statId && (top === null || max > top)) top = max
+      for (const [sid, , max] of mod.stats) if (sid === statId && (top === null || max > top)) top = max
     }
     return top
   }

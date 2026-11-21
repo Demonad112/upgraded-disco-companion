@@ -230,3 +230,33 @@ export const FOCUS_CATEGORY_WEIGHTS: Readonly<Record<FocusMode, Readonly<Partial
     mapping: Object.freeze({ damage: 1.25, efficiency: 1.25, survivability: 0.85 }),
     bossing: Object.freeze({ survivability: 1.25, damage: 1.1, efficiency: 0.85 }),
   })
+
+/**
+ * Build archetype inference from the character's own totals (gear/archetype.ts).
+ * Heuristic cut-offs borrowed as ideas from ets-public/poe2-upgrade-checker's
+ * `fitProfile`; the figures are NOT verified against its source and carry no
+ * game meaning. They only choose which stats the Gear fit readout leans on, and
+ * never feed a grade or the recommendation order.
+ */
+export const ARCHETYPE = Object.freeze({
+  /** Energy shield counts as the main pool when it exceeds this multiple of life. */
+  esOverLife: 2,
+  /** Below this armour AND evasion, the build is life-based. */
+  lifeOnlyMaxDefence: 300,
+  /** Armour and evasion are "hybrid" when the smaller is above this share of the larger. */
+  hybridShare: 0.4,
+})
+
+/**
+ * The per-item Gear fit readout (gear/fit.ts). A roll is allowed to count up to
+ * this multiple of the best roll before it stops adding (a rune or an implicit
+ * can push a stat past a single affix's top roll). The readout is a labelled
+ * heuristic: it never orders recommendations and never moves the build grade.
+ */
+export const GEAR_FIT = Object.freeze({
+  rollCeilingRatio: 1.15,
+  /** How many of the highest-weighted stats an item lacks are named. */
+  missingShown: 3,
+  /** A user override multiplies a derived stat weight by a value in this range. */
+  overrideRange: Object.freeze({ min: 0, max: 3 }),
+})
