@@ -33,3 +33,19 @@ describe('the chat context for a sparse Path of Building code', () => {
     expect(text).toMatch(/Total DPS not exported/)
   })
 })
+
+describe('FullDPS in a Path of Building code', () => {
+  const full = (value: string) =>
+    encode(
+      '<PathOfBuilding2><Build level="90" className="Monk">' +
+        `<PlayerStat stat="TotalDPS" value="1000" /><PlayerStat stat="FullDPS" value="${value}" /></Build><Spec nodes="1,2"/></PathOfBuilding2>`,
+    )
+
+  it('is missing when PoB exports 0 (no skills were set to count in Full DPS)', async () => {
+    expect((await analyzeFromPob(full('0'))).damage.fullDps).toBeNull()
+  })
+
+  it('is kept when PoB computed a figure', async () => {
+    expect((await analyzeFromPob(full('2500'))).damage.fullDps).toBe(2500)
+  })
+})

@@ -29,7 +29,6 @@ Answers of 2026-11-17 (HG1-1, -2, -4, -5, -6) are applied. Answers of 2026-11-15
 | NP1-5 | poe.ninja's docs call builds and profile endpoints internal and "not available for third-party use" (search excerpt, poe.ninja/docs/api, not fetched) | Treat the proxy's character import as unsupported by poe.ninja; keep it best-effort, and ask poe.ninja (Discord) for a keyed or sanctioned route before building anything further on it | NP1-1 |
 | NP1-6 | A pasted PoB code shows the reduced PobResults view (no grade, main skill or recommendations). Run the full analysis on it? | Yes: with poe.ninja blocked (NP1-1) paste is the main route. Build the full results from `analyzeFromPob` and show any input it lacks as "missing", never a guess. Check it first on a current-patch code (VR1-2) | NP1-1, #215 |
 | VR1-1 | Atlas full screen at 1440 cuts the step name to about 80 px ("Trapped S…"; 61 px at 1280, 160 px of 181 outside full screen) | Fix it: in full screen let the step line take its own row in the command bar (tabs and buttons on the first), so the name is never cut above 1024 px. Layout change in a decided bar, so yours to approve | VR1 (#215 check) |
-| VR1-2 | Only the recorded fixture (athrynas-v43) has been run through `analyzeFromPob`; no current-patch PoE2 PoB code has | Paste one fresh export from PoB-PoE2 in a prompt; a session runs it through core and reports decode, life/ES/DPS and gaps | VR1 (#215 check) |
 
 ## Open rows (class C)
 | ID | Item | Size | Origin | Notes | Status |
