@@ -57,7 +57,7 @@ export function modelUrl(acct, league, character, version) {
  * gets 404 on the old path and 403 on the new one. Caddy copy (docs/COPY.md).
  */
 export const MODEL_BLOCKED_MESSAGE =
-  'poe.ninja now blocks automated imports. Paste a Path of Building code or the character JSON instead.'
+  'Paste a Path of Building code or the character JSON instead, because poe.ninja now blocks automated imports.'
 
 const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
 

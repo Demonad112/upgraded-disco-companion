@@ -4,11 +4,9 @@
 // without waiting for anything else; each other tab is its own chunk, fetched when the tab first opens (PX9).
 import { useEffect } from 'react'
 import dynamic from 'next/dynamic'
-import type { Analysis, AnalyzeOptions, PobAnalysis } from '@poe2/core'
+import type { Analysis, AnalyzeOptions } from '@poe2/core'
 import { ProToggle } from '@/components/shared/ProToggle'
 import { BuildScore } from '@/components/BuildScore'
-import { Chat } from '@/components/Chat'
-import { PobAnalysisView } from '@/components/PobAnalysisView'
 import { Recommendations } from '@/components/Recommendations'
 import { Skeleton } from '@/components/Skeleton'
 import { changedFor } from '@/lib/characterNotes'
@@ -161,15 +159,5 @@ export function CharacterResults({
       {tab === 'progress' ? <ProgressTab {...props} /> : null}
       {tab === 'advanced' ? <AdvancedTab {...props} /> : null}
     </CharacterTabs>
-  )
-}
-
-/** A Path of Building import: fewer panels, every figure real. */
-export function PobResults({ analysis }: { analysis: PobAnalysis }) {
-  return (
-    <div className="space-y-4">
-      <PobAnalysisView analysis={analysis} />
-      <Chat pob={analysis} />
-    </div>
   )
 }

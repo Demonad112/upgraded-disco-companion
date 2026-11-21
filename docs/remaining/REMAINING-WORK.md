@@ -27,15 +27,17 @@ Answers of 2026-11-17 (HG1-1, -2, -4, -5, -6) are applied. Answers of 2026-11-15
 | NP1-1 | poe.ninja moved the character model and the builds search (2026-11-18). The owner's HAR shows the model now at `/api/protected/characters/poe2/profile/characters/<acct>/<league>/<char>/model/<v>`, fetched with the browser's `cf_clearance` and session cookies; without them it answers 403 (Cloudflare challenge) from any server. A second HAR shows the builds search at `/api/protected/poe2/builds/<version>/search?overview=<snapshotName>`, same cookies, so ladder and grade are blocked the same way | Don't replay browser cookies or solve the challenge: poe.ninja put this path behind bot protection on purpose. Ask poe.ninja for sanctioned access; until then the app's paste-JSON and PoB-code imports are the working path, and the proxy's import error says so (done in #214). The ladder grade stays unavailable until then. Snapshot lookup and dictionaries (`/api/lookup/…`) are not protected | NP1 |
 | NP1-4 | Official GGG OAuth API as the character and ladder source after poe.ninja's block (NP1-1) | Don't pursue yet: `/developer/docs` says "We are currently unable to process new applications." and the PoE2 ladder needs a confidential `service:leagues:ladder` client (server-side secret, a proxy). Revisit if registration reopens; until then keep PoB-code paste as the fallback | NP1-1 |
 | NP1-5 | poe.ninja's docs call builds and profile endpoints internal and "not available for third-party use" (search excerpt, poe.ninja/docs/api, not fetched) | Treat the proxy's character import as unsupported by poe.ninja; keep it best-effort, and ask poe.ninja (Discord) for a keyed or sanctioned route before building anything further on it | NP1-1 |
-| NP1-6 | A pasted PoB code shows the reduced PobResults view (no grade, main skill or recommendations). Run the full analysis on it? | Yes: with poe.ninja blocked (NP1-1) paste is the main route. Build the full results from `analyzeFromPob` and show any input it lacks as "missing", never a guess. Check it first on a current-patch code (VR1-2) | NP1-1, #215 |
-| VR1-1 | Atlas full screen at 1440 cuts the step name to about 80 px ("Trapped S…"; 61 px at 1280, 160 px of 181 outside full screen) | Fix it: in full screen let the step line take its own row in the command bar (tabs and buttons on the first), so the name is never cut above 1024 px. Layout change in a decided bar, so yours to approve | VR1 (#215 check) |
+
+NP1-2 is answered (archive); NP1-3 was never used: the rows were renumbered to NP1-4 and NP1-5 at merge (#214), so the gap is left as is rather than renumbered again.
 
 ## Open rows (class C)
 | ID | Item | Size | Origin | Notes | Status |
 |---|---|---|---|---|---|
 | DATA-1 | `passive-tree.json` and the Soul Core entries in `mod-tiers.json` predate patch 0.5.5 and are unverified against it (`packages/data/PROVENANCE.md`) | M | PROVENANCE | Refresh with the 0.5.5 data; needs `packages/data`. Until then the tree check (HG1-9) reads Yykiuy as stale (3 nodes), so its keystones aren't trusted from the tree | open (waits on the 0.5.5 data) |
 | B4-1 | Gear "Find on trade" for a weapon: weigh its own mods. Today a base that can't roll resists gets no resist weights and falls back to the trade page; weighing weapon lines needs trade ids for those mods in `trade-map.json` (sync-data) | M | B4 (B1-1) | `packages/data` / sync-data scope | open: 2026-11-17 check, `MAPPED_STATS` holds the four resist pseudo ids only, so weapon ids need a sync-data change (data, Needs owner) |
-| VR1-3 | While an import waits out a busy poe.ninja (up to 21 s over 3 tries), the countdown and its Cancel sit inside the collapsed "Load another character" box, so they can't be seen or reached | S | VR1 (#215 check) | `apps/web/src/app/character/page.tsx` collapses the box when `busy` is set; keep it open (or show the countdown beside the skeleton) while `busyInfo` is set | Open |
+| NP1-6b | A pasted PoB code now gets the full analysis (NP1-6), but without gear: no "Worth replacing", trade links or per-slot findings, and the code's tree spec lists both weapon sets in one list, so keystones from it need the stats to confirm them | M | NP1-6 | `packages/core/src/pob/to-model.ts`: read PoB `<Items>`/`<Slot>` into `CharModel.items`, and split weapon-set nodes from `<Spec>`'s `nodes` by the set markers PoB writes; red test first on athrynas-v43 against poe.ninja's items | open |
+| AL1-1 | `routeLegs` counts a leg for a step whose target nodes are already reached, so "leg L" can step on a no-op | S | #212 check | `apps/web/src/lib/atlasLegs.ts:63`: skip the leg (keep L) when the BFS frontier already holds every target | open |
+| NP1-7 | The proxy answers 404 for both "character not found" and "poe.ninja moved the endpoint", so the app can't tell a typo from a route change | S | #214 check | Only matters once URL import returns (NP1-1); split the message by upstream body then | open (waits on NP1-1) |
 
 ## Standing rules (no work)
 - Route, lazy and per-chunk budgets live in `scripts/route-weight.mjs` (source of truth; brotli, first load). It exits 1 when one is over and runs in CI (`ci.yml`). Raise one only on purpose, with the reason in the PR. Any change to home JS reports before and after.
@@ -43,6 +45,11 @@ Answers of 2026-11-17 (HG1-1, -2, -4, -5, -6) are applied. Answers of 2026-11-15
 - New tokens go in `tokens.css`. Canvas code reads only colours from tokens.
 - A bare `.card` outside home needs `data-surface="data"`.
 - SB1-1: add a proxy lockfile, `npm ci` and audit only if `services/ninja-proxy` gains runtime deps.
-- Never put session URLs on GitHub (commits, PRs, comments).
+
+
+## Parked
+| ID | Item | Reopen when |
+|---|---|---|
+| VR1-3 | Busy-countdown sits inside the collapsed import box | URL import returns (NP1-1): the 21 s backoff runs only on 429/503, which the blocked path never sends |
 
 Decided and closed (not work): HSTS preload, CORP and JSON-LD skipped; Dependabot removed on purpose; design, light theme and cursor effects change only with the owner; patch-day / 1.0 data refresh is the owner's; no guessed DPS thresholds. Details of older rows: `archive/REGISTER-CLOSED.md`.

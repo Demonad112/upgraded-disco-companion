@@ -1,3 +1,4 @@
+import { characterName } from './characterName'
 import type { Analysis, SkillDamage, SnapshotDiff } from '@poe2/core'
 
 /** Damage types in the order the ring and the split bar draw them. */
@@ -60,7 +61,7 @@ export function shareCardData(a: Analysis, grade: ShareCardData['grade'], diff: 
   const { identity, defense, dps } = a
   const weakest = [...defense.maxHits].sort((x, y) => x.value - y.value)[0]
   return {
-    name: identity.name,
+    name: characterName(a),
     subtitle: [
       identity.level !== null && identity.level !== undefined ? `Level ${identity.level}` : null,
       identity.className || null,

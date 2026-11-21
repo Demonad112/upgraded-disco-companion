@@ -5,10 +5,10 @@ import { preconnect } from 'react-dom'
 import dynamic from 'next/dynamic'
 import {
   analyzeCharacter,
-  analyzeFromPob,
+  pobToCharModel,
   snapshotKey,
   type Analysis,
-  type PobAnalysis,
+  type AnalysisSource,
 } from '@poe2/core'
 import { ImportBar, importProfile, sharedProfileUrl, type ImportResult } from '@/components/ImportBar'
 import { Skeleton } from '@/components/Skeleton'
@@ -16,12 +16,13 @@ import { useCharacterHistory } from '@/lib/useCharacterHistory'
 import { recordRecent, topFixOf } from '@/lib/recentCharacters'
 import { gradeText } from '@/lib/grade'
 import { useLadder } from '@/lib/useLadder'
-import { PROXY_BASE } from '@/lib/proxy'
+import { EMPTY_PROMPT, IMPORT_PROMPT, PROXY_BASE } from '@/lib/proxy'
 import { PageHeader } from '@/components/layout/PageHeader'
 import { analysisNeedsDisplay, useModTiers } from '@/lib/useModTiers'
 import { useSupportCatalog } from '@/lib/useSupportCatalog'
 import { usePassiveTree } from '@/lib/usePassiveTree'
 import { useCharacterTab } from '@/lib/characterTab'
+import { characterName } from '@/lib/characterName'
 
 // Everything below the import box only renders once a character is loaded, so it is its own chunk. Overview (build card,
 // Top 3) is in it; every other tab is a chunk of its own, fetched when the tab opens. The chunk is requested when an
@@ -31,24 +32,17 @@ const CharacterResults = dynamic(() => loadResults().then((m) => m.CharacterResu
   ssr: false,
   loading: () => <Skeleton />,
 })
-const PobResults = dynamic(() => loadResults().then((m) => m.PobResults), {
-  ssr: false,
-  loading: () => <Skeleton />,
-})
 
 /** How long Top 3 waits for the ladder sample once the tiers and the tree are in. It then lands as one more run. */
 const LADDER_GRACE_MS = 600
-/** The card pass's options: one object, so inputs arriving before the fixes pass do not re-run it. */
-const NO_OPTIONS = {}
 
 export default function Home() {
   // The proxy origin is known at build time, so the connection can be opened while the page is still parsing.
   preconnect(PROXY_BASE)
   const [analysis, setAnalysis] = useState<Analysis | null>(null)
-  // A Path of Building code yields fewer panels — every figure real, none of
-  // them estimated — so it is kept as its own shape rather than pretending to
-  // be a full poe.ninja analysis with holes in it.
-  const [pobAnalysis, setPobAnalysis] = useState<PobAnalysis | null>(null)
+  // A Path of Building code is converted into the parts of a character model it carries and runs through the same
+  // analysis (NP1-6); whatever a code lacks shows as missing. `source` keeps it from being reconciled against itself.
+  const [source, setSource] = useState<AnalysisSource>('poe.ninja')
   // Kept so the analysis can be re-derived as each optional input lands. Every
   // one only makes the result MORE specific, and re-running is cheap — it is
   // pure computation over already-parsed data.
@@ -117,15 +111,18 @@ export default function Home() {
       ...(tree ? { tree } : {}),
       ...(catalog ? { catalog } : {}),
       ladder,
+      source,
     }),
-    [baseTiers, tree, catalog, ladder],
+    [baseTiers, tree, catalog, ladder, source],
   )
+  // The card pass's options: one object per source, so inputs arriving before the fixes pass do not re-run it.
+  const cardOptions = useMemo(() => ({ source }), [source])
 
   // Three passes per import: card, fixes, full (above). Each runs once; the ladder landing after the grace window is
   // the only reason for another. A result from a run that has since been superseded is dropped.
   const passOptions = useMemo(
-    () => (want === 'card' ? NO_OPTIONS : want === 'fixes' ? { ...(baseTiers ? { tiers: baseTiers } : {}), ladder } : analysisOptions),
-    [want, baseTiers, ladder, analysisOptions],
+    () => (want === 'card' ? cardOptions : want === 'fixes' ? { ...(baseTiers ? { tiers: baseTiers } : {}), ladder, source } : analysisOptions),
+    [want, cardOptions, baseTiers, ladder, source, analysisOptions],
   )
   const runId = useRef(0)
   const [stage, setStage] = useState<'card' | 'fixes' | 'full'>('card')
@@ -209,19 +206,14 @@ export default function Home() {
     setImportBusy(true)
     setSourceUrl(r.kind === 'ninja' ? (r.url ?? null) : null)
     try {
-      if (r.kind === 'pob') {
-        setAnalysis(null)
-        setRaw(null)
-        setPobAnalysis(await analyzeFromPob(r.code))
-        setBusy(false)
-      } else {
-        setPobAnalysis(null)
-        setAnalysis(null)
-        setStage('card')
-        setGrace(false)
-        // The effects above own analysis from here: the card pass now, the full pass once its inputs are in.
-        setRaw(r.data)
-      }
+      // A code decodes here (it throws only when it will not decode); everything after is the same for both sources.
+      const next = r.kind === 'pob' ? await pobToCharModel(r.code) : r.data
+      setAnalysis(null)
+      setStage('card')
+      setGrace(false)
+      setSource(r.kind === 'pob' ? 'pob-export' : 'poe.ninja')
+      // The effects above own analysis from here: the card pass now, the full pass once its inputs are in.
+      setRaw(next)
     } catch (err) {
       setError(`Could not analyse that data: ${(err as Error).message}`)
       setAnalysis(null)
@@ -251,7 +243,7 @@ export default function Home() {
   }, [handleResult])
 
   const a = analysis
-  const collapsed = Boolean(a || pobAnalysis || busy)
+  const collapsed = Boolean(a || busy)
 
   return (
     <>
@@ -266,7 +258,7 @@ export default function Home() {
           title="Character"
           accent="Analysis"
           source="poe.ninja"
-          description="Paste your poe.ninja character and see the top things to fix first."
+          description={IMPORT_PROMPT}
         />
       )}
 
@@ -294,7 +286,7 @@ export default function Home() {
           <span className="shrink-0">Load another character</span>
           {a ? (
             <span className="tabular ml-auto min-w-0 truncate font-mono text-[length:var(--fs-11)] text-ink-mute">
-              {[a.identity.name, a.identity.level != null ? `Lv ${a.identity.level}` : null].filter(Boolean).join(' · ')}
+              {[characterName(a), a.identity.level != null ? `Lv ${a.identity.level}` : null].filter(Boolean).join(' · ')}
             </span>
           ) : null}
         </summary>
@@ -312,17 +304,13 @@ export default function Home() {
       <div className="mt-2">
         {busy ? <Skeleton /> : null}
 
-        {!busy && !a && !pobAnalysis ? (
+        {!busy && !a ? (
           <div className="border border-dashed border-line-strong bg-surface-raised/40 px-6 py-16 text-center">
-            <p className="text-sm text-ink-dim">Paste a poe.ninja URL above and press Analyse.</p>
+            <p className="text-sm text-ink-dim">{EMPTY_PROMPT}</p>
             <p className="mx-auto mt-2 max-w-md text-xs leading-relaxed text-ink-mute">
               Survival is judged by the smallest hit that kills you, because average health figures often overstate safety by 3× or more.
             </p>
           </div>
-        ) : null}
-
-        {!busy && pobAnalysis ? (
-          <PobResults analysis={pobAnalysis} />
         ) : null}
 
         {!busy && a ? (
@@ -343,7 +331,7 @@ export default function Home() {
       </div>
 
       <footer className="mt-12 border-t border-line pt-5 text-[length:var(--fs-11)] leading-relaxed text-ink-mute">
-        Character data from poe.ninja. Path of Exile 2 is a trademark of Grinding Gear Games; this is an unofficial
+        Character data from poe.ninja or your Path of Building code. Path of Exile 2 is a trademark of Grinding Gear Games; this is an unofficial
         fan-made tool.
       </footer>
     </>

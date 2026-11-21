@@ -2,7 +2,7 @@
 
 import { useRef, useState } from 'react'
 import { NinjaClient, NinjaError, looksLikePobCode, parseProfileUrl } from '@poe2/core'
-import { PROXY_BASE } from '@/lib/proxy'
+import { NINJA_IMPORT_BLOCKED, PROXY_BASE } from '@/lib/proxy'
 import { useLocalStore } from '@/lib/localStore'
 import { recentCharacters } from '@/lib/recentCharacters'
 import { isOffline } from '@/lib/online'
@@ -170,7 +170,7 @@ export function ImportBar({
   busy: boolean
   setBusy: (b: boolean) => void
 }) {
-  const [mode, setMode] = useState<'url' | 'paste'>('url')
+  const [mode, setMode] = useState<'url' | 'paste'>(NINJA_IMPORT_BLOCKED ? 'paste' : 'url')
   const [url, setUrl] = useState('')
   const [paste, setPaste] = useState('')
   const [error, setError] = useState<string | null>(null)
@@ -294,15 +294,25 @@ export function ImportBar({
               onChange={(e) => setPaste(e.target.value)}
               id="import-paste"
               rows={4}
-              placeholder='Paste a character model JSON, or a Path of Building export code'
+              placeholder="Paste a Path of Building export code, or a character model JSON"
               aria-label="Character model JSON or Path of Building code"
+              aria-describedby="import-paste-hint"
               className="font-mono"
             />
+            <p id="import-paste-hint" className="text-xs leading-relaxed text-ink-dim">
+              In Path of Building, open Import/Export Build, press Generate, then Copy.
+            </p>
             <Button type="submit" variant="primary" disabled={busy} className="self-start">
               Analyse pasted data
             </Button>
           </form>
         )}
+
+        {mode === 'url' && NINJA_IMPORT_BLOCKED ? (
+          <p className="mt-2 text-xs leading-relaxed text-ink-dim">
+            poe.ninja blocks URL imports right now. Paste a Path of Building code instead.
+          </p>
+        ) : null}
 
         {mode === 'url' && recents.length > 0 ? (
           <div className="mt-2 flex flex-wrap items-center gap-1.5 text-xs">

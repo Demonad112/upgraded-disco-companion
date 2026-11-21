@@ -132,6 +132,24 @@ test('an unknown league is a miss, not an error', async () => {
   assert.deepEqual(out, { snap: null })
 })
 
+test('a 404 from snapshot-versions for an unknown slug still falls back to index-state', async () => {
+  // The live API's answer for an unknown slug is unrecorded; if it is a 404 rather than `[]`,
+  // the display-name fallback (its whole reason to exist) must still run.
+  const calls = []
+  const recorded = recordedNinja(calls)
+  const fetchImpl = async (url) => {
+    const u = new URL(url)
+    if (u.pathname === '/poe2/api/data/snapshot-versions' && u.searchParams.get('league') !== 'runesofaldur') {
+      calls.push(String(url))
+      return new Response('', { status: 404 })
+    }
+    return recorded(url)
+  }
+  const out = await resolveSnapshot('runes-of-aldur-wrong', 'Runes of Aldur', { fetchImpl })
+  assert.equal(out.snap?.snapshotName, 'runes-of-aldur')
+  assert.equal(calls.length, 3)
+})
+
 test('a throttled snapshot-versions answer is passed on as busy', async () => {
   const fetchImpl = async () => new Response('', { status: 429, headers: { 'retry-after': '9' } })
   const out = await resolveSnapshot('runesofaldur', 'runesofaldur', { fetchImpl, sleepImpl: async () => {} })

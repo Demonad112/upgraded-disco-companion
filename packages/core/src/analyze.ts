@@ -7,7 +7,7 @@
  */
 
 import { analyzeDefense, type DefenseSummary } from './defense/index.js'
-import { analyzeDps, type DpsSummary } from './dps/index.js'
+import { analyzeDps, type DpsSummary, type SkillDamage } from './dps/index.js'
 import { indexBreakdowns, type BreakdownIndex } from './model/breakdowns.js'
 import { attributeToItems, type AttributionReport } from './model/attribution.js'
 import { normalizePassives, type PassiveAllocation } from './model/passives.js'
@@ -23,6 +23,7 @@ import { effectiveCritMultiplier } from './recommend/offence.js'
 import { CRIT_UNINVESTED, DAMAGE_TYPE_MIN_SHARE } from './thresholds.js'
 import { decodePobExport, readPlayerStats } from './pob/export.js'
 import { readPobConfig, type PobConfig } from './pob/config.js'
+import { pobCodeGaps, type PobGap } from './pob/analyze.js'
 import { readPobMainSkill } from './pob/main-skill.js'
 import { inactiveSetFromPob, readPobSkillGroups, type PobSkillGroup } from './pob/skill-groups.js'
 import { mainSkillNote } from './dps/main-skill.js'
@@ -42,8 +43,15 @@ export interface CharacterIdentity {
   updatedUtc: string | null
 }
 
+/** Where the character came from: poe.ninja's computed model, or a pasted Path of Building code (NP1-6). */
+export type AnalysisSource = 'poe.ninja' | 'pob-export'
+
 export interface Analysis {
   identity: CharacterIdentity
+  /** Which source the figures were read from. A code has no name, account, league, items or breakdowns. */
+  source: AnalysisSource
+  /** What this source cannot answer, stated rather than filled in. Empty for poe.ninja. */
+  sourceGaps: PobGap[]
   /**
    * The unwrapped character model.
    *
@@ -168,6 +176,11 @@ export interface AnalyzeOptions {
   tiers?: ModTiers
   tree?: PassiveTree
   ladder?: LadderSummary | null
+  /**
+   * `pob-export` when the model came from `pobToCharModel`. Its attached export is then the
+   * source itself, so it is read for config and skill groups but never reconciled against.
+   */
+  source?: AnalysisSource
 }
 
 /**
@@ -241,11 +254,31 @@ function skillContext(dps: DpsSummary, catalog: SupportCatalog | undefined): Mai
   }
 }
 
+/** The same damage reading, labelled as Path of Building's: a converted code's figures are PoB's, not poe.ninja's. */
+function asPobDps(dps: DpsSummary): DpsSummary {
+  const relabel = <T extends { provenance: unknown }>(s: T): T => ({ ...s, provenance: 'pob-export' })
+  const skills = dps.skills.map(relabel)
+  const same = (s: SkillDamage | null) => (s ? (skills.find((k) => k.name === s.name) ?? relabel(s)) : null)
+  return {
+    ...dps,
+    skills,
+    primary: same(dps.primary),
+    hitSkills: dps.hitSkills.map((s) => same(s)!),
+    supportSkills: dps.supportSkills.map((s) => same(s)!),
+    provenance: 'pob-export',
+    unresolved: skills.length
+      ? null
+      : 'The Path of Building code names no main skill with a damage figure. Select the main skill in Path of Building and export again.',
+  }
+}
+
 export async function analyzeCharacter(
   input: CharModelResponse | CharModel | unknown,
   options: AnalyzeOptions = {},
 ): Promise<Analysis> {
   const model = unwrapCharModel(input)
+  const source: AnalysisSource = options.source ?? 'poe.ninja'
+  const fromCode = source === 'pob-export'
   const warnings: string[] = []
 
   let pobStats: Record<string, number> | null = null
@@ -267,7 +300,8 @@ export async function analyzeCharacter(
   }
 
   const defense = analyzeDefense(model)
-  const baseDps = analyzeDps(model, { preferredSkill: exportMain })
+  const ninjaDps = analyzeDps(model, { preferredSkill: exportMain })
+  const baseDps = fromCode ? asPobDps(ninjaDps) : ninjaDps
   const mainSkill = mainSkillNote(baseDps, exportMain)
   const dps: DpsSummary = mainSkill ? { ...baseDps, mainSkill } : baseDps
   const passives = normalizePassives(model)
@@ -282,7 +316,11 @@ export async function analyzeCharacter(
   // HG1-2: an unconfirmed keystone is applied from the tree only once the tree
   // is known to match the character's; a contradicted one never is.
   const keystones = resolvedTree
-    ? keystoneEffectsOf(resolvedTree.keystones, defense, { treeCurrent: treeCheck.status === 'current' })
+    ? keystoneEffectsOf(resolvedTree.keystones, defense, {
+        // A code's tree spec lists both weapon sets with the main tree, so an inactive set's keystone would look
+        // allocated: from a code, a keystone counts only when the stats corroborate it.
+        treeCurrent: treeCheck.status === 'current' && !fromCode,
+      })
     : NO_KEYSTONE_EFFECTS
   if (treeCheck.status === 'stale') {
     const missing = treeCheck.missing
@@ -292,10 +330,13 @@ export async function analyzeCharacter(
     )
   }
 
-  const reconciliation = pobStats ? reconcile(model, pobStats, { pobMainSkill: exportMain }) : null
+  // A converted code would only be compared with itself.
+  const reconciliation = pobStats && !fromCode ? reconcile(model, pobStats, { pobMainSkill: exportMain }) : null
   const dpsAgrees = pobDpsAgreement(reconciliation)
 
   const analysis: Analysis = {
+    source,
+    sourceGaps: fromCode ? pobCodeGaps(pobStats ?? {}) : [],
     identity: {
       name: model.name ?? '',
       account: model.account ?? '',
@@ -359,7 +400,9 @@ export async function analyzeCharacter(
   for (const unverified of keystones.unverified) {
     warnings.push(
       `${unverified.keystone} is allocated on the passive tree, but ${unverified.reason}. Its corrections were not applied${
-        unverified.kind === 'contradicted' ? ' — poe.ninja may not have reindexed this character since the tree changed' : ''
+        unverified.kind === 'contradicted' && !fromCode
+          ? ' — poe.ninja may not have reindexed this character since the tree changed'
+          : ''
       }.`,
     )
   }
