@@ -77,6 +77,7 @@ async function view(doc: Record<string, unknown>, options: AnalyzeOptions = {}) 
     recommendations: a.recommendations.recommendations.slice(0, 5).map((r) => r.id),
     pobConfigInputCount: a.pobConfig?.inputCount ?? null,
     warnings: a.warnings,
+    importHash: a.stamp.importHash,
     holdingUp: {
       resistances: holding.resistances,
       items: holding.items.map((i) => ({

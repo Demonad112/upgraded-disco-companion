@@ -235,3 +235,12 @@ One line each; reopen only when the trigger happens.
 |---|---|---|---|---|
 | VR1-1 | Atlas full screen at 1440 cuts the step name to about 80 px ("Trapped S…"; 61 px at 1280, 160 px of 181 outside full screen) | Fix it: in full screen let the step line take its own row in the command bar (tabs and buttons on the first), so the name is never cut above 1024 px. Layout change in a decided bar, so yours to approve | VR1 (#215 check) | done #216: full-screen step line on its own row, e2e at 1025/1280/1440 px |
 | NP1-6 | A pasted PoB code shows the reduced PobResults view (no grade, main skill or recommendations). Run the full analysis on it? | Yes: with poe.ninja blocked (NP1-1) paste is the main route. Build the full results from `analyzeFromPob` and show any input it lacks as "missing", never a guess. Check it first on a current-patch code (VR1-2) | NP1-1, #215 | answered 2026-11-21: yes. `pobToCharModel` feeds `analyzeCharacter` (source `pob-export`); gear left to NP1-6b |
+
+## Closed 2026-11-21 (RV1-5, GF1-9a/b, owner step 14)
+| ID | Item | Recommended | Origin | Status |
+|---|---|---|---|---|
+| RV1-5 | Rate limit on the public proxy (`/api/*`) | Vercel Firewall rate-limit rule | RV1 | done (owner, 2026-11-21) |
+| GF1-9a | A file of assumed constants with source, sample size and range | `packages/core/src/provenance/assumptions.ts`: every number in `thresholds.ts`, value read live, basis/source/sampleSize/range; a test fails on a new constant without an entry. All are unmeasured today (`unmeasuredConstants()`) | GF1 item 9 | done |
+| GF1-9b | Echo the data version and an import hash with each result | `Analysis.stamp` (`dataRevision`, `extractedAt`, `importHash` = first 16 hex of SHA-256 over the model without poe.ninja refresh times, `engineVersion`); shown at the foot of the Advanced tab; goldens carry `importHash` | GF1 item 9 | done |
+| OS-14 | Owner step 14: ask poe.ninja for API access | Owner disregarded it (2026-11-21); PoB code is the import path | NP1-1 | closed (disregarded) |
+

@@ -1,6 +1,9 @@
+import { readDataVersion } from "@poe2/core";
 import dataVersion from "../../../../packages/data/generated/version.json";
 
 /** The game patch the shipped data was extracted from (generated/version.json), so the label cannot drift from the data. */
+/** The shipped data version, echoed in each analysis stamp (GF1 item 9). Null if version.json is malformed. */
+export const SHIPPED_DATA_VERSION = readDataVersion(dataVersion);
 export const CURRENT_PATCH: string = (dataVersion as { gameVersion?: string }).gameVersion ?? "0.5.5";
 /**
  * Patch-day switch. Set to true when a new patch is live but the data has not been updated yet: the banner then says

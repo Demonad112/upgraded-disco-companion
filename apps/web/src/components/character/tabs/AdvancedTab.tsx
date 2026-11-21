@@ -47,6 +47,9 @@ export default function AdvancedTab({ analysis: a, tiersState, treeState }: Pane
       >
         <Attribution report={a.attribution} bare />
       </Accordion>
+      <p className="text-[length:var(--fs-11)] text-ink-mute tabular" data-testid="analysis-stamp">
+        Data {a.stamp.dataRevision ?? 'unknown'} · import {a.stamp.importHash} · engine v{a.stamp.engineVersion}
+      </p>
     </Panel>
   )
 }

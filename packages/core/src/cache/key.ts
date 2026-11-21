@@ -50,6 +50,20 @@ export async function analysisCacheKey(input: AnalysisKeyInput): Promise<string>
     dataVersion: input.dataVersion,
     engine: input.engineVersion ?? ANALYSIS_ENGINE_VERSION,
   })
+  return sha256Hex(text)
+}
+
+async function sha256Hex(text: string): Promise<string> {
   const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(text))
   return [...new Uint8Array(digest)].map((b) => b.toString(16).padStart(2, '0')).join('')
+}
+
+/**
+ * Short content hash of one import (a poe.ninja model or a converted PoB code), echoed with each
+ * result so it can be matched to its input (GF1 item 9). The first 16 hex digits of SHA-256 over the
+ * canonical model, without the timestamps poe.ninja refreshes on its own.
+ */
+export async function importHash(model: Record<string, unknown>): Promise<string> {
+  const stable = Object.fromEntries(Object.entries(model).filter(([k]) => !VOLATILE_KEYS.has(k)))
+  return (await sha256Hex(canonicalJson(stable))).slice(0, 16)
 }
