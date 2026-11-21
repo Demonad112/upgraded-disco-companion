@@ -10,6 +10,7 @@ export default function GearTab({ analysis: a, tiersState }: PanelProps) {
     <Panel id="gear" title="Gear">
       <SpareToTradeCard analysis={a} />
       <GearTargets
+        analysis={a}
         items={a.items}
         defense={a.defense}
         attribution={a.attribution}
