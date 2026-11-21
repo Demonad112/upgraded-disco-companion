@@ -13,6 +13,8 @@ import {
   type AttributionReport,
   type DefenseSummary,
   type EquippedItem,
+  type Analysis,
+  type GearFit,
   type ItemAnalysis,
   type ReplacementPriority,
 } from '@poe2/core'
@@ -27,6 +29,7 @@ import { abbrev, isAffixLine, KIND_LABEL, rankImprovements, tierSummary, type Im
 import { useTradeMap } from './TopFixes'
 import { MapIcon } from '@/components/icons'
 import { GearSlotGrid } from './GearSlotGrid'
+import { GearFitLine, VetoNotes } from './GearFitReadout'
 
 const tierTone = (t: number | null) => (t !== null && t <= 3 ? 'text-ink' : 'text-ink-mute')
 
@@ -38,7 +41,11 @@ function ItemCard({
   onToggle,
   next,
   index,
+  fit,
+  extra,
 }: {
+  fit?: GearFit
+  extra?: React.ReactNode
   index: number
   row: ReplacementPriority
   item: ItemAnalysis | undefined
@@ -135,6 +142,8 @@ function ItemCard({
             {group('prefix', 'Prefixes')}
             {group('suffix', 'Suffixes')}
             {row.corrupted ? <p className="text-sm text-warn">Corrupted: replace it, don&apos;t craft.</p> : null}
+            <GearFitLine fit={fit} />
+            {extra}
             <div>
               {link ? (
                 <a href={link} target="_blank" rel="noopener noreferrer" className="btn btn-secondary btn-sm gear-trade" data-trade="weighted">
@@ -165,7 +174,9 @@ export function GearTargets({
   attribution,
   state,
   league,
+  analysis,
 }: {
+  analysis?: Analysis
   items: EquippedItem[]
   defense: DefenseSummary
   attribution: AttributionReport
@@ -225,6 +236,8 @@ export function GearTargets({
             onToggle={() => toggle(r.slotId)}
             next={i === 0}
             index={i + 1}
+            fit={analysis?.gearFit?.items.find((f) => f.slotId === r.slotId)}
+            extra={analysis ? <VetoNotes analysis={analysis} state={state} target={analyses.get(r.slotId)} analysed={[...analyses.values()]} /> : null}
           />
         ))}
       </ol>

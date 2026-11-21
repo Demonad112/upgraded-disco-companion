@@ -17,6 +17,8 @@ import { gearRecommendations, measureRecommendations, mergeGearRecommendations, 
 import type { RecommendationReport } from './recommend/types.js'
 import { reconcile, type ReconciliationReport } from './reconcile/index.js'
 import type { ModTiers } from './gear/tiers.js'
+import { analyzeItem } from './gear/analyze.js'
+import { gearFitReport, type GearFitReport } from './gear/fit.js'
 import type { SupportCatalog } from './gems/catalog.js'
 import type { MainSkillContext } from './recommend/gear.js'
 import { effectiveCritMultiplier } from './recommend/offence.js'
@@ -89,6 +91,12 @@ export interface Analysis {
    */
   treeCheck: TreeCheck
   recommendations: RecommendationReport
+  /**
+   * Per-item Gear fit, archetype and derived stat weights. A labelled readout only (GF1-2): it never feeds
+   * `recommendations` order or `assessment`. Null without the affix data (`options.tiers`), because no
+   * ceiling can be known without it.
+   */
+  gearFit: GearFitReport | null
   /** The overall verdict, and the reasons behind it. */
   assessment: BuildAssessment
   /** Present when a PoB export was attached and decoded. */
@@ -358,6 +366,15 @@ export async function analyzeCharacter(
     treeCheck,
     model,
     recommendations: recommendationsFor(model, options, keystones, exportMain, skillContext(dps, options.catalog)),
+    gearFit: options.tiers
+      ? gearFitReport({
+          items: items.map((i) => analyzeItem(i, options.tiers!, defense)),
+          tiers: options.tiers,
+          defensive: model.defensiveStats,
+          // Unknown (no catalog) stays null: the offence half is then reported missing, not guessed.
+          skillTypes: options.catalog && dps.primary ? options.catalog.activeTypes(dps.primary.name) : null,
+        })
+      : null,
     assessment: assessBuild({
       defense,
       dps,
