@@ -205,6 +205,15 @@ describe('fitItem', () => {
     expect(fitItem(ring(9, [mod('LifeTop', LIFE, 50)]), tiers, []).missing).toMatch(/no stat weight/)
   })
 
+  it('GF1-6: an item with no scorable line is missing, not 0, and keeps its unscored lines', () => {
+    // Real case: Yykiuy's Damnation Grip has six lines the tier data does not know, which scored 0/100.
+    const fit = fitItem(ring(9, [mod('Unknown1', 'weird_stat', 5, { tier: null, unresolved: 'not in the affix data' })]), tiers, weights)
+    expect(fit.score).toBeNull()
+    expect(fit.ceiling).toBeNull()
+    expect(fit.missing).toMatch(/None of its 1 line could be scored/)
+    expect(fit.unscored.map((u) => u.kind)).toEqual(['not-understood'])
+  })
+
   it('lists reduction stats and stats the item level cannot roll as unscored', () => {
     const reduction = mod('LifeTop', LIFE, -20, { rolled: [{ id: LIFE, value: -20, min: -30, max: -10, quality: null }] })
     expect(fitItem(ring(9, [reduction]), tiers, weights).unscored.map((u) => u.kind)).toEqual(['reduction'])
