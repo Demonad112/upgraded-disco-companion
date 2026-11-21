@@ -52,7 +52,7 @@ describe('improvement ranking', () => {
     mod('big change', 'prefix', 6, { upgrades: [up(1, true)] }),
     mod('small change', 'prefix', 3, { upgrades: [up(2, true)] }),
     mod('needs base', 'suffix', 5, { upgrades: [up(1, false)] }),
-    mod('over cap', 'suffix', 2, { waste: { amount: 12, stat: 'fire', overCap: 12, reason: 'over cap' }, upgrades: [up(1, true)] }),
+    mod('over cap', 'suffix', 2, { waste: { amount: 12, stat: 'fire', overCap: 12, overCapBy: { fire: 12 }, reason: 'over cap' }, upgrades: [up(1, true)] }),
     mod('top', 'suffix', 1),
   ]
 

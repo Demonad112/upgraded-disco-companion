@@ -46,8 +46,8 @@ function FitDetail({ fit, listUnscored = false }: { fit: GearFit; listUnscored?:
     <ul className="mt-1 text-xs text-ink-mute">
       {fit.absent.length ? <li>Not rolled: {fit.absent.map((a) => statLabel(a.statId)).join(', ')}</li> : null}
       {fit.wasted.map((w) => (
-        <li key={w.text}>
-          {w.amount} wasted on {w.text}: {w.reason}
+        <li key={`${w.statId}-${w.text}`}>
+          {w.amount > 0 ? `${w.amount} wasted on ${w.text}` : w.text}: {w.reason}
         </li>
       ))}
       {listUnscored

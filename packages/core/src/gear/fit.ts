@@ -56,12 +56,17 @@ export interface WastedLine {
   text: string
   /** The resistance stat the waste was measured on. */
   statId: string
-  /** Points of this line that do nothing, after earlier items took their share. */
+  /** Points of this line that do nothing, after earlier lines took their share. */
   amount: number
+  /** Points measured on this item alone; what the score leaves out. */
+  alone: number
   /** The character's over-cap on that stat, the most that can be wasted in total. */
   overCap: number
+  /** Over-cap per resistance type the line feeds (three types for all-elemental). */
+  overCapBy: Readonly<Record<string, number>>
+  /** Why, in the shared amount once other lines use part of the over-cap. */
   reason: string
-  /** Slots listed earlier that already use up part of the same over-cap. */
+  /** Other slots, listed earlier, that already use up part of the same over-cap. */
   sharedWith: string[]
 }
 
@@ -119,7 +124,10 @@ export function fitItem(item: ItemAnalysis, tiers: ModTiers, weights: readonly S
       unscored.push({ kind: 'not-understood', text: mod.text, id: mod.id ?? mod.text, detail: mod.unresolved ?? 'No tier data for this line.' })
       continue
     }
-    if (mod.waste) wasted.push({ text: mod.text, statId: mod.waste.stat, amount: mod.waste.amount, overCap: mod.waste.overCap, reason: mod.waste.reason, sharedWith: [] })
+    if (mod.waste) {
+      const { amount, stat, overCap, overCapBy, reason } = mod.waste
+      wasted.push({ text: mod.text, statId: stat, amount, alone: amount, overCap, overCapBy, reason, sharedWith: [] })
+    }
 
     const ratios: number[] = []
     const ceilingRatios: number[] = []
@@ -205,10 +213,12 @@ export function gearFitReport(input: GearFitInput): GearFitReport {
 }
 
 /**
- * Each line's waste is measured alone against the full over-cap, so two items can
- * each claim the same points. Spend the over-cap once, in slot order (GF1-7). A
- * later line keeps what is left and names the slots that already used some. The
- * score is untouched: it already leaves the measured waste out of each line.
+ * Each line's waste is measured alone against the full over-cap, so two lines can
+ * each claim the same points. Spend each resistance type's over-cap once, in slot
+ * order (GF1-7); an all-elemental line draws on fire, cold and lightning together.
+ * A later line keeps what is left, names the other slots that used some, and its
+ * reason is rewritten to match. The score is untouched: it leaves out the waste
+ * measured on the item alone (`alone`), so it does not depend on slot order.
  */
 function shareOverCap(fits: GearFit[]): GearFit[] {
   const left = new Map<string, number>()
@@ -216,12 +226,28 @@ function shareOverCap(fits: GearFit[]): GearFit[] {
   return fits.map((fit) => ({
     ...fit,
     wasted: fit.wasted.map((w) => {
-      const remaining = left.get(w.statId) ?? w.overCap
+      const types = Object.keys(w.overCapBy)
+      const before = types.map((t) => left.get(t) ?? w.overCapBy[t]!)
+      const remaining = Math.max(0, Math.min(...before))
       const amount = Math.min(w.amount, remaining)
-      const sharedWith = [...(users.get(w.statId) ?? [])]
-      left.set(w.statId, remaining - amount)
-      if (amount > 0) users.set(w.statId, [...sharedWith.filter((s) => s !== fit.slotLabel), fit.slotLabel])
-      return { ...w, amount, sharedWith }
+      const sharedWith = [...new Set(types.flatMap((t) => users.get(t) ?? []))].filter((s) => s !== fit.slotLabel)
+      types.forEach((t, i) => {
+        left.set(t, before[i]! - amount)
+        if (amount > 0) users.set(t, [...(users.get(t) ?? []).filter((s) => s !== fit.slotLabel), fit.slotLabel])
+      })
+      const used = w.overCap - remaining
+      if (used <= 0) return { ...w, amount, sharedWith }
+      return { ...w, amount, sharedWith, reason: sharedReason(w, amount, used, sharedWith) }
     }),
   }))
+}
+
+function sharedReason(w: WastedLine, amount: number, used: number, sharedWith: string[]): string {
+  const types = Object.keys(w.overCapBy)
+  const res = types.length > 1 ? 'all elemental resistances' : `${types[0]} resistance`
+  const who = sharedWith.length ? sharedWith.join(', ') : 'other lines on this item'
+  const verb = sharedWith.length === 1 ? 'uses' : 'use'
+  const scoreNote = amount < w.alone ? ` The score leaves out ${w.alone}%, measured on this item alone.` : ''
+  if (amount === 0) return `None of this line is wasted: ${who} already ${verb} all ${w.overCap}% of ${res} over the cap.${scoreNote}`
+  return `${res[0]!.toUpperCase()}${res.slice(1)} ${types.length > 1 ? 'are' : 'is'} ${w.overCap}% above the cap; ${who} already ${verb} ${used}% of it, so ${amount}% of this line is doing nothing.${scoreNote}`
 }
