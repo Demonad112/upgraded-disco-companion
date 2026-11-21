@@ -238,3 +238,12 @@ One line each; reopen only when the trigger happens.
 | GF1-5 | Dead-stat check widened by archetype | Decided: no widening. Attack, spell, projectile and melee were already covered; the only gap was Minion, where `deadReason` called "Minions have … Attack Speed" dead on a spell-tagged minion skill. A Minion main skill now gets no verdict (red test in `cf-yykiuy.test.ts`). No minion character exists to confirm more | GF1-6 | closed 2026-11-21 |
 | GF1-6 | Run Gear fit, veto notes and compare target on a real character | Done on Yykiuy (`yykiuy-v80.json`, matches the owner's numbers). Result in `docs/plans/gear-fit-ranking.md` § GF1-6. Found and fixed: an item with no scorable line scored 0/100 (now missing). Compare target not run: no candidate item in the owner's numbers, none invented | GF1-6 | closed 2026-11-21 |
 | GF1-7 | Gear fit wasted points overlap across items | Done: `gearFitReport` spends each resistance's over-cap once in slot order (Yykiuy cold 36 + 23 = 59, not 36 + 29). Pooled per resistance type, so an all-elemental line draws on fire, cold and lightning with the single-element lines. Wasted rows carry `statId`, `alone`, `overCap`, `overCapBy` and `sharedWith` (never the row's own slot); a shared row's reason is rewritten to the shared amount and a 0-point row says which slots used the over-cap. Score unchanged: it leaves out the waste measured on the item alone. Red test in `gear-fit.test.ts`; no golden changed | GF1-6 | closed 2026-11-21 |
+
+## Closed 2026-11-21 (RV1-5, GF1-9a/b, owner step 14)
+| ID | Item | Recommended | Origin | Status |
+|---|---|---|---|---|
+| RV1-5 | Rate limit on the public proxy (`/api/*`) | Vercel Firewall rate-limit rule | RV1 | done (owner, 2026-11-21) |
+| GF1-9a | A file of assumed constants with source, sample size and range | `packages/core/src/provenance/assumptions.ts`: every number in `thresholds.ts`, value read live, basis/source/sampleSize/range; a test fails on a new constant without an entry. All are unmeasured today (`unmeasuredConstants()`) | GF1 item 9 | done |
+| GF1-9b | Echo the data version and an import hash with each result | `Analysis.stamp` (`dataRevision`, `extractedAt`, `importHash` = first 16 hex of SHA-256 over the model without poe.ninja refresh times, `engineVersion`); shown at the foot of the Advanced tab; goldens carry `importHash` | GF1 item 9 | done |
+| OS-14 | Owner step 14: ask poe.ninja for API access | Owner disregarded it (2026-11-21); PoB code is the import path | NP1-1 | closed (disregarded) |
+

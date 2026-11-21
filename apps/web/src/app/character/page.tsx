@@ -23,6 +23,7 @@ import { useSupportCatalog } from '@/lib/useSupportCatalog'
 import { usePassiveTree } from '@/lib/usePassiveTree'
 import { useCharacterTab } from '@/lib/characterTab'
 import { characterName } from '@/lib/characterName'
+import { SHIPPED_DATA_VERSION } from '@/lib/constants'
 
 // Everything below the import box only renders once a character is loaded, so it is its own chunk. Overview (build card,
 // Top 3) is in it; every other tab is a chunk of its own, fetched when the tab opens. The chunk is requested when an
@@ -112,16 +113,17 @@ export default function Home() {
       ...(catalog ? { catalog } : {}),
       ladder,
       source,
+      dataVersion: SHIPPED_DATA_VERSION,
     }),
     [baseTiers, tree, catalog, ladder, source],
   )
   // The card pass's options: one object per source, so inputs arriving before the fixes pass do not re-run it.
-  const cardOptions = useMemo(() => ({ source }), [source])
+  const cardOptions = useMemo(() => ({ source, dataVersion: SHIPPED_DATA_VERSION }), [source])
 
   // Three passes per import: card, fixes, full (above). Each runs once; the ladder landing after the grace window is
   // the only reason for another. A result from a run that has since been superseded is dropped.
   const passOptions = useMemo(
-    () => (want === 'card' ? cardOptions : want === 'fixes' ? { ...(baseTiers ? { tiers: baseTiers } : {}), ladder, source } : analysisOptions),
+    () => (want === 'card' ? cardOptions : want === 'fixes' ? { ...(baseTiers ? { tiers: baseTiers } : {}), ladder, source, dataVersion: SHIPPED_DATA_VERSION } : analysisOptions),
     [want, cardOptions, baseTiers, ladder, source, analysisOptions],
   )
   const runId = useRef(0)

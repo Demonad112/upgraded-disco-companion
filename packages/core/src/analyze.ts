@@ -34,6 +34,8 @@ import { checkTreeVersion, resolveAllocation, TREE_UNCHECKED, type PassiveTree, 
 import { ailmentImmunities, type AilmentStatus } from './defense/ailments.js'
 import type { LadderSummary } from './ninja/ladder.js'
 import type { CharModel, CharModelResponse } from './model/types.js'
+import { ANALYSIS_ENGINE_VERSION, importHash } from './cache/key.js'
+import type { DataVersion } from './provenance/index.js'
 
 export interface CharacterIdentity {
   name: string
@@ -109,8 +111,20 @@ export interface Analysis {
    * ignited and bleeding".
    */
   pobConfig: PobConfig | null
+  /** Which data and which import produced this result (GF1 item 9). */
+  stamp: AnalysisStamp
   /** Non-fatal problems worth telling the user about. */
   warnings: string[]
+}
+
+export interface AnalysisStamp {
+  /** Game data revision passed in `options.dataVersion`; null when none was, never guessed. */
+  dataRevision: string | null
+  /** When that data was exported; null when unknown. */
+  extractedAt: string | null
+  /** `importHash` of the analysed model: the same import always gives the same hash. */
+  importHash: string
+  engineVersion: number
 }
 
 /** Accept either the raw `{type, charModel}` envelope or a bare charModel. */
@@ -189,6 +203,8 @@ export interface AnalyzeOptions {
    * source itself, so it is read for config and skill groups but never reconciled against.
    */
   source?: AnalysisSource
+  /** The shipped game data version (`readDataVersion` of `version.json`), echoed in `Analysis.stamp`. */
+  dataVersion?: DataVersion | null
 }
 
 /**
@@ -388,6 +404,12 @@ export async function analyzeCharacter(
     reconciliation,
     pobStats,
     pobConfig,
+    stamp: {
+      dataRevision: options.dataVersion?.dataRevision ?? null,
+      extractedAt: options.dataVersion?.extractedAt ?? null,
+      importHash: await importHash(model as unknown as Record<string, unknown>),
+      engineVersion: ANALYSIS_ENGINE_VERSION,
+    },
     warnings,
   }
 
