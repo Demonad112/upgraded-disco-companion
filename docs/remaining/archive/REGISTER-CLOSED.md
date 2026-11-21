@@ -228,6 +228,7 @@ One line each; reopen only when the trigger happens.
 |---|---|---|---|---|
 | RV1-4 | Move `services/ninja-proxy` from Vercel to a Cloudflare Worker | Keep Vercel: a probe Worker got `403 cf-mitigated: challenge` from poe.ninja on `/poe2/api/profile/*` and `/poe2/api/builds/*` (a Pages Function shares that egress) | RV1, NP1 | answered 2026-11-18: keep Vercel. Reopen if poe.ninja stops challenging Cloudflare egress (rerun the probe in PR #214) |
 | NP1-2 | Daily scheduled live smoke check (`services/ninja-proxy/scripts/verify-live.mjs`) in CI | Yes | NP1 | answered 2026-11-18: no. The script stays for manual runs |
+| VR1-2 | Run a current-patch PoE2 PoB code through `analyzeFromPob` | C | VR1 (#215 check) | Ran a level-90 Monk code (PoB2, tree 0_5): decodes, 107 PlayerStat values, pools, resists, five max hits, EHP and DPS read. Found `fullDps` 0 where PoB means "not computed": now null (red-then-green test, no golden change). Tree check is stale (3 nodes not in our data: DATA-1). poe.ninja's stats were not comparable: the profile page returns 403 (NP1-1) and the build export holds only passives and skills (123 passives and 16 skill groups match). Stat-by-stat comparison still needs the character JSON. A pasted code still has no full analysis (NP1-6) | done (partial: stats not compared) |
 
 ## Closed 2026-11-21 (VR1-1, NP1-6)
 | ID | Item | Recommended | Origin | Status |

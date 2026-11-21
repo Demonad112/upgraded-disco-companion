@@ -234,7 +234,8 @@ export async function analyzeFromPob(code: string): Promise<PobAnalysis> {
       totalDps: num(stats, 'TotalDPS'),
       combinedDps: num(stats, 'CombinedDPS'),
       totalDotDps: num(stats, 'TotalDotDPS'),
-      fullDps: num(stats, 'FullDPS'),
+      // PoB writes 0 when no skill is set to count in Full DPS: that is "not computed", not a damage figure.
+      fullDps: (num(stats, 'FullDPS') ?? 0) > 0 ? num(stats, 'FullDPS') : null,
       averageDamage: num(stats, 'AverageDamage'),
       speed: num(stats, 'Speed'),
       critChance: num(stats, 'CritChance'),
