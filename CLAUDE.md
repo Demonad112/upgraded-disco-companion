@@ -46,7 +46,7 @@ PreToolUse hook: `block-generated-edits.mjs` denies Edit/Write on generated data
 - Answer open questions yourself with your best recommendation, act on it, and state each answer and its reason in
   your reply. The exceptions are the Needs-owner kinds in `docs/SESSION-PROTOCOL.md` (design rules, CI or branch
   protection, data/dependencies, `packages/*` policy, weaker tests, branch deletion; other core changes need only a
-  red-then-green test and golden diff, HG1-1): put those in `REMAINING-WORK.md` § Owner
+  red-then-green test and golden diff): put those in `REMAINING-WORK.md` § Owner
   queue with a recommended answer. If you are blocked on one 3 times, stop and ask.
 - **Data shapes.** When a data shape changes, grep `apps/web/e2e` for the old path and update specs in the same commit.
 - **Copy voice.** Follow `docs/COPY.md`: one or two sentences, action first, long text only behind Pro detail.
