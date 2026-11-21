@@ -319,8 +319,8 @@ describe('ETag revalidation of the character model (direct mode)', () => {
     await expect(client.fetchCharacter('A-1', 'standard', 'B')).rejects.toThrow(/^poe\.ninja took too long to respond\.$/)
   })
 
-  it("shows the proxy's 403 explanation as is: two sentences, the paste action last", async () => {
-    const blocked = 'poe.ninja now blocks automated imports. Paste a Path of Building code or the character JSON instead.'
+  it("shows the proxy's blocked-import explanation as is: the paste action first (docs/COPY.md)", async () => {
+    const blocked = 'Paste a Path of Building code or the character JSON instead, because poe.ninja now blocks automated imports.'
     const client = new NinjaClient({ fetch: failing(403, async () => ({ error: blocked })), proxyBaseUrl: 'https://proxy.example' })
     const err = await client.fetchCharacter('A-1', 'standard', 'B').catch((e: unknown) => e)
     expect(err).toMatchObject({ reason: 'bad-response' })

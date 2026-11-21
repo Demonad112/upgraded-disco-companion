@@ -15,7 +15,8 @@ import { describe, expect, it } from 'vitest'
 import { readFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 
-import { analyzeCharacter } from '../src/analyze.js'
+import { analyzeCharacter, type AnalyzeOptions } from '../src/analyze.js'
+import { pobToCharModel } from '../src/pob/to-model.js'
 import { analysisCacheKey } from '../src/cache/key.js'
 import { holdingUp } from '../src/constraints/holding-up.js'
 
@@ -49,10 +50,12 @@ const VARIANTS: { name: string; patch: string | null }[] = [
   { name: 'no-skills', patch: 'no-skills' },
 ]
 
-async function view(doc: Record<string, unknown>) {
-  const a = await analyzeCharacter(doc)
+async function view(doc: Record<string, unknown>, options: AnalyzeOptions = {}) {
+  const a = await analyzeCharacter(doc, options)
   const holding = holdingUp({ model: a.model, defense: a.defense, attribution: a.attribution, items: a.items, pobStats: a.pobStats })
   return {
+    // Only for a code, so the poe.ninja goldens stay as they were.
+    ...(a.source === 'poe.ninja' ? {} : { source: a.source, sourceGaps: a.sourceGaps.map((g) => g.what) }),
     identity: a.identity,
     defence: {
       lowestMaximumHit: a.defense.lowestMaximumHit,
@@ -99,6 +102,15 @@ describe('golden outputs', () => {
       await expect(`${JSON.stringify(out, null, 2)}\n`).toMatchFileSnapshot(`./golden/${v.name}.expected.json`)
     })
   }
+
+  // NP1-6: the recorded character's own Path of Building code, converted and run through the same analysis.
+  it('pob-code-athrynas-v43', async () => {
+    const code = (recorded as { charModel?: { pathOfBuildingExport?: string } }).charModel?.pathOfBuildingExport
+      ?? (recorded as { pathOfBuildingExport?: string }).pathOfBuildingExport
+    const model = (await pobToCharModel(code!)) as unknown as Record<string, unknown>
+    const out = await view(model, { source: 'pob-export' })
+    await expect(`${JSON.stringify(out, null, 2)}\n`).toMatchFileSnapshot('./golden/pob-code-athrynas-v43.expected.json')
+  })
 
   it('derived variants really differ from the recorded character', async () => {
     const keys = new Set<string>()

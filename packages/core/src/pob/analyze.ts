@@ -126,6 +126,51 @@ function num(stats: Record<string, number>, key: string): number | null {
 }
 
 /**
+ * What a Path of Building code cannot answer, stated rather than filled in. Shared by the reduced
+ * PoB view and by the full analysis of a converted code (`Analysis.sourceGaps`), so both say the same.
+ */
+export function pobCodeGaps(stats: Record<string, number>): PobGap[] {
+  const gaps: PobGap[] = [
+    {
+      what: 'Per-skill damage',
+      why: 'A code carries the damage of the skill it had selected, not of every skill.',
+    },
+    {
+      what: 'Gear findings and trade searches',
+      why: 'Items in a code are not read yet, so no gear finding or trade search is built from them.',
+    },
+    {
+      what: 'Weapon-set passives',
+      why:
+        'A code lists the main tree and both weapon sets’ nodes together, so a keystone counts only where your stats confirm it.',
+    },
+    {
+      what: 'Stat attribution — which item or passive grants each point',
+      why:
+        'That needs poe.ninja’s per-stat breakdowns, which a code does not carry. ' +
+        'Gear tiers and resistance rebalancing depend on it.',
+    },
+  ]
+  if (num(stats, 'Ward') === null) {
+    gaps.push({
+      what: 'Ward',
+      why: 'Not among the exported PlayerStat values, so it is reported as absent rather than as zero.',
+    })
+  }
+  if (num(stats, 'BlockChance') === null) {
+    gaps.push({ what: 'Block chance', why: 'Not among the exported PlayerStat values.' })
+  }
+  const resists = Object.values(RESIST_STATS).filter((key) => num(stats, key) !== null)
+  if (resists.length && resists.every((key) => num(stats, `${key}OverCap`) === null)) {
+    gaps.push({
+      what: 'Raised maximum resistances',
+      why: `No over-cap stats were exported, so caps are assumed to be the game default of ${DEFAULT_RESIST_CAP}%. A build that raises its maximums will look closer to its cap than it is.`,
+    })
+  }
+  return gaps
+}
+
+/**
  * Build an analysis from a Path of Building export code.
  *
  * Throws only when the code itself will not decode — a build with unusual stats
@@ -162,36 +207,7 @@ export async function analyzeFromPob(code: string): Promise<PobAnalysis> {
 
   const ehp = num(stats, 'TotalEHP')
 
-  const gaps: PobGap[] = [
-    {
-      what: 'Per-skill damage',
-      why:
-        'A Path of Building code carries TotalDPS for the skill it had selected and nothing per-skill. ' +
-        'Load the character from poe.ninja for the full matrix, or drive a live Path of Building through the bridge.',
-    },
-    {
-      what: 'Stat attribution — which item or passive grants each point',
-      why:
-        'That comes from poe.ninja’s per-stat breakdowns, which a Path of Building code does not contain. ' +
-        'Gear tiers and resistance rebalancing need it, so those are unavailable from a code alone.',
-    },
-  ]
-
-  if (num(stats, 'Ward') === null) {
-    gaps.push({
-      what: 'Ward',
-      why: 'Not among the exported PlayerStat values, so it is reported as absent rather than as zero.',
-    })
-  }
-  if (num(stats, 'BlockChance') === null) {
-    gaps.push({ what: 'Block chance', why: 'Not among the exported PlayerStat values.' })
-  }
-  if (resistances.length && resistances.every((r) => num(stats, `${RESIST_STATS[r.type]}OverCap`) === null)) {
-    gaps.push({
-      what: 'Raised maximum resistances',
-      why: `No over-cap stats were exported, so caps are assumed to be the game default of ${DEFAULT_RESIST_CAP}%. A build that raises its maximums will read as more over-capped than it is.`,
-    })
-  }
+  const gaps = pobCodeGaps(stats)
 
   return {
     provenance: 'pob-export',

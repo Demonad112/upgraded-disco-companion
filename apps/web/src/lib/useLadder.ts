@@ -11,10 +11,12 @@
 
 import { useEffect, useState } from 'react'
 import { fetchLadder, type LadderSummary } from '@poe2/core'
-import { PROXY_BASE } from './proxy'
+import { NINJA_IMPORT_BLOCKED, PROXY_BASE } from './proxy'
 
 /** `settled` is true once the request has answered (with a sample or without), or when there is nothing to ask for. */
-export function useLadder(league: string | null, ascendancy: string | null): { ladder: LadderSummary | null; settled: boolean } {
+export function useLadder(requested: string | null, ascendancy: string | null): { ladder: LadderSummary | null; settled: boolean } {
+  // Blocked upstream (NP1-1): ask for nothing, so the page settles at once instead of waiting on a doomed request.
+  const league = NINJA_IMPORT_BLOCKED ? null : requested
   const [summary, setSummary] = useState<LadderSummary | null>(null)
   const [settledFor, setSettledFor] = useState<string | null>(null)
   const key = league ? `${league}|${ascendancy ?? ''}` : null

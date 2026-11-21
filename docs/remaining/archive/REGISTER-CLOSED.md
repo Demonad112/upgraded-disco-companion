@@ -228,3 +228,9 @@ One line each; reopen only when the trigger happens.
 |---|---|---|---|---|
 | RV1-4 | Move `services/ninja-proxy` from Vercel to a Cloudflare Worker | Keep Vercel: a probe Worker got `403 cf-mitigated: challenge` from poe.ninja on `/poe2/api/profile/*` and `/poe2/api/builds/*` (a Pages Function shares that egress) | RV1, NP1 | answered 2026-11-18: keep Vercel. Reopen if poe.ninja stops challenging Cloudflare egress (rerun the probe in PR #214) |
 | NP1-2 | Daily scheduled live smoke check (`services/ninja-proxy/scripts/verify-live.mjs`) in CI | Yes | NP1 | answered 2026-11-18: no. The script stays for manual runs |
+
+## Closed 2026-11-21 (VR1-1, NP1-6)
+| ID | Item | Recommended | Origin | Status |
+|---|---|---|---|---|
+| VR1-1 | Atlas full screen at 1440 cuts the step name to about 80 px ("Trapped S…"; 61 px at 1280, 160 px of 181 outside full screen) | Fix it: in full screen let the step line take its own row in the command bar (tabs and buttons on the first), so the name is never cut above 1024 px. Layout change in a decided bar, so yours to approve | VR1 (#215 check) | done #216: full-screen step line on its own row, e2e at 1025/1280/1440 px |
+| NP1-6 | A pasted PoB code shows the reduced PobResults view (no grade, main skill or recommendations). Run the full analysis on it? | Yes: with poe.ninja blocked (NP1-1) paste is the main route. Build the full results from `analyzeFromPob` and show any input it lacks as "missing", never a guess. Check it first on a current-patch code (VR1-2) | NP1-1, #215 | answered 2026-11-21: yes. `pobToCharModel` feeds `analyzeCharacter` (source `pob-export`); gear left to NP1-6b |

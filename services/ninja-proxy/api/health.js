@@ -25,6 +25,11 @@ export default function handler(req, res) {
     ok: true,
     service: "poe2-v3-ninja-proxy",
     endpoints: ["/api/character", "/api/ladder", "/api/health"],
+    // What poe.ninja lets these endpoints reach today. Since 2026-11-18 the
+    // character model and the builds search sit behind a Cloudflare challenge
+    // (NP1-1), so both answer with an error that tells the user to paste.
+    // Change to "ok" when sanctioned access returns.
+    upstream: { character: "blocked (NP1-1)", ladder: "blocked (NP1-1)" },
     // Set by Vercel on every deployment; useful for telling which build a
     // response came from when a deploy looks like it did not take effect.
     commit: process.env.VERCEL_GIT_COMMIT_SHA ?? null,

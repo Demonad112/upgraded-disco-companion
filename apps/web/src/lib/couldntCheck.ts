@@ -10,8 +10,8 @@ const STRUCTURED = [/allocated passive nodes? \(id /, / is allocated on the pass
 
 /**
  * Everything the analysis could not check, once each (HG1-9): the tree-version
- * check, keystones the sheet could not confirm or contradicts, then any other
- * warning.
+ * check, keystones the sheet could not confirm or contradicts, what the source
+ * cannot carry, then any other warning.
  */
 export function couldntCheck(a: Analysis): CouldntCheckItem[] {
   const items: CouldntCheckItem[] = []
@@ -28,10 +28,14 @@ export function couldntCheck(a: Analysis): CouldntCheckItem[] {
       key: `ks:${u.keystone}`,
       text:
         u.kind === 'contradicted'
-          ? `${u.keystone}: ignored, because ${u.reason}. Re-import once poe.ninja reindexes the character.`
+          ? `${u.keystone}: ignored, because ${u.reason}. ${
+              a.source === 'pob-export' ? 'Export the code again from a current Path of Building.' : 'Re-import once poe.ninja reindexes the character.'
+            }`
           : `${u.keystone}: check it in-game; ${u.reason}.`,
     })
   }
+  // What a Path of Building code cannot carry (NP1-6), so a missing panel reads as a limit of the source, not a bug.
+  for (const g of a.sourceGaps ?? []) items.push({ key: `gap:${g.what}`, text: `${g.what}: ${g.why}` })
   for (const w of a.warnings) {
     if (STRUCTURED.some((re) => re.test(w))) continue
     items.push({ key: w, text: w })
