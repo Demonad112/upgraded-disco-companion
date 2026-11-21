@@ -108,7 +108,8 @@ describe('golden outputs', () => {
     const code = (recorded as { charModel?: { pathOfBuildingExport?: string } }).charModel?.pathOfBuildingExport
       ?? (recorded as { pathOfBuildingExport?: string }).pathOfBuildingExport
     const model = (await pobToCharModel(code!)) as unknown as Record<string, unknown>
-    const out = await view(model, { source: 'pob-export' })
+    // Leave out the cache key (a SHA-256 the secrets scan reads as an API key); the variants test covers key changes.
+    const { cacheKey: _key, ...out } = await view(model, { source: 'pob-export' })
     await expect(`${JSON.stringify(out, null, 2)}\n`).toMatchFileSnapshot('./golden/pob-code-athrynas-v43.expected.json')
   })
 
