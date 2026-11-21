@@ -57,15 +57,21 @@ test('"Hide completed" hides a ticked step, and reset clears progress', async ({
   await expect(page.getByText('Step 1 of 32 · 0 done')).toBeVisible()
 })
 
-test('a Path of Building code imports and shows its own analysis', async ({ page }) => {
+test('a Path of Building code gets the full analysis, with what a code lacks named', async ({ page }) => {
   const payload = JSON.parse(readFileSync(resolve('../../packages/core/test/fixtures/athrynas-v43.json'), 'utf8'))
   const code: string = (payload.charModel ?? payload).pathOfBuildingExport
   await page.goto('character/')
-  await page.getByRole('tab', { name: 'Paste data' }).click()
+  // Paste is the default tab while poe.ninja blocks URL imports (NP1-1).
+  await expect(page.getByRole('tab', { name: 'Paste data' })).toHaveAttribute('aria-selected', 'true')
   await page.getByLabel('Character model JSON or Path of Building code').fill(code)
   await page.getByRole('button', { name: 'Analyse pasted data' }).click()
-  await expect(page.getByText('Imported from a Path of Building code')).toBeVisible({ timeout: 30_000 })
-  await expect(page.getByText('What a code cannot tell you')).toBeVisible()
+  // NP1-6: the same build card, grade and Top 3 as a poe.ninja import, labelled with its source.
+  await expect(page.getByRole('heading', { name: 'Path of Building build' })).toBeVisible({ timeout: 30_000 })
+  await expect(page.locator('.bc-top')).toContainText('Deadeye · From a Path of Building code')
+  await expect(page.locator('[data-top-fixes]:not([data-pending]) li').first()).toBeVisible({ timeout: 30_000 })
+  const gaps = page.getByTestId('couldnt-check')
+  await expect(gaps).toContainText('Gear findings and trade searches')
+  await expect(gaps).toContainText('Stat attribution')
   // Next's route announcer is also role=alert, so check for the app's own error text.
   await expect(page.getByText(/Could not analyse|neither valid JSON/)).toHaveCount(0)
 })

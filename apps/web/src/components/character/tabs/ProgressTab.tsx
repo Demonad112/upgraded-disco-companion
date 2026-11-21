@@ -1,5 +1,6 @@
 'use client'
 
+import { characterName } from '@/lib/characterName'
 import { snapshotKey } from '@poe2/core'
 import { Accordion } from '@/components/shared/Accordion'
 import { StatusChip } from '@/components/shared/Instruments'
@@ -68,7 +69,7 @@ export default function ProgressTab({ analysis: a, history }: PanelProps) {
         title="Compare with another character"
         summary="Side by side with a character you imported before, from saved snapshots"
       >
-        <CompareCharacters currentKey={snapshotKey(a.identity)} currentName={a.identity.name} bare />
+        <CompareCharacters currentKey={snapshotKey(a.identity)} currentName={characterName(a)} bare />
       </Accordion>
       <Chat analysis={a} />
     </Panel>

@@ -27,6 +27,7 @@ test.beforeEach(async ({ page }) => {
 async function importCharacter(page: Page) {
   const box = page.locator('main details').first()
   if ((await box.getAttribute('open')) === null) await page.getByText('Load another character').click()
+  await page.getByRole('tab', { name: 'poe.ninja URL' }).click()
   await page.getByLabel('poe.ninja character URL').fill(PROFILE_URL)
   await page.getByRole('button', { name: 'Analyse', exact: true }).click()
   // The name heading is on Overview; a second import keeps the tab from the URL hash.

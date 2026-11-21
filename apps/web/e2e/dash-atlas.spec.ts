@@ -112,6 +112,27 @@ test.describe('atlas map panel', () => {
     await expect.poll(centre).not.toBe(focused)
   })
 
+  test('a row-checkbox tick also ends a Map-button focus', async ({ page }) => {
+    await openMap(page)
+    const map = page.locator('#atlas-map')
+    await expect(page.locator('[aria-label^="Atlas passive tree:"]')).toBeAttached()
+    await expect(map).toHaveAttribute('data-cx', /.+/)
+    await openList(page)
+    await page.getByRole('button', { name: 'Show Trapped Subordinate on the Atlas tree' }).click()
+    await expect(page.getByText('Showing Trapped Subordinate')).toBeVisible()
+    const centre = async () => `${await map.getAttribute('data-cx')},${await map.getAttribute('data-cy')}`
+    let last = ''
+    await expect.poll(async () => { const now = await centre(); const settled = now === last; last = now; return settled }).toBe(true)
+    const focused = await centre()
+    // Before the fix only the bar's Tick cleared the focus; a row tick left the map frozen on it.
+    // On phones the Map button closed the list sheet, so reopen it to reach the row.
+    await openList(page)
+    await page.getByRole('checkbox', { name: 'Allocated Trapped Subordinate' }).check()
+    await expect(page.getByRole('group', { name: 'Route steps' })).toContainText('2 of 17')
+    await expect(page.getByText('Showing Trapped Subordinate')).toHaveCount(0)
+    await expect.poll(centre).not.toBe(focused)
+  })
+
   test('full screen keeps focus inside the stage, and Escape returns it to the Full screen button', async ({ page }) => {
     await openMap(page)
     // Full screen is a desktop layout: phones don't offer it.

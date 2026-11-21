@@ -291,8 +291,9 @@ function failure(what, res) {
  */
 export async function resolveSnapshot(league, displayName = league, opts = {}) {
   const first = await fetchJson(snapshotVersionsUrl(league), opts);
-  if (!first.json) return failure("snapshot-versions", first.res);
-  const direct = findSnapshot(first.json, league, displayName);
+  // A 404 for an unknown slug is a miss like `[]`: fall through to index-state.
+  if (!first.json && first.res.status !== 404) return failure("snapshot-versions", first.res);
+  const direct = first.json ? findSnapshot(first.json, league, displayName) : null;
   if (direct) return { snap: direct };
 
   const idx = await fetchJson(`${NINJA_BASE}/poe2/api/data/index-state`, opts);

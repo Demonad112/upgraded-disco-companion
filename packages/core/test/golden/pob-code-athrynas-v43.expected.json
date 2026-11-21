@@ -1,0 +1,157 @@
+{
+  "source": "pob-export",
+  "sourceGaps": [
+    "Per-skill damage",
+    "Gear findings and trade searches",
+    "Weapon-set passives",
+    "Stat attribution — which item or passive grants each point",
+    "Ward",
+    "Block chance"
+  ],
+  "identity": {
+    "name": "",
+    "account": "",
+    "league": "",
+    "level": 86,
+    "className": "Deadeye",
+    "updatedUtc": null
+  },
+  "defence": {
+    "lowestMaximumHit": 3808,
+    "lowestMaximumHitType": "chaos",
+    "life": 1448,
+    "energyShield": 1937,
+    "resistances": [
+      {
+        "type": "fire",
+        "value": 75,
+        "max": 75,
+        "overCap": 24,
+        "underCap": 0
+      },
+      {
+        "type": "cold",
+        "value": 74,
+        "max": 75,
+        "overCap": 0,
+        "underCap": 1
+      },
+      {
+        "type": "lightning",
+        "value": 75,
+        "max": 75,
+        "overCap": 8,
+        "underCap": 0
+      },
+      {
+        "type": "chaos",
+        "value": 18,
+        "max": 75,
+        "overCap": 0,
+        "underCap": 57
+      }
+    ]
+  },
+  "activeSlots": [],
+  "primarySkill": {
+    "name": "Ice Shot",
+    "totalDps": 110157.73781379715
+  },
+  "assessment": {
+    "score": null,
+    "scoreRange": {
+      "min": 0.3,
+      "max": 0.8
+    },
+    "tier": null,
+    "tierRange": {
+      "worst": "C",
+      "best": "A"
+    },
+    "offenceUnscoredReason": "No ladder sample was available for this league and ascendancy, and this codebase does not carry invented damage thresholds to fall back on.",
+    "weaknesses": [
+      "warning: Uncapped elemental resistance (Cold 74% of 75%, 4% more cold damage taken)",
+      "critical: Chaos resistance below its cap (Chaos 18% of 75%, 228% more chaos damage taken)",
+      "warning: 2 weak damage types — Chaos 3,808, Physical 4,264, against 14,611 at best"
+    ]
+  },
+  "recommendations": [
+    "res-chaos-under-cap",
+    "res-cold-under-cap",
+    "one-shot-chaos",
+    "dps-crit-uninvested"
+  ],
+  "pobConfigInputCount": 20,
+  "warnings": [],
+  "holdingUp": {
+    "resistances": [
+      {
+        "type": "fire",
+        "known": true,
+        "value": 75,
+        "max": 75,
+        "slack": 24,
+        "short": 0,
+        "source": "ninja"
+      },
+      {
+        "type": "cold",
+        "known": true,
+        "value": 74,
+        "max": 75,
+        "slack": 0,
+        "short": 1,
+        "source": "ninja"
+      },
+      {
+        "type": "lightning",
+        "known": true,
+        "value": 75,
+        "max": 75,
+        "slack": 8,
+        "short": 0,
+        "source": "ninja"
+      },
+      {
+        "type": "chaos",
+        "known": true,
+        "value": 18,
+        "max": 75,
+        "slack": 0,
+        "short": 57,
+        "source": "ninja"
+      }
+    ],
+    "items": [],
+    "spirit": {
+      "total": 159,
+      "reserved": 80,
+      "unreserved": 79,
+      "unreservedPercent": 49.7
+    },
+    "attributes": [
+      {
+        "attribute": "strength",
+        "have": 47,
+        "required": 45,
+        "headroom": 2,
+        "tight": true
+      },
+      {
+        "attribute": "intelligence",
+        "have": 109,
+        "required": 83,
+        "headroom": 26,
+        "tight": false
+      },
+      {
+        "attribute": "dexterity",
+        "have": 240,
+        "required": 147,
+        "headroom": 93,
+        "tight": false
+      }
+    ],
+    "movementSpeed": null
+  }
+}

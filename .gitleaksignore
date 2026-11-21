@@ -1,0 +1,3 @@
+# Verified false positives only, one fingerprint each, with the reason.
+# SHA-256 analysis cache key in a test golden (removed in 0951d7f), not a credential. Owner OK 2026-11-21 (#220).
+45deb0b17b64183775e44cb42dbc6c0b690daa9b:packages/core/test/golden/pob-code-athrynas-v43.expected.json:generic-api-key:157

@@ -105,12 +105,14 @@ export function AtlasMapProvider({ children }: { children: ReactNode }) {
     [isClusterAllocated, isForkAllocated],
   )
 
-  // Any tick (or untick) drops the selection: current falls back to the first step still to take.
+  // Any tick (or untick), wherever it came from (bar, row checkbox, map tooltip), drops the selection and
+  // ends a Map-button focus: current falls back to the first step still to take and the map follows it.
   const lastCount = useRef(allocatedCount)
   useEffect(() => {
     if (lastCount.current === allocatedCount) return
     lastCount.current = allocatedCount
     setSelected(null)
+    setRequest(null)
   }, [allocatedCount])
 
   const selectedIdx = selected ? route.findIndex((r) => r.id === selected) : -1

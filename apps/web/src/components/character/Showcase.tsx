@@ -15,6 +15,7 @@ import { DMG_VAR, cap } from './dmg'
 import '@/styles/buildcard.css'
 import { gradeText } from '@/lib/grade'
 import { ResName } from '@/components/shared/ResName'
+import { characterName, sourceLabel } from '@/lib/characterName'
 
 let mountedAt: number | null = null
 const subscribeNever = () => () => {}
@@ -143,8 +144,8 @@ export function Showcase({ analysis, children }: { analysis: Analysis; children?
       <section aria-labelledby="showcase-title" className="bc">
         <div className="bc-head">
           <div className="min-w-0">
-            <div className="bc-top">{[identity.className, identity.league].filter(Boolean).join(' · ') || 'Character'}</div>
-            <h2 id="showcase-title" className="bc-name text-gradient-gold">{identity.name}</h2>
+            <div className="bc-top">{[identity.className, sourceLabel(analysis)].filter(Boolean).join(' · ') || 'Character'}</div>
+            <h2 id="showcase-title" className="bc-name text-gradient-gold">{characterName(analysis)}</h2>
           </div>
           <div className="bc-level" aria-label={identity.level === null ? 'Level unknown' : `Level ${identity.level}`}>
             <span>

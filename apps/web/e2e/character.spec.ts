@@ -10,6 +10,8 @@ test('?import= analyses the character and records it for the home page', async (
   await expect(page.getByRole('heading', { name: /Athrynas/ }).first()).toBeVisible({ timeout: 30_000 })
   // The recent-character chip lives in the collapsed "Load another character".
   await page.getByText('Load another character').click()
+  // Re-import chips are poe.ninja URLs, so they sit on the URL tab (paste is the default while NP1-1 holds).
+  await page.getByRole('tab', { name: 'poe.ninja URL' }).click()
   await expect(page.getByRole('button', { name: /^Athrynas/ })).toBeVisible()
 
   await page.goto('')
@@ -31,6 +33,7 @@ test('a typed import collapses the box for its length, so the skeleton sits wher
   await expect(box).toHaveAttribute('open')
   await expect(page.getByText('Load another character')).toBeHidden()
 
+  await page.getByRole('tab', { name: 'poe.ninja URL' }).click()
   await page.getByLabel('poe.ninja character URL').fill(PROFILE_URL)
   await page.getByRole('button', { name: 'Analyse', exact: true }).click()
   await expect(box).not.toHaveAttribute('open')
@@ -46,6 +49,7 @@ test('a failed import keeps the box open with the URL and the error', async ({ p
     route.fulfill({ status: 404, contentType: 'application/json', body: '{"error":"not found"}' }),
   )
   await page.goto('character/')
+  await page.getByRole('tab', { name: 'poe.ninja URL' }).click()
   await page.getByLabel('poe.ninja character URL').fill(PROFILE_URL)
   await page.getByRole('button', { name: 'Analyse', exact: true }).click()
   await expect(page.locator('main [role=alert]:not(:empty)').first()).toBeVisible({ timeout: 15_000 })
@@ -56,14 +60,16 @@ test('a failed import keeps the box open with the URL and the error', async ({ p
 test('a blocked import offers the paste box in one click, and a PoB code pasted there analyses', async ({ page }) => {
   const payload = JSON.parse(readFileSync(resolve('../../packages/core/test/fixtures/athrynas-v43.json'), 'utf8'))
   const code: string = (payload.charModel ?? payload).pathOfBuildingExport
+  // The proxy answers poe.ninja's 403 challenge with a 502 (services/ninja-proxy/api/character.js).
   await page.route('**/api/character**', (route) =>
     route.fulfill({
-      status: 403,
+      status: 502,
       contentType: 'application/json',
-      body: '{"error":"poe.ninja now blocks automated imports. Paste a Path of Building code or the character JSON instead."}',
+      body: '{"error":"Paste a Path of Building code or the character JSON instead, because poe.ninja now blocks automated imports."}',
     }),
   )
   await page.goto('character/')
+  await page.getByRole('tab', { name: 'poe.ninja URL' }).click()
   await page.getByLabel('poe.ninja character URL').fill(PROFILE_URL)
   await page.getByRole('button', { name: 'Analyse', exact: true }).click()
   await expect(page.locator('main [role=alert]:not(:empty)').first()).toBeVisible({ timeout: 15_000 })
@@ -72,7 +78,8 @@ test('a blocked import offers the paste box in one click, and a PoB code pasted 
   await expect(box).toBeFocused()
   await box.fill(code)
   await page.getByRole('button', { name: 'Analyse pasted data' }).click()
-  await expect(page.getByText('Imported from a Path of Building code')).toBeVisible({ timeout: 30_000 })
+  await expect(page.getByRole('heading', { name: 'Path of Building build' })).toBeVisible({ timeout: 30_000 })
+  await expect(page.locator('.bc-top')).toContainText('From a Path of Building code')
 })
 
 test('gear lists only what can be improved, each with a weighted-sum trade search', async ({ page }) => {
@@ -208,7 +215,8 @@ test('phone first screen: the Top fixes heading sits above the fold after import
 
 test('the example button has a verb in its name and fills the URL box', async ({ page }) => {
   await page.goto('character/')
-  await expect(page.getByText('Paste a poe.ninja URL above and press Analyse.')).toBeVisible()
+  await expect(page.getByText('Paste a Path of Building code above and press Analyse pasted data.')).toBeVisible()
+  await page.getByRole('tab', { name: 'poe.ninja URL' }).click()
   await page.getByRole('button', { name: /^Use this example: https:\/\/poe\.ninja\// }).click()
   await expect(page.getByRole('textbox').first()).toHaveValue(/^https:\/\/poe\.ninja\/poe2\/profile\//)
 })
