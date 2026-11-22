@@ -1,69 +1,34 @@
 # Session protocol
 
-### Start (before changing anything)
-1. Run `git fetch origin` and branch off an up-to-date `origin/main`.
-   Then list worktrees (`git worktree list`), stashes (`git stash list`) and local branches (`git branch`), and report
-   them in the PR body. Don't delete or prune any of them.
-2. **Check the previous batch.** For each batch that has run since the last check (the latest lines in
-   `docs/HISTORY.md` and the batch's plan):
-   - its PR is merged into `main`;
-   - the merged PR's required checks were green at merge, and the latest CI run on `main` is green (pushes that change
-     only Markdown skip CI, so look at the latest run, not the latest commit). A red merge or red `main` is a breakage:
-     record it in the PR body under **Previous wave check** and apply step 4;
-   - its register rows are updated;
-   - a spot-check of its "Done when" items holds on `main`. Spot-check only; don't redo the work.
+No required reading. Read a file only when the task needs it; a prompt's `Owner notes` override everything here.
 
-   Run `npm run typecheck` and `npm test` on `main` before your own changes only if the latest `main` CI run isn't green.
-   Note any failure that was already there, so it isn't blamed on this batch.
-3. **Open rows.** Read `docs/remaining/REMAINING-WORK.md` and take the rows assigned to this session's batch. Handle each:
-   - **Question:** pick the recommended answer and give a one-line reason. Implement it if it is small (about 30 minutes or
-     less), stays inside the ground rules, and touches no file owned by a parallel session.
-   - **Recommendation, follow-up or bug:** the same rule applies. If it is larger, or the files belong to someone else,
-     re-assign it in REMAINING-WORK to the batch that owns those files. Don't drop it.
-   - **Needs owner:** don't implement it. Add it to the Owner queue (see below). This covers anything that changes a
-     design rule in `apps/web/CLAUDE.md`, CI behaviour or branch protection, touches data files or dependencies, changes
-     policy in `packages/*` (data shape, score rubric weights, keystone trust), removes or weakens a test assertion,
-     or deletes branches. Any other `packages/*` change needs no owner OK when the PR shows a red-then-green test for
-     it and its golden diff (owner answer HG1-1, 2026-11-17). Owner answers recorded in a plan under `docs/plans/`
-     or in the prompt's `Owner notes` count as approval for the kinds they name.
-   - `Owner notes` in the prompt override everything. Apply them.
-4. If the check of the previous wave finds a real breakage, fix it first when it is small. If it is not small, stop and report
-   before starting the batch.
+### Start
+1. `git fetch origin` and branch off an up-to-date `origin/main`. Run `git worktree list`, `git stash list` and
+   `git branch`, and report them in the PR body. Don't delete or prune any of them.
+2. Start a new session per batch. A batch is about one cause and about 40 files or fewer; regenerate goldens once, at
+   the end.
+3. Match the model to the plan's per-batch column (Sonnet unless the plan says Opus). Fast mode off.
+
+### Needs owner
+Don't implement these; add a row to `docs/remaining/REMAINING-WORK.md` § Owner queue with a recommended answer:
+design rules in `apps/web/CLAUDE.md`, CI behaviour or branch protection, data files or dependencies, policy in
+`packages/*` (data shape, score rubric weights, keystone trust), removing or weakening a test assertion, deleting
+branches. Any other `packages/*` change needs no owner OK when the PR shows a red-then-green test and its golden diff
+(owner answer HG1-1). Owner answers recorded in a plan under `docs/plans/` or in the prompt count as approval for the
+kinds they name.
 
 ### Finish
-0. Run `git fetch origin` and merge `origin/main` into the branch before the gate.
-1. Run the gate as separate commands and summarise each result:
-   - `npm run typecheck`
-   - `npm run lint`
-   - `npm test`
-   - `npm run build`
-   - `node scripts/route-weight.mjs` (report br before and after for any route you touched)
-   - `npm run e2e -w @poe2/web -- --trace off` (to debug a failure, re-run that test with `--trace on`). Local: e2e left to CI.
-   - per-workspace checks for what you touched: core → `npm run test:coverage -w @poe2/core`;
-     `services/ninja-proxy` → `npm test` there.
-
-   Run long builds and suites with `run_in_background` (or a cheap subagent that reports only pass/fail and the failures), so an interruption never lands mid-build (PB-3c).
-
-   The gate counts only if it tested something: no `writing actual` outside `e2e/visual.spec.ts` (screenshot tests are
-   informational), and the skipped count is not higher
-   than the last batch's. Every perf number states its profile (device, CPU/network throttle), live or local, and the run
-   count (at least 3 for a median). Perf medians are measured in cloud sessions only, not on this PC.
-
-   Docs-only batches skip the gate.
-2. Update `docs/remaining/REMAINING-WORK.md`: close or update the rows this batch touched (closed rows move to
-   `docs/remaining/archive/REGISTER-CLOSED.md`) and add any new open row there, one line each, with an ID like `U1-3`
-   so the owner can answer it in a later prompt's `Owner notes`. Only record things worth acting on, not every thought.
-   Do not create carry files.
-3. When a batch or plan is fully closed, add 1–2 sentences for it to `docs/HISTORY.md`, then delete its plan file.
-4. Commit and push. Open one PR with these sections: **Summary**, **Previous wave check**,
-   **Open rows handled**, **Gate**, **Screenshots** (list them; keep the images out of git), **Limits**, **Needs owner**.
-   Put the Pages preview URL at the top (`.github/pull_request_template.md`). Use the attribution the tooling supplies
-   for commits and PR bodies as given.
-5. Mark the PR ready once the local gate passes (draft PRs skip e2e and Lighthouse); the owner merges. Book a
-   scheduled check-in (about 15 minutes); when it fires, fix any failing check on the branch. Done means every
-   required check is green. Never force-push and never delete branches.
-
-### IDs and owner queue
-- Session ID = prefix + the next free number for that prefix in `docs/HISTORY.md` and `REMAINING-WORK.md`, e.g. `PRO2`. Also run `git log --grep <prefix>` to catch ids used in commits that never reached those files.
-- Needs-owner items go in `docs/remaining/REMAINING-WORK.md` § Owner queue: one row each, with the recommended answer.
-  Other rows link to it instead of repeating it.
+1. `git fetch origin`, merge `origin/main`, then `npm run gate` once (see the `ship` skill). It picks the checks from
+   the changed paths, so an unchanged area is never re-tested. Docs-only batches run nothing. e2e and Lighthouse stay
+   with CI. Run long suites with `run_in_background` so an interruption never lands mid-build.
+   The gate counts only if it tested something: no `writing actual` outside `e2e/visual.spec.ts`, and the skipped
+   count is not higher than the last batch's. A perf number states its profile, live or local, and the run count (at
+   least 3 for a median); perf medians come from cloud sessions only.
+2. Update `docs/remaining/REMAINING-WORK.md` only for rows this batch touched (closed rows move to
+   `archive/REGISTER-CLOSED.md`; new rows get one line and an ID like `U1-3`). Check an ID is free with
+   `git log --grep <prefix>` and a grep, not by reading whole files. When a plan is fully closed, add 1-2 sentences to
+   `docs/HISTORY.md` and delete the plan file.
+3. Commit and push once, after the gate passes. Open one PR with the template sections and the Pages preview URL at
+   the top. Never force-push; never delete branches.
+4. Mark the PR ready and book one scheduled check-in (about 15 minutes). When it fires, fix only a failing required
+   check. Don't watch CI, subscribe to PR events or poll. Done means every required check is green.

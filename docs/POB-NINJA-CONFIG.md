@@ -1,6 +1,6 @@
 # poe.ninja's PoB config baseline
 
-Source: the owner (2026-11-22). This is the config poe.ninja applies when it computes a build's numbers, and it explains why PoB2's damage on a pasted code differs from the figures poe.ninja showed before. **Not implemented yet**: the oracle and the headless runner use the code's own saved config today (see PB-6 in `docs/remaining/REMAINING-WORK.md`).
+Source: the owner (2026-11-22). This is the config poe.ninja applies when it computes a build's numbers, and it explains why PoB2's damage on a pasted code differs from the figures poe.ninja showed before. **Not implemented yet**: the oracle and the headless runner use the code's own saved config today (see PB-10 in `docs/remaining/REMAINING-WORK.md`).
 
 - Boss: Arbiter of Ash. Flasks and charms on. "Disable EHP gain on block/suppress" checked. Nearby enemies 1, nearby rare/unique 1. Enemy ailments: bleed, chill, ignite.
 - Charges set to max, depending on which skills and items are present:

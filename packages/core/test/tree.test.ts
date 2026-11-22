@@ -113,7 +113,7 @@ describe('resolving the real allocation', () => {
     // V1 emitted "disconnected tree" warnings constantly. The game forbids a genuinely broken tree, so the groups
     // are described rather than flagged. On the main code the largest group (116 nodes: the main tree joined to the
     // ascendancy wheel) is labelled by its ascendancy, and 7 single nodes the code lists without their links are
-    // `detached` (PB-7 in REMAINING-WORK: the labelling of a joined wheel and those singles is not yet explained).
+    // `detached` (PB-11 in REMAINING-WORK: the labelling of a joined wheel and those singles is not yet explained).
     expect(resolved.components.map((c) => [c.kind, c.nodes.length])).toEqual([
       ['ascendancy', 116],
       ...Array(7).fill(['detached', 1]),
