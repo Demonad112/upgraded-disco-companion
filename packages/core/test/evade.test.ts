@@ -5,10 +5,10 @@ import { unwrapCharModel } from '../src/analyze.js'
 import { analyzeDefense } from '../src/defense/index.js'
 import { analyzePob } from './helpers/pob.js'
 import { reconcile } from '../src/reconcile/index.js'
-import { mainWithReferenceDefence } from './helpers/main-build.js'
+import { mainPayload } from './helpers/main-build.js'
 
 const model = unwrapCharModel(
-  mainWithReferenceDefence(),
+  mainPayload(),
 )
 
 describe('evade chance', () => {
@@ -21,8 +21,8 @@ describe('evade chance', () => {
     const stats = await analyzePob(model)
     const evade = reconcile(model, stats).checks.find((c) => c.stat === 'evadeChance')!
     expect(evade.otherSource).toBe('pob-export')
-    expect(evade.ninja).toBe(41)
-    expect(evade.other).toBe(41)
+    expect(evade.ninja).toBe(40)
+    expect(evade.other).toBe(40)
     expect(evade.severity).toBe('match')
   })
 

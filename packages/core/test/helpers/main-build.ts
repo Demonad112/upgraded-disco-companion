@@ -74,6 +74,8 @@ const FLAT: [number, string, RegExp][] = [
   [0, 'life', /^\+(\d+) to maximum Life$/],
   [1, 'mana', /^\+(\d+) to maximum Mana$/],
   [2, 'energyShield', /^\+(\d+) to maximum Energy Shield$/],
+  [4, 'armour', /^\+(\d+) to Armour$/],
+  [5, 'evasionRating', /^\+(\d+) to Evasion Rating$/],
   [6, 'strength', /^\+(\d+) to Strength$/],
   [7, 'dexterity', /^\+(\d+) to Dexterity$/],
   [8, 'intelligence', /^\+(\d+) to Intelligence$/],
@@ -118,6 +120,44 @@ export function mainWithBreakdowns(): { type: string; charModel: CharModel } {
     if (base - sum !== 0) mods.unshift([0, base - sum, 1])
     stats[String(id)] = { base, inc: 0, more: 1, total, basePercent: isRes, mods }
   }
+  // ids 18-21 are the maximum resistances: the caps the attribution reads.
+  for (const [id, key] of [[18, 'fireResistanceMax'], [19, 'coldResistanceMax'], [20, 'lightningResistanceMax'], [21, 'chaosResistanceMax']] as const) {
+    const total = m.defensiveStats[key] ?? 75
+    stats[String(id)] = { base: total, inc: 0, more: 1, total, basePercent: true, mods: [] }
+  }
+  const ward = m.defensiveStats['ward'] ?? 0
+  stats['26'] = { base: ward, inc: 0, more: 1, total: ward, basePercent: false, mods: [[0, ward, 1]] }
   m.breakdowns = { sources, stats }
   return p
+}
+
+type Bd = { sources: Array<[number] | [number, string]>; stats: Record<string, { base: number; inc: number; more: number; total: number; basePercent: boolean; mods: [number, number, number][] }> }
+
+/**
+ * Add one breakdown modifier to a `mainWithBreakdowns()` payload, credited to a named source (`typeId` 2 is an item,
+ * 7 a quest). A flat mod is taken out of the quest remainder so the parts still add up to the base. An increased mod
+ * rebases the flat base so the stat keeps its sheet total, the way a real increased-only contributor does.
+ */
+export function addBreakdownMod(
+  p: { charModel: CharModel },
+  statId: number,
+  source: { typeId: number; label: string },
+  kind: 'flat' | 'increased',
+  value: number,
+): void {
+  const bd = (p.charModel as CharModel & { breakdowns: Bd }).breakdowns
+  const stat = bd.stats[String(statId)]!
+  let idx = bd.sources.findIndex((s) => s[0] === source.typeId && s[1] === source.label)
+  if (idx < 0) idx = bd.sources.push([source.typeId, source.label]) - 1
+  const remainder = stat.mods.find((m) => m[2] === 1)
+  if (kind === 'flat') {
+    if (remainder) remainder[1] -= value
+    stat.mods.push([0, value, idx])
+  } else {
+    const rebased = Math.round(stat.total / (1 + (stat.inc + value) / 100))
+    if (remainder) remainder[1] += rebased - stat.base
+    stat.base = rebased
+    stat.inc += value
+    stat.mods.push([1, value, idx])
+  }
 }
