@@ -2,7 +2,7 @@
 
 ## Layout
 
-npm workspaces (`packages/*`, `apps/*`), Node >=22, TypeScript strict. `packages/core` is pure (no I/O; `fetch` is injected); `packages/data/generated/` is generated (rebuild with `npm run build:<name> -w @poe2/data`, see `packages/data/PROVENANCE.md`); `services/ninja-proxy` is **not a workspace** (own `package.json`, tested separately).
+npm workspaces (`packages/*`, `apps/*`), Node >=22, TypeScript strict. `packages/core` is pure (no I/O; `fetch` is injected); `packages/data/generated/` is generated (rebuild with `npm run build:<name> -w @poe2/data`, see `packages/data/PROVENANCE.md`); `services/ninja-proxy` is **not a workspace** (own `package.json`, tested separately). `vendor/pob2/` is a byte-identical copy of the PoB2 fork's calc files (written only by `npm run pob2:sync`, verified by `npm run pob2:verify`; never edit it, never Read its `src/Data` or `src/TreeData`, use Grep; see `docs/POB2-SYNC.md`). `tools/pob2/` holds our own Lua (headless snapshot runner, data exporters, busted specs), added from B2 on.
 
 ## Commands
 
@@ -20,7 +20,7 @@ npm workspaces (`packages/*`, `apps/*`), Node >=22, TypeScript strict. `packages
 - **Data flow for the web app.** `packages/data/generated/*` is copied into `apps/web/public` by `sync-data` (generated, gitignored). `next.config.ts` hashes those files into `NEXT_PUBLIC_DATA_VERSION`, which keys the service-worker caches.
 - **Character import.** The browser cannot call poe.ninja (no CORS, preflight 405), so it goes through `services/ninja-proxy`. The base URL is `NEXT_PUBLIC_NINJA_PROXY_BASE`, inlined at build time, defaulting to `https://poe2-v3-ninja-proxy.vercel.app` (`apps/web/src/lib/proxy.ts`). Any other value must also be added to `connect-src` in `apps/web/public/_headers`.
 - **`basePath`.** Applied only when `GITHUB_ACTIONS=true` (derived from `GITHUB_REPOSITORY`) and `ROOT_BASE_PATH` is not `1`; empty locally and on Cloudflare Pages. Client code must read `BASE_PATH` from `apps/web/src/lib/basePath.ts`, because Next only inlines `NEXT_PUBLIC_*` env vars into client bundles.
-- **PoB (Path of Building)** code under `packages/core/src/pob/` only decodes exports and reads their config, main skill and skill groups. There is no live PoB bridge.
+- **PoB is the import.** A pasted PoB2 code is the primary character source (poe.ninja import is dormant, `NINJA_IMPORT_BLOCKED`). `PobSnapshot` is the target core model (PoB's save schema 1:1; `CharModel` stays only as a temporary adapter). PoB2 output is ground truth, so any difference from the headless-PoB oracle is our bug. ΔDPS/ΔEHP is allowed only when PoB's engine computed it (provenance `pob-sim`, once a calc service exists; the site itself never simulates). Plan: `docs/plans/pob2-alignment.md`. Until B3, `packages/core/src/pob/` still only decodes exports and reads their config, main skill and skill groups.
 - Web state is client-side only (`localStorage`); reference content lives in hand-edited files in `apps/web/src/data/`.
 
 ## Design and Cloudflare Pages
@@ -38,7 +38,7 @@ Every session follows docs/SESSION-PROTOCOL.md; finished work in docs/HISTORY.md
 
 The SessionStart hook runs `npm ci` when `package-lock.json` changed since the last install and rebuilds `@poe2/core` when its `src` is newer than `dist`; it never blocks the session (on failure it prints a FAILED line). `playwright install` isn't needed; `apps/web/playwright.config.ts` uses the preinstalled Chromium when `CLAUDE_CODE_REMOTE=true`.
 
-PreToolUse hook: `block-generated-edits.mjs` denies Edit/Write on generated data, its `apps/web/public` copies and `package-lock.json` (regenerate with the scripts or npm instead). `predev`/`prebuild` in `apps/web` already build core and run `sync-data`.
+PreToolUse hook: `block-generated-edits.mjs` denies Edit/Write on generated data, its `apps/web/public` copies, `vendor/pob2/` and `package-lock.json` (regenerate with the scripts or npm instead). `predev`/`prebuild` in `apps/web` already build core and run `sync-data`.
 
 ## Working style
 

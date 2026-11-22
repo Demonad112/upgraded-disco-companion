@@ -8,6 +8,6 @@
     "test": "node --test test/ladder.test.mjs test/upstream.test.mjs test/character.test.mjs test/cors.test.mjs test/busy-cache.test.mjs"
   },
   "engines": {
-    "node": ">=20"
+    "node": "22.x"
   }
 }

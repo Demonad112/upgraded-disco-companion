@@ -67,6 +67,10 @@ jobs:
         if: needs.changes.outputs.code == 'true'
         # Runtime dependencies only; dev tooling advisories don't ship.
         run: npm audit --omit=dev --audit-level=high
+      - name: Verify vendored PoB2
+        if: needs.changes.outputs.code == 'true'
+        # vendor/pob2 must be byte-identical to vendor/pob2/PIN.json (written only by npm run pob2:sync).
+        run: npm run pob2:verify
       - name: Typecheck
         if: needs.changes.outputs.code == 'true'
         run: npm run typecheck

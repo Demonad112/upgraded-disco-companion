@@ -1,3 +1,7 @@
 # Verified false positives only, one fingerprint each, with the reason.
 # SHA-256 analysis cache key in a test golden (removed in 0951d7f), not a credential. Owner OK 2026-11-21 (#220).
 45deb0b17b64183775e44cb42dbc6c0b690daa9b:packages/core/test/golden/pob-code-athrynas-v43.expected.json:generic-api-key:157
+# PB-1: vendor/pob2 is a byte-identical copy of the PoB2 fork. Both hits are not credentials: a sha256 of PoEAPI.lua in PIN.json,
+# and a monster skill name string in Spectres.lua. Each `npm run pob2:sync` commit needs its own fingerprints (B7 pob2:bump prints them).
+c6e78123eb03a219e9c9ad5f416010b2b11c6cd2:vendor/pob2/PIN.json:generic-api-key:75
+c6e78123eb03a219e9c9ad5f416010b2b11c6cd2:vendor/pob2/src/Data/Spectres.lua:algolia-api-key:12603

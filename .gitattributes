@@ -1,0 +1,2 @@
+# PoB2 copy is byte-identical to the fork: never normalise line endings, hide from diffs and language stats.
+vendor/pob2/** -text linguist-vendored linguist-generated
