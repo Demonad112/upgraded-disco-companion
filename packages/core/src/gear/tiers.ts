@@ -125,6 +125,16 @@ export class ModTiers {
     return this.statIndex
   }
 
+  /** Every craftable affix, for the text matcher (`gear/text-mods.ts`). */
+  allMods(): IterableIterator<[string, ModTierRaw]> {
+    return Object.entries(this.data.mods)[Symbol.iterator]()
+  }
+
+  /** Every non-affix (implicit, unique, corrupted) mod the data can render. */
+  allDisplay(): IterableIterator<[string, DisplayOnlyMod]> {
+    return Object.entries(this.data.displayOnly ?? {})[Symbol.iterator]()
+  }
+
   get modCount(): number {
     return Object.keys(this.data.mods).length
   }

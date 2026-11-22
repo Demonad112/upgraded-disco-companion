@@ -2,7 +2,6 @@
   "source": "pob-export",
   "sourceGaps": [
     "Per-skill damage",
-    "Gear findings and trade searches",
     "Stat attribution — which item or passive grants each point",
     "Ward",
     "Block chance"
@@ -64,7 +63,18 @@
       }
     ]
   },
-  "activeSlots": [],
+  "activeSlots": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    11
+  ],
   "primarySkill": {
     "name": "Ice Shot",
     "totalDps": 110157.73781379715
@@ -90,13 +100,13 @@
   "recommendations": [
     "res-chaos-under-cap",
     "res-cold-under-cap",
+    "weapon-ilvl-lag",
     "one-shot-chaos",
-    "weapon-set-idle",
-    "dps-crit-uninvested"
+    "weapon-set-idle"
   ],
   "pobConfigInputCount": 20,
   "warnings": [],
-  "importHash": "ad95b6eceeb6ebe9",
+  "importHash": "ae334af7eadcd2ac",
   "holdingUp": {
     "resistances": [
       {

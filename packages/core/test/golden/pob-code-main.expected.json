@@ -2,7 +2,6 @@
   "source": "pob-export",
   "sourceGaps": [
     "Per-skill damage",
-    "Gear findings and trade searches",
     "Stat attribution — which item or passive grants each point",
     "Ward",
     "Block chance"
@@ -178,7 +177,17 @@
       }
     ]
   },
-  "activeSlots": [],
+  "activeSlots": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    7,
+    8,
+    9,
+    11
+  ],
   "primarySkill": {
     "name": "Storm Wave",
     "totalDps": 186975.76477486314
@@ -208,7 +217,7 @@
   "warnings": [
     "Stale export: re-export from current Path of Building. 22 stats differ from what Path of Building 0.23.1 computes for this build now, including TotalDPS (186,706 in the code, 203,790 now)."
   ],
-  "importHash": "5bd8465f2688a0a7",
+  "importHash": "6a9ea65d5e265666",
   "holdingUp": {
     "resistances": [
       {
@@ -248,7 +257,15 @@
         "source": "ninja"
       }
     ],
-    "items": [],
+    "items": [
+      {
+        "slot": 4,
+        "holds": [],
+        "anoint": [
+          "Allocates Overwhelming Strike"
+        ]
+      }
+    ],
     "spirit": {
       "total": 147,
       "reserved": 137,

@@ -37,7 +37,7 @@ describe('pobToCharModel', () => {
     expect(converted.name).toBeUndefined()
     expect(converted.account).toBeUndefined()
     expect(converted.league).toBeUndefined()
-    expect(converted.items).toBeUndefined()
+    expect(converted.items?.length).toBeGreaterThan(0)
     expect(converted.breakdowns).toBeUndefined()
   })
 
@@ -128,10 +128,11 @@ describe('analysing a converted code', () => {
     expect(fromCode.assessment.tierRange).toEqual(ninja.assessment.tierRange)
   })
 
-  it('has no gear or attribution to show, and says so in its gaps', () => {
-    expect(fromCode.items).toEqual([])
+  it('reads the code’s items, and says in its gaps only what it could not read (PB-5)', () => {
+    expect(fromCode.items.length).toBeGreaterThan(0)
+    const gear = fromCode.sourceGaps.find((g) => g.what.startsWith('Gear findings'))
+    if (gear) expect(gear.why).not.toMatch(/not read yet/)
     const gaps = fromCode.sourceGaps.map((g) => g.what.toLowerCase()).join(' | ')
-    expect(gaps).toContain('gear')
     expect(gaps).toContain('attribution')
     expect(gaps).toContain('per-skill damage')
     for (const g of fromCode.sourceGaps) expect(g.why).not.toMatch(/bridge|load the character from poe\.ninja/i)

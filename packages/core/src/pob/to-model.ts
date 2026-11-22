@@ -18,13 +18,17 @@
  *   - `pathOfBuildingExport`: the code itself, so its saved config and skill groups are read. The
  *     caller passes `source: 'pob-export'` so the analysis does not reconcile a code against itself.
  *
- * Left absent: name, account and league (a code has none), `items` (raw in the snapshot; B5 parses them)
- * and `breakdowns` (poe.ninja's per-stat attribution, which a code does not carry).
+ *   - `items`, `flasks`, `jewels` from the active item set (`pob/items.ts`): item text, never mod ids
+ *     (those are resolved against the affix data in `gear/text-mods.ts`).
+ *
+ * Left absent: name, account and league (a code has none) and `breakdowns` (poe.ninja's per-stat
+ * attribution, which a code does not carry).
  */
 
 import { RES_CAP_DEFAULT } from '../defense/constants.js'
 import type { CharModel, DamageType, NinjaDefensiveStats, NinjaSkill } from '../model/types.js'
 import { readPlayerStats, readPobSnapshotFromCode } from './export.js'
+import { snapshotItems } from './items.js'
 import { readPobMainSkill } from './main-skill.js'
 import { activeSpec, splitTree, type PobSnapshot } from './snapshot.js'
 
@@ -165,6 +169,10 @@ export function snapshotToCharModel(snap: PobSnapshot, code?: string): CharModel
   if (tree.weaponSet1.length) model.passiveSelectionSet1 = tree.weaponSet1
   if (tree.weaponSet2.length) model.passiveSelectionSet2 = tree.weaponSet2
   if (snap.items.useSecondWeaponSet !== null) model.useSecondWeaponSet = snap.items.useSecondWeaponSet
+  const gear = snapshotItems(snap)
+  if (gear.items.length) model.items = gear.items
+  if (gear.flasks.length) model.flasks = gear.flasks
+  if (gear.jewels.length) model.jewels = gear.jewels
   const treeName = passiveTreeNameOf(spec?.treeVersion)
   if (treeName) model.passiveTreeName = treeName
   if (code !== undefined) model.pathOfBuildingExport = code.trim()

@@ -129,15 +129,35 @@ function num(stats: Record<string, number>, key: string): number | null {
  * What a Path of Building code cannot answer, stated rather than filled in. Shared by the reduced
  * PoB view and by the full analysis of a converted code (`Analysis.sourceGaps`), so both say the same.
  */
-export function pobCodeGaps(stats: Record<string, number>): PobGap[] {
+export interface GearReadState {
+  /** Equipment items read from the code. */
+  items: number
+  /** PoB slots with an item but no poe.ninja slot id. */
+  unmapped: readonly string[]
+  /** Explicit-type lines no mod id could be proven for. */
+  textOnly: number
+}
+
+/** The gear gap for what was read: null when everything was, else what is left out and why. */
+function gearGap(gear: GearReadState | undefined): PobGap | null {
+  const what = 'Gear findings and trade searches'
+  if (!gear) return { what, why: 'This view does not read the items in a code.' }
+  if (gear.items === 0) return { what, why: 'The code has no items in its active item set, so no gear finding or trade search is built.' }
+  const parts: string[] = []
+  if (gear.unmapped.length) parts.push(`${gear.unmapped.join(', ')} has no slot on poe.ninja, so it is not read`)
+  if (gear.textOnly) {
+    parts.push(
+      `${gear.textOnly} mod line${gear.textOnly === 1 ? '' : 's'} could not be matched to exactly one mod, so ${gear.textOnly === 1 ? 'it has' : 'they have'} no tier`,
+    )
+  }
+  return parts.length ? { what, why: `${parts.join('; ')}.` } : null
+}
+
+export function pobCodeGaps(stats: Record<string, number>, gear?: GearReadState): PobGap[] {
   const gaps: PobGap[] = [
     {
       what: 'Per-skill damage',
       why: 'A code carries the damage of the skill it had selected, not of every skill.',
-    },
-    {
-      what: 'Gear findings and trade searches',
-      why: 'Items in a code are not read yet, so no gear finding or trade search is built from them.',
     },
     {
       what: 'Stat attribution — which item or passive grants each point',
@@ -146,6 +166,8 @@ export function pobCodeGaps(stats: Record<string, number>): PobGap[] {
         'Gear tiers and resistance rebalancing depend on it.',
     },
   ]
+  const gearGapRow = gearGap(gear)
+  if (gearGapRow) gaps.splice(1, 0, gearGapRow)
   if (num(stats, 'Ward') === null) {
     gaps.push({
       what: 'Ward',

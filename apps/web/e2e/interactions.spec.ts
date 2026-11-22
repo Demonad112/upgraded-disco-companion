@@ -70,7 +70,8 @@ test('a Path of Building code gets the full analysis, with what a code lacks nam
   await expect(page.locator('.bc-top')).toContainText('Deadeye · From a Path of Building code')
   await expect(page.locator('[data-top-fixes]:not([data-pending]) li').first()).toBeVisible({ timeout: 30_000 })
   const gaps = page.getByTestId('couldnt-check')
-  await expect(gaps).toContainText('Gear findings and trade searches')
+  await expect(gaps).toContainText('Per-skill damage')
+  await expect(gaps).not.toContainText('Gear findings and trade searches')
   await expect(gaps).toContainText('Stat attribution')
   // Next's route announcer is also role=alert, so check for the app's own error text.
   await expect(page.getByText(/Could not analyse|neither valid JSON/)).toHaveCount(0)
