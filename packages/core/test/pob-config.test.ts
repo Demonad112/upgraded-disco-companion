@@ -15,9 +15,9 @@ import { analyzeCharacter, unwrapCharModel } from '../src/analyze.js'
 import { decodePobExport } from '../src/pob/export.js'
 import { describePobConfig, humaniseCondition, isBossDps, NO_POB_CONFIG, readPobConfig, readPobInputs } from '../src/pob/config.js'
 import { PassiveTree, type PassiveTreeData } from '../src/tree/index.js'
-import { mainWithReferenceDefence } from './helpers/main-build.js'
+import { encodePob, mainPayload, mainXml } from './helpers/main-build.js'
 
-const raw = mainWithReferenceDefence() as unknown
+const raw = mainPayload() as unknown
 const model = unwrapCharModel(raw)
 const xml = await decodePobExport(model.pathOfBuildingExport!)
 const config = readPobConfig(xml)
@@ -25,38 +25,31 @@ const config = readPobConfig(xml)
 const treePath = fileURLToPath(new URL('../../data/generated/passive-tree.json', import.meta.url))
 const tree = new PassiveTree(JSON.parse(readFileSync(treePath, 'utf8')) as PassiveTreeData)
 
-describe('the reference character’s real export', () => {
-  it('carries 20 saved inputs, not PoB defaults', () => {
-    expect(config.inputCount).toBe(20)
+describe('the main build’s real export', () => {
+  it('carries 11 saved inputs, not PoB defaults', () => {
+    expect(config.inputCount).toBe(11)
   })
 
-  it('was not computed against a boss', () => {
-    expect(config.versusBoss).toBe(false)
-    expect(config.bossSetting).toBeNull()
-    expect(isBossDps(config)).toBe(false)
+  it('was computed against a boss, and names the setting that said so', () => {
+    expect(config.versusBoss).toBe(true)
+    expect(config.bossSetting).toBe('enemyIsBoss')
+    expect(isBossDps(config)).toBe(true)
   })
 
   it('assumes every buff and charge is active', () => {
     expect(config.buffMode).toBe('effective')
   })
 
-  it('assumes six damage-relevant conditions hold', () => {
-    expect(config.conditionals).toEqual([
-      'enemy is bleeding',
-      'enemy is chilled',
-      'enemy is ignited',
-      'you are moving',
-      'you have been hit recently',
-      'you have crit recently',
-    ])
+  it('assumes no damage-relevant condition holds: the code saved none', () => {
+    expect(config.conditionals).toEqual([])
     expect(config.unlabelledConditionals).toEqual([])
   })
 
   it('describes what the number actually represents', () => {
     const sentence = describePobConfig(config)
-    expect(sentence).toContain('not a boss')
+    expect(sentence).toContain('against a boss')
+    expect(sentence).not.toContain('not a boss')
     expect(sentence).toContain('all buffs and charges assumed active')
-    expect(sentence).toContain('6 conditions hold (')
   })
 })
 
@@ -149,7 +142,7 @@ describe('through the full analysis', () => {
   it('carries the config alongside the stats it qualifies', async () => {
     const analysis = await analyzeCharacter(raw, { tree })
     expect(analysis.pobConfig).toEqual(config)
-    expect(analysis.pobStats?.TotalDPS).toBeCloseTo(109859.05, 1)
+    expect(analysis.pobStats?.TotalDPS).toBeCloseTo(125658.18322457, 1)
   })
 
   it('caveats the damage figure only because poe.ninja and PoB agree on it', async () => {
@@ -158,10 +151,20 @@ describe('through the full analysis', () => {
     // number only because the reconciliation says they are the same number.
     const dpsCheck = analysis.reconciliation!.checks.find((c) => c.stat.startsWith('dps:'))!
     expect(dpsCheck.severity).toBe('match')
+    // A boss figure carries no "not a boss" caveat.
+    expect(analysis.assessment.caveats.join(' ')).not.toMatch(/not calculated against a boss/)
+    expect(analysis.assessment.caveats).toContain('The damage figure assumes every buff and charge is active.')
+  })
+
+  it('caveats a figure that was not calculated against a boss, and says so only then', async () => {
+    // The main code with its boss input removed: the stored PlayerStats are unchanged, so the figures still agree.
+    const noBoss = structuredClone(raw) as { charModel: { pathOfBuildingExport: string } }
+    noBoss.charModel.pathOfBuildingExport = encodePob(mainXml.replace(/<Input [^>]*name="enemyIsBoss"[^>]*\/>/, ''))
+    const analysis = await analyzeCharacter(noBoss, { tree })
+    expect(analysis.pobConfig?.versusBoss).toBe(false)
     expect(analysis.assessment.caveats).toContain(
       'The damage figure was not calculated against a boss, so it should not be read as single-target or pinnacle damage.',
     )
-    expect(analysis.assessment.caveats).toContain('The damage figure assumes every buff and charge is active.')
   })
 
   it('reports no config when there is no export to read one from', async () => {

@@ -6,6 +6,7 @@
  */
 
 import { readFileSync } from 'node:fs'
+import { deflateSync, inflateSync } from 'node:zlib'
 import { fileURLToPath } from 'node:url'
 import { resolveItemMods } from '../../src/gear/text-mods.js'
 import { ModTiers, type ModTierData } from '../../src/gear/tiers.js'
@@ -178,4 +179,28 @@ export function mainForRecommend(): { type: string; charModel: CharModel } {
   m.passiveSelectionSet2 = Array.from({ length: 16 }, (_, i) => 90_000 + i)
   m.breakdowns = { sources: [[0]], stats: { '99': { base: 0, inc: 0, more: 1, total: 0, basePercent: false, mods: [] } } }
   return p
+}
+
+const b64url = (b: Buffer): string => b.toString('base64').replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '')
+
+/** The main code's XML (PoB's save format), for tests that edit a build and re-encode it. */
+export const mainXml = inflateSync(Buffer.from(mainCode.replace(/-/g, '+').replace(/_/g, '/'), 'base64')).toString('utf8')
+
+/** Encode PoB XML as a share code the decoder accepts. */
+export const encodePob = (xml: string): string => b64url(deflateSync(Buffer.from(xml)))
+
+/**
+ * The main build re-saved with two weapon-set trees, as PoB writes them: `nodes` still lists every allocated node,
+ * `<WeaponSet1/2>` name the `size` nodes that belong to one set only, and the live-set flag is stated (set 1).
+ * The main code itself allocates no weapon-set nodes, so the split is tested on this inline variant.
+ */
+export function mainWithWeaponSets(size = 8): { code: string; set1: number[]; set2: number[]; all: number[] } {
+  const nodes = /<Spec [^>]*\snodes="([^"]*)"/.exec(mainXml)![1]!.split(',').map(Number)
+  const set1 = nodes.slice(0, size)
+  const set2 = nodes.slice(size, size * 2)
+  const open = /<Spec [^>]*>/.exec(mainXml)![0]
+  const xml = mainXml
+    .replace(open, `${open}<WeaponSet1 nodes="${set1.join(',')}"/><WeaponSet2 nodes="${set2.join(',')}"/>`)
+    .replace('useSecondWeaponSet="nil"', 'useSecondWeaponSet="false"')
+  return { code: encodePob(xml), set1, set2, all: nodes }
 }
