@@ -1,92 +1,36 @@
 [
   {
     "rank": 1,
-    "slot": "Helmet",
-    "base": "Runeforged Jungle Tiara",
+    "slot": "Amulet",
+    "base": "Dusk Amulet",
     "closes": {
       "cold": 1,
       "chaos": 27
     },
     "reasons": [
       "a replacement can close 1% cold and 27% chaos of your resistance shortfall",
-      "2 lines can only improve on a higher item-level base",
-      "6 tiers below the top, across its lines",
-      "2 lines with resistance over the cap"
+      "1 line can only improve on a higher item-level base",
+      "2 tiers below the top, across its lines"
     ]
   },
   {
     "rank": 2,
     "slot": "Ring 2",
-    "base": "Emerald Ring",
+    "base": "Unset Ring",
     "closes": {
       "cold": 1,
       "chaos": 27
     },
     "reasons": [
       "a replacement can close 1% cold and 27% chaos of your resistance shortfall",
-      "10 tiers below the top, across its lines",
+      "7 tiers below the top, across its lines",
       "1 line with resistance over the cap"
     ]
   },
   {
     "rank": 3,
-    "slot": "Body Armour",
-    "base": "Runeforged Hawker's Jacket",
-    "closes": {
-      "cold": 1,
-      "chaos": 27
-    },
-    "reasons": [
-      "a replacement can close 1% cold and 27% chaos of your resistance shortfall",
-      "10 tiers below the top, across its lines",
-      "1 line with resistance over the cap"
-    ]
-  },
-  {
-    "rank": 4,
-    "slot": "Belt",
-    "base": "Long Belt",
-    "closes": {
-      "cold": 1,
-      "chaos": 27
-    },
-    "reasons": [
-      "a replacement can close 1% cold and 27% chaos of your resistance shortfall",
-      "9 tiers below the top, across its lines",
-      "1 line with resistance over the cap"
-    ]
-  },
-  {
-    "rank": 5,
-    "slot": "Gloves",
-    "base": "Runeforged Polished Bracers",
-    "closes": {
-      "cold": 1,
-      "chaos": 27
-    },
-    "reasons": [
-      "a replacement can close 1% cold and 27% chaos of your resistance shortfall",
-      "9 tiers below the top, across its lines"
-    ]
-  },
-  {
-    "rank": 6,
-    "slot": "Ring 1",
-    "base": "Ruby Ring",
-    "closes": {
-      "cold": 1,
-      "chaos": 27
-    },
-    "reasons": [
-      "a replacement can close 1% cold and 27% chaos of your resistance shortfall",
-      "8 tiers below the top, across its lines",
-      "2 lines with resistance over the cap"
-    ]
-  },
-  {
-    "rank": 7,
-    "slot": "Amulet",
-    "base": "Solar Amulet",
+    "slot": "Boots",
+    "base": "Runeforged Quickslip Shoes",
     "closes": {
       "cold": 1,
       "chaos": 27
@@ -98,35 +42,68 @@
     ]
   },
   {
-    "rank": 8,
-    "slot": "Boots",
-    "base": "Runeforged Wanderer Shoes",
+    "rank": 4,
+    "slot": "Ring 1",
+    "base": "Amethyst Ring",
     "closes": {
       "cold": 1,
       "chaos": 27
     },
     "reasons": [
       "a replacement can close 1% cold and 27% chaos of your resistance shortfall",
-      "6 tiers below the top, across its lines"
+      "5 tiers below the top, across its lines"
     ]
   },
   {
-    "rank": 9,
+    "rank": 5,
+    "slot": "Helmet",
+    "base": "Runeforged Brigand Mask",
+    "closes": {
+      "cold": 1,
+      "chaos": 27
+    },
+    "reasons": [
+      "a replacement can close 1% cold and 27% chaos of your resistance shortfall",
+      "4 tiers below the top, across its lines",
+      "1 line with resistance over the cap",
+      "corrupted — it can only be replaced, not crafted on"
+    ]
+  },
+  {
+    "rank": 6,
+    "slot": "Body Armour",
+    "base": "Runeforged Falconer's Jacket",
+    "closes": {
+      "cold": 1,
+      "chaos": 27
+    },
+    "reasons": [
+      "a replacement can close 1% cold and 27% chaos of your resistance shortfall",
+      "3 tiers below the top, across its lines",
+      "2 lines with resistance over the cap"
+    ]
+  },
+  {
+    "rank": 7,
+    "slot": "Gloves",
+    "base": "Runeforged Fists of Stone",
+    "closes": {
+      "cold": 1,
+      "chaos": 27
+    },
+    "reasons": [
+      "a replacement can close 1% cold and 27% chaos of your resistance shortfall",
+      "1 tier below the top, across its lines"
+    ]
+  },
+  {
+    "rank": 8,
     "slot": "Main Hand",
-    "base": "Militant Bow",
+    "base": "Skullcrusher Quarterstaff",
     "closes": {},
     "reasons": [
-      "3 lines can only improve on a higher item-level base",
+      "1 line can only improve on a higher item-level base",
       "8 tiers below the top, across its lines"
-    ]
-  },
-  {
-    "rank": 10,
-    "slot": "Off Hand",
-    "base": "Volant Quiver",
-    "closes": {},
-    "reasons": [
-      "2 tiers below the top, across its lines"
     ]
   }
 ]

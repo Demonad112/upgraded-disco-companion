@@ -18,6 +18,7 @@ import { inferArchetype } from '../src/gear/archetype.js'
 import { deriveStatWeights } from '../src/gear/weights.js'
 import { fitItem, gearFitReport, GEAR_FIT_BASIS } from '../src/gear/fit.js'
 import type { CharModel } from '../src/model/types.js'
+import { mainWithReferenceDefence } from './helpers/main-build.js'
 
 const LIFE = 'base_maximum_life'
 const RES = 'base_fire_damage_resistance_%'
@@ -285,7 +286,7 @@ describe('fitItem', () => {
 
 describe('on the recorded character', () => {
   const here = dirname(fileURLToPath(import.meta.url))
-  const payload = JSON.parse(readFileSync(join(here, 'fixtures', 'athrynas-v43.json'), 'utf8'))
+  const payload = mainWithReferenceDefence()
   const model: CharModel = payload.charModel ?? payload
   const real = new ModTiers(JSON.parse(readFileSync(join(here, '..', '..', 'data', 'generated', 'mod-tiers.json'), 'utf8')) as ModTierData)
 

@@ -6,6 +6,7 @@ import { unwrapCharModel } from '../src/analyze.js'
 import { analyzeCharacter } from '../src/analyze.js'
 import { reconcile } from '../src/reconcile/index.js'
 import type { CharModel } from '../src/model/types.js'
+import { mainWithReferenceDefence } from './helpers/main-build.js'
 
 /**
  * A model whose breakdowns hold one unmapped id (87) that does not equal its
@@ -76,9 +77,11 @@ describe('banner wording', () => {
 })
 
 describe('DPS pairing', () => {
-  const fixture = unwrapCharModel(
-    JSON.parse(readFileSync(fileURLToPath(new URL('./fixtures/athrynas-v43.json', import.meta.url)), 'utf8')),
-  )
+  // The main build has one skill with a DPS block, so a second hit skill is added inline: the pairing under test
+  // needs a skill that is not the top one.
+  const fixture = unwrapCharModel(mainWithReferenceDefence())
+  const first = (fixture.skills as { dps: { name: string; dps: number }[] }[])[0]!
+  ;(fixture.skills as unknown[]).push({ ...structuredClone(first), dps: [{ ...structuredClone(first.dps[0]!), name: 'Falling Thunder', dps: 54_000 }] })
   const skills = analyzeDps(fixture).hitSkills
   const primary = skills[0]!
   const other = skills.find((s) => s.name !== primary.name && s.dps > 0)!

@@ -2,7 +2,6 @@
   "source": "pob-export",
   "sourceGaps": [
     "Per-skill damage",
-    "Gear findings and trade searches",
     "Stat attribution — which item or passive grants each point",
     "Ward",
     "Block chance"
@@ -16,7 +15,7 @@
   "skills": [
     {
       "name": "Storm Wave",
-      "totalDps": 186975.76477486314
+      "totalDps": 125666.43524555388
     }
   ],
   "staleExport": {
@@ -24,13 +23,13 @@
     "stats": [
       {
         "stat": "AverageBurstDamage",
-        "embedded": 110053.90652383,
-        "recomputed": 120123.65946616
+        "embedded": 74069.073518759,
+        "recomputed": 74222.886198725
       },
       {
         "stat": "AverageDamage",
-        "embedded": 110053.90652383,
-        "recomputed": 120123.65946616
+        "embedded": 74069.073518759,
+        "recomputed": 74222.886198725
       },
       {
         "stat": "ChaosMaximumHitTaken",
@@ -39,13 +38,13 @@
       },
       {
         "stat": "ColdMaximumHitTaken",
-        "embedded": 21726,
-        "recomputed": 19957
+        "embedded": 24985,
+        "recomputed": 22950
       },
       {
         "stat": "CombinedDPS",
-        "embedded": 186975.76477486,
-        "recomputed": 204059.0147246
+        "embedded": 125666.43524556,
+        "recomputed": 125927.37869279
       },
       {
         "stat": "CritChance",
@@ -54,18 +53,18 @@
       },
       {
         "stat": "FireMaximumHitTaken",
-        "embedded": 17846,
-        "recomputed": 16393
+        "embedded": 19988,
+        "recomputed": 18360
       },
       {
         "stat": "IgniteDPS",
-        "embedded": 269.31235718314,
-        "recomputed": 269.22644026885
+        "embedded": 8.2520209838751,
+        "recomputed": 8.2522566482181
       },
       {
         "stat": "LightningMaximumHitTaken",
-        "embedded": 18507,
-        "recomputed": 17000
+        "embedded": 20821,
+        "recomputed": 19125
       },
       {
         "stat": "PhysicalMaximumHitTaken",
@@ -79,18 +78,18 @@
       },
       {
         "stat": "TotalDPS",
-        "embedded": 186706.45241768,
-        "recomputed": 203789.78828433
+        "embedded": 125658.18322457,
+        "recomputed": 125919.12643614
       },
       {
         "stat": "TotalDotDPS",
-        "embedded": 269.31235718314,
-        "recomputed": 269.22644026885
+        "embedded": 8.2520209838751,
+        "recomputed": 8.2522566482181
       },
       {
         "stat": "TotalEHP",
-        "embedded": 19698.376298835,
-        "recomputed": 17975.374699253
+        "embedded": 18872.80984258,
+        "recomputed": 17596.881861313
       },
       {
         "stat": "Ward",
@@ -119,18 +118,18 @@
       },
       {
         "stat": "WithBleedDPS",
-        "embedded": 186706.45241768,
-        "recomputed": 203789.78828433
+        "embedded": 125658.18322457,
+        "recomputed": 125919.12643614
       },
       {
         "stat": "WithIgniteDPS",
-        "embedded": 186975.76477486,
-        "recomputed": 204059.0147246
+        "embedded": 125666.43524556,
+        "recomputed": 125927.37869279
       },
       {
         "stat": "WithPoisonDPS",
-        "embedded": 186706.45241768,
-        "recomputed": 203789.78828433
+        "embedded": 125658.18322457,
+        "recomputed": 125919.12643614
       }
     ]
   },
@@ -178,10 +177,20 @@
       }
     ]
   },
-  "activeSlots": [],
+  "activeSlots": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    7,
+    8,
+    9,
+    11
+  ],
   "primarySkill": {
     "name": "Storm Wave",
-    "totalDps": 186975.76477486314
+    "totalDps": 125666.43524555388
   },
   "assessment": {
     "score": null,
@@ -197,18 +206,18 @@
     "offenceUnscoredReason": "No ladder sample was available for this league and ascendancy, and this codebase does not carry invented damage thresholds to fall back on.",
     "weaknesses": [
       "critical: Chaos resistance below its cap (Chaos 53% of 75%, 88% more chaos damage taken)",
-      "warning: 2 weak damage types — Physical 5,004, Chaos 7,788, against 21,726 at best"
+      "warning: 2 weak damage types — Physical 5,004, Chaos 7,788, against 24,985 at best"
     ]
   },
   "recommendations": [
     "res-chaos-under-cap",
     "one-shot-physical"
   ],
-  "pobConfigInputCount": 22,
+  "pobConfigInputCount": 11,
   "warnings": [
-    "Stale export: re-export from current Path of Building. 22 stats differ from what Path of Building 0.23.1 computes for this build now, including TotalDPS (186,706 in the code, 203,790 now)."
+    "Stale export: re-export from current Path of Building. 22 stats differ from what Path of Building 0.23.1 computes for this build now, including TotalDPS (125,658 in the code, 125,919 now)."
   ],
-  "importHash": "5bd8465f2688a0a7",
+  "importHash": "51538e29b46de88e",
   "holdingUp": {
     "resistances": [
       {
@@ -248,7 +257,15 @@
         "source": "ninja"
       }
     ],
-    "items": [],
+    "items": [
+      {
+        "slot": 4,
+        "holds": [],
+        "anoint": [
+          "Allocates Overwhelming Strike"
+        ]
+      }
+    ],
     "spirit": {
       "total": 147,
       "reserved": 137,

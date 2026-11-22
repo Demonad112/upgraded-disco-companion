@@ -2,16 +2,24 @@
 
 import { readFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
-import { deflateSync } from 'node:zlib'
+import { deflateSync, inflateSync } from 'node:zlib'
 import { describe, expect, it } from 'vitest'
 import { analyzeCharacter } from '../src/analyze.js'
 import { readPobSnapshotFromCode, snapshotParseCount } from '../src/pob/export.js'
 import { pobToCharModel } from '../src/pob/to-model.js'
 import type { CharModel } from '../src/model/types.js'
+import { mainWithReferenceDefence } from './helpers/main-build.js'
 
-const payload = JSON.parse(readFileSync(fileURLToPath(new URL('./fixtures/athrynas-v43.json', import.meta.url)), 'utf8'))
-const model: CharModel = payload.charModel ?? payload
-const code = model.pathOfBuildingExport!
+const mainCode = readFileSync(fileURLToPath(new URL('./pob2/forbidden-rites/main.code.txt', import.meta.url)), 'utf8').trim()
+const mainXml = inflateSync(Buffer.from(mainCode.replace(/-/g, '+').replace(/_/g, '/'), 'base64')).toString('utf8')
+/** The main build re-encoded with trailing spaces: a different code string for the cache, the same build. */
+const variant = (n: number): string => deflateSync(Buffer.from(mainXml + ' '.repeat(n))).toString('base64')
+
+// A variant nothing else in the suite has parsed, so the first parse is counted.
+const code = variant(1)
+const payload = mainWithReferenceDefence()
+payload.charModel = { ...payload.charModel, pathOfBuildingExport: code } as CharModel
+const model: CharModel = payload.charModel
 
 describe('snapshot cache', () => {
   it('parses a code once across two analyses and a conversion', async () => {
@@ -34,7 +42,7 @@ describe('snapshot cache', () => {
   })
 
   it('keeps at most two codes', async () => {
-    const second = readFileSync(fileURLToPath(new URL('./pob2/forbidden-rites/main.code.txt', import.meta.url)), 'utf8').trim()
+    const second = variant(2)
     const third = deflateSync(Buffer.from('<PathOfBuilding><Build level="1"/></PathOfBuilding>')).toString('base64')
     await readPobSnapshotFromCode(code)
     await readPobSnapshotFromCode(second)

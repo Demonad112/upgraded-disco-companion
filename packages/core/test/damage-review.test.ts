@@ -1,6 +1,7 @@
 /**
  * Support-gem valuation and the damage review, against PoB 2's extracted data
- * and the captured Ice Shot character.
+ * and a hand-built Ice Shot setup (test/helpers/gem-skills.ts) on the main build: a PoB code carries no gem
+ * tags, so the main build's own skill cannot feed the support checks.
  */
 
 import { readFileSync } from 'node:fs'
@@ -20,11 +21,14 @@ import {
 } from '../src/gems/catalog.js'
 import { parseAllSetups } from '../src/gems/index.js'
 import { highestSocketedTier, reviewDamage } from '../src/recommend/damage.js'
+import { handBuiltSkills } from './helpers/gem-skills.js'
+import { mainWithReferenceDefence } from './helpers/main-build.js'
 
 const here = dirname(fileURLToPath(import.meta.url))
 const dataDir = join(here, '..', '..', 'data', 'generated')
-const payload = JSON.parse(readFileSync(join(here, 'fixtures', 'athrynas-v43.json'), 'utf8'))
+const payload = mainWithReferenceDefence()
 const model = payload.charModel ?? payload
+model.skills = handBuiltSkills()
 const tiers = new ModTiers(JSON.parse(readFileSync(join(dataDir, 'mod-tiers.json'), 'utf8')) as ModTierData)
 const catalog = new SupportCatalog(JSON.parse(readFileSync(join(dataDir, 'pob-skills.json'), 'utf8')) as PobSkillData)
 const analysis = await analyzeCharacter(payload)

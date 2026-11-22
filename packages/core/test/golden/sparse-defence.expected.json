@@ -1,11 +1,11 @@
 {
   "identity": {
-    "name": "Athrynas",
-    "account": "Demonad112#2589",
-    "league": "Runes of Aldur",
-    "level": 86,
-    "className": "Deadeye",
-    "updatedUtc": "2026-07-22T11:08:39.916111Z"
+    "name": "",
+    "account": "",
+    "league": "",
+    "level": 90,
+    "className": "Martial Artist",
+    "updatedUtc": null
   },
   "defence": {
     "lowestMaximumHit": null,
@@ -49,15 +49,14 @@
     3,
     4,
     5,
-    6,
     7,
     8,
     9,
     11
   ],
   "primarySkill": {
-    "name": "Ice Shot",
-    "totalDps": 110157
+    "name": "Storm Wave",
+    "totalDps": 109867.25202098387
   },
   "assessment": {
     "score": null,
@@ -75,17 +74,12 @@
       "warning: No major gaps detected"
     ]
   },
-  "recommendations": [
-    "weapon-ilvl-lag",
-    "anoint-unused",
-    "weapon-set-idle",
-    "dps-crit-uninvested"
-  ],
-  "pobConfigInputCount": 20,
+  "recommendations": [],
+  "pobConfigInputCount": 11,
   "warnings": [
-    "1 stat disagrees between poe.ninja and the attached Path of Building export. See the reconciliation report before trusting those figures."
+    "2 stats disagree between poe.ninja and the attached Path of Building export. See the reconciliation report before trusting those figures."
   ],
-  "importHash": "4e8f11d654b5ee11",
+  "importHash": "1aa01acb224d4d91",
   "holdingUp": {
     "resistances": [
       {
@@ -125,37 +119,44 @@
         "source": "ninja"
       }
     ],
-    "items": [],
+    "items": [
+      {
+        "slot": 4,
+        "holds": [],
+        "anoint": [
+          "Allocates Overwhelming Strike"
+        ]
+      }
+    ],
     "spirit": {
-      "total": 159,
-      "reserved": 80,
-      "unreserved": 79,
-      "unreservedPercent": 49.7
+      "total": 147,
+      "reserved": 137,
+      "unreserved": 10,
+      "unreservedPercent": 6.8
     },
     "attributes": [
       {
-        "attribute": "strength",
-        "have": 47,
-        "required": 45,
-        "headroom": 2,
+        "attribute": "dexterity",
+        "have": 137,
+        "required": 137,
+        "headroom": 0,
         "tight": true
       },
       {
         "attribute": "intelligence",
-        "have": 109,
-        "required": 83,
-        "headroom": 26,
-        "tight": false
+        "have": 119,
+        "required": 116,
+        "headroom": 3,
+        "tight": true
       },
       {
-        "attribute": "dexterity",
-        "have": 240,
-        "required": 147,
-        "headroom": 93,
+        "attribute": "strength",
+        "have": 92,
+        "required": 80,
+        "headroom": 12,
         "tight": false
       }
     ],
     "movementSpeed": null
-  },
-  "cacheKey": "b3699028c765d2387b437757c234a6bfb20e659e6776a47426960ddefcb2f71b"
+  }
 }

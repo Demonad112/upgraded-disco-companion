@@ -26,9 +26,9 @@ import {
   type CharacterSnapshot,
 } from '../src/progress/index.js'
 import { PassiveTree, type PassiveTreeData } from '../src/tree/index.js'
+import { mainWithReferenceDefence } from './helpers/main-build.js'
 
-const fixturePath = fileURLToPath(new URL('./fixtures/athrynas-v43.json', import.meta.url))
-const raw = JSON.parse(readFileSync(fixturePath, 'utf8')) as unknown
+const raw = mainWithReferenceDefence() as unknown
 const model = unwrapCharModel(raw)
 
 const treePath = fileURLToPath(new URL('../../data/generated/passive-tree.json', import.meta.url))
@@ -46,8 +46,8 @@ describe('taking a snapshot', () => {
   it('records the figures worth trending and nothing else', () => {
     expect(base).toMatchObject({
       at: '2026-07-24T00:00:00.000Z',
-      key: 'Demonad112#2589/Athrynas',
-      level: 86,
+      key: '/',
+      level: 90,
       life: 1448,
       energyShield: 1937,
       ward: 706,
@@ -58,9 +58,9 @@ describe('taking a snapshot', () => {
       cold: 74,
       lightning: 75,
       chaos: 18,
-      dps: 110157,
+      dps: 109867,
       weakestHit: 3808,
-      passives: 109,
+      passives: 123,
     })
   })
 
@@ -74,7 +74,7 @@ describe('taking a snapshot', () => {
   it('takes the timestamp from the caller, never from the clock', () => {
     // The core is pure: a snapshot must be reproducible.
     expect(toSnapshot(analysis, '1999-01-01T00:00:00.000Z').at).toBe('1999-01-01T00:00:00.000Z')
-    expect(base.updatedUtc).toBe(model.updatedUtc)
+    expect(base.updatedUtc).toBe(model.updatedUtc ?? null)
   })
 
   it('records the keystone-corrected pool, matching what the assessment used', () => {

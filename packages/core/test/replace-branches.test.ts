@@ -12,10 +12,11 @@ import { normalizeItems } from '../src/model/slots.js'
 import { ModTiers, type ModTierData } from '../src/gear/tiers.js'
 import { analyzeItem } from '../src/gear/analyze.js'
 import { planReplacement } from '../src/gear/replace.js'
+import { mainWithBreakdowns } from './helpers/main-build.js'
 
 const here = dirname(fileURLToPath(import.meta.url))
 const dataDir = join(here, '..', '..', 'data', 'generated')
-const payload = JSON.parse(readFileSync(join(here, 'fixtures', 'athrynas-v43.json'), 'utf8'))
+const payload = mainWithBreakdowns()
 const model = payload.charModel ?? payload
 const tiers = new ModTiers(JSON.parse(readFileSync(join(dataDir, 'mod-tiers.json'), 'utf8')) as ModTierData)
 const analysis = await analyzeCharacter(payload)
@@ -96,7 +97,8 @@ describe('planReplacement edge cases', () => {
     const full = analysed.map((i) => ({ ...i, affixCounts: { prefix: 3, suffix: 3 }, mods: i.mods.map((m) => ({ ...m, upgrades: [] })) }))
     const p = run(helmet(), { omitResistances: ['fire', 'cold', 'lightning'] }, { items: full })
     expect(p.followUps).toEqual([])
-    expect(p.uncovered.map((u) => u.type).sort()).toEqual(['cold', 'fire', 'lightning'])
+    // Only lightning is held up by this helmet; its fire sits inside the overcap.
+    expect(p.uncovered.map((u) => u.type).sort()).toEqual(['lightning'])
   })
 
   it('skips craft targets whose base is not in the data', () => {

@@ -2,7 +2,7 @@ import { PROFILE_URL, expect, openTab, test } from './fixtures'
 
 test('the Progress panel charts each figure across imports', async ({ page }) => {
   await page.goto(`character/?import=${encodeURIComponent(PROFILE_URL)}`)
-  await expect(page.getByRole('heading', { name: /Athrynas/ }).first()).toBeVisible({ timeout: 30_000 })
+  await expect(page.getByRole('heading', { name: /Main/ }).first()).toBeVisible({ timeout: 30_000 })
   await openTab(page, 'progress')
   await expect
     .poll(() => page.evaluate(() => localStorage.getItem('poe2-endgame-companion:v1')?.includes('"snapshots":[{') ?? false))
@@ -22,7 +22,7 @@ test('the Progress panel charts each figure across imports', async ({ page }) =>
   await page.reload()
   // The reload keeps #progress in the URL, so the Overview name heading is not mounted; open Overview first.
   await openTab(page, 'overview')
-  await expect(page.getByRole('heading', { name: /Athrynas/ }).first()).toBeVisible({ timeout: 30_000 })
+  await expect(page.getByRole('heading', { name: /Main/ }).first()).toBeVisible({ timeout: 30_000 })
   await openTab(page, 'progress')
 
   const panel = page.locator('details#progress-history')

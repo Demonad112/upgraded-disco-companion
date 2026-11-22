@@ -18,9 +18,9 @@ import { keystoneEffectsOf } from '../src/keystones/index.js'
 import { assessBuild, defenceParts } from '../src/score/index.js'
 import { bandFor, describeLadderSample, leagueSlugOf, type LadderSummary } from '../src/ninja/ladder.js'
 import { PassiveTree, type PassiveTreeData } from '../src/tree/index.js'
+import { mainWithReferenceDefence } from './helpers/main-build.js'
 
-const fixturePath = fileURLToPath(new URL('./fixtures/athrynas-v43.json', import.meta.url))
-const raw = JSON.parse(readFileSync(fixturePath, 'utf8')) as unknown
+const raw = mainWithReferenceDefence() as unknown
 const model = unwrapCharModel(raw)
 const defense = analyzeDefense(model)
 const dps = analyzeDps(model)

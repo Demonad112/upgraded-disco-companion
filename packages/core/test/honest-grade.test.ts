@@ -19,9 +19,9 @@ import { analyzeDps } from '../src/dps/index.js'
 import { effectivePool, keystoneEffectsOf } from '../src/keystones/index.js'
 import { assessBuild, RUBRIC } from '../src/score/index.js'
 import type { LadderSummary } from '../src/ninja/ladder.js'
+import { mainWithReferenceDefence } from './helpers/main-build.js'
 
-const fixturePath = fileURLToPath(new URL('./fixtures/athrynas-v43.json', import.meta.url))
-const model = unwrapCharModel(JSON.parse(readFileSync(fixturePath, 'utf8')) as unknown)
+const model = unwrapCharModel(mainWithReferenceDefence() as unknown)
 const defense = analyzeDefense(model)
 const dps = analyzeDps(model) // primary 109,859 DPS
 

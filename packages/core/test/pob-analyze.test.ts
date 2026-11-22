@@ -12,25 +12,24 @@ import { describe, expect, it } from 'vitest'
 import { analyzeCharacter } from '../src/analyze.js'
 import { analyzeFromPob, looksLikePobCode } from '../src/pob/analyze.js'
 import type { CharModel } from '../src/model/types.js'
+import { mainPayload } from './helpers/main-build.js'
 
-const payload = JSON.parse(
-  readFileSync(fileURLToPath(new URL('./fixtures/athrynas-v43.json', import.meta.url)), 'utf8'),
-)
+const payload = mainPayload()
 const model: CharModel = payload.charModel ?? payload
 const ninja = await analyzeCharacter(payload)
 const pob = await analyzeFromPob(model.pathOfBuildingExport!)
 
 describe('analysing from a Path of Building code', () => {
   it('reads the identity the code carries', () => {
-    expect(pob.identity).toMatchObject({ level: 86, className: 'Ranger', ascendancy: 'Deadeye' })
+    expect(pob.identity).toMatchObject({ level: 90, className: 'Monk', ascendancy: 'Martial Artist' })
     expect(pob.provenance).toBe('pob-export')
   })
 
   it('agrees with poe.ninja on the survivability headline', () => {
-    // Two independent engines, the same number. That agreement is what makes a
-    // disagreement meaningful.
-    expect(pob.defense.lowestMaximumHit).toBe(3808)
-    expect(pob.defense.lowestMaximumHitType).toBe('chaos')
+    // The embedded model is read from the same code, so the two paths agree; the absolute figure is PoB's own
+    // PlayerStats for the main code (physical 5,004 lowest).
+    expect(pob.defense.lowestMaximumHit).toBe(5004)
+    expect(pob.defense.lowestMaximumHitType).toBe('physical')
     expect(pob.defense.lowestMaximumHit).toBe(ninja.defense.lowestMaximumHit)
     expect(pob.defense.lowestMaximumHitType).toBe(ninja.defense.lowestMaximumHitType)
   })
@@ -39,7 +38,7 @@ describe('analysing from a Path of Building code', () => {
     expect(pob.defense.life).toBe(ninja.defense.life)
     expect(pob.defense.energyShield).toBe(ninja.defense.energyShield)
     expect(pob.defense.armour).toBe(ninja.defense.armour)
-    expect(Math.round(pob.defense.effectiveHealthPool!)).toBe(ninja.defense.effectiveHealthPool)
+    expect(Math.round(pob.defense.effectiveHealthPool!)).toBe(Math.round(ninja.defense.effectiveHealthPool!))
 
     for (const res of pob.defense.resistances) {
       const theirs = ninja.defense.resistances.find((r) => r.type === res.type)!
@@ -48,14 +47,14 @@ describe('analysing from a Path of Building code', () => {
   })
 
   it('reports damage as PoB computed it', () => {
-    expect(pob.damage.totalDps).toBeCloseTo(109859.05, 1)
+    expect(pob.damage.totalDps).toBeCloseTo(125658.18322457, 1)
     // poe.ninja rounds; PoB does not. Same number.
-    expect(Math.round(pob.damage.totalDps!)).toBe(ninja.dps.primary!.dps)
+    expect(Math.round(pob.damage.totalDps!)).toBe(Math.round(ninja.dps.primary!.dps))
   })
 
   it('recovers the allocated tree', () => {
-    expect(pob.passives.count).toBe(136)
-    expect(pob.passives.allocated).toContain(50459) // Ranger start
+    expect(pob.passives.count).toBe(123)
+    expect(pob.passives.allocated).toContain(33866)
   })
 
   it('names what a code cannot answer instead of filling it in', () => {
@@ -71,7 +70,7 @@ describe('analysing from a Path of Building code', () => {
 
   it('exposes every PlayerStat, so the curated view hides nothing', () => {
     expect(Object.keys(pob.playerStats).length).toBeGreaterThan(100)
-    expect(pob.playerStats.TotalDPS).toBeCloseTo(109859.05, 1)
+    expect(pob.playerStats.TotalDPS).toBeCloseTo(125658.18322457, 1)
   })
 })
 

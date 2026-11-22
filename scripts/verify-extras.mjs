@@ -8,6 +8,7 @@
  * Usage: node scripts/verify-extras.mjs [baseUrl] [outDir]
  */
 
+import { mainPayloadJson } from './lib/main-payload.mjs'
 import { readFileSync, mkdirSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -19,7 +20,7 @@ const baseUrl = process.argv[2] ?? 'http://localhost:3210/character/'
 const outDir = process.argv[3] ?? join(here, '..', 'screenshots')
 
 const payload = JSON.parse(
-  readFileSync(join(here, '..', 'packages', 'core', 'test', 'fixtures', 'athrynas-v43.json'), 'utf8'),
+  await mainPayloadJson(),
 )
 const pobCode = (payload.charModel ?? payload).pathOfBuildingExport
 

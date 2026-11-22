@@ -1,0 +1,348 @@
+/**
+ * The owner's main build (Forbidden Rites, PoB 0.23.1) as a character payload: the code in
+ * `pob2/forbidden-rites/main.code.txt`, read through `pobToCharModel`, its items matched to mod ids with the
+ * affix data. This is the one realistic character the core tests share (PB-5 replaced the poe.ninja captures).
+ * It has no poe.ninja breakdowns: those paths are tested on small inline models instead.
+ */
+
+import { readFileSync } from 'node:fs'
+import { deflateSync, inflateSync } from 'node:zlib'
+import { fileURLToPath } from 'node:url'
+import { resolveItemMods } from '../../src/gear/text-mods.js'
+import { ModTiers, type ModTierData } from '../../src/gear/tiers.js'
+import type { CharModel, NinjaItem } from '../../src/model/types.js'
+import { pobToCharModel } from '../../src/pob/to-model.js'
+
+const here = (p: string): string => fileURLToPath(new URL(p, import.meta.url))
+
+export const mainCode = readFileSync(here('../pob2/forbidden-rites/main.code.txt'), 'utf8').trim()
+export const mainTiers = new ModTiers(
+  JSON.parse(readFileSync(here('../../../data/generated/mod-tiers.json'), 'utf8')) as ModTierData,
+)
+
+const base = await pobToCharModel(mainCode)
+const resolved: CharModel = {
+  ...base,
+  items: resolveItemMods(base.items ?? [], mainTiers),
+  jewels: resolveItemMods((base.jewels as NinjaItem[] | undefined) ?? [], mainTiers),
+}
+
+/** A fresh `{ type, charModel }` envelope each call, so a test may mutate it. */
+export function mainPayload(): { type: string; charModel: CharModel } {
+  return { type: 'character', charModel: structuredClone(resolved) }
+}
+
+/**
+ * An explicit defence block for tests of the defence and score logic that tell a scenario: cold one point
+ * short of the cap, chaos at 18%, chaos the lowest max hit, fire 24 over. It is a stated input, not a capture
+ * (it is the block the poe.ninja fixture Athrynas v43 carried before PB-5).
+ */
+export const referenceDefence = {
+  life: 1448, energyShield: 1937, ward: 706, mana: 793, spirit: 159, movementSpeed: 144, lifeRegen: 0,
+  evasionRating: 6490, evadeChance: 41, evadeChanceMax: 95, enemyAccuracy: 2114, baseEvadeChance: 0, armour: 207,
+  damageReductions: {
+    physical: { value: 2, max: 90, effectiveAppliedArmour: 207, base: 0, takenDamage: 924 },
+    fire: null, cold: null, lightning: null, chaos: null,
+  },
+  deflectChance: 21, deflectChanceMax: 95, deflectionRating: 2790, deflectEffect: 40,
+  strength: 47, dexterity: 240, intelligence: 109, enduranceCharges: 3, frenzyCharges: 3, powerCharges: 3,
+  effectiveHealthPool: 13569,
+  physicalMaximumHitTaken: 4264, fireMaximumHitTaken: 14611, coldMaximumHitTaken: 14107,
+  lightningMaximumHitTaken: 14611, chaosMaximumHitTaken: 3808,
+  fireResistance: 75, fireResistanceOverCap: 24, fireResistanceMax: 75,
+  coldResistance: 74, coldResistanceOverCap: 0, coldResistanceMax: 75,
+  lightningResistance: 75, lightningResistanceOverCap: 8, lightningResistanceMax: 75,
+  chaosResistance: 18, chaosResistanceOverCap: 0, chaosResistanceMax: 75,
+  blockChance: 0, itemRarity: 63,
+  physicalTakenAs: { physical: 95, lightning: 1.6666666, fire: 1.6666666, cold: 1.6666666, chaos: 0 },
+  lowestMaximumHitTaken: 3808,
+}
+
+/** The reference scenario's main-skill DPS, placed in known ladder bands by the score tests. */
+export const REFERENCE_DPS = 109_859
+
+/** The main build with its defence block replaced by `referenceDefence` and its main skill's DPS by `REFERENCE_DPS`. */
+export function mainWithReferenceDefence(): { type: string; charModel: CharModel } {
+  const p = mainPayload()
+  const skills = structuredClone(p.charModel.skills) as { dps?: { dps?: number }[] }[]
+  const first = skills.find((s) => s.dps?.[0])
+  if (first?.dps?.[0]) first.dps[0].dps = REFERENCE_DPS
+  p.charModel = { ...p.charModel, defensiveStats: structuredClone(referenceDefence), skills } as CharModel
+  return p
+}
+
+const FLAT: [number, string, RegExp][] = [
+  [0, 'life', /^\+(\d+) to maximum Life$/],
+  [1, 'mana', /^\+(\d+) to maximum Mana$/],
+  [2, 'energyShield', /^\+(\d+) to maximum Energy Shield$/],
+  [4, 'armour', /^\+(\d+) to Armour$/],
+  [5, 'evasionRating', /^\+(\d+) to Evasion Rating$/],
+  [6, 'strength', /^\+(\d+) to Strength$/],
+  [7, 'dexterity', /^\+(\d+) to Dexterity$/],
+  [8, 'intelligence', /^\+(\d+) to Intelligence$/],
+  [14, 'fireResistance', /^\+(\d+)% to Fire Resistance$/],
+  [15, 'coldResistance', /^\+(\d+)% to Cold Resistance$/],
+  [16, 'lightningResistance', /^\+(\d+)% to Lightning Resistance$/],
+  [17, 'chaosResistance', /^\+(\d+)% to Chaos Resistance$/],
+]
+
+const strip = (s: string): string => s.replace(/\[(?:[^\]|]+\|)?([^\]]+)\]/g, '$1').replace(/\s+/g, ' ').trim()
+
+/**
+ * The reference scenario plus poe.ninja-shaped `breakdowns` built from the items' own text: every flat
+ * life, mana, energy shield, attribute and resistance line becomes an item source, and a quest source holds
+ * the rest, so each stat's parts add up to the sheet value the way poe.ninja's do. Stated input for the
+ * attribution, replacement and holding-up tests; nothing here is read from poe.ninja.
+ */
+export function mainWithBreakdowns(): { type: string; charModel: CharModel } {
+  const p = mainWithReferenceDefence()
+  const m = p.charModel as CharModel & { defensiveStats: Record<string, number> }
+  const sources: Array<[number] | [number, string]> = [[0], [7, 'Act 1: Clearfell']]
+  const stats: Record<string, { base: number; inc: number; more: number; total: number; basePercent: boolean; mods: [number, number, number][] }> = {}
+  const items = (m.items ?? []) as NinjaItem[]
+  for (const [id, key, re] of FLAT) {
+    const mods: [number, number, number][] = []
+    let sum = 0
+    for (const it of items) {
+      const d = it.itemData
+      let v = 0
+      for (const l of [...(d.implicitMods ?? []), ...(d.runeMods ?? []), ...(d.explicitMods ?? [])]) {
+        const hit = re.exec(strip(l))
+        if (hit) v += Number(hit[1])
+      }
+      if (!v) continue
+      sources.push([2, `${d.name}, ${d.typeLine ?? d.baseType}`])
+      mods.push([0, v, sources.length - 1])
+      sum += v
+    }
+    const total = m.defensiveStats[key] ?? 0
+    const isRes = id >= 14
+    const base = isRes ? total + (m.defensiveStats[`${key}OverCap`] ?? 0) : total
+    if (base - sum !== 0) mods.unshift([0, base - sum, 1])
+    stats[String(id)] = { base, inc: 0, more: 1, total, basePercent: isRes, mods }
+  }
+  // ids 18-21 are the maximum resistances: the caps the attribution reads.
+  for (const [id, key] of [[18, 'fireResistanceMax'], [19, 'coldResistanceMax'], [20, 'lightningResistanceMax'], [21, 'chaosResistanceMax']] as const) {
+    const total = m.defensiveStats[key] ?? 75
+    stats[String(id)] = { base: total, inc: 0, more: 1, total, basePercent: true, mods: [] }
+  }
+  const ward = m.defensiveStats['ward'] ?? 0
+  stats['26'] = { base: ward, inc: 0, more: 1, total: ward, basePercent: false, mods: [[0, ward, 1]] }
+  m.breakdowns = { sources, stats }
+  return p
+}
+
+type Bd = { sources: Array<[number] | [number, string]>; stats: Record<string, { base: number; inc: number; more: number; total: number; basePercent: boolean; mods: [number, number, number][] }> }
+
+/**
+ * Add one breakdown modifier to a `mainWithBreakdowns()` payload, credited to a named source (`typeId` 2 is an item,
+ * 7 a quest). A flat mod is taken out of the quest remainder so the parts still add up to the base. An increased mod
+ * rebases the flat base so the stat keeps its sheet total, the way a real increased-only contributor does.
+ */
+export function addBreakdownMod(
+  p: { charModel: CharModel },
+  statId: number,
+  source: { typeId: number; label: string },
+  kind: 'flat' | 'increased',
+  value: number,
+): void {
+  const bd = (p.charModel as CharModel & { breakdowns: Bd }).breakdowns
+  const stat = bd.stats[String(statId)]!
+  let idx = bd.sources.findIndex((s) => s[0] === source.typeId && s[1] === source.label)
+  if (idx < 0) idx = bd.sources.push([source.typeId, source.label]) - 1
+  const remainder = stat.mods.find((m) => m[2] === 1)
+  if (kind === 'flat') {
+    if (remainder) remainder[1] -= value
+    stat.mods.push([0, value, idx])
+  } else {
+    const rebased = Math.round(stat.total / (1 + (stat.inc + value) / 100))
+    if (remainder) remainder[1] += rebased - stat.base
+    stat.base = rebased
+    stat.inc += value
+    stat.mods.push([1, value, idx])
+  }
+}
+
+/**
+ * `mainWithReferenceDefence()` plus the poe.ninja-only inputs the recommendation rules read, stated inline: a passive
+ * count with no anoint, the weapon at item level 76 (the others sit at 79 to 83), 16 passives allocated to the idle
+ * weapon set 2, and one unmapped breakdown stat id.
+ */
+export function mainForRecommend(withBreakdowns = false): { type: string; charModel: CharModel } {
+  const p = withBreakdowns ? mainWithBreakdowns() : mainWithReferenceDefence()
+  const m = p.charModel as CharModel & Record<string, unknown>
+  m.passiveCounts = { passives: 123, anoints: 0, ascendancy: 8, bonusPassives: 0 }
+  const weapon = (m.items as NinjaItem[]).find((i) => i.itemSlot === 7)!
+  weapon.itemData.ilvl = 76
+  m.useSecondWeaponSet = false
+  m.passiveSelectionSet1 = []
+  m.passiveSelectionSet2 = Array.from({ length: 16 }, (_, i) => 90_000 + i)
+  const stub = { base: 0, inc: 0, more: 1, total: 0, basePercent: false, mods: [] as [number, number, number][] }
+  const bd = m.breakdowns as { sources: unknown[]; stats: Record<string, typeof stub> } | undefined
+  if (bd) bd.stats['99'] = stub
+  else m.breakdowns = { sources: [[0]], stats: { '99': stub } }
+  return p
+}
+
+const b64url = (b: Buffer): string => b.toString('base64').replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '')
+
+/** The main code's XML (PoB's save format), for tests that edit a build and re-encode it. */
+export const mainXml = inflateSync(Buffer.from(mainCode.replace(/-/g, '+').replace(/_/g, '/'), 'base64')).toString('utf8')
+
+/** Encode PoB XML as a share code the decoder accepts. */
+export const encodePob = (xml: string): string => b64url(deflateSync(Buffer.from(xml)))
+
+/**
+ * The main build re-saved with two weapon-set trees, as PoB writes them: `nodes` still lists every allocated node,
+ * `<WeaponSet1/2>` name the `size` nodes that belong to one set only, and the live-set flag is stated (set 1).
+ * The main code itself allocates no weapon-set nodes, so the split is tested on this inline variant.
+ */
+export function mainWithWeaponSets(size = 8): { code: string; set1: number[]; set2: number[]; all: number[] } {
+  const nodes = /<Spec [^>]*\snodes="([^"]*)"/.exec(mainXml)![1]!.split(',').map(Number)
+  const set1 = nodes.slice(0, size)
+  const set2 = nodes.slice(size, size * 2)
+  const open = /<Spec [^>]*>/.exec(mainXml)![0]
+  const xml = mainXml
+    .replace(open, `${open}<WeaponSet1 nodes="${set1.join(',')}"/><WeaponSet2 nodes="${set2.join(',')}"/>`)
+    .replace('useSecondWeaponSet="nil"', 'useSecondWeaponSet="false"')
+  return { code: encodePob(xml), set1, set2, all: nodes }
+}
+
+/**
+ * The defence block of the Yykiuy capture (poe.ninja, 2026-11-13) as a stated input: lightning one cap short at
+ * 74 of 76, chaos 69, the lowest max hit physical at 4,399. The CF1 and CF2 tests tell their scenarios on it (PB-5
+ * deleted the capture; its numbers are kept here so every assertion stays exact).
+ */
+export const yykiuyDefence = {
+  life: 1477,
+  energyShield: 2922,
+  ward: 0,
+  mana: 662,
+  spirit: 147,
+  movementSpeed: 134,
+  lifeRegen: 35,
+  evasionRating: 8704,
+  evadeChance: 48,
+  evadeChanceMax: 95,
+  enemyAccuracy: 2114,
+  baseEvadeChance: 0,
+  armour: 0,
+  damageReductions: {
+    physical: null,
+    fire: null,
+    cold: null,
+    lightning: null,
+    chaos: null
+  },
+  deflectChance: 4,
+  deflectChanceMax: 95,
+  deflectionRating: 435,
+  deflectEffect: 40,
+  strength: 97,
+  dexterity: 142,
+  intelligence: 124,
+  enduranceCharges: 3,
+  frenzyCharges: 3,
+  powerCharges: 3,
+  effectiveHealthPool: 18456,
+  physicalMaximumHitTaken: 4399,
+  fireMaximumHitTaken: 15711,
+  coldMaximumHitTaken: 19126,
+  lightningMaximumHitTaken: 15169,
+  chaosMaximumHitTaken: 9477,
+  fireResistance: 75,
+  fireResistanceOverCap: 5,
+  fireResistanceMax: 75,
+  coldResistance: 80,
+  coldResistanceOverCap: 59,
+  coldResistanceMax: 80,
+  lightningResistance: 74,
+  lightningResistanceOverCap: 0,
+  lightningResistanceMax: 76,
+  chaosResistance: 69,
+  chaosResistanceOverCap: 0,
+  chaosResistanceMax: 75,
+  blockChance: 0,
+  itemRarity: 33,
+  physicalTakenAs: {
+    physical: 100,
+    lightning: 0,
+    fire: 0,
+    cold: 0,
+    chaos: 0
+  },
+  damageTypes: {
+    physical: null,
+    fire: {
+      takenAs: null,
+      takenAsFromHits: null,
+      attackMult: 1,
+      spellMult: 1,
+      dotMult: 0.25,
+      flat: null,
+      esBypass: null,
+      momShare: 0
+    },
+    cold: {
+      takenAs: null,
+      takenAsFromHits: null,
+      attackMult: 1,
+      spellMult: 1,
+      dotMult: 0.2,
+      flat: null,
+      esBypass: null,
+      momShare: 0
+    },
+    lightning: {
+      takenAs: null,
+      takenAsFromHits: null,
+      attackMult: 1,
+      spellMult: 1,
+      dotMult: 0.26,
+      flat: null,
+      esBypass: null,
+      momShare: 0
+    },
+    chaos: {
+      takenAs: null,
+      takenAsFromHits: null,
+      attackMult: 1,
+      spellMult: 1,
+      dotMult: 0.31,
+      flat: null,
+      esBypass: null,
+      momShare: 0
+    }
+  },
+  recovery: {
+    regen: {
+      life: 35,
+      energyShield: 0,
+      mana: 43
+    },
+    overleech: false,
+    recharge: {
+      energyShield: 365,
+      life: 0,
+      delay: 3.5088,
+      wardDelay: 2
+    },
+    recoup: null,
+    onIncomingHit: null,
+    maxLifeLeechRate: 295,
+    maxEnergyShieldLeechRate: 292
+  },
+  lifeLossPrevention: null,
+  companionRedirect: null,
+  lowestMaximumHitTaken: 4399
+}
+
+/** The main build with the Yykiuy defence block, level 88, and its main skill replaced by Falling Thunder at 192,498 DPS (12/49/31/8/0). */
+export function mainWithYykiuyDefence(): { type: string; charModel: CharModel } {
+  const p = mainPayload()
+  const skills = structuredClone(p.charModel.skills) as { dps?: Record<string, unknown>[] }[]
+  const first = skills.find((s) => s.dps?.[0])!
+  Object.assign(first.dps![0]!, { name: 'Falling Thunder', dps: 192_498, damageTypes: [12, 49, 31, 8, 0] })
+  p.charModel = { ...p.charModel, level: 88, defensiveStats: structuredClone(yykiuyDefence), skills } as CharModel
+  return p
+}

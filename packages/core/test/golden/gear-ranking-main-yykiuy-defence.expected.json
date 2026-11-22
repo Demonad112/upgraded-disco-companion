@@ -15,21 +15,6 @@
   },
   {
     "rank": 2,
-    "slot": "Helmet",
-    "base": "Grinning Mask",
-    "closes": {
-      "lightning": 2,
-      "chaos": 6
-    },
-    "reasons": [
-      "a replacement can close 2% lightning and 6% chaos of your resistance shortfall",
-      "9 tiers below the top, across its lines",
-      "1 line with resistance over the cap",
-      "corrupted — it can only be replaced, not crafted on"
-    ]
-  },
-  {
-    "rank": 3,
     "slot": "Ring 2",
     "base": "Unset Ring",
     "closes": {
@@ -43,9 +28,9 @@
     ]
   },
   {
-    "rank": 4,
+    "rank": 3,
     "slot": "Boots",
-    "base": "Quickslip Shoes",
+    "base": "Runeforged Quickslip Shoes",
     "closes": {
       "lightning": 2,
       "chaos": 6
@@ -57,7 +42,7 @@
     ]
   },
   {
-    "rank": 5,
+    "rank": 4,
     "slot": "Ring 1",
     "base": "Amethyst Ring",
     "closes": {
@@ -70,28 +55,44 @@
     ]
   },
   {
-    "rank": 6,
-    "slot": "Body Armour",
-    "base": "Sleek Jacket",
+    "rank": 5,
+    "slot": "Helmet",
+    "base": "Runeforged Brigand Mask",
     "closes": {
       "lightning": 2,
       "chaos": 6
     },
     "reasons": [
       "a replacement can close 2% lightning and 6% chaos of your resistance shortfall",
-      "2 tiers below the top, across its lines"
+      "4 tiers below the top, across its lines",
+      "corrupted — it can only be replaced, not crafted on"
     ]
   },
   {
-    "rank": 7,
-    "slot": "Gloves",
-    "base": "Fists of Stone",
+    "rank": 6,
+    "slot": "Body Armour",
+    "base": "Runeforged Falconer's Jacket",
     "closes": {
       "lightning": 2,
       "chaos": 6
     },
     "reasons": [
-      "a replacement can close 2% lightning and 6% chaos of your resistance shortfall"
+      "a replacement can close 2% lightning and 6% chaos of your resistance shortfall",
+      "3 tiers below the top, across its lines",
+      "1 line with resistance over the cap"
+    ]
+  },
+  {
+    "rank": 7,
+    "slot": "Gloves",
+    "base": "Runeforged Fists of Stone",
+    "closes": {
+      "lightning": 2,
+      "chaos": 6
+    },
+    "reasons": [
+      "a replacement can close 2% lightning and 6% chaos of your resistance shortfall",
+      "1 tier below the top, across its lines"
     ]
   },
   {

@@ -461,6 +461,25 @@ export function analyzeItem(
     }
   }
 
+  // Explicit-type lines of a code's item that no mod id could be proven for (`gear/text-mods.ts`).
+  for (const line of itemData?.textOnlyMods ?? []) {
+    if (typeof line !== 'string') continue
+    mods.push({
+      id: null,
+      source: 'explicit',
+      kind: null,
+      affix: null,
+      text: stripModMarkup(line),
+      tier: null,
+      tiers: null,
+      ilvlRequired: null,
+      rolled: [],
+      upgrades: [],
+      waste: null,
+      unresolved: 'The code gives this line as text only, and it does not match exactly one mod this base can roll, so it has no tier.',
+    })
+  }
+
   const tiered = mods.filter((m) => m.tier !== null).map((m) => m.tier!)
   const affixCounts = {
     prefix: mods.filter((m) => m.kind === 'prefix' && OCCUPIES_AFFIX_SLOT.has(m.source)).length,

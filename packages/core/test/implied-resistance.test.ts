@@ -4,6 +4,7 @@ import { describe, expect, it } from 'vitest'
 import { unwrapCharModel } from '../src/analyze.js'
 import { analyzeDefense } from '../src/defense/index.js'
 import { impliedResistance, impliedResistances } from '../src/defense/implied.js'
+import { mainWithReferenceDefence } from './helpers/main-build.js'
 
 describe('impliedResistance (pool / (1 - resistance))', () => {
   it('inverts the formula within integer rounding', () => {
@@ -55,7 +56,7 @@ describe('impliedResistances', () => {
 
   it('does not infer on the recorded fixture, whose physical hit is not its pool', () => {
     const model = unwrapCharModel(
-      JSON.parse(readFileSync(fileURLToPath(new URL('./fixtures/athrynas-v43.json', import.meta.url)), 'utf8')),
+      mainWithReferenceDefence(),
     )
     const d = analyzeDefense(model)
     expect(d.impliedResistances.every((x) => x.status === 'unknown')).toBe(true)

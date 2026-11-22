@@ -15,10 +15,11 @@ import { analyzeItem } from '../src/gear/analyze.js'
 import { SupportCatalog, type PobSkillData } from '../src/gems/catalog.js'
 import { parseAllSetups } from '../src/gems/index.js'
 import { highestSocketedTier, reviewDamage } from '../src/recommend/damage.js'
+import { mainWithReferenceDefence } from './helpers/main-build.js'
 
 const here = dirname(fileURLToPath(import.meta.url))
 const dataDir = join(here, '..', '..', 'data', 'generated')
-const payload = JSON.parse(readFileSync(join(here, 'fixtures', 'athrynas-v43.json'), 'utf8'))
+const payload = mainWithReferenceDefence()
 const model = payload.charModel ?? payload
 const tiers = new ModTiers(JSON.parse(readFileSync(join(dataDir, 'mod-tiers.json'), 'utf8')) as ModTierData)
 const skillData = JSON.parse(readFileSync(join(dataDir, 'pob-skills.json'), 'utf8')) as PobSkillData

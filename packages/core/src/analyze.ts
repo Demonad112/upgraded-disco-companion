@@ -17,6 +17,7 @@ import { gearRecommendations, measureRecommendations, mergeGearRecommendations, 
 import type { RecommendationReport } from './recommend/types.js'
 import { reconcile, type ReconciliationReport } from './reconcile/index.js'
 import type { ModTiers } from './gear/tiers.js'
+import { resolveItemMods } from './gear/text-mods.js'
 import { analyzeItem } from './gear/analyze.js'
 import { gearFitReport, type GearFitReport } from './gear/fit.js'
 import type { SupportCatalog } from './gems/catalog.js'
@@ -27,6 +28,7 @@ import { readPlayerStats, readPobSnapshotFromCode } from './pob/export.js'
 import { describeStaleExport, staleExport, type PobRecomputed, type StaleExport } from './pob/stale.js'
 import { readPobConfig, type PobConfig } from './pob/config.js'
 import { pobCodeGaps, type PobGap } from './pob/analyze.js'
+import { snapshotItems } from './pob/items.js'
 import { readPobMainSkill } from './pob/main-skill.js'
 import { inactiveSetFromPob, readPobSkillGroups, type PobSkillGroup } from './pob/skill-groups.js'
 import { mainSkillNote } from './dps/main-skill.js'
@@ -34,7 +36,7 @@ import { assessBuild, type BuildAssessment } from './score/index.js'
 import { checkTreeVersion, resolveAllocation, TREE_UNCHECKED, type PassiveTree, type TreeCheck } from './tree/index.js'
 import { ailmentImmunities, type AilmentStatus } from './defense/ailments.js'
 import type { LadderSummary } from './ninja/ladder.js'
-import type { CharModel, CharModelResponse } from './model/types.js'
+import type { CharModel, CharModelResponse, NinjaItem } from './model/types.js'
 import { ANALYSIS_ENGINE_VERSION, importHash } from './cache/key.js'
 import type { DataVersion } from './provenance/index.js'
 
@@ -310,13 +312,22 @@ function asPobDps(dps: DpsSummary): DpsSummary {
   }
 }
 
+function withResolvedMods(model: CharModel, tiers: ModTiers): CharModel {
+  const out: CharModel = { ...model }
+  if (Array.isArray(model.items)) out.items = resolveItemMods(model.items, tiers)
+  if (Array.isArray(model.jewels)) out.jewels = resolveItemMods(model.jewels as NinjaItem[], tiers)
+  return out
+}
+
 export async function analyzeCharacter(
   input: CharModelResponse | CharModel | unknown,
   options: AnalyzeOptions = {},
 ): Promise<Analysis> {
-  const model = unwrapCharModel(input)
   const source: AnalysisSource = options.source ?? 'poe.ninja'
   const fromCode = source === 'pob-export'
+  const unwrapped = unwrapCharModel(input)
+  // A code's items are text; the affix data proves which mods they are (`gear/text-mods.ts`).
+  const model: CharModel = fromCode && options.tiers ? withResolvedMods(unwrapped, options.tiers) : unwrapped
   const warnings: string[] = []
 
   let pobStats: Record<string, number> | null = null
@@ -325,6 +336,7 @@ export async function analyzeCharacter(
   let pobSkillGroups: PobSkillGroup[] | null = null
   let pobMinionStats: Record<string, number> | null = null
   let stale: StaleExport | null = null
+  let unmappedSlots: string[] = []
   if (model.pathOfBuildingExport) {
     try {
       const snapshot = await readPobSnapshotFromCode(model.pathOfBuildingExport)
@@ -333,6 +345,7 @@ export async function analyzeCharacter(
       pobConfig = readPobConfig(snapshot)
       pobSkillGroups = readPobSkillGroups(snapshot)
       pobMinionStats = snapshot.minionStats
+      unmappedSlots = snapshotItems(snapshot).unmapped
       stale = options.pobRecomputed ? staleExport(snapshot, options.pobRecomputed) : null
       if (stale) warnings.push(describeStaleExport(stale))
     } catch (err) {
@@ -379,7 +392,16 @@ export async function analyzeCharacter(
 
   const analysis: Analysis = {
     source,
-    sourceGaps: fromCode ? pobCodeGaps(pobStats ?? {}) : [],
+    sourceGaps: fromCode
+      ? pobCodeGaps(pobStats ?? {}, {
+          items: model.items?.length ?? 0,
+          unmapped: unmappedSlots,
+          textOnly: [...(model.items ?? []), ...((model.jewels as NinjaItem[] | undefined) ?? [])].reduce(
+            (n, it) => n + (it.itemData.textOnlyMods?.length ?? 0),
+            0,
+          ),
+        })
+      : [],
     identity: {
       name: model.name ?? '',
       account: model.account ?? '',

@@ -12,9 +12,9 @@ import { fileURLToPath } from 'node:url'
 import { unwrapCharModel } from '../src/analyze.js'
 import { compareRecommendations, recommend } from '../src/recommend/index.js'
 import type { CharModel } from '../src/model/types.js'
+import { mainForRecommend } from './helpers/main-build.js'
 
-const fixturePath = fileURLToPath(new URL('./fixtures/athrynas-v43.json', import.meta.url))
-const model = unwrapCharModel(JSON.parse(readFileSync(fixturePath, 'utf8')))
+const model = unwrapCharModel(mainForRecommend())
 const report = recommend(model)
 const byId = new Map(report.recommendations.map((r) => [r.id, r]))
 
@@ -64,12 +64,12 @@ describe('reproduces the known findings', () => {
     expect(r!.detail).toContain('207')
   })
 
-  it('flags the unused anoint at level 86', () => {
+  it('flags the unused anoint at level 90', () => {
     const r = byId.get('anoint-unused')
     expect(r).toBeDefined()
     expect(r!.category).toBe('efficiency')
     // Evidence must name the actual amulet, not "your amulet".
-    expect(r!.evidence.some((e) => e.kind === 'item' && e.itemName === 'Havoc Medallion')).toBe(true)
+    expect(r!.evidence.some((e) => e.kind === 'item' && e.itemName === 'Demon Pendant')).toBe(true)
   })
 
   it('flags the ilvl-76 weapon lagging the ilvl-82 armour', () => {
@@ -77,9 +77,9 @@ describe('reproduces the known findings', () => {
     expect(r).toBeDefined()
     expect(r!.impact!.from).toBe(76)
     expect(r!.impact!.to).toBeGreaterThanOrEqual(81)
-    expect(r!.evidence.some((e) => e.kind === 'item' && e.itemName === 'Loath Bane')).toBe(true)
+    expect(r!.evidence.some((e) => e.kind === 'item' && e.itemName === 'Skull Song')).toBe(true)
     // It must state what replacing the weapon costs.
-    expect(r!.tradeoff).toMatch(/Loath Bane/)
+    expect(r!.tradeoff).toMatch(/Skull Song/)
   })
 
   it('ASKS about the possibly-idle weapon set rather than asserting', () => {
@@ -129,7 +129,7 @@ describe('honesty', () => {
 
   it('reports what it could not determine instead of guessing', () => {
     const ids = report.unresolved.map((u) => u.id)
-    // 10 breakdown stat ids read zero on this character and cannot be named.
+    // One breakdown stat id (99) reads zero on this scenario and cannot be named.
     expect(ids).toContain('unmapped-stat-ids')
     for (const u of report.unresolved) {
       expect(u.missing.length).toBeGreaterThan(20)

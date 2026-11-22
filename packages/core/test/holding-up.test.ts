@@ -5,10 +5,9 @@ import { fileURLToPath } from 'node:url'
 import { analyzeCharacter, unwrapCharModel } from '../src/analyze.js'
 import { holdingUp } from '../src/constraints/holding-up.js'
 import type { CharModel } from '../src/model/types.js'
+import { mainWithBreakdowns } from './helpers/main-build.js'
 
-const fixture = JSON.parse(
-  readFileSync(fileURLToPath(new URL('./fixtures/athrynas-v43.json', import.meta.url)), 'utf8'),
-) as unknown
+const fixture = mainWithBreakdowns() as unknown
 
 async function mapFor(model: CharModel) {
   const a = await analyzeCharacter({ charModel: model })

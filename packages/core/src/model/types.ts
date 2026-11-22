@@ -121,6 +121,13 @@ export interface NinjaItemData {
   grantedSkills?: unknown[]
   sockets?: unknown[]
   socketedItems?: NinjaItemData[]
+  /** poe.ninja's structured mods, `{ implicit|explicit|crafted|desecrated: [{ id, stats }] }`. */
+  mods?: Record<string, unknown>
+  /**
+   * Explicit-type lines of an item read from a Path of Building code that no mod id could be proven for
+   * (`gear/text-mods.ts`). They are shown as text with no tier; poe.ninja items never carry this.
+   */
+  textOnlyMods?: string[]
   properties?: unknown[]
   requirements?: unknown[]
   icon?: string

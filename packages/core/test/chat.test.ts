@@ -14,10 +14,9 @@ import { analyzeFromPob } from '../src/pob/analyze.js'
 import { buildChatContext, buildPobChatContext, SYSTEM_PROMPT } from '../src/chat/context.js'
 import { ChatError, PROVIDERS, chat, type ChatConfig } from '../src/chat/provider.js'
 import type { CharModel } from '../src/model/types.js'
+import { mainWithBreakdowns } from './helpers/main-build.js'
 
-const payload = JSON.parse(
-  readFileSync(fileURLToPath(new URL('./fixtures/athrynas-v43.json', import.meta.url)), 'utf8'),
-)
+const payload = mainWithBreakdowns()
 const model: CharModel = payload.charModel ?? payload
 const analysis = await analyzeCharacter(payload)
 const context = buildChatContext(analysis)
@@ -29,7 +28,7 @@ describe('grounding the model', () => {
     expect(context).toContain('3808')
     expect(context).toContain('chaos')
     expect(context).toContain('109859')
-    expect(context).toContain('Ice Shot')
+    expect(context).toContain('Storm Wave')
     expect(context).toContain('13569')
   })
 
@@ -72,7 +71,7 @@ describe('grounding the model', () => {
   it('grounds a Path of Building import in its own narrower facts', async () => {
     const pob = await analyzeFromPob(model.pathOfBuildingExport!)
     const pobContext = buildPobChatContext(pob)
-    expect(pobContext).toContain('3808')
+    expect(pobContext).toContain('5004')
     expect(pobContext).toContain('THIS SOURCE CANNOT ANSWER')
     // The gaps must travel with the context, or the model will paper over them.
     expect(pobContext).toContain('Per-skill damage')
