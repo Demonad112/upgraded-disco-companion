@@ -22,7 +22,7 @@ const tiers = new ModTiers(
 )
 const payload = mainWithYykiuyDefence()
 {
-  // Two lines the code gives as text only, stated as the ids poe.ninja gave them (see PB-8 in REMAINING-WORK):
+  // Two lines the code gives as text only, stated as the ids poe.ninja gave them (see PB-12 in REMAINING-WORK):
   // the amulet's "+1 Prefix / -1 Suffix Modifier allowed" implicit, and the Martial Artist gloves' transformed lines.
   const mods = (slot: number) => (payload.charModel.items as { itemSlot: number; itemData: { mods: Record<string, unknown[]> } }[]).find((i) => i.itemSlot === slot)!.itemData.mods
   mods(4).implicit = [

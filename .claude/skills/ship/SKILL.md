@@ -1,14 +1,15 @@
 ---
 name: ship
-description: Run the batch gate in a fixed order, open the PR from the template, mark ready, watch CI. Use when a batch's code is done.
+description: Run the gate once for the changed areas, open the PR from the template, mark ready, book one check-in. Use when a batch's code is done.
 ---
 Follow docs/SESSION-PROTOCOL.md; this only fixes the order.
 
-1. If `packages/core/src` or `apps/web/src` changed: `npm run build -w @poe2/web && node scripts/route-weight.mjs`
-   FIRST. If a route is over, apply the CLAUDE.md "Route over budget" rule before anything else.
-2. `npm run check:all`, then `npm run test:coverage -w @poe2/core` (90/75 floors), then `npm run pob2:oracle -- --check`
-   if `packages/core/src/pob/` or `packages/core/test/pob2/` changed.
-3. Goldens changed? Review the diff, `npx vitest run -u` in packages/core, and give the cause in the commit.
-4. Commit and push to the session branch. Open a draft PR following `.github/pull_request_template.md`
-   (preview URL first, one line per gate command, worktrees/stashes/branches listed).
-5. Once the gate passes: mark ready, `subscribe_pr_activity`, and `send_later` 15 min to confirm required checks.
+1. `git fetch origin` and merge `origin/main` into the branch.
+2. `npm run gate` (`scripts/gate.mjs`): runs once, only the checks the changed paths need, one PASS/FAIL line each.
+   Use `run_in_background`. Never re-run a command it already passed; after a fix, re-run only the failed command.
+   Don't run `check:all`, `typecheck`, `test` or `build` by hand on top of it. `npm run gate -- --dry` shows the plan.
+3. Goldens changed? Review the diff once, `npx vitest run -u` in packages/core, give the cause in the commit.
+   Route over budget: apply the CLAUDE.md "Route over budget" rule.
+4. Commit and push once. Open the PR following `.github/pull_request_template.md`.
+5. Mark ready and `send_later` 15 min to confirm required checks. Don't call `subscribe_pr_activity`; fix a red check
+   only when that check-in finds it.
