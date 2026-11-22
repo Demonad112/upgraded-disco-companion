@@ -10,9 +10,9 @@ import { fileURLToPath } from 'node:url'
 import { unwrapCharModel } from '../src/analyze.js'
 import { recommend } from '../src/recommend/index.js'
 import type { CharModel } from '../src/model/types.js'
-import { mainWithReferenceDefence } from './helpers/main-build.js'
+import { mainForRecommend } from './helpers/main-build.js'
 
-const model = unwrapCharModel(mainWithReferenceDefence())
+const model = unwrapCharModel(mainForRecommend())
 
 describe('significance is derived and bounded', () => {
   const report = recommend(model)

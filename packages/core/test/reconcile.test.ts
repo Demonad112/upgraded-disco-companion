@@ -77,9 +77,11 @@ describe('banner wording', () => {
 })
 
 describe('DPS pairing', () => {
-  const fixture = unwrapCharModel(
-    mainWithReferenceDefence(),
-  )
+  // The main build has one skill with a DPS block, so a second hit skill is added inline: the pairing under test
+  // needs a skill that is not the top one.
+  const fixture = unwrapCharModel(mainWithReferenceDefence())
+  const first = (fixture.skills as { dps: { name: string; dps: number }[] }[])[0]!
+  ;(fixture.skills as unknown[]).push({ ...structuredClone(first), dps: [{ ...structuredClone(first.dps[0]!), name: 'Falling Thunder', dps: 54_000 }] })
   const skills = analyzeDps(fixture).hitSkills
   const primary = skills[0]!
   const other = skills.find((s) => s.name !== primary.name && s.dps > 0)!

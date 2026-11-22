@@ -161,3 +161,21 @@ export function addBreakdownMod(
     stat.mods.push([1, value, idx])
   }
 }
+
+/**
+ * `mainWithReferenceDefence()` plus the poe.ninja-only inputs the recommendation rules read, stated inline: a passive
+ * count with no anoint, the weapon at item level 76 (the others sit at 79 to 83), 16 passives allocated to the idle
+ * weapon set 2, and one unmapped breakdown stat id.
+ */
+export function mainForRecommend(): { type: string; charModel: CharModel } {
+  const p = mainWithReferenceDefence()
+  const m = p.charModel as CharModel & Record<string, unknown>
+  m.passiveCounts = { passives: 123, anoints: 0, ascendancy: 8, bonusPassives: 0 }
+  const weapon = (m.items as NinjaItem[]).find((i) => i.itemSlot === 7)!
+  weapon.itemData.ilvl = 76
+  m.useSecondWeaponSet = false
+  m.passiveSelectionSet1 = []
+  m.passiveSelectionSet2 = Array.from({ length: 16 }, (_, i) => 90_000 + i)
+  m.breakdowns = { sources: [[0]], stats: { '99': { base: 0, inc: 0, more: 1, total: 0, basePercent: false, mods: [] } } }
+  return p
+}

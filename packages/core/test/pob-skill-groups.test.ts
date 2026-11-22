@@ -5,7 +5,7 @@ import { analyzeCharacter, unwrapCharModel } from '../src/analyze.js'
 import { decodePobExport } from '../src/pob/export.js'
 import { inactiveSetFromPob, pobSkillsInWeaponSet, readPobSkillGroups } from '../src/pob/skill-groups.js'
 import { inactiveSetReport } from '../src/model/slots.js'
-import { mainWithReferenceDefence } from './helpers/main-build.js'
+import { mainPayload } from './helpers/main-build.js'
 
 const gem = (name: string, id = 'Skill') => `<Gem skillId="${id}" nameSpec="${name}" enabled="true"/>`
 const xml = (groups: string, items = '') => `
@@ -66,18 +66,19 @@ describe('inactiveSetFromPob', () => {
 })
 
 describe('on the recorded export', () => {
-  const raw = mainWithReferenceDefence()
+  const raw = mainPayload()
   it('reads every skill group and ties none to a weapon set it does not state', async () => {
     const groups = readPobSkillGroups(await decodePobExport(unwrapCharModel(raw).pathOfBuildingExport!))
-    expect(groups).toHaveLength(12)
-    expect(groups.map((g) => g.skills).flat()).toContain('Ice Shot')
-    expect(groups.every((g) => g.weaponSet === null)).toBe(true)
-    expect(groups.find((g) => g.source === 'tree')?.sourceRaw).toBe('Tree:5817')
+    expect(groups).toHaveLength(18)
+    expect(groups.map((g) => g.skills).flat()).toContain('Storm Wave')
+    // Only the group the code ties to Daevata's Wind (set 2) states a weapon set; every other group stays null.
+    expect(groups.filter((g) => g.weaponSet !== null).map((g) => [g.weaponSet, g.skills])).toEqual([[2, ['Spear Throw']]])
+    expect(groups.find((g) => g.source === 'tree')?.sourceRaw).toBe('Tree:19370')
   })
 
-  it('surfaces the groups and keeps the inactive set unknown with the new reason', async () => {
+  it('surfaces the groups and lists the inactive set\'s skill because the code states its weapon set', async () => {
     const a = await analyzeCharacter(raw)
-    expect(a.pobSkillGroups).toHaveLength(12)
-    expect(a.inactiveSet.skills.status).toBe('unknown')
+    expect(a.pobSkillGroups).toHaveLength(18)
+    expect(a.inactiveSet.skills.status).toBe('known')
   })
 })
