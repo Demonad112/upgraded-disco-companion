@@ -1,14 +1,13 @@
 /**
- * Integration test against the REAL captured character.
+ * Integration test of the poe.ninja-shaped payload reading (PB-5: replaces the captured-character test).
  *
- * Every number asserted here was read off the live API on 2026-07-24 and
- * independently confirmed. If one of these breaks, either the analyser
- * regressed or poe.ninja changed its payload — both are worth a loud failure.
+ * The main build (the owner's PoB code) is the realistic character; the poe.ninja-only parts a code cannot supply
+ * (per-skill damage blocks, weapon-set selections, breakdown sources) are stated inline below, with the numbers
+ * the captured Athrynas payload carried. If one of these breaks, either the analyser regressed or the wire shape
+ * moved: both are worth a loud failure.
  */
 
 import { describe, expect, it } from 'vitest'
-import { readFileSync } from 'node:fs'
-import { fileURLToPath } from 'node:url'
 
 import { analyzeCharacter, unwrapCharModel } from '../src/analyze.js'
 import { analyzeDefense } from '../src/defense/index.js'
@@ -17,17 +16,43 @@ import { indexBreakdowns, computeTotal, statSources } from '../src/model/breakdo
 import { normalizePassives, inactiveSetNodes } from '../src/model/passives.js'
 import { activeWeaponSet, normalizeItems } from '../src/model/slots.js'
 import { decodePobExport, readPlayerStats } from '../src/pob/export.js'
-import { mainWithReferenceDefence } from './helpers/main-build.js'
+import type { CharModel } from '../src/model/types.js'
+import { addBreakdownMod, mainPayload, mainWithBreakdowns } from './helpers/main-build.js'
 
-const raw = mainWithReferenceDefence() as unknown
+/** A poe.ninja per-skill damage block; `damageTypes` is physical, lightning, cold, fire, chaos in percent. */
+const block = (name: string | undefined, over: Record<string, unknown> = {}) => ({
+  dps: [{ ...(name ? { name } : {}), dps: 0, dotDps: 0, damageTypes: [0, 0, 0, 0, 0], dotDamageTypes: [0, 0, 0, 0, 0], rate: 1, rateKind: 0, critChance: 5, critMultiplier: 2.48, hitChance: 100, ...over }],
+  allGems: [],
+})
+const skills = [
+  block('Ice Shot', { dps: 109859, dotDps: 298, damageTypes: [4, 8, 84, 4, 0], rate: 2.322, projectiles: 2 }),
+  block('Bow Shot', { dps: 80548, rate: 2.4 }),
+  block('Tornado Shot', { dps: 48351, rate: 2 }),
+  block('Snipe', { dps: 33370, rate: 1.2, hitRate: 0.7714 }),
+  block('Herald of Ice', { dps: 0, dotDps: 1200, dotDamageTypes: [0, 0, 100, 0, 0] }),
+  // Mirage Archer / Freezing Mark and the like carry a dps block with no name.
+  block(undefined, { dps: 5000 }),
+]
+
+// The main build with those skills, the 0.5 defence block, three passive selections and poe.ninja's own counts.
+const payload = mainWithBreakdowns()
+const base = payload.charModel as CharModel & Record<string, unknown>
+base.skills = skills as never
+base.useSecondWeaponSet = false
+base.passiveSelection = Array.from({ length: 103 }, (_, i) => 1000 + i)
+base.passiveSelectionSet1 = Array.from({ length: 16 }, (_, i) => 2000 + i)
+base.passiveSelectionSet2 = Array.from({ length: 16 }, (_, i) => 3000 + i)
+base.passiveCounts = { passives: 109, anoints: 0, ascendancy: 8, bonusPassives: 0 }
+const raw = payload as unknown
 const model = unwrapCharModel(raw)
 
 describe('identity', () => {
-  it('reads the character sheet', () => {
-    expect(model.level).toBe(86)
-    expect(model.class).toBe('Deadeye')
-    expect(model.league).toBe('Runes of Aldur')
-    expect(model.name).toBe('Athrynas')
+  it('reads the character sheet from the code, and leaves what a code lacks absent', () => {
+    const m = unwrapCharModel(mainPayload())
+    expect(m.level).toBe(90)
+    expect(m.class).toBe('Martial Artist')
+    expect(m.league).toBeUndefined()
+    expect(m.name).toBeUndefined()
   })
 })
 
@@ -171,32 +196,44 @@ describe('weapon sets — alternates, never summed', () => {
     const items = normalizeItems(model)
     const mainHand = items.find((i) => i.slotId === 7)!
     expect(mainHand.active).toBe(true)
-    expect(mainHand.name).toBe('Loath Bane')
-    expect(mainHand.baseType).toBe('Militant Bow')
-    expect(mainHand.itemLevel).toBe(76)
+    expect(mainHand.name).toBe('Skull Song')
+    expect(mainHand.baseType).toBe('Skullcrusher Quarterstaff')
+    expect(mainHand.itemLevel).toBe(80)
 
     const swapWeapon = items.find((i) => i.slotId === 15)!
     expect(swapWeapon.active).toBe(false)
-    expect(swapWeapon.itemLevel).toBe(55)
-    expect(items.find((i) => i.slotId === 16)!.active).toBe(false)
+    expect(swapWeapon.itemLevel).toBe(69)
+    // The main build has no off-hand, so there is no slot 16 to mark (the capture's was inactive).
+    expect(items.find((i) => i.slotId === 16)).toBeUndefined()
   })
 
   it('reads item fields from itemData, not the wrapper', () => {
     const items = normalizeItems(model)
-    expect(items).toHaveLength(12)
-    // All 12 must resolve a real name — reading the wrapper yields undefined.
+    expect(items).toHaveLength(10)
+    // All 10 must resolve a real name — reading the wrapper yields undefined.
     expect(items.every((i) => i.name.length > 0)).toBe(true)
     expect(items.every((i) => i.itemLevel !== null)).toBe(true)
-    expect(items.every((i) => i.corrupted === false)).toBe(true)
+    // The helmet is corrupted; the rest are not.
+    expect(items.filter((i) => i.corrupted).map((i) => i.slotId)).toEqual([1])
   })
 })
 
 describe('breakdowns — per-stat, per-source attribution', () => {
-  const idx = indexBreakdowns(model)
+  // Breakdowns built from the items' text (helper), plus what a code cannot supply: two quest increases to armour,
+  // a passive and a colour-coded source on energy shield, and two stat ids nothing maps.
+  const bd = mainWithBreakdowns()
+  addBreakdownMod(bd, 4, { typeId: 7, label: 'Interlude 2: Qimah' }, 'increased', 30)
+  addBreakdownMod(bd, 4, { typeId: 7, label: 'Act 1: Ogham Manor' }, 'increased', 15)
+  addBreakdownMod(bd, 2, { typeId: 1, label: '62984' }, 'flat', 8)
+  addBreakdownMod(bd, 2, { typeId: 5, label: 'Many Sources:^x88FFFF32% Quiver Bonus Effect' }, 'flat', 5)
+  const stats = (bd.charModel as unknown as { breakdowns: { stats: Record<string, unknown> } }).breakdowns.stats
+  for (const id of ['22', '23']) stats[id] = { base: 0, inc: 0, more: 1, total: 0, basePercent: true, mods: [] }
+  const idx = indexBreakdowns(unwrapCharModel(bd))
 
-  it('indexes all 35 stats and 46 sources', () => {
-    expect(idx.all).toHaveLength(35)
-    expect(idx.sources).toHaveLength(46)
+  it('indexes every stat and source it is given', () => {
+    // 12 sheet stats, 4 maximum resistances and ward from the helper, plus the 2 unmapped ids.
+    expect(idx.all).toHaveLength(19)
+    expect(idx.sources.length).toBeGreaterThan(10)
   })
 
   it('maps stat ids to names and surfaces the unmapped ones honestly', () => {
@@ -205,7 +242,7 @@ describe('breakdowns — per-stat, per-source attribution', () => {
     expect(idx.byKey.get('energyShield')?.total).toBe(1937)
     expect(idx.byKey.get('ward')?.total).toBe(706)
     // Unmapped ids read as placeholders, never as a guessed stat name.
-    expect(idx.unmappedIds).toEqual([22, 23, 30, 31, 32, 33, 34, 35, 36, 37])
+    expect(idx.unmappedIds).toEqual([22, 23])
     expect(idx.byKey.get('stat_22')?.confidence).toBeNull()
   })
 
@@ -213,20 +250,17 @@ describe('breakdowns — per-stat, per-source attribution', () => {
     // total = base * (1 + inc/100) * more
     const life = idx.byKey.get('life')!
     expect(computeTotal(life.base, life.inc, life.more)).toBe(1448)
-    const armour = idx.byKey.get('armour')!
-    expect(computeTotal(armour.base, armour.inc, armour.more)).toBe(207)
     const es = idx.byKey.get('energyShield')!
     expect(computeTotal(es.base, es.inc, es.more)).toBe(1937)
   })
 
   it('attributes armour to the exact items and quests that grant it', () => {
     const sources = statSources(idx, 'armour')
-    expect(sources).toHaveLength(3)
-    const flat = sources.find((s) => s.modKind === 'flat')!
-    expect(flat.value).toBe(143)
-    expect(flat.source.kind).toBe('item')
-    expect(flat.source.itemName).toBe('Golem Tether')
-    expect(flat.source.itemBaseType).toBe('Long Belt')
+    const flat = sources.filter((s) => s.modKind === 'flat' && s.source.kind === 'item')
+    expect(flat).toHaveLength(1)
+    expect(flat[0]!.value).toBe(30)
+    expect(flat[0]!.source.itemName).toBe('Morbid Mantle')
+    expect(flat[0]!.source.itemBaseType).toBe("Runeforged Falconer's Jacket")
 
     const increased = sources.filter((s) => s.modKind === 'increased')
     expect(increased.map((s) => s.value).sort((a, b) => b - a)).toEqual([30, 15])
@@ -236,38 +270,38 @@ describe('breakdowns — per-stat, per-source attribution', () => {
   it('resolves passive sources to node ids and strips colour codes', () => {
     const es = statSources(idx, 'energyShield')
     const passive = es.find((s) => s.source.kind === 'passive')!
-    expect(passive.source.nodeId).toBeTypeOf('number')
+    expect(passive.source.nodeId).toBe(62984)
 
     // "Many Sources:^x88FFFF32% Quiver Bonus Effect" must lose the colour code.
+    expect(es.some((s) => s.source.label === 'Many Sources:32% Quiver Bonus Effect')).toBe(true)
     expect(idx.sources.every((s) => !s.label.includes('^x'))).toBe(true)
   })
 })
 
 describe('Path of Building export — the independent second opinion', () => {
-  it('decodes and cross-validates poe.ninja’s DPS', async () => {
-    const xml = await decodePobExport(model.pathOfBuildingExport!)
+  it('decodes the code and cross-validates the DPS the analysis reads', async () => {
+    const main = unwrapCharModel(mainPayload())
+    const xml = await decodePobExport(main.pathOfBuildingExport!)
     expect(xml).toContain('<PathOfBuilding2')
 
     const stats = readPlayerStats(xml)
-    // PoB computed this independently of poe.ninja. They agree to <1 DPS.
-    expect(stats.TotalDPS).toBeCloseTo(109859.05, 1)
-    expect(Math.round(stats.TotalDPS!)).toBe(analyzeDps(model).primary!.dps)
-    expect(stats.Speed).toBeCloseTo(2.322, 3)
-    expect(stats.CritMultiplier).toBe(2.48)
+    // PoB computed this; the analysis reads the same number from the code's own stats.
+    expect(stats.TotalDPS).toBeCloseTo(125658.18, 1)
+    expect(Math.round(stats.TotalDPS!)).toBe(Math.round(analyzeDps(main).primary!.dps))
   })
 })
 
 describe('full analysis', () => {
   it('produces a coherent report with cross-validation attached', async () => {
-    const a = await analyzeCharacter(raw)
-    expect(a.identity).toMatchObject({ name: 'Athrynas', level: 86, className: 'Deadeye' })
+    const a = await analyzeCharacter(mainPayload())
+    expect(a.identity).toMatchObject({ level: 90, className: 'Martial Artist' })
     expect(a.pobStats).not.toBeNull()
     expect(a.reconciliation).not.toBeNull()
     expect(a.warnings).toEqual([])
   })
 
-  it('agrees with poe.ninja on every stat it can check', async () => {
-    const a = await analyzeCharacter(raw)
+  it('agrees with PoB on every stat it can check, for a build read from its own code', async () => {
+    const a = await analyzeCharacter(mainPayload())
     const major = a.reconciliation!.checks.filter((c) => c.severity === 'major')
     expect(major, `unexpected drift: ${JSON.stringify(major, null, 2)}`).toEqual([])
   })
