@@ -141,6 +141,6 @@ test('R45 (emulated): an Android share of a poe.ninja link imports the character
   // The manifest's share_target sends title/text/url as GET params to ./character/; Android often puts the link in text.
   const manifest = await (await request.get('manifest.webmanifest')).json()
   expect(manifest.share_target).toMatchObject({ action: './character/', method: 'GET', params: { text: 'text', url: 'url' } })
-  await page.goto(`character/?title=Athrynas&text=${encodeURIComponent(`Look at this build ${PROFILE_URL}`)}`)
+  await page.goto(`character/?title=Main&text=${encodeURIComponent(`Look at this build ${PROFILE_URL}`)}`)
   await expect(page.locator('[data-showcase] section').first()).toBeVisible({ timeout: 30_000 })
 })

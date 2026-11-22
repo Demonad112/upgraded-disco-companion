@@ -1,17 +1,14 @@
-import { readFileSync } from 'node:fs'
-import { resolve } from 'node:path'
 import type { Page } from '@playwright/test'
+import { mainPayload } from './main-payload'
 import { PROFILE_URL, expect, openTab, test } from './fixtures'
 
 /**
  * Unique/corrupted mods have no craftable ladder; their text comes from mod-display.json,
- * fetched only when a character has one. The captured fixture has none, so one jewel mod is swapped for a unique's.
+ * fetched only when a character has one. The main build has none, so one jewel's mods are replaced by a unique's.
  */
-const fixture = JSON.parse(readFileSync(resolve('../../packages/core/test/fixtures/athrynas-v43.json'), 'utf8'))
-const jewelMods = Object.values(fixture.charModel.jewels[0].itemData.mods).find((l) => Array.isArray(l) && l.length) as {
-  id: string
-}[]
-jewelMods[0]!.id = 'UniqueCharmIgniteEnemiesInPresence1'
+const fixture = structuredClone(mainPayload) as { charModel: { jewels: { itemData: { mods?: Record<string, unknown> } }[] } }
+// A code gives the jewel's lines as text only, so its mods are stated as the poe.ninja id the page must render.
+fixture.charModel.jewels[0]!.itemData.mods = { explicit: [{ id: 'UniqueCharmIgniteEnemiesInPresence1', stats: {} }] }
 const body = JSON.stringify(fixture)
 
 const TEXT = /Creates Ignited Ground for 4 seconds/
@@ -32,7 +29,7 @@ async function importCharacter(page: Page) {
   await page.getByRole('button', { name: 'Analyse', exact: true }).click()
   // The name heading is on Overview; a second import keeps the tab from the URL hash.
   await openTab(page, 'overview')
-  await expect(page.getByRole('heading', { name: /Athrynas/ }).first()).toBeVisible({ timeout: 30_000 })
+  await expect(page.getByRole('heading', { name: /Main/ }).first()).toBeVisible({ timeout: 30_000 })
   // The mod text is fetched when a tab that shows it (Gear, Damage, Advanced) opens, not on import.
   await openTab(page, 'advanced')
   // The tab body is a lazy chunk: wait for it, or the details below mount after they are opened.

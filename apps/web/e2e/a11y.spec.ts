@@ -21,7 +21,7 @@ for (const [name, path] of pages) {
   test(`${name} has no serious or critical accessibility violations`, async ({ page }) => {
     await page.goto(path)
     if (name === 'character') {
-      await expect(page.getByRole('heading', { name: /Athrynas/ }).first()).toBeVisible({ timeout: 30_000 })
+      await expect(page.getByRole('heading', { name: /Main/ }).first()).toBeVisible({ timeout: 30_000 })
     }
     // The wraith loads after idle; scan it too.
     await page.getByRole('button', { name: /^Companion/ }).waitFor()
@@ -38,7 +38,7 @@ for (const id of Object.keys(CHARACTER_TABS) as CharacterTabId[]) {
   if (id === 'overview') continue
   test(`character ${id} tab has no serious or critical accessibility violations`, async ({ page }) => {
     await page.goto(`character/?import=${encodeURIComponent(PROFILE_URL)}`)
-    await expect(page.getByRole('heading', { name: /Athrynas/ }).first()).toBeVisible({ timeout: 30_000 })
+    await expect(page.getByRole('heading', { name: /Main/ }).first()).toBeVisible({ timeout: 30_000 })
     await openTab(page, id)
     const results = await new AxeBuilder({ page }).include(`#panel-${id}`).withTags(['wcag2a', 'wcag2aa']).analyze()
     const blocking = results.violations.filter((v) => (v.impact === 'serious' || v.impact === 'critical') && !KNOWN.has(v.id))
@@ -57,7 +57,7 @@ for (const [name, path] of pages) {
   test(`${name} has one banner landmark, no stray content and no skipped headings`, async ({ page }) => {
     await page.goto(path)
     if (name === 'character') {
-      await expect(page.getByRole('heading', { name: /Athrynas/ }).first()).toBeVisible({ timeout: 30_000 })
+      await expect(page.getByRole('heading', { name: /Main/ }).first()).toBeVisible({ timeout: 30_000 })
     }
     await expect(page.locator('header.site-header')).toHaveCount(1)
     const results = await new AxeBuilder({ page }).withRules(LANDMARK_RULES).analyze()

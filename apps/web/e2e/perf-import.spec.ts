@@ -15,7 +15,7 @@ test('import to build card stays under the budget on a throttled phone', async (
   await cdp.send('Emulation.setCPUThrottlingRate', { rate: 4 })
 
   await page.goto(`character/?import=${encodeURIComponent(PROFILE_URL)}`)
-  await page.getByRole('heading', { name: /Athrynas/ }).first().waitFor({ timeout: 30_000 })
+  await page.getByRole('heading', { name: /Main/ }).first().waitFor({ timeout: 30_000 })
   const ms = await page.evaluate(() => Math.round(performance.now()))
   info.annotations.push({ type: 'import-to-card', description: `${ms} ms` })
   expect(ms, `import to card ${ms} ms`).toBeLessThan(LIMIT_MS)

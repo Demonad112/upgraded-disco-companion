@@ -1,5 +1,4 @@
-import { readFileSync } from 'node:fs'
-import { resolve } from 'node:path'
+import { mainCode } from './main-payload'
 import { expect, openList, test } from './fixtures'
 
 test('an Atlas "Map" button focuses that node on the tree', async ({ page }) => {
@@ -58,8 +57,7 @@ test('"Hide completed" hides a ticked step, and reset clears progress', async ({
 })
 
 test('a Path of Building code gets the full analysis, with what a code lacks named', async ({ page }) => {
-  const payload = JSON.parse(readFileSync(resolve('../../packages/core/test/fixtures/athrynas-v43.json'), 'utf8'))
-  const code: string = (payload.charModel ?? payload).pathOfBuildingExport
+  const code = mainCode
   await page.goto('character/')
   // Paste is the default tab while poe.ninja blocks URL imports (NP1-1).
   await expect(page.getByRole('tab', { name: 'Paste data' })).toHaveAttribute('aria-selected', 'true')
@@ -67,7 +65,7 @@ test('a Path of Building code gets the full analysis, with what a code lacks nam
   await page.getByRole('button', { name: 'Analyse pasted data' }).click()
   // NP1-6: the same build card, grade and Top 3 as a poe.ninja import, labelled with its source.
   await expect(page.getByRole('heading', { name: 'Path of Building build' })).toBeVisible({ timeout: 30_000 })
-  await expect(page.locator('.bc-top')).toContainText('Deadeye · From a Path of Building code')
+  await expect(page.locator('.bc-top')).toContainText('Martial Artist · From a Path of Building code')
   await expect(page.locator('[data-top-fixes]:not([data-pending]) li').first()).toBeVisible({ timeout: 30_000 })
   const gaps = page.getByTestId('couldnt-check')
   await expect(gaps).toContainText('Per-skill damage')

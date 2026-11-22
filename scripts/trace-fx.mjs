@@ -7,6 +7,7 @@
 //   10 s idle on /character/ (results showing), 4 tab switches, 1 re-import.
 // Reports: busy % per compositor thread per step (Raster = RasterTask time over all workers), raster ms per layer with the owning element, and commits per tab
 // switch (cc commits on the main thread, and React commits through a minimal DevTools hook).
+import { mainPayloadJson } from './lib/main-payload.mjs'
 import { chromium } from 'playwright'
 import { createServer } from 'node:http'
 import { existsSync, readFileSync, statSync, writeFileSync } from 'node:fs'
@@ -42,8 +43,8 @@ const server = createServer((req, res) => {
 await new Promise((r) => server.listen(0, r))
 const base = `http://localhost:${server.address().port}/`
 
-const fixture = readFileSync('packages/core/test/fixtures/athrynas-v43.json')
-const PROFILE = 'https://poe.ninja/poe2/profile/Demonad112-2589/runesofaldur/character/Athrynas'
+const fixture = await mainPayloadJson()
+const PROFILE = 'https://poe.ninja/poe2/profile/Demonad112-2589/runesofaldur/character/Main'
 const TABS = ['Defence', 'Damage', 'Gear', 'Overview']
 const CATEGORIES = ['cc', 'viz', 'toplevel', 'devtools.timeline', 'disabled-by-default-devtools.timeline', 'disabled-by-default-cc.debug']
 
