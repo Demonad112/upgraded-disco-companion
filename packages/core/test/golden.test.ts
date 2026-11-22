@@ -1,9 +1,9 @@
 /**
  * Golden outputs.
  *
- * One RECORDED character (athrynas-v43) plus four DERIVED variants made by
- * applying a small patch to it. Derived variants are not captures of real
- * characters; they exist to pin the engine's behaviour on partial and unusual
+ * One BASE scenario (the main build with the reference defence block, see
+ * helpers/main-build.ts) plus four DERIVED variants made by applying a small patch
+ * to it. Derived variants are not captures of real characters; they exist to pin the engine's behaviour on partial and unusual
  * payloads. See golden/README.md.
  *
  * Expected outputs live in golden/*.expected.json. A change to the engine or
@@ -45,7 +45,7 @@ function applyPatch(base: Record<string, unknown>, ops: Op[]): Record<string, un
 }
 
 const VARIANTS: { name: string; patch: string | null }[] = [
-  { name: 'recorded-athrynas-v43', patch: null },
+  { name: 'main-reference-defence', patch: null },
   { name: 'no-pob-export', patch: 'no-pob-export' },
   { name: 'sparse-defence', patch: 'sparse-defence' },
   { name: 'second-weapon-set', patch: 'second-weapon-set' },
@@ -114,14 +114,14 @@ describe('golden outputs', () => {
     })
   }
 
-  // NP1-6: the recorded character's own Path of Building code, converted and run through the same analysis.
-  it('pob-code-athrynas-v43', async () => {
+  // NP1-6: the main build's own Path of Building code, converted and run through the same analysis, without the oracle.
+  it('pob-code-main-no-oracle', async () => {
     const code = (recorded as { charModel?: { pathOfBuildingExport?: string } }).charModel?.pathOfBuildingExport
       ?? (recorded as { pathOfBuildingExport?: string }).pathOfBuildingExport
     const model = (await pobToCharModel(code!)) as unknown as Record<string, unknown>
     // Leave out the cache key (a SHA-256 the secrets scan reads as an API key); the variants test covers key changes.
     const { cacheKey: _key, ...out } = await view(model, { source: 'pob-export' })
-    await expect(`${JSON.stringify(out, null, 2)}\n`).toMatchFileSnapshot('./golden/pob-code-athrynas-v43.expected.json')
+    await expect(`${JSON.stringify(out, null, 2)}\n`).toMatchFileSnapshot('./golden/pob-code-main-no-oracle.expected.json')
   })
 
   // PB-3: the owner's main build (current league), with PoB's recomputed export from the headless oracle, so a
@@ -135,7 +135,7 @@ describe('golden outputs', () => {
     await expect(`${JSON.stringify(out, null, 2)}\n`).toMatchFileSnapshot('./golden/pob-code-main.expected.json')
   })
 
-  it('derived variants really differ from the recorded character', async () => {
+  it('derived variants really differ from the base scenario', async () => {
     const keys = new Set<string>()
     for (const v of VARIANTS) {
       const doc = v.patch

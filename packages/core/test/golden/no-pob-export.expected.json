@@ -1,11 +1,11 @@
 {
   "identity": {
-    "name": "Athrynas",
-    "account": "Demonad112#2589",
-    "league": "Runes of Aldur",
-    "level": 86,
-    "className": "Deadeye",
-    "updatedUtc": "2026-07-22T11:08:39.916111Z"
+    "name": "",
+    "account": "",
+    "league": "",
+    "level": 90,
+    "className": "Martial Artist",
+    "updatedUtc": null
   },
   "defence": {
     "lowestMaximumHit": 3808,
@@ -49,15 +49,14 @@
     3,
     4,
     5,
-    6,
     7,
     8,
     9,
     11
   ],
   "primarySkill": {
-    "name": "Ice Shot",
-    "totalDps": 110157
+    "name": "Storm Wave",
+    "totalDps": 109867.25202098387
   },
   "assessment": {
     "score": null,
@@ -81,13 +80,12 @@
   "recommendations": [
     "res-chaos-under-cap",
     "res-cold-under-cap",
-    "weapon-ilvl-lag",
-    "anoint-unused",
-    "one-shot-chaos"
+    "one-shot-chaos",
+    "armour-negligible"
   ],
   "pobConfigInputCount": null,
   "warnings": [],
-  "importHash": "1bb7b780419aa0a3",
+  "importHash": "5056874ca23e924c",
   "holdingUp": {
     "resistances": [
       {
@@ -129,213 +127,16 @@
     ],
     "items": [
       {
-        "slot": 1,
-        "holds": [
-          {
-            "stat": "energyShield",
-            "loss": 819,
-            "dropsBelowCap": false,
-            "minToKeep": null
-          },
-          {
-            "stat": "ward",
-            "loss": 213,
-            "dropsBelowCap": false,
-            "minToKeep": null
-          },
-          {
-            "stat": "life",
-            "loss": 48,
-            "dropsBelowCap": false,
-            "minToKeep": null
-          },
-          {
-            "stat": "coldResistance",
-            "loss": 35,
-            "dropsBelowCap": false,
-            "minToKeep": 35
-          },
-          {
-            "stat": "lightningResistance",
-            "loss": 30,
-            "dropsBelowCap": true,
-            "minToKeep": 30
-          },
-          {
-            "stat": "fireResistance",
-            "loss": 16,
-            "dropsBelowCap": true,
-            "minToKeep": 16
-          }
-        ],
-        "anoint": []
-      },
-      {
-        "slot": 2,
-        "holds": [
-          {
-            "stat": "evasionRating",
-            "loss": 328,
-            "dropsBelowCap": false,
-            "minToKeep": null
-          },
-          {
-            "stat": "ward",
-            "loss": 209,
-            "dropsBelowCap": false,
-            "minToKeep": null
-          }
-        ],
-        "anoint": []
-      },
-      {
-        "slot": 3,
-        "holds": [
-          {
-            "stat": "evasionRating",
-            "loss": 3984,
-            "dropsBelowCap": false,
-            "minToKeep": null
-          },
-          {
-            "stat": "energyShield",
-            "loss": 758,
-            "dropsBelowCap": false,
-            "minToKeep": null
-          },
-          {
-            "stat": "ward",
-            "loss": 212,
-            "dropsBelowCap": false,
-            "minToKeep": null
-          },
-          {
-            "stat": "coldResistance",
-            "loss": 44,
-            "dropsBelowCap": false,
-            "minToKeep": 44
-          },
-          {
-            "stat": "fireResistance",
-            "loss": 20,
-            "dropsBelowCap": true,
-            "minToKeep": 20
-          }
-        ],
-        "anoint": []
-      },
-      {
         "slot": 4,
-        "holds": [
-          {
-            "stat": "evasionRating",
-            "loss": 766,
-            "dropsBelowCap": false,
-            "minToKeep": null
-          },
-          {
-            "stat": "energyShield",
-            "loss": 187,
-            "dropsBelowCap": false,
-            "minToKeep": null
-          },
-          {
-            "stat": "lightningResistance",
-            "loss": 27,
-            "dropsBelowCap": true,
-            "minToKeep": 27
-          }
-        ],
-        "anoint": []
-      },
-      {
-        "slot": 5,
-        "holds": [
-          {
-            "stat": "evasionRating",
-            "loss": 879,
-            "dropsBelowCap": false,
-            "minToKeep": null
-          },
-          {
-            "stat": "energyShield",
-            "loss": 171,
-            "dropsBelowCap": false,
-            "minToKeep": null
-          },
-          {
-            "stat": "ward",
-            "loss": 72,
-            "dropsBelowCap": false,
-            "minToKeep": null
-          }
-        ],
-        "anoint": []
-      },
-      {
-        "slot": 8,
-        "holds": [
-          {
-            "stat": "lightningResistance",
-            "loss": 27,
-            "dropsBelowCap": true,
-            "minToKeep": 27
-          },
-          {
-            "stat": "fireResistance",
-            "loss": 0,
-            "dropsBelowCap": false,
-            "minToKeep": 0
-          }
-        ],
-        "anoint": []
-      },
-      {
-        "slot": 9,
-        "holds": [
-          {
-            "stat": "lightningResistance",
-            "loss": 22,
-            "dropsBelowCap": true,
-            "minToKeep": 22
-          }
-        ],
-        "anoint": []
-      },
-      {
-        "slot": 11,
-        "holds": [
-          {
-            "stat": "armour",
-            "loss": 207,
-            "dropsBelowCap": false,
-            "minToKeep": null
-          },
-          {
-            "stat": "life",
-            "loss": 180,
-            "dropsBelowCap": false,
-            "minToKeep": null
-          },
-          {
-            "stat": "coldResistance",
-            "loss": 40,
-            "dropsBelowCap": false,
-            "minToKeep": 40
-          },
-          {
-            "stat": "fireResistance",
-            "loss": 14,
-            "dropsBelowCap": true,
-            "minToKeep": 14
-          }
-        ],
-        "anoint": []
+        "holds": [],
+        "anoint": [
+          "Allocates Overwhelming Strike"
+        ]
       }
     ],
     "spirit": null,
     "attributes": [],
     "movementSpeed": 144
   },
-  "cacheKey": "bf8c45db1e6ea2df6f60c8298acb052b7057b6231368cde21695caa28b69477f"
+  "cacheKey": "ec1608730afda34407442870bb0d7f45eb109567435234297f0104fbc8dd4032"
 }
