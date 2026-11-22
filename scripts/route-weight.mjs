@@ -9,7 +9,7 @@ const out = 'apps/web/out'
 const BUDGET = {
   'index.html': 160_000, // CMP2: +1,140 B br on every route (companion host shell and CSS)
   'checklist/index.html': 167_000,
-  'character/index.html': 214_000, // PB-3: 212,946 B br (PobSnapshot reader + XML tokenizer, static deps of analyzeCharacter's PoB path)
+  'character/index.html': 216_000, // PB-5: 215,565 B br. Growth is the feature: analyzeCharacter statically imports pob/items and gear/text-mods (leaf modules, no other new deps). Owner approved the raise (216,000) in the PB-5 prompt.
   'atlas/index.html': 179_000, // CMP2 (as index)
   'dashboard/index.html': 188_000,
   'trade/index.html': 162_000,
