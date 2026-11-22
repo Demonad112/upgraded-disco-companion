@@ -168,8 +168,8 @@ export function addBreakdownMod(
  * count with no anoint, the weapon at item level 76 (the others sit at 79 to 83), 16 passives allocated to the idle
  * weapon set 2, and one unmapped breakdown stat id.
  */
-export function mainForRecommend(): { type: string; charModel: CharModel } {
-  const p = mainWithReferenceDefence()
+export function mainForRecommend(withBreakdowns = false): { type: string; charModel: CharModel } {
+  const p = withBreakdowns ? mainWithBreakdowns() : mainWithReferenceDefence()
   const m = p.charModel as CharModel & Record<string, unknown>
   m.passiveCounts = { passives: 123, anoints: 0, ascendancy: 8, bonusPassives: 0 }
   const weapon = (m.items as NinjaItem[]).find((i) => i.itemSlot === 7)!
@@ -177,7 +177,10 @@ export function mainForRecommend(): { type: string; charModel: CharModel } {
   m.useSecondWeaponSet = false
   m.passiveSelectionSet1 = []
   m.passiveSelectionSet2 = Array.from({ length: 16 }, (_, i) => 90_000 + i)
-  m.breakdowns = { sources: [[0]], stats: { '99': { base: 0, inc: 0, more: 1, total: 0, basePercent: false, mods: [] } } }
+  const stub = { base: 0, inc: 0, more: 1, total: 0, basePercent: false, mods: [] as [number, number, number][] }
+  const bd = m.breakdowns as { sources: unknown[]; stats: Record<string, typeof stub> } | undefined
+  if (bd) bd.stats['99'] = stub
+  else m.breakdowns = { sources: [[0]], stats: { '99': stub } }
   return p
 }
 

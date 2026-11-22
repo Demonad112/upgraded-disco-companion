@@ -15,9 +15,10 @@ import { ModTiers, type ModTierData } from '../src/gear/tiers.js'
 import { mergeGearRecommendations, mergeSameLineSwaps } from '../src/recommend/gear.js'
 import { compareRecommendations } from '../src/recommend/rank.js'
 import type { Recommendation } from '../src/recommend/types.js'
-import { mainWithBreakdowns } from './helpers/main-build.js'
+import { mainForRecommend } from './helpers/main-build.js'
 
-const payload = mainWithBreakdowns()
+// The main build with breakdowns, plus the poe.ninja-only inputs the non-gear rules read (see the helper).
+const payload = mainForRecommend(true)
 const tiers = new ModTiers(
   JSON.parse(
     readFileSync(fileURLToPath(new URL('../../data/generated/mod-tiers.json', import.meta.url)), 'utf8'),
@@ -38,12 +39,13 @@ describe('enriching recommendations with gear data', () => {
 
   it('replaces the vague resistance finding with a specific one', () => {
     // "Source 57% chaos resistance from gear, a rune, or a passive" becomes a
-    // named item, a named affix, and a real roll range.
+    // named item, a named affix, and a real roll range. (The fire suffix it replaces is
+    // 24 points over cap, so Morbid Mantle's is the first line the swap can spend.)
     expect(ids(enriched)).not.toContain('res-chaos-under-cap')
     expect(ids(enriched)).toContain('gear-swap-chaos')
 
     const swap = enriched.recommendations.recommendations.find((r) => r.id === 'gear-swap-chaos')!
-    expect(swap.action).toContain('Hypnotic Halo')
+    expect(swap.action).toContain('Morbid Mantle')
     expect(swap.action).toMatch(/of Bameth/)
     expect(swap.action).toMatch(/24-27%/)
   })
@@ -144,11 +146,17 @@ describe('unused affix slots', () => {
     expect(openAffixes).toBeUndefined()
   })
 
-  it('counts crafted and desecrated affixes as occupying their slots', () => {
-    // The bug that produced the false finding: Loath Bane's three prefixes are
-    // one explicit, one crafted and one desecrated.
-    const bow = enriched.items.find((i) => i.name === 'Loath Bane')!
-    const analysed = analyzeItem(bow, tiers, enriched.defense)
+  it('counts crafted and desecrated affixes as occupying their slots', async () => {
+    // The bug that produced the false finding: an item's three prefixes may be one explicit, one crafted and one
+    // desecrated. The main build has no crafted or desecrated lines (a code does not say), so Viper Whorl's
+    // Lightning prefix is moved to `crafted` and its Cold prefix to `desecrated` inline.
+    const model = clone()
+    const mods = itemAt(model, 9).itemData.mods
+    mods.crafted = mods.explicit.splice(1, 1)
+    mods.desecrated = mods.explicit.splice(1, 1)
+    const analysis = await analyzeCharacter(model, { tiers })
+    const bow = analysis.items.find((i) => i.name === 'Viper Whorl')!
+    const analysed = analyzeItem(bow, tiers, analysis.defense)
     expect(analysed.affixCounts).toEqual({ prefix: 3, suffix: 3 })
     const sources = analysed.mods.filter((m) => m.kind === 'prefix').map((m) => m.source).sort()
     expect(sources).toEqual(['crafted', 'desecrated', 'explicit'])
@@ -164,8 +172,9 @@ describe('unused affix slots', () => {
     const rec = analysis.recommendations.recommendations.find((r) => r.id === 'gear-open-affixes')
     expect(rec).toBeDefined()
     expect(rec!.impact!.delta).toBe(1)
-    expect(rec!.detail).toContain('59 of a possible 60')
-    expect(rec!.action).toContain('Sorrow Twirl')
+    // Only Viper Whorl's modifiers can all be classified, so it is the one item counted (see the next describe).
+    expect(rec!.detail).toMatch(/5 of a possible 6/)
+    expect(rec!.action).toContain('Viper Whorl')
     expect(rec!.action).toContain('1 suffix unused')
   })
 
@@ -221,15 +230,17 @@ describe('when the affix data cannot classify a modifier', () => {
     const belt = itemAt(model, 9)
     belt.itemData.mods.explicit = belt.itemData.mods.explicit.slice(0, -1)
 
-    const helmet = itemAt(model, 1)
+    // Dire Span is full and classifiable (the helmet is corrupted, so it never counts) until this unknown id lands on it.
+    const helmet = itemAt(model, 5)
     helmet.itemData.mods.explicit.push({ id: 'NotARealModIdFromAnyPatch', stats: {} })
 
     const analysis = await analyzeCharacter(model, { tiers })
     const rec = analysis.recommendations.recommendations.find((r) => r.id === 'gear-open-affixes')!
     const notes = rec.evidence.map((e) => e.note).join(' ')
-    expect(notes).toContain('Hypnotic Halo')
+    expect(notes).toContain('Dire Span')
     expect(notes).toMatch(/cannot classify/)
-    expect(rec.detail).toContain('9 active items')
+    // The six items whose lines the affix data could not match from a code's text stay out as well.
+    expect(rec.detail).toMatch(/^1 active item /)
   })
 })
 
@@ -237,13 +248,14 @@ describe('cumulative constraint check on recraft findings', () => {
   const recs = enriched.recommendations.recommendations
   const swaps = recs.filter((r) => r.id.startsWith('gear-swap-'))
 
-  it('says when the recrafts together take a resistance below its cap', () => {
-    // Both swaps give up a fire suffix of roughly 40% from a character 24%
-    // over cap: each is below cap alone and far below together.
-    expect(swaps.length).toBeGreaterThanOrEqual(2)
+  it('says when the recraft takes a resistance below its cap', () => {
+    // Morbid Mantle's fire suffix is 31-35% from a character 24% over cap: below cap alone, and the counted swaps
+    // together take it from 99 to 39. (Several swaps on different items are pinned in
+    // gear-swap-overcap-spent-twice.test.ts: this scenario has one, since its cold gap is the same-line alternative.)
+    expect(swaps.length).toBeGreaterThanOrEqual(1)
     for (const swap of swaps) {
       expect(swap.tradeoff).toContain('Constraint check')
-      expect(swap.tradeoff).toMatch(/fire resistance from 99 to 15/)
+      expect(swap.tradeoff).toMatch(/fire resistance from 99 to 39/)
       // The reassurance is withdrawn once the check fails.
       expect(swap.tradeoff).not.toContain('smaller than the number suggests')
     }
@@ -276,7 +288,7 @@ describe('findings that recraft the same line', () => {
   it('leads with the larger measured score gain when the defence is known (CF2, audit item 6)', () => {
     const impact = (stat: string, from: number, to: number) =>
       ({ stat, label: '', from, to, delta: to - from, unit: 'percent', significance: 0 }) as const
-    // Athrynas: cold 74 of 75, chaos 18 of 75. Chaos 18 -> 45 cuts chaos damage
+    // The reference scenario: cold 74 of 75, chaos 18 of 75. Chaos 18 -> 45 cuts chaos damage
     // taken far more than cold 74 -> 75 does, and lifts the 3,808 chaos max hit
     // (the lowest), so it leads although it leaves a gap.
     const c = { ...chaos, rec: { ...rec('gear-swap-chaos'), impact: impact('chaosResistance', 18, 45) } }
