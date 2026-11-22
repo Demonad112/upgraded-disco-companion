@@ -15,6 +15,9 @@ test('blocks generated paths, incl. Windows backslashes', () => {
     'C:\\repo\\apps\\web\\out\\index.html',
     '/repo/apps/web/public/passive-tree.json',
     'C:\\repo\\apps\\web\\public\\trade-map.json',
+    'vendor/pob2/src/Modules/Build.lua',
+    '/repo/vendor/pob2/PIN.json',
+    'C:\\repo\\vendor\\pob2\\runtime\\lua\\dkjson.lua',
   ]) {
     assert.equal(isGenerated(p), true, p);
     const r = run('Edit', p);
@@ -32,6 +35,8 @@ test('allows source paths', () => {
     '/repo/packages/data/scripts/build-bases.mjs',
     '/repo/packages/data/trade2-stats.json',
     '/repo/apps/mcp/TOOLS.md',
+    '/repo/tools/pob2/snapshot.lua',
+    '/repo/scripts/pob2/sync.mjs',
   ]) {
     assert.equal(isGenerated(p), false, p);
     assert.equal(run('Write', p).status, 0, p);

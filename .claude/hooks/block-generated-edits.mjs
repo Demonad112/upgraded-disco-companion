@@ -6,7 +6,7 @@ import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 
 export const MESSAGE =
-  'Generated file. Run the packages/data build:* scripts instead.';
+  'Generated file. Run the packages/data build:* scripts instead (vendor/pob2: npm run pob2:sync).';
 
 // Synced copies in apps/web/public (see apps/web/scripts/sync-data.mjs and .gitignore).
 const SYNCED = [
@@ -14,7 +14,8 @@ const SYNCED = [
   'trade-map',
 ].map((n) => `apps/web/public/${n}.json`);
 
-const DIRS = ['packages/data/generated/', 'apps/web/out/'];
+// vendor/pob2 is a byte-identical copy of the PoB2 fork; only scripts/pob2/sync.mjs (a Bash command) writes it.
+const DIRS = ['packages/data/generated/', 'apps/web/out/', 'vendor/pob2/'];
 const FILES = [...SYNCED];
 
 export const LOCK_MESSAGE = 'package-lock.json is written by npm. Run npm install or npm ci instead of editing it.';

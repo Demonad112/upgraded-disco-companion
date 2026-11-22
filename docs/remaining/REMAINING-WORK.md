@@ -20,9 +20,9 @@ Answers of 2026-11-17 (HG1-1, -2, -4, -5, -6) are applied. Answers of 2026-11-15
 
 | ID | Question | Recommended answer | Source |
 |---|---|---|---|
-| NP1-1 | poe.ninja moved the character model and the builds search (2026-11-18). The owner's HAR shows the model now at `/api/protected/characters/poe2/profile/characters/<acct>/<league>/<char>/model/<v>`, fetched with the browser's `cf_clearance` and session cookies; without them it answers 403 (Cloudflare challenge) from any server. A second HAR shows the builds search at `/api/protected/poe2/builds/<version>/search?overview=<snapshotName>`, same cookies, so ladder and grade are blocked the same way | Don't replay browser cookies or solve the challenge: poe.ninja put this path behind bot protection on purpose. Ask poe.ninja for sanctioned access; until then the app's paste-JSON and PoB-code imports are the working path, and the proxy's import error says so (done in #214). The ladder grade stays unavailable until then. Snapshot lookup and dictionaries (`/api/lookup/…`) are not protected | NP1 |
-| NP1-4 | Official GGG OAuth API as the character and ladder source after poe.ninja's block (NP1-1) | Don't pursue yet: `/developer/docs` says "We are currently unable to process new applications." and the PoE2 ladder needs a confidential `service:leagues:ladder` client (server-side secret, a proxy). Revisit if registration reopens; until then keep PoB-code paste as the fallback | NP1-1 |
-| NP1-5 | poe.ninja's docs call builds and profile endpoints internal and "not available for third-party use" (search excerpt, poe.ninja/docs/api, not fetched) | Treat the proxy's character import as unsupported by poe.ninja; keep it best-effort, and ask poe.ninja (Discord) for a keyed or sanctioned route before building anything further on it | NP1-1 |
+| NP1-1 (superseded: PoB-code import is primary, `docs/plans/pob2-alignment.md`) | poe.ninja moved the character model and the builds search (2026-11-18). The owner's HAR shows the model now at `/api/protected/characters/poe2/profile/characters/<acct>/<league>/<char>/model/<v>`, fetched with the browser's `cf_clearance` and session cookies; without them it answers 403 (Cloudflare challenge) from any server. A second HAR shows the builds search at `/api/protected/poe2/builds/<version>/search?overview=<snapshotName>`, same cookies, so ladder and grade are blocked the same way | Don't replay browser cookies or solve the challenge: poe.ninja put this path behind bot protection on purpose. Ask poe.ninja for sanctioned access; until then the app's paste-JSON and PoB-code imports are the working path, and the proxy's import error says so (done in #214). The ladder grade stays unavailable until then. Snapshot lookup and dictionaries (`/api/lookup/…`) are not protected | NP1 |
+| NP1-4 (superseded: PoB-code import is primary, `docs/plans/pob2-alignment.md`) | Official GGG OAuth API as the character and ladder source after poe.ninja's block (NP1-1) | Don't pursue yet: `/developer/docs` says "We are currently unable to process new applications." and the PoE2 ladder needs a confidential `service:leagues:ladder` client (server-side secret, a proxy). Revisit if registration reopens; until then keep PoB-code paste as the fallback | NP1-1 |
+| NP1-5 (superseded: PoB-code import is primary, `docs/plans/pob2-alignment.md`) | poe.ninja's docs call builds and profile endpoints internal and "not available for third-party use" (search excerpt, poe.ninja/docs/api, not fetched) | Treat the proxy's character import as unsupported by poe.ninja; keep it best-effort, and ask poe.ninja (Discord) for a keyed or sanctioned route before building anything further on it | NP1-1 |
 | GF1-1 | May the per-item Gear fit readout (`gear/fit.ts`) appear in the UI? | **Answered yes (owner):** labelled readout only (`GEAR_FIT_BASIS` is the copy) | GF1 (`docs/plans/gear-fit-ranking.md`) |
 | GF1-2 | May the Gear fit influence recommendation order or the build grade? | No. Gear ranking stays "ordered, not weighed" (`priority.ts`) | GF1 |
 | GF1-3 | The archetype and fit cut-offs (`ARCHETYPE`, `GEAR_FIT` in `thresholds.ts`) are borrowed ideas from ets-public/poe2-upgrade-checker, not checked against its source (GPL-3.0, ideas only) | **Run on Yykiuy (GF1-6): no cut-off changes the readout today.** `ARCHETYPE` only fills `Analysis.gearFit.archetype`, which no screen reads, and the weights come from the worn items. It does mislabel Yykiuy: ES 2,922 vs 2 × life 2,954 misses by 32, so an evasion + ES build reads "evasion". Not tuned on one sample; revisit if a screen starts reading the archetype. `rollCeilingRatio` 1.15 clamped nothing here | GF1 |
@@ -39,6 +39,32 @@ NP1-2 is answered (archive); NP1-3 was never used: the rows were renumbered to N
 | NP1-7 | The proxy answers 404 for both "character not found" and "poe.ninja moved the endpoint", so the app can't tell a typo from a route change | S | #214 check | Only matters once URL import returns (NP1-1); split the message by upstream body then | open (waits on NP1-1) |
 | GF1-4 | Show Gear fit per item in the UI (labelled readout, `GEAR_FIT_BASIS` copy) and the veto notes | M | GF1 | Built: `GearFitReadout.tsx` in each Gear card (score, best on base, not-rolled/wasted/unscored under Pro detail; "If you swap this item" notes from `planReplacement`). Rows keep their replace-first order. Decision: `paretoView` and `compareTarget` get no UI. `compareTarget` needs a candidate item and the site has no trade-search or paste-an-item flow to supply one. `paretoView` would show a second ordering beside the ranked list and most findings have unknown cost or unmeasured gain, so it would mostly list `unplaced` rows. Revisit only if an item-paste flow is built. Verify the built readout on a real character in GF1-6 | built, verify in GF1-6 |
 | GF1-8 | User-set targets (Life ≥ 5000, resistances ≥ max, …) checked against the analysed numbers from a PoB code, not poe.ninja (owner 2026-11-21) | S | GF1 item 8 | `docs/plans/pob-character-analysis.md` W2: `checkTargets` in core, seeded from `benchmarks.ts`, editable in Progress; a stat the code lacks is `missing` | open |
+
+## PoB2 alignment (PB-1..PB-9)
+Plan: `docs/plans/pob2-alignment.md` (batch log inside). Run order: B1 → B2 → { B3 ‖ B4 } → B5 → B6 → { B7 ‖ B8 } → B9.
+
+Owner answers (2026-11-22, applied; do not re-ask):
+- `vendor/pob2` is a committed byte-identical copy, pinned to fork Demonad112/PathOfBuilding-PoE2 `dev`.
+- Fork sync is the manual GitHub "Sync fork" button; bumps are manual.
+- The engine is CI-only for now; a live calc service is B9 (optional).
+- poe.ninja UI is hidden and its code dormant (`NINJA_IMPORT_BLOCKED`).
+- The core model is `PobSnapshot`, with a temporary adapter to `CharModel`.
+- Athrynas and Yykiuy fixtures are removed; fixtures are archived per league; the owner pastes the main build code.
+- Site labels and formats are unchanged; only values come from PoB.
+- ΔDPS/ΔEHP only from PoB's engine (provenance `pob-sim`).
+- Local Lua: CI's PoB Docker image is the source of truth; sessions install LuaJIT ad hoc with no environment change.
+
+| ID | Item | Size | Origin | Notes | Status |
+|---|---|---|---|---|---|
+| PB-1 | B1: vendor PoB2 (byte-identical subset), `pob2:sync`/`pob2:verify`, edit guards, plan and docs | M | pob2-alignment | Sonnet, wave 1 | in review (this PR) |
+| PB-2 | B2: headless runner `tools/pob2/snapshot.lua`, `pob2:run`, `pob2-oracle` CI job | L | pob2-alignment | Opus, wave 2; make `pob2-oracle` required after 5 green runs (owner queue then) | open |
+| PB-3 | B3: `PobSnapshot` reader, oracle test, fixture swap to the owner's main code | L | pob2-alignment | Opus, wave 3; merges first of B3/B4; closes NP1-6b's weapon-set half | open |
+| PB-4 | B4: Lua data exporters replace the regex scripts; tree from PoB | M | pob2-alignment | Sonnet, wave 3; merges after B3; closes DATA-1 | open |
+| PB-5 | B5: items from the code → gear analysis | M | pob2-alignment | Sonnet, wave 4; closes NP1-6b's items half | open |
+| PB-6 | B6: analysis on `PobSnapshot`, PoB-only import UX | M | pob2-alignment | Sonnet, wave 5 | open |
+| PB-7 | B7: one-command `pob2:bump`, league-rollover runbook | S | pob2-alignment | Haiku, wave 6; merges first of B7/B8 | open |
+| PB-8 | B8: gap audit → `docs/plans/next-analysis.md` | S | pob2-alignment | Sonnet, wave 6; docs only; includes GF1-8 | open |
+| PB-9 | B9 (optional): live calc service and `pob-sim` Δ | L | pob2-alignment | Opus, wave 7; needs a hosting choice (owner) | parked (needs hosting) |
 
 ## Standing rules (no work)
 - Route, lazy and per-chunk budgets live in `scripts/route-weight.mjs` (source of truth; brotli, first load). It exits 1 when one is over and runs in CI (`ci.yml`). Raise one only on purpose, with the reason in the PR. Any change to home JS reports before and after.

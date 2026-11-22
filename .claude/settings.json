@@ -76,7 +76,9 @@
       "Read(**/*.key)",
       "Read(packages/data/generated/**)",
       "Read(packages/data/trade2-stats.json)",
-      "Read(packages/core/test/fixtures/*-v*.json)"
+      "Read(packages/core/test/fixtures/*-v*.json)",
+      "Read(vendor/pob2/src/Data/**)",
+      "Read(vendor/pob2/src/TreeData/**)"
     ]
   },
   "extraKnownMarketplaces": {
