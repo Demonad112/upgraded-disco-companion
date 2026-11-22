@@ -1,11 +1,16 @@
 {
   "version": 1,
-  "dataRevision": "0.5.5@ce566ea",
+  "dataRevision": "0.5.5@601768b",
   "gameVersion": "0.5.5",
-  "extractedAt": "2026-09-25",
-  "source": "PathOfBuilding-PoE2@ce566ea",
+  "extractedAt": "2026-11-10",
+  "source": "PathOfBuilding-PoE2@601768b",
+  "pobCommit": "601768bd105869618c3d6581b883e5d7aeec91b2",
+  "pobVersion": "0.23.1",
+  "treeVersion": "0_5",
   "artifacts": [
     "mod-tiers.json",
-    "bases.json"
+    "bases.json",
+    "pob-skills.json",
+    "passive-tree.json"
   ]
 }

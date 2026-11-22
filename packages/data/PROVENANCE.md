@@ -5,13 +5,22 @@ hand-written endgame guide content lives in `apps/web/src/data`.
 
 ## Freshness
 
-`mod-tiers.json` and `bases.json` were regenerated for **0.5.5** on
-2026-09-25, from Path of Building 2's own 0.5.5 export (PathOfBuilding-PoE2
-`ce566ea`; the data commit is `49e9392` "Export 0.5.5 data", 2026-09-10). See
-[`mod-tiers.json` from Path of Building](#mod-tiersjson-from-path-of-building)
-below.
+`mod-tiers.json`, `bases.json`, `pob-skills.json` and `passive-tree.json` are
+built from the **vendored Path of Building 2** (`vendor/pob2`, the owner's fork
+pinned in `vendor/pob2/PIN.json`): commit `601768b` (2026-11-10), PoB `0.23.1`,
+tree `0_5`, game patch **0.5.5**. They are not parsed out of PoB's Lua text.
+`tools/pob2/export/*.lua` load PoB headless and dump the tables PoB itself uses,
+and the build scripts read that JSON ([How the PoB artifacts are built](#how-the-pob-artifacts-are-built)).
+The earlier `mod-tiers.json` and `bases.json` came from PathOfBuilding-PoE2
+`ce566ea` (the 0.5.5 export, 2026-09-10); the passive tree came from a non-PoB
+source that predated 0.5.5 (DATA-1, closed by this build).
 
-**PoB version.** `0.23.1`, the `manifest.xml` version at `ce566ea` [verified 2026-10-18]. The `v0.23.1` release (2026-07-28) is 92 commits older than `ce566ea` (2026-09-10) but carries the same version number, as does the current `dev` head (`bb52d6b`, 2026-10-01, also in the owner's fork). So a matching version does not prove a PoB build has the 0.5.5 data: a v0.23.1 release build predates it. `poe2_pob_rank_nodes` passes `0.23.1` as `expectedPobVersion` (a mismatch only warns); the live baseline check against poe.ninja is the real safeguard. Update the value when `manifest.xml` is bumped and the data is re-exported.
+**PoB version.** `0.23.1`, the `manifest.xml` version in `PIN.json`. A matching
+version does not prove a PoB build has the current data (the `v0.23.1` release
+of 2026-07-28 predates 0.5.5 and carries the same number), which is why the
+data is stamped with the commit, not the version. `poe2_pob_rank_nodes` passes
+`0.23.1` as `expectedPobVersion` (a mismatch only warns); the live baseline
+check against poe.ninja is the real safeguard.
 
 The other artifacts were last generated on **2026-07-28**, before patch 0.5.5
 (2026-09-04):
@@ -23,20 +32,26 @@ The other artifacts were last generated on **2026-07-28**, before patch 0.5.5
   grades against these: socketed core text reaches the item view verbatim from
   the character payload, and resistances are attributed from poe.ninja's
   `breakdowns`. Limit checks read the item first and fall back to a table in
-  `packages/core/src/gear/audit.ts`.
-- **Passive tree.** Carried over from the pre-0.5.5 build and *not verified
-  against 0.5.5*. The file records only `PassiveTree-0.5`, no patch or date, and
-  the source file it was built from is not in this repository, so it cannot be
-  re-checked or rebuilt offline. A payload allocating nodes the data lacks is
-  reported by `analyzeCharacter` (a warning naming the ids). Refreshing it needs
-  the matching `psg_passive_nodes.json` .
+  `packages/core/src/gear/audit.ts`. Open as DATA-2: PoB carries them
+  (`data.itemMods.Runes`, the soul core bases), so the next step is another
+  exporter field, not a new source.
 
-To regenerate `mod-tiers.json` and `bases.json` from Path of Building, run from
-the repository root:
+### How the PoB artifacts are built
+
+All four read `vendor/pob2` through `scripts/pob2/run.mjs --export <name>` and
+take the revision from `PIN.json` (`scripts/lib/pob.mjs`). They need LuaJIT
+with lua-utf8 (`scripts/pob2/install-luajit.sh`) or Docker, and no PoB checkout
+or `POB2_DIR`. From the repository root:
 
 ```bash
-POB2_DIR=/path/to/PathOfBuilding-PoE2 npm run build:mod-tiers:pob -w @poe2/data
+npm run build:pob -w @poe2/data   # all four, in order
+# or one at a time: build:mod-tiers:pob, build:pob-skills, build:tree:pob
 ```
+
+`generated/version.json` is rewritten by each of them, from `PIN.json`, so
+whichever runs last writes the same file. Rebuild all four after a PoB bump;
+`scripts/pob2/data-stamp.test.mjs` fails when `PIN.json` moves without it.
+Exporter reference: `docs/POB2-SYNC.md`.
 
 The RePoE-fork route (`npm run build:mod-tiers -w @poe2/data`, then
 `build:mods`, `build:mod-bases`, `build:monster-stats`, `build:skills`) needs
@@ -47,14 +62,17 @@ below and run `npm test`.
 ## `generated/version.json`
 
 Machine-readable data revision (`<gameVersion>@<PoB commit>`), export date and source of the canonical
-artifacts. Written by `build:mod-tiers:pob` (`scripts/lib/version.mjs`); the committed file was stamped by
-hand from the values above (0.5.5, `ce566ea`, 2026-09-25). `@poe2/core` reads it with `readDataVersion` and
-stamps answers with `provenanceFor` (tiers ported from demonad112/poe2-mcp2, MIT).
+artifacts. Written by every PoB build script (`scripts/lib/version.mjs`) from `vendor/pob2/PIN.json`, never by
+hand: `dataRevision` is `0.5.5@601768b`, `extractedAt` is the pinned commit's date (so a rebuild is
+byte-identical), and the full commit, PoB version and tree version ride along. The one reviewed constant is
+`GAME_PATCH` (`0.5.5`): PoB's data carries no patch string, only the tree version `0_5`, and the build refuses a
+patch that doesn't extend it. `@poe2/core` reads the file with `readDataVersion` and stamps answers with
+`provenanceFor` (tiers ported from demonad112/poe2-mcp2, MIT).
 
 ## `mod-tiers.json` from Path of Building
 
-Built by `scripts/build-mod-tiers-pob.mjs` from PoB's `src/Data/ModItem.lua`,
-`ModJewel.lua` and `Bases/*.lua`.
+Built by `scripts/build-mod-tiers-pob.mjs` from PoB's loaded `data.itemMods.Item`,
+`data.itemMods.Jewel` and `data.itemBases` (exporters `mods.lua` and `bases.lua`).
 
 **What PoB supplies:**
 
@@ -101,6 +119,16 @@ A mod with no stat source, or a range that disagrees, fails the build.
 
 In short, 0.5.5 changed no affix ladder the planner uses. The data is now
 stamped as 0.5.5 rather than assumed to be.
+
+**Result of the exporter rebuild (B4, pin `601768b`, against the `ce566ea` artifact):**
+
+| | |
+|---|---|
+| Mods kept | 2,927 (unchanged); 0 level, group or spawn changes, 0 range mismatches |
+| Gear bases | 1,703 (was 1,716), 1,445 obtainable (was 1,460) |
+| Bases gone from PoB | 13 `TrapTool` bases (kept in `baseTags` by the carry-over) |
+| Bases changed | 28: PoB keys bases by name, so a name defined twice now resolves to the last definition (the regex took the first), e.g. Golden Blade, Runeforged Fur Plate; plus real stat changes between the two commits |
+| Key order | Object keys are sorted (Lua tables carry no source order), so `bases.json` and `baseTags` reorder without changing content |
 
 ## `generated/bases.json`
 
@@ -153,30 +181,59 @@ Regenerate with `npm run build:atlas-tree -w @poe2/data`. The download is cached
 
 ## `generated/passive-tree.json`
 
-Built by `scripts/build-tree.mjs` from `data/psg_passive_nodes.json` in
-[Demonad112/poe2-mcp](https://github.com/Demonad112/poe2-mcp) (2.06 MB, 4,975
-nodes). Regenerate with:
+Built by `scripts/build-tree-pob.mjs` from the passive tree PoB loads for a new
+build (`main.tree[latestTreeVersion]`, exporter `tools/pob2/export/tree.lua`),
+at the commit pinned in `vendor/pob2/PIN.json`. Regenerate with:
 
 ```bash
-node packages/data/scripts/build-tree.mjs /path/to/poe2-mcp/data/psg_passive_nodes.json
+npm run build:tree:pob -w @poe2/data
 ```
 
 | | |
 |---|---|
-| Tree | `PassiveTree-0.5` |
-| Nodes | 4,975 |
-| Edges | 5,887 undirected |
-| Notables / keystones / jewel sockets | 968 / 30 / 12 |
-| Ascendancy nodes | 353 across 19 classes |
-| Size | 602 KB raw · 147 KB gzipped |
+| Tree | `PassiveTree-0.5@601768b` (PoB tree `0_5`) |
+| Nodes | 4,546 |
+| Edges | 5,187 undirected |
+| Notables / keystones / jewel sockets | 1,193 / 33 / 18 |
+| Ascendancy nodes | 431 across 22 ascendancies |
+| Size | 643 KB raw · 159 KB gzipped (was 147 KB; 22 ascendancies and complete stat lines) |
 
 The web build copies this to `apps/web/public/passive-tree.json`
 (`prebuild` → `sync-data`); that copy is generated and gitignored.
 
-### What the build script corrects
+**Same shape as before** (`PassiveTree` and the renderer are unchanged), built
+by the same rules except where PoB's own typing replaces a guess:
 
-Three properties of the source would produce wrong output if used as-is. All
-three were verified against the data, not assumed.
+- **Decorative nodes are dropped.** PoB types mastery art and background pieces
+  `OnlyImage` (368). They have no stats and can't be allocated, and PoB draws
+  no edge to them. The old source listed them as ordinary nodes.
+- **Edges** are undirected and de-duplicated. Dropped: 561 to decorative nodes,
+  14 to ids PoB's own tree lacks, 1 self-loop.
+- **Jewel sockets** are PoB's `Socket` nodes, so the Sinister sockets and
+  Zarokh's Gift count (18, was 12 by name).
+- **Ascendancy** is PoB's `ascendancyName` (22, with the current names such as
+  Blood Mage, Martial Artist, Gemling Legionnaire), not an icon-folder guess;
+  the old file still had pre-rename ones (Bloodmage, Temporalist, Primalist,
+  Inquisitor). `c: 1` is PoB's `isAscendancyStart`.
+- **Class starts** keep the six labels the site shows. PoE2 classes share a
+  start node (Witch and Sorceress, Ranger and Huntress), so PoB lists two names
+  per node; the script checks each label against PoB's `classesStart` and fails
+  on a new class rather than leaving it unlabelled.
+
+**Closes DATA-1.** The tree check (HG1-9) reads Yykiuy as `current` (its 3
+missing nodes resolve) and the Athrynas allocation resolves to one main-tree
+group plus the ascendancy, where the old data left 4 nodes detached for want of
+links. `build-tree.mjs` (the `poe2-mcp` route below) stays as a fallback.
+
+### What the old build script corrected (`build-tree.mjs`, fallback source)
+
+Built from `data/psg_passive_nodes.json` in
+[Demonad112/poe2-mcp](https://github.com/Demonad112/poe2-mcp) (4,975 nodes),
+with `node packages/data/scripts/build-tree.mjs <path>`. Three properties of
+that source produced wrong output if used as-is. All three were verified
+against the data, not assumed. `build-tree-pob.mjs` applies the first two
+(undirected edges, self-loops dropped) too, and takes the ascendancy from PoB's
+`ascendancyName` instead.
 
 **Connections are stored directed.** Of 5,888 stored entries exactly one is
 reciprocated. Rendering straight from the field draws each link once with an
@@ -212,16 +269,23 @@ build script, not the data.
 
 ## `generated/pob-skills.json`
 
-Support-gem effects and active-skill types, extracted from
-[Path of Building PoE2](https://github.com/PathOfBuildingCommunity/PathOfBuilding-PoE2)
-(`src/Data/Skills/sup_*.lua`, `act_*.lua`, `Gems.lua`). MIT licensed, Path of
-Building Community.
+Support-gem effects and active-skill types, taken from
+[Path of Building PoE2](https://github.com/PathOfBuildingCommunity/PathOfBuilding-PoE2)'s
+loaded `data.skills` and `data.gems` (the `sup_*` and `act_*` skill files),
+through `tools/pob2/export/skills.lua`. MIT licensed, Path of Building Community.
 
 ```
-POB2_DIR=/path/to/PathOfBuilding-PoE2 npm run build:pob-skills -w @poe2/data
+npm run build:pob-skills -w @poe2/data
 ```
 
-The output records the source commit. What's kept:
+The output records the pinned source commit, and `generatedAt` is that
+commit's date. 539 supports (215 with constant effects) and 327 actives. Against
+the `ce566ea` artifact the support ids are the same and the active skill types
+are identical. Sixteen supports gained effects the old text parsing could not
+read (modifier names containing `:`, such as `Multiplier:ManaFlaskMaxChargesPercent`,
+and two `Damage` mods, Deadly Heralds and Gambleshot). Flag and skill-type
+names are decoded from PoB's bitfields where the regex read the source tokens;
+the two agree on every damage and speed effect the planner reads. What's kept:
 
 - **Supports** that exist as socketable gems (Gems.lua `gemType = "Support"`):
   name, gem family, tier, the `requireSkillTypes` / `excludeSkillTypes`
