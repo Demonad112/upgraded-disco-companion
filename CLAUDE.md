@@ -52,6 +52,11 @@ PreToolUse hook: `block-generated-edits.mjs` denies Edit/Write on generated data
 - **Data shapes.** When a data shape changes, grep `apps/web/e2e` for the old path and update specs in the same commit.
 - **Copy voice.** Follow `docs/COPY.md`: one or two sentences, action first, long text only behind Pro detail.
 - **Perf bar.** Keep a performance change only if it saves at least 5 % brotli on its file or route (`node scripts/route-weight.mjs`, which also fails when a route exceeds its pinned budget), or removes real runtime work.
+- **Route over budget.** Trace first, then fix: follow `grep -n "^import"` from the page's core imports down to see
+  which new modules are static dependencies. Never lazy-load with `import('@poe2/core')` on a page that also imports
+  core statically: it copies core into a lazy chunk (PB-3: +800 B on the route, lazy budget went over). A real split
+  needs a core subpath export (`packages/*` policy, owner). If the growth is the feature itself, raise the budget in
+  `scripts/route-weight.mjs` to the measured size rounded up to the next 2,000 B, cause in a comment and the PR.
 - **Context.** Keep it for what matters: batch independent tool calls; grep before reading and read whole files only
   when editing them; don't read `packages/data/generated/**` or the large fixtures (denied in settings; query them
   with `node -e` instead); cap listings, never errors or failing tests. Hand off at a task boundary.
