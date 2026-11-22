@@ -111,5 +111,6 @@ Decisions:
 - Q: can git rewrite line endings in the copy? → A: no; `.gitattributes` marks `vendor/pob2/**` as `-text` so the bytes stay identical on every platform (a CRLF checkout would otherwise fail `pob2:verify`).
 - Q: where does the sync fetch to? → A: a fresh temp dir (`POB2_SYNC_TMP` or the OS temp dir), blobless depth-1 fetch, deleted afterwards (nothing is left in the repo or the fork).
 - Q: PIN.json fields → A: `repo, branch, commit, commitDate, manifestVersion, latestTreeVersion, files{path: sha256}`. The PoB tests Docker image digest is added by B2.
-Suggestions for next batch: B2 should add the tests-image digest to PIN.json (extend `sync.mjs` to preserve it across syncs).
+- Q: gitleaks flagged 2 false positives in the vendored copy (a sha256 in PIN.json, a skill-name string in Spectres.lua). → A: per-fingerprint entries in `.gitleaksignore`, the repo's existing convention. Each sync commit gets new fingerprints because they include the commit sha.
+Suggestions for next batch: B7's `pob2:bump` should print the gitleaks fingerprints for the new commit (or the owner may prefer a path allowlist for `vendor/pob2/`; Needs owner). B2 should add the tests-image digest to PIN.json (extend `sync.mjs` to preserve it across syncs).
 
