@@ -24,9 +24,9 @@
 
 import { RES_CAP_DEFAULT } from '../defense/constants.js'
 import type { CharModel, DamageType, NinjaDefensiveStats, NinjaSkill } from '../model/types.js'
-import { decodePobExport, readPlayerStats } from './export.js'
+import { readPlayerStats, readPobSnapshotFromCode } from './export.js'
 import { readPobMainSkill } from './main-skill.js'
-import { activeSpec, readPobSnapshot, splitTree, type PobSnapshot } from './snapshot.js'
+import { activeSpec, splitTree, type PobSnapshot } from './snapshot.js'
 
 function num(stats: Record<string, number>, key: string): number | undefined {
   const value = stats[key]
@@ -178,6 +178,5 @@ export function snapshotToCharModel(snap: PobSnapshot, code?: string): CharModel
 
 /** Decode a Path of Building code into the parts of a character model it carries. Throws only if it will not decode. */
 export async function pobToCharModel(code: string): Promise<CharModel> {
-  const xml = await decodePobExport(code)
-  return snapshotToCharModel(readPobSnapshot(xml), code)
+  return snapshotToCharModel(await readPobSnapshotFromCode(code), code)
 }

@@ -23,8 +23,7 @@ import type { SupportCatalog } from './gems/catalog.js'
 import type { MainSkillContext } from './recommend/gear.js'
 import { effectiveCritMultiplier } from './recommend/offence.js'
 import { CRIT_UNINVESTED, DAMAGE_TYPE_MIN_SHARE } from './thresholds.js'
-import { decodePobExport, readPlayerStats } from './pob/export.js'
-import { readPobSnapshot } from './pob/snapshot.js'
+import { readPlayerStats, readPobSnapshotFromCode } from './pob/export.js'
 import { describeStaleExport, staleExport, type PobRecomputed, type StaleExport } from './pob/stale.js'
 import { readPobConfig, type PobConfig } from './pob/config.js'
 import { pobCodeGaps, type PobGap } from './pob/analyze.js'
@@ -328,7 +327,7 @@ export async function analyzeCharacter(
   let stale: StaleExport | null = null
   if (model.pathOfBuildingExport) {
     try {
-      const snapshot = readPobSnapshot(await decodePobExport(model.pathOfBuildingExport))
+      const snapshot = await readPobSnapshotFromCode(model.pathOfBuildingExport)
       pobStats = readPlayerStats(snapshot)
       exportMain = readPobMainSkill(snapshot)?.name ?? null
       pobConfig = readPobConfig(snapshot)

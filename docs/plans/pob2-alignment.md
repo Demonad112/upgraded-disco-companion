@@ -134,6 +134,7 @@ Decisions:
 - Q: weapon-set split → A: main = `nodes` minus `<WeaponSet1/2>`; live set from `<Items useSecondWeaponSet>`. On athrynas-v43 it equals poe.ninja's three arrays plus the class start node, so the code-only keystone guard (`!fromCode`) and the "Weapon-set passives" gap are gone.
 - Q: minion stats with no `CharModel` field? → A: `Analysis.pobMinionStats`, read from the snapshot. FullDPS rows become skills (main skill not repeated); `treeVersion` becomes `passiveTreeName`.
 - Q: stale export at runtime without an engine? → A: `AnalyzeOptions.pobRecomputed` (oracle today, `pob-sim` later) → `Analysis.staleExport` + a warning. The main code has 22 stale stats, including every maximum hit (PB-3a).
+- Q: decode and parse once per input? → A: `readPobSnapshotFromCode` memoizes the last two codes (core stays pure); `analyzeCharacter` and `pobToCharModel` use it, test `pob-snapshot-cache.test.ts` (red without it, goldens unchanged). Local `perf-import` median: main 3,208 ms, before 3,122, after 2,945. CI's 5,010 ms on #230 was not reproduced; in core the parse takes 1-2 ms, so it was not the parse.
 Suggestions for next batch: B5 parses `PobSnapshot.items` and then does the capture deletion (PB-5 row). B6 can pass `pobRecomputed` from a calc service only once B9 exists; until then the finding shows in tests and goldens only.
 
 ### B4: Lua data exporters and DATA-1 (the tree)

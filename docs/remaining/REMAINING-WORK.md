@@ -59,7 +59,10 @@ Owner answers (2026-11-22, applied; do not re-ask):
 
 | ID | Item | Size | Origin | Notes | Status |
 |---|---|---|---|---|---|
-| PB-3 | B3: `PobSnapshot` reader, oracle test, fixture swap to the owner's main code | L | pob2-alignment | Opus, wave 3; closes NP1-6b's weapon-set half. Owner answer (this session): the three poe.ninja captures stay until B5 (51 of 103 core test files and the e2e suite load them; gear tests need items) | in review (this PR) |
+| PB-3 | B3: `PobSnapshot` reader, oracle test, fixture swap to the owner's main code | L | pob2-alignment | Opus, wave 3; closes NP1-6b's weapon-set half. Owner answer (this session): the three poe.ninja captures stay until B5 (51 of 103 core test files and the e2e suite load them; gear tests need items) | in review (this PR). Rec 1 done: a code is inflated and parsed once (`readPobSnapshotFromCode`, 2-entry cache). `perf-import` local (mobile, 4x CPU, fixture proxy, 5 runs, median): main 3,208 ms, branch before 3,122, after 2,945; the parse is 1-2 ms in core, and CI's 5,010 ms was not reproduced locally. Rec 5 is PB-3a |
+| PB-3b | `scripts/core-weight.mjs`: esbuild-bundle what the character page imports from core, brotli it, compare to a baseline in seconds instead of a full Next build | S | PB-3 rec 2 | Recommended: build it only if budget overruns recur | parked |
+| PB-3c | Process: run long builds and suites in the background (`run_in_background`) so an interruption never lands mid-build | S | PB-3 rec 3 | Recommended: yes; add to `docs/SESSION-PROTOCOL.md` when it is next edited | open |
+| PB-3d | Process: batches of about one PR of change, or run the gate in a cheap subagent that reports only pass/fail and failures, to avoid mid-batch context compaction | S | PB-3 rec 4 | Recommended: yes | open |
 | PB-5 | B5: items from the code → gear analysis; then delete athrynas-v43, yykiuy-v51, yykiuy-v80 and their goldens, moving the core tests, web unit tests, e2e (`e2e/fixtures.ts`, mock proxy, screenshot script) onto `main` | L | pob2-alignment | Sonnet, wave 4; closes NP1-6b's items half. Deletion deferred from B3 by owner answer (PB-3) | open |
 | PB-6 | B6: analysis on `PobSnapshot`, PoB-only import UX | M | pob2-alignment | Sonnet, wave 5 | open |
 | PB-7 | B7: one-command `pob2:bump`, league-rollover runbook | S | pob2-alignment | Haiku, wave 6; merges first of B7/B8 | open |

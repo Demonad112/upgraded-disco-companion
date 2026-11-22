@@ -81,6 +81,36 @@ export async function decodePobExport(code: string): Promise<string> {
   return xml
 }
 
+const SNAPSHOT_CACHE_MAX = 2
+const snapshotCache = new Map<string, Promise<PobSnapshot>>()
+/** Test hook: how many codes have been inflated and parsed (cache misses). */
+let snapshotParses = 0
+export function snapshotParseCount(): number {
+  return snapshotParses
+}
+
+/**
+ * Decode and parse a code once. The character page analyses the same code twice (card pass, full pass) and
+ * `pobToCharModel` decodes it a third time, so the last two snapshots are kept by code string. Callers must
+ * treat the snapshot as read-only. A failed decode is not cached.
+ */
+export function readPobSnapshotFromCode(code: string): Promise<PobSnapshot> {
+  const hit = snapshotCache.get(code)
+  if (hit) {
+    snapshotCache.delete(code)
+    snapshotCache.set(code, hit)
+    return hit
+  }
+  snapshotParses++
+  const p = decodePobExport(code).then((xml) => readPobSnapshot(xml))
+  snapshotCache.set(code, p)
+  p.catch(() => {
+    if (snapshotCache.get(code) === p) snapshotCache.delete(code)
+  })
+  while (snapshotCache.size > SNAPSHOT_CACHE_MAX) snapshotCache.delete(snapshotCache.keys().next().value as string)
+  return p
+}
+
 /** A decoded document, or a snapshot already read from one (so callers parse a code once). */
 export type PobSource = string | PobSnapshot
 
