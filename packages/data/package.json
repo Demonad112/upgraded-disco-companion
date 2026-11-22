@@ -7,6 +7,8 @@
   "//": "This directory sits under the packages/* workspace glob. Without a manifest npm treats it as a stray directory, which works until something in the workspace tries to resolve it. The artifacts are copied into apps/web/public by its sync-data script, so there is no main entry point to declare.",
   "scripts": {
     "build:tree": "node scripts/build-tree.mjs",
+    "build:tree:pob": "node scripts/build-tree-pob.mjs",
+    "build:pob": "node scripts/build-mod-tiers-pob.mjs && node scripts/build-pob-skills.mjs && node scripts/build-tree-pob.mjs",
     "build:mod-tiers": "node scripts/build-mod-tiers.mjs",
     "build:mods": "node scripts/build-mods.mjs",
     "build:mod-bases": "node scripts/build-mod-bases.mjs",

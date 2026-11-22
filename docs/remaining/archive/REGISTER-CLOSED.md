@@ -252,3 +252,9 @@ One line each; reopen only when the trigger happens.
 |---|---|---|---|---|---|
 | PB-1 | B1: vendor PoB2 (byte-identical subset), `pob2:sync`/`pob2:verify`, edit guards, plan and docs | M | pob2-alignment | Sonnet, wave 1 | done (#226, 2026-11-22) |
 | PB-2 | B2: headless runner `tools/pob2/snapshot.lua`, `pob2:run`, `pob2-oracle` CI job | L | pob2-alignment | Opus, wave 2; making `pob2-oracle` required is owner queue PB-2a | done (#228, 2026-11-22) |
+| PB-4 | B4: Lua data exporters replace the regex scripts; tree from PoB | M | pob2-alignment | Sonnet, wave 3; closes DATA-1 | done (#229, 2026-11-22) |
+
+## Closed in B4 (2026-11-22)
+| ID | Item | Status |
+|---|---|---|
+| DATA-1 | `passive-tree.json` refreshed for 0.5.5: now built from PoB's latest tree (`build:tree:pob`); the tree check on the fixture reads current. Soul Cores continue as DATA-2 | done (B4, 2026-11-22) |

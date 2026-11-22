@@ -21,165 +21,85 @@
  * whose stat has no local `statMap` entry, are left out rather than guessed —
  * the consumer reports those supports as "not quantified".
  *
- * Usage: POB2_DIR=/path/to/PathOfBuilding-PoE2 node scripts/build-pob-skills.mjs
+ * ## How it reads PoB
+ *
+ * Not by parsing Lua text. tools/pob2/export/skills.lua loads PoB headless and
+ * dumps its own loaded skill and gem tables (`data.skills`, `data.gems`); the
+ * flag and skill-type bitfields arrive already decoded to PoB's names. The
+ * revision is the one in vendor/pob2/PIN.json (no POB2_DIR).
+ *
+ * Usage: npm run build:pob-skills -w @poe2/data
  */
 
-import { execFileSync } from 'node:child_process'
-import { readFileSync, writeFileSync } from 'node:fs'
+import { writeFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { pobCommit, pobCommitDate, pobExport } from './lib/pob.mjs'
+import { writeDataVersion } from './lib/version.mjs'
 
 const here = dirname(fileURLToPath(import.meta.url))
-const pobDir = process.env.POB2_DIR
-if (!pobDir) {
-  console.error('Set POB2_DIR to a Path of Building PoE2 checkout (github.com/PathOfBuildingCommunity/PathOfBuilding-PoE2).')
-  process.exit(1)
-}
-const skillsDir = join(pobDir, 'src', 'Data', 'Skills')
+const outDir = join(here, '..', 'generated')
 
-/** Split a skills file into `skills["Id"] = { ... }` blocks. */
-function blocks(file) {
-  const text = readFileSync(join(skillsDir, file), 'utf8')
-  const out = []
-  const re = /^skills\["([^"]+)"\] = \{\n([\s\S]*?)^\}/gm
-  let m
-  while ((m = re.exec(text))) out.push({ id: m[1], body: m[2] })
-  return out
-}
-
-function field(body, name) {
-  return new RegExp(`^\\t${name} = (.*),$`, 'm').exec(body)?.[1] ?? null
-}
-
-function list(raw, pattern) {
-  if (!raw) return []
-  return [...raw.matchAll(pattern)].map((m) => m[1])
-}
-
-/** The first stat set's region between two top-level keys. */
-function region(body, start, endPattern) {
-  const i = body.indexOf(start)
-  if (i < 0) return ''
-  const rest = body.slice(i + start.length)
-  const end = rest.search(endPattern)
-  return end < 0 ? rest : rest.slice(0, end)
-}
-
-function parseMods(text) {
-  const mods = []
-  for (const m of text.matchAll(/\b(mod|flag)\("(\w+)", "(\w+)"([^\n]*)/g)) {
-    const rest = m[4]
-    mods.push({
-      name: m[2],
-      type: m[3],
-      flags: [...rest.matchAll(/ModFlag\.(\w+)/g)].map((x) => x[1]),
-      keywords: [...rest.matchAll(/KeywordFlag\.(\w+)/g)].map((x) => x[1]),
-      // Any condition table means the effect only applies some of the time.
-      conditions: [...rest.matchAll(/var = "(\w+)"/g)].map((x) => x[1]),
-      conditional: rest.includes('{'),
-    })
+/**
+ * One mod of a support's own statMap, in the artifact's shape. A mod is conditional when it carries a tag table
+ * (a Condition, Multiplier, ...) or a computed value: it then applies only some of the time.
+ */
+function toMod(m) {
+  return {
+    name: m.name,
+    type: m.type,
+    flags: m.flags,
+    keywords: m.keywords,
+    // Any tag means the effect only applies some of the time.
+    conditions: m.tags.filter((t) => typeof t.var === 'string').map((t) => t.var),
+    conditional: m.tags.length > 0 || m.valueIsTable === true,
   }
-  return mods
 }
 
-function parseSupport(id, body) {
-  const firstSet = region(body, 'statSets = {', /\n\t\t\[2\] = \{/)
-  const statMapText = region(firstSet, 'statMap = {', /\n\t\t\tbaseFlags = \{|\n\t\t\tconstantStats = \{/)
-  const statMap = new Map()
-  for (const m of statMapText.matchAll(/\["([^"]+)"\] = \{([\s\S]*?)\n\t\t\t\t\},/g)) {
-    statMap.set(m[1], parseMods(m[2]))
-  }
-
-  const constants = region(firstSet, 'constantStats = {', /\n\t\t\t\},/)
+function toSupport(s) {
   const effects = []
   // Constant stats with no local statMap entry: PoB maps them globally, and
   // most are plain "increased" modifiers (e.g. attack_speed_+%). Kept raw so
   // the consumer can describe them without pretending to value them.
   const unmapped = []
-  for (const m of constants.matchAll(/\{ "([^"]+)", (-?[\d.]+) \}/g)) {
-    const stat = m[1]
-    const value = Number(m[2])
-    const mods = statMap.get(stat)
-    if (!mods || !mods.length) {
-      unmapped.push({ stat, value })
-      continue
-    }
-    effects.push({ stat, value, mods })
+  for (const [stat, value] of s.constantStats) {
+    // `skill("x", v)` entries set skill data rather than a modifier; they are not damage or speed effects.
+    const mods = (s.statMap[stat] ?? []).filter((m) => m.name !== 'SkillData').map(toMod)
+    if (!mods.length) unmapped.push({ stat, value })
+    else effects.push({ stat, value, mods })
   }
-
-  const statsText = region(firstSet, '\t\t\tstats = {', /\n\t\t\t\},/)
   return {
-    id,
-    name: JSON.parse(field(body, 'name')),
-    description: field(body, 'description') ? JSON.parse(field(body, 'description')) : null,
-    family: list(field(body, 'gemFamily'), /"([^"]+)"/g),
-    require: list(field(body, 'requireSkillTypes'), /SkillType\.(\w+)/g),
-    exclude: list(field(body, 'excludeSkillTypes'), /SkillType\.(\w+)/g),
-    lineage: /^\tisLineage = true,$/m.test(body),
+    id: s.id,
+    name: s.name,
+    description: s.description ?? null,
+    family: s.family,
+    require: s.requireSkillTypes,
+    exclude: s.excludeSkillTypes,
+    lineage: s.isLineage,
     effects,
     unmapped,
-    flags: list(statsText, /"([^"]+)"/g),
+    flags: s.stats,
+    tier: s.tier,
   }
 }
 
-/**
- * Supports that exist as socketable gems, by granted-effect id, with the gem's
- * tier (I/II/III). The skill files also define supports granted only by items
- * or internal effects; a player can't socket those, so they're dropped.
- */
-const gemTier = new Map()
-{
-  const gems = readFileSync(join(pobDir, 'src', 'Data', 'Gems.lua'), 'utf8')
-  // One entry at a time: a lazy match across the whole file can run from one
-  // gem's granted effect into the next gem's type.
-  for (const [, entry] of gems.matchAll(/^\t\["[^"]+"\] = \{\n([\s\S]*?)^\t\},/gm)) {
-    const effect = /grantedEffectId = "([^"]+)"/.exec(entry)?.[1]
-    if (!effect || !/gemType = "Support"/.test(entry)) continue
-    const tier = Number(/\bTier = (\d+)/.exec(entry)?.[1] ?? 0)
-    if (!gemTier.has(effect)) gemTier.set(effect, tier)
-  }
-}
-
-const supports = []
-const actives = {}
-for (const file of ['sup_str.lua', 'sup_dex.lua', 'sup_int.lua']) {
-  for (const { id, body } of blocks(file)) {
-    if (!/^\tsupport = true,$/m.test(body)) continue
-    if (field(body, 'name') === null || !gemTier.has(id)) continue
-    supports.push({ ...parseSupport(id, body), tier: gemTier.get(id) })
-  }
-}
-for (const file of ['act_str.lua', 'act_dex.lua', 'act_int.lua']) {
-  for (const { body } of blocks(file)) {
-    const name = field(body, 'name')
-    const types = field(body, 'skillTypes')
-    if (!name || !types) continue
-    const key = JSON.parse(name)
-    if (actives[key]) continue
-    actives[key] = list(types, /\[SkillType\.(\w+)\] = true/g)
-  }
-}
-
-let commit = null
-try {
-  commit = execFileSync('git', ['-C', pobDir, 'rev-parse', 'HEAD'], { encoding: 'utf8' }).trim()
-} catch {
-  // A tarball checkout has no git metadata; the output just says so.
-}
+const exported = pobExport('skills')
+const supports = exported.supports.map(toSupport)
+const actives = exported.actives
 
 supports.sort((a, b) => a.name.localeCompare(b.name))
 const out = {
   source: {
     repo: 'PathOfBuilding-PoE2',
-    commit,
+    commit: pobCommit,
     license: 'MIT (Path of Building Community)',
-    generatedAt: new Date().toISOString().slice(0, 10),
+    generatedAt: pobCommitDate,
   },
   supports,
   actives,
 }
-const target = join(here, '..', 'generated', 'pob-skills.json')
-writeFileSync(target, JSON.stringify(out))
+writeFileSync(join(outDir, 'pob-skills.json'), JSON.stringify(out))
+writeDataVersion(outDir)
 const quantified = supports.filter((s) => s.effects.length).length
 console.log(
   `pob-skills.json: ${supports.length} supports (${quantified} with constant effects), ${Object.keys(actives).length} actives`,

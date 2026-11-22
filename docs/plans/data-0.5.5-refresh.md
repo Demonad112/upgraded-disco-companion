@@ -15,6 +15,9 @@ Status: owner approved on 2026-11-21 ("go ahead in next chat plan"). This is a d
 
 ### D1. Passive tree from PoB2 `src/TreeData/0_5*/tree.lua` (or `tree.json`)
 
+**Done in B4 (2026-11-22):** `build-tree-pob.mjs` reads the `tree.lua` exporter (`tools/pob2/export/tree.lua`); no `POB2_DIR`. D2 (Soul Cores) remains as DATA-2.
+
+
 1. Look first, before writing anything:
    - which tree folder `ce566ea` has for 0.5.5 (`TreeData/0_5/`, or a newer one such as `0_5_5`);
    - whether it ships `tree.json` (easiest) or only `tree.lua`.

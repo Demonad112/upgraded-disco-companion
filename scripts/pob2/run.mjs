@@ -3,6 +3,7 @@
 //   node scripts/pob2/run.mjs <code-file | ->     snapshot one PoB code (file or stdin) to stdout
 //   npm run pob2:oracle [-- --check]              regenerate every current-league *.oracle.json (--check: fail on diff)
 //   npm run pob2:spec                             busted specs in tools/pob2/spec (fixtures decoded first)
+//   node scripts/pob2/run.mjs --export <mods|bases|skills|tree>   dump PoB's own loaded data as JSON (tools/pob2/export/)
 //
 // Runner: local `luajit` when it parses PoB2 (compound assignment) and loads lua-utf8 (scripts/pob2/install-luajit.sh),
 // else `docker run` of PoB's tests image pinned by digest in vendor/pob2/PIN.json. POB2_RUNNER=luajit|docker forces one.
@@ -94,6 +95,23 @@ export async function snapshot(code, runner = pickRunner()) {
   return JSON.parse(r.stdout);
 }
 
+export const EXPORTS = ['mods', 'bases', 'skills', 'tree'];
+
+/**
+ * Run one data exporter (tools/pob2/export/<name>.lua) against vendor/pob2 and return its parsed JSON.
+ * Exporters need no build code: they dump PoB's own loaded tables (data.itemMods, data.skills, the latest tree, ...).
+ */
+export function exportData(name, runner = pickRunner()) {
+  if (!EXPORTS.includes(name)) throw new Error(`unknown export "${name}" (${EXPORTS.join(', ')})`);
+  const { cmd, args, env } = luaCommand(runner, ['luajit', `tools/pob2/export/${name}.lua`]);
+  const r = spawnSync(cmd, args, { cwd: ROOT, env, input: '', maxBuffer: 1 << 28, encoding: 'utf8' });
+  if (r.error) throw new Error(`${cmd}: ${r.error.message}`);
+  if (r.status !== 0) {
+    throw new Error(`export ${name} exited ${r.status}:\n${(r.stderr ?? '').split('\n').slice(-15).join('\n')}`);
+  }
+  return JSON.parse(r.stdout);
+}
+
 async function oracle(check) {
   const runner = pickRunner();
   const codes = currentLeagueCodes();
@@ -155,13 +173,15 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
   try {
     if (argv[0] === '--oracle') await oracle(argv.includes('--check'));
     else if (argv[0] === '--spec') await spec();
-    else if (argv[0]) {
+    else if (argv[0] === '--export') {
+      process.stdout.write(JSON.stringify(exportData(argv[1] ?? '')) + '\n');
+    } else if (argv[0]) {
       const code = argv[0] === '-' ? readFileSync(0, 'utf8') : readFileSync(argv[0], 'utf8');
       const snap = await snapshot(code);
       process.stdout.write(canonicalJson(snap));
       process.exit(snap.loadError ? 1 : 0);
     } else {
-      console.error('usage: node scripts/pob2/run.mjs <code-file | -> | --oracle [--check] | --spec');
+      console.error('usage: node scripts/pob2/run.mjs <code-file | -> | --oracle [--check] | --spec | --export <name>');
       process.exit(2);
     }
   } catch (e) {

@@ -28,6 +28,23 @@ Local Lua (session-only, no environment change): `scripts/pob2/install-luajit.sh
 
 CI job `pob2-oracle` (`ci.yml`) runs when `vendor/pob2`, `tools/pob2`, `scripts/pob2` or `packages/core/test/pob2` change. The runner builds core, pulls the pinned image, then runs `pob2:spec` and `pob2:oracle -- --check` with `POB2_RUNNER=docker`. Steps run on the runner, not `container:`, because the image has no Node to decode the codes. All Lua still runs in the image (no network, repo mounted read-only). It is not a required check yet (owner queue PB-2a).
 
+## Data exporters (B4)
+
+The generated game data is dumped from PoB's own loaded tables, not parsed out of its Lua text. `tools/pob2/export/{mods,bases,skills,tree}.lua` load PoB headless (through `headless.lua`, so the same cwd, `LUA_PATH` and ModCache rules apply) and write one JSON document to stdout:
+
+| Exporter | Dumps | Feeds |
+|---|---|---|
+| `mods.lua` | `data.itemMods.Item` and `.Jewel` (the jewel file is re-read before `Data.lua` rewrites its radius text) | `build-mod-tiers-pob.mjs` |
+| `bases.lua` | `data.itemBases` | `build-mod-tiers-pob.mjs` |
+| `skills.lua` | `data.skills` and `data.gems` for the `sup_*` and `act_*` files, with `ModFlag`, `KeywordFlag` and `SkillType` bitfields decoded to names | `build-pob-skills.mjs` |
+| `tree.lua` | `main.tree[latestTreeVersion]`: classes, ascendancies, nodes, connections | `build-tree-pob.mjs` |
+
+Run one with `node scripts/pob2/run.mjs --export <mods|bases|skills|tree>` (same runner choice as the oracle; `exportData(name)` is the importable form). Exporters build plain tables and never encode PoB's own tables, because tree nodes and groups point at each other. Keys are sorted, so two runs are byte-identical (`tools/pob2/spec/export_spec.lua` checks it).
+
+The build scripts in `packages/data/scripts/` read that JSON and take the revision from `PIN.json` (`lib/pob.mjs`); there is no `POB2_DIR` any more. `generated/version.json` is written from `PIN.json` too (`lib/version.mjs`): commit, commit date as `extractedAt`, PoB version and tree version. The one reviewed constant is `GAME_PATCH` (PoB's data carries no patch string, only the tree version `0_5`); the build refuses a patch that doesn't extend that tree version.
+
+**After `pob2:bump`:** rebuild all four artifacts with `npm run build:pob -w @poe2/data` (or `build:mod-tiers:pob`, `build:pob-skills`, `build:tree:pob`), review the diff of `packages/data/generated/`, then `npx vitest run -u` in `packages/core` if a golden moves. `scripts/pob2/data-stamp.test.mjs` fails when `PIN.json` moves without the data.
+
 ## League rollover (stub; B7 completes it)
 
 At a league start the owner pastes new codes for the new league under `packages/core/test/pob2/<new-league>/`, the previous league's folder moves to `packages/core/test/pob2/archive/<old-league>/` (checked only reader vs embedded stats), then bump (above), regenerate the goldens and note league and patch in the fixture README.

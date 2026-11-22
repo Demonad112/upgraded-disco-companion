@@ -2,7 +2,7 @@
 
 ## Layout
 
-npm workspaces (`packages/*`, `apps/*`), Node >=22, TypeScript strict. `packages/core` is pure (no I/O; `fetch` is injected); `packages/data/generated/` is generated (rebuild with `npm run build:<name> -w @poe2/data`, see `packages/data/PROVENANCE.md`); `services/ninja-proxy` is **not a workspace** (own `package.json`, tested separately). `vendor/pob2/` is a byte-identical copy of the PoB2 fork's calc files (written only by `npm run pob2:sync`, verified by `npm run pob2:verify`; never edit it, never Read its `src/Data` or `src/TreeData`, use Grep; see `docs/POB2-SYNC.md`). `tools/pob2/` holds our own Lua (headless snapshot runner, busted specs; data exporters from B4).
+npm workspaces (`packages/*`, `apps/*`), Node >=22, TypeScript strict. `packages/core` is pure (no I/O; `fetch` is injected); `packages/data/generated/` is generated (rebuild with `npm run build:<name> -w @poe2/data`, see `packages/data/PROVENANCE.md`); `services/ninja-proxy` is **not a workspace** (own `package.json`, tested separately). `vendor/pob2/` is a byte-identical copy of the PoB2 fork's calc files (written only by `npm run pob2:sync`, verified by `npm run pob2:verify`; never edit it, never Read its `src/Data` or `src/TreeData`, use Grep; see `docs/POB2-SYNC.md`). `tools/pob2/` holds our own Lua (headless snapshot runner, busted specs, data exporters in `tools/pob2/export/`; `npm run build:pob -w @poe2/data` rebuilds the generated data from them, no `POB2_DIR`).
 
 ## Commands
 

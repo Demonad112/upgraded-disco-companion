@@ -34,10 +34,9 @@ describe('checkTreeVersion', () => {
     expect(check.missing).toEqual([999_999_001, 999_999_002])
   })
 
-  it('flags Yykiuy: 3 allocated nodes are missing from the shipped tree', async () => {
+  it('reads Yykiuy as current: PoB\'s tree carries the 3 nodes the old data lacked (DATA-1)', async () => {
     const a = await analyzeCharacter(load('./fixtures/yykiuy-v80.json'), { tree })
-    expect(a.treeCheck.status).toBe('stale')
-    expect(a.treeCheck.missing).toHaveLength(3)
+    expect(a.treeCheck).toEqual({ status: 'current', treeName: tree.treeName, missing: [] })
   })
 
   it('is unchecked without tree data', async () => {
