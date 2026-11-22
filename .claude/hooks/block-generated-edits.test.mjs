@@ -18,7 +18,7 @@ test('blocks generated paths, incl. Windows backslashes', () => {
     'vendor/pob2/src/Modules/Build.lua',
     '/repo/vendor/pob2/PIN.json',
     'C:\\repo\\vendor\\pob2\\runtime\\lua\\dkjson.lua',
-    'packages/core/test/pob2/forbidden-rites/seed-monk.oracle.json',
+    'packages/core/test/pob2/forbidden-rites/main.oracle.json',
     'C:\\repo\\packages\\core\\test\\pob2\\archive\\old\\x.oracle.json',
   ]) {
     assert.equal(isGenerated(p), true, p);
@@ -39,7 +39,7 @@ test('allows source paths', () => {
     '/repo/apps/mcp/TOOLS.md',
     '/repo/tools/pob2/snapshot.lua',
     '/repo/scripts/pob2/sync.mjs',
-    '/repo/packages/core/test/pob2/forbidden-rites/seed-monk.code.txt',
+    '/repo/packages/core/test/pob2/forbidden-rites/main.code.txt',
     '/repo/packages/core/test/golden/x.expected.json',
   ]) {
     assert.equal(isGenerated(p), false, p);

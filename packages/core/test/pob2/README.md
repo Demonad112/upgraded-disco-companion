@@ -4,7 +4,7 @@
 
 | League | Fixture | Notes |
 |---|---|---|
-| `forbidden-rites` | `seed-monk` | Temporary seed for the B2 oracle job (Monk / Martial Artist, level 90). B3 replaces it with the owner's main build. Its embedded stats are stale against PoB 0.23.1: TotalDPS 186,706 embedded, 203,789.8 recomputed. |
+| `forbidden-rites` | `main` | The owner's main build (Monk / Martial Artist, level 90; the same code B2 seeded as `seed-monk`). Its export is stale against PoB 0.23.1: 22 stats differ, e.g. TotalDPS 186,706 embedded vs 203,790 recomputed and every maximum hit about 8% lower now (physical 5,004 → 4,597); Life, ES and resistances match. |
 
 Oracle shape (keys sorted, 2-space indent):
 
@@ -12,5 +12,7 @@ Oracle shape (keys sorted, 2-space indent):
 - `stats`: every `displayStats` / `extraSaveStats` key present in `build.calcsTab.mainOutput`, whatever the skill-flag filter. `childStat` keys are dotted (`MainHand.Accuracy`); minion stats are `Minion.<stat>`. Non-finite numbers are the strings `inf`, `-inf` and `nan`.
 - `fullDpsSkills`: `mainOutput.SkillDPS` rows (`name`, `count`, `dps`, `value = dps × count`, `skillPart`, `source`).
 - `export`: `PlayerStat`, `MinionStat` and `FullDPSSkill` parsed from `build:SaveDB()`, i.e. what PoB would write into an export now. Values are numbers wherever PoB wrote one.
+
+`../pob2-oracle.test.ts` (vitest, no Lua) holds `readPobSnapshot` to these files: every embedded stat PoB still computes the same must match exactly, and the rest is the analysis finding "Stale export: re-export from current Path of Building" (`Analysis.staleExport`, given `AnalyzeOptions.pobRecomputed`). The golden `../golden/pob-code-main.expected.json` pins that finding.
 
 Regenerate after a PoB bump or a fixture change: `npm run pob2:oracle`. Review the diff and commit it with the cause. CI's `pob2-oracle` job runs `npm run pob2:oracle -- --check` and fails on any byte difference. Archived leagues (`archive/<league>/`) are not regenerated (B7).

@@ -15,9 +15,11 @@
  * so the number was both inflated by conditionals and not a boss number, while
  * the assessment used it to judge pinnacle-boss viability.
  *
- * Parsing is regex-based, not DOM-based, for the same reason `readPlayerStats`
- * is: this must run identically in Node (no DOMParser) and the browser.
+ * Read through `PobSnapshot` (`snapshot.ts`), which runs identically in Node and the browser.
  */
+
+import { snapshotOf, type PobSource } from './export.js'
+import { activeConfigSet } from './snapshot.js'
 
 /**
  * Inputs that raise damage by assuming something is true about the enemy or the
@@ -106,39 +108,19 @@ export const NO_POB_CONFIG: Readonly<PobConfig> = Object.freeze({
   multipliers: NO_MULTIPLIERS,
 })
 
-const XML_ENTITIES: Readonly<Record<string, string>> = Object.freeze({
-  '&amp;': '&',
-  '&lt;': '<',
-  '&gt;': '>',
-  '&quot;': '"',
-  '&apos;': "'",
-})
-
-function decodeEntities(s: string): string {
-  return s.replace(/&(?:amp|lt|gt|quot|apos);/g, (m) => XML_ENTITIES[m] ?? m)
-}
-
 /**
- * Match an `<Input>` element by its quoted attributes rather than by scanning
- * to the next `>`. PoB writes stat text into `string=` values, and that text
- * can contain both newlines and angle brackets — a `[^>]*` scan would truncate
- * on the latter and silently lose every input after it.
+ * The inputs PoB calculated with, as a name -> value map: the Calcs tab's own inputs (`misc_buffMode`)
+ * and the active config set's. Values are PoB's, as text (`"true"`, `"4"`, `"EFFECTIVE"`).
+ *
+ * Read through `PobSnapshot`, so attribute values may hold newlines and angle brackets (PoB writes stat
+ * text into `string=` values). Only the active config set counts: an inactive set did not produce the
+ * exported stats.
  */
-const INPUT_RE = /<Input\s+((?:[A-Za-z_][\w:.-]*\s*=\s*"[^"]*"\s*)+)\/?>/g
-const ATTR_RE = /([A-Za-z_][\w:.-]*)\s*=\s*"([^"]*)"/g
-
-/** Every `<Input name=... value=...>` in the document, as a name -> value map. */
-export function readPobInputs(xml: string): Map<string, string> {
+export function readPobInputs(source: PobSource): Map<string, string> {
+  const snap = snapshotOf(source)
   const out = new Map<string, string>()
-  for (const match of xml.matchAll(INPUT_RE)) {
-    const attrs = new Map<string, string>()
-    for (const attr of match[1]!.matchAll(ATTR_RE)) attrs.set(attr[1]!, decodeEntities(attr[2]!))
-    const name = attrs.get('name')
-    if (!name) continue
-    // PoB writes exactly one of these three per input.
-    const value = attrs.get('boolean') ?? attrs.get('number') ?? attrs.get('string')
-    if (value !== undefined) out.set(name, value)
-  }
+  for (const [name, value] of Object.entries(snap.calcs.inputs)) out.set(name, String(value))
+  for (const [name, value] of Object.entries(activeConfigSet(snap)?.inputs ?? {})) out.set(name, String(value))
   return out
 }
 
@@ -149,8 +131,8 @@ export function readPobInputs(xml: string): Map<string, string> {
  * zero inputs, which reads as "no configuration was saved" rather than as
  * "default" — the two are not the same claim.
  */
-export function readPobConfig(xml: string): PobConfig {
-  const inputs = readPobInputs(xml)
+export function readPobConfig(source: PobSource): PobConfig {
+  const inputs = readPobInputs(source)
 
   const conditionals: string[] = []
   const unlabelled: string[] = []

@@ -124,6 +124,19 @@ Decisions:
 - Q: seed fixture? → A: the code from the B2 prompt (Monk / Martial Artist, level 90) as `forbidden-rites/seed-monk`. It is temporary; B3 swaps in the owner's main build.
 Suggestions for next batch: B3 should flag the seed's stale export as its first "stale export" finding: TotalDPS is 186,706 embedded vs 203,789.8 recomputed by 0.23.1, while Life, ES and resists match. B3's vitest oracle test can read `*.oracle.json` directly and needs no Lua. B7's `pob2:bump` should run `pob2:oracle` after the sync, because `run.test.mjs` fails when an oracle's `pinCommit` differs from `PIN.json`.
 
+### B3: PobSnapshot reader and fixture swap
+Decisions:
+- Q: the owner's main code? → A: byte-identical to B2's `seed-monk`, so `main.code.txt`/`main.oracle.json` are a rename; `pob2:oracle -- --check` regenerates it byte-equal.
+- Q: delete athrynas-v43 / yykiuy-v51 / yykiuy-v80 now? → A: no, deferred to B5 (owner, this session). 51 of 103 core test files, 3 web unit tests and the e2e suite load them, and gear/trade/replace tests need items, which a code only yields after B5.
+- Q: tokenizer scope → A: `pob/xml.ts`, elements/attributes/text/CDATA/comments, five named entities plus numeric references; lenient (never throws), like the regex readers it replaces.
+- Q: snapshot shape → A: PoB's save schema under PoB's names (`snapshot.ts`), plus `calcs.inputs` (`misc_buffMode` lives in `<Calcs>`), `items[].modRanges` (B5 needs them) and slot `active`. `nil` is null; ids are numbers; legacy `<Config>` without config sets reads as one set.
+- Q: behaviour changes in the rebased readers? → A: only `readPobInputs`: inputs of an inactive config set no longer count (PoB calculates with the active set). Attribute entities are decoded now (`Daevata's Wind`, not `&apos;`). Readers accept a snapshot so `analyzeCharacter` parses a code once.
+- Q: weapon-set split → A: main = `nodes` minus `<WeaponSet1/2>`; live set from `<Items useSecondWeaponSet>`. On athrynas-v43 it equals poe.ninja's three arrays plus the class start node, so the code-only keystone guard (`!fromCode`) and the "Weapon-set passives" gap are gone.
+- Q: minion stats with no `CharModel` field? → A: `Analysis.pobMinionStats`, read from the snapshot. FullDPS rows become skills (main skill not repeated); `treeVersion` becomes `passiveTreeName`.
+- Q: stale export at runtime without an engine? → A: `AnalyzeOptions.pobRecomputed` (oracle today, `pob-sim` later) → `Analysis.staleExport` + a warning. The main code has 22 stale stats, including every maximum hit (PB-3a).
+- Q: decode and parse once per input? → A: `readPobSnapshotFromCode` memoizes the last two codes (core stays pure); `analyzeCharacter` and `pobToCharModel` use it, test `pob-snapshot-cache.test.ts` (red without it, goldens unchanged). Local `perf-import` median: main 3,208 ms, before 3,122, after 2,945. CI's 5,010 ms on #230 was not reproduced; in core the parse takes 1-2 ms, so it was not the parse.
+Suggestions for next batch: B5 parses `PobSnapshot.items` and then does the capture deletion (PB-5 row). B6 can pass `pobRecomputed` from a calc service only once B9 exists; until then the finding shows in tests and goldens only.
+
 ### B4: Lua data exporters and DATA-1 (the tree)
 Decisions:
 - Q: how do the exporters get PoB's data? → A: `tools/pob2/export/{mods,bases,skills,tree}.lua` reuse `headless.lua` and dump `data.itemMods`, `data.itemBases`, `data.skills`/`data.gems` and `main.tree[latestTreeVersion]`; `run.mjs --export <name>` runs them (luajit or the tests image). Plain tables only, sorted keys, byte-identical runs.

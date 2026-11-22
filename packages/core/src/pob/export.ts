@@ -25,6 +25,8 @@
  *  - The item NAME is the line AFTER the "Rarity:" line, not the first line.
  */
 
+import { activeSpec, readPobSnapshot, type PobSnapshot } from './snapshot.js'
+
 export class PobDecodeError extends Error {
   override name = 'PobDecodeError'
 }
@@ -79,24 +81,51 @@ export async function decodePobExport(code: string): Promise<string> {
   return xml
 }
 
+const SNAPSHOT_CACHE_MAX = 2
+const snapshotCache = new Map<string, Promise<PobSnapshot>>()
+/** Test hook: how many codes have been inflated and parsed (cache misses). */
+let snapshotParses = 0
+export function snapshotParseCount(): number {
+  return snapshotParses
+}
+
 /**
- * PoB's own computed stats, read straight out of the XML.
- *
- * Deliberately regex-based rather than DOM-based: `<PlayerStat>` elements are
- * flat self-closing tags, and this must run identically in Node (no DOMParser)
- * and the browser.
+ * Decode and parse a code once. The character page analyses the same code twice (card pass, full pass) and
+ * `pobToCharModel` decodes it a third time, so the last two snapshots are kept by code string. Callers must
+ * treat the snapshot as read-only. A failed decode is not cached.
  */
-export function readPlayerStats(xml: string): Record<string, number> {
-  const out: Record<string, number> = {}
-  const re = /<PlayerStat\s+stat="([^"]+)"\s+value="([^"]*)"\s*\/>/g
-  let m: RegExpExecArray | null
-  while ((m = re.exec(xml)) !== null) {
-    const key = m[1]
-    const raw = m[2]
-    if (!key || raw === undefined) continue
-    const value = Number(raw)
-    if (Number.isFinite(value)) out[key] = value
+export function readPobSnapshotFromCode(code: string): Promise<PobSnapshot> {
+  const hit = snapshotCache.get(code)
+  if (hit) {
+    snapshotCache.delete(code)
+    snapshotCache.set(code, hit)
+    return hit
   }
+  snapshotParses++
+  const p = decodePobExport(code).then((xml) => readPobSnapshot(xml))
+  snapshotCache.set(code, p)
+  p.catch(() => {
+    if (snapshotCache.get(code) === p) snapshotCache.delete(code)
+  })
+  while (snapshotCache.size > SNAPSHOT_CACHE_MAX) snapshotCache.delete(snapshotCache.keys().next().value as string)
+  return p
+}
+
+/** A decoded document, or a snapshot already read from one (so callers parse a code once). */
+export type PobSource = string | PobSnapshot
+
+/** The snapshot for a source: read it when given XML, pass it through when given a snapshot. */
+export function snapshotOf(source: PobSource): PobSnapshot {
+  return typeof source === 'string' ? readPobSnapshot(source) : source
+}
+
+/**
+ * PoB's own computed stats (`<PlayerStat>`), finite values only. Read through `PobSnapshot`, which keeps
+ * Lua's `inf`/`nan` too; those are dropped here because nothing downstream can use them as a figure.
+ */
+export function readPlayerStats(source: PobSource): Record<string, number> {
+  const out: Record<string, number> = {}
+  for (const [key, value] of Object.entries(snapshotOf(source).playerStats)) if (Number.isFinite(value)) out[key] = value
   return out
 }
 
@@ -106,14 +135,8 @@ export interface PobBuildInfo {
   ascendClassName: string | null
   /** PoB's own computed stats — the independent second opinion. */
   playerStats: Record<string, number>
-  /** Number of allocated tree nodes PoB lists, when a spec URL is present. */
+  /** Every allocated node id of the active tree spec, weapon-set nodes included (PoB's `nodes`). */
   treeNodeIds: number[]
-}
-
-function attr(xml: string, tag: string, name: string): string | null {
-  const re = new RegExp(`<${tag}\\b[^>]*\\b${name}="([^"]*)"`)
-  const m = re.exec(xml)
-  return m?.[1] ?? null
 }
 
 /**
@@ -121,29 +144,20 @@ function attr(xml: string, tag: string, name: string): string | null {
  * back null rather than defaulted — a missing level must be reported, not
  * silently rendered as 0.
  */
-export function parsePobXml(xml: string): PobBuildInfo {
-  const levelRaw = attr(xml, 'Build', 'level')
-  const level = levelRaw !== null && Number.isFinite(Number(levelRaw)) ? Number(levelRaw) : null
-
-  const nodesAttr = attr(xml, 'Spec', 'nodes')
-  const treeNodeIds = nodesAttr
-    ? nodesAttr
-        .split(',')
-        .map((s) => Number(s.trim()))
-        .filter((n) => Number.isInteger(n) && n >= 0)
-    : []
-
+export function parsePobXml(source: PobSource): PobBuildInfo {
+  const snap = snapshotOf(source)
   return {
-    level,
-    className: attr(xml, 'Build', 'className'),
-    ascendClassName: attr(xml, 'Build', 'ascendClassName'),
-    playerStats: readPlayerStats(xml),
-    treeNodeIds,
+    level: snap.build.level,
+    className: snap.build.className,
+    ascendClassName: snap.build.ascendClassName,
+    playerStats: readPlayerStats(snap),
+    treeNodeIds: activeSpec(snap)?.nodes ?? [],
   }
 }
 
 /** Convenience: decode and parse in one step. */
-export async function importPobExport(code: string): Promise<PobBuildInfo & { xml: string }> {
+export async function importPobExport(code: string): Promise<PobBuildInfo & { xml: string; snapshot: PobSnapshot }> {
   const xml = await decodePobExport(code)
-  return { ...parsePobXml(xml), xml }
+  const snapshot = readPobSnapshot(xml)
+  return { ...parsePobXml(snapshot), xml, snapshot }
 }
