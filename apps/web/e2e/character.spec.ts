@@ -117,7 +117,7 @@ test('waystone survivability gives a verdict, four tier groups up to T16, and wh
   await expect(page.getByRole('heading', { name: /Main/ }).first()).toBeVisible({ timeout: 30_000 })
   await openTab(page, 'defences')
   const block = page.getByRole('region', { name: 'Survivability by waystone tier' })
-  await expect(block.getByTestId('headroom-verdict')).toHaveText(/Run T12–T14\.\s*Best: T14/, { timeout: 15_000 })
+  await expect(block.getByTestId('headroom-verdict')).toHaveText(/Run T16\.\s*Best: T16/, { timeout: 15_000 })
   const groups = block.getByRole('combobox', { name: 'Tiers' })
   await expect(groups.locator('option')).toHaveText(['T1–T4', 'T5–T8', 'T9–T12', 'T13–T16'])
   // Opens on the group holding the best tier, and the last group reaches T16.
@@ -127,7 +127,8 @@ test('waystone survivability gives a verdict, four tier groups up to T16, and wh
   await expect(tiers.getByRole('listitem', { name: /^Tier/ })).toHaveCount(4)
   await groups.selectOption({ label: 'T1–T4' })
   await expect(tiers.getByRole('listitem', { name: /^Tier 1, area level 65/ })).toBeVisible()
-  await expect(block.getByTestId('headroom-needs')).toContainText('Chaos resistance')
+  // The main build clears T16, so the "what to raise next" list is empty rather than naming a resistance.
+  await expect(block.getByTestId('headroom-needs')).toHaveCount(0)
   // A lower level moves the XP limit: at 70, T1 loses no XP.
   await block.getByLabel('Your level').fill('70')
   await expect(tiers.getByRole('listitem', { name: /^Tier 1, .*XP lost 0%/ })).toBeVisible()

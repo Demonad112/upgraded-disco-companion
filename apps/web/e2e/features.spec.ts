@@ -52,10 +52,15 @@ test('what-if sliders and re-craft toggles recompute the largest hit', async ({ 
   await expect(lowest).toContainText('→')
   await page.getByRole('button', { name: 'Reset', exact: true }).click()
   await expect(lowest).not.toContainText('→')
-  // A suggested re-craft moves its resistance too.
+  // A suggested re-craft moves its resistance row (its "after" figure), not a slider. The main build's lowest hit is
+  // physical, which no re-craft moves, so the proof is an arrow appearing in the resistance rows.
+  const whatIf = page.locator('#what-if')
+  await expect(whatIf).not.toContainText('→')
   const first = page.getByRole('group', { name: /suggested re-crafts/i }).getByRole('checkbox').first()
   await first.check()
-  await expect(lowest).toContainText('→')
+  await expect(whatIf).toContainText('→')
+  await first.uncheck()
+  await expect(whatIf).not.toContainText('→')
 })
 
 test('the tab strip highlights the section being read', async ({ page }) => {

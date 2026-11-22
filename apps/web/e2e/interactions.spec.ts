@@ -69,7 +69,9 @@ test('a Path of Building code gets the full analysis, with what a code lacks nam
   await expect(page.locator('[data-top-fixes]:not([data-pending]) li').first()).toBeVisible({ timeout: 30_000 })
   const gaps = page.getByTestId('couldnt-check')
   await expect(gaps).toContainText('Per-skill damage')
-  await expect(gaps).not.toContainText('Gear findings and trade searches')
+  // Items are read from the code; what no mod id could be proven for is named, never hidden.
+  await expect(gaps).toContainText('mod lines could not be matched to exactly one mod')
+  await expect(gaps).not.toContainText('not read yet')
   await expect(gaps).toContainText('Stat attribution')
   // Next's route announcer is also role=alert, so check for the app's own error text.
   await expect(page.getByText(/Could not analyse|neither valid JSON/)).toHaveCount(0)

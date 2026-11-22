@@ -14,7 +14,7 @@ test('the share card previews and downloads a PNG of the verdict', async ({ page
     page.waitForEvent('download'),
     dialog.getByRole('link', { name: 'Download PNG' }).click(),
   ])
-  expect(download.suggestedFilename()).toBe('athrynas-poe2-card.png')
+  expect(download.suggestedFilename()).toBe('main-poe2-card.png')
   await page.keyboard.press('Escape')
   await expect(dialog).toBeHidden()
   await expect(page.getByRole('button', { name: 'Share card' })).toBeFocused()
