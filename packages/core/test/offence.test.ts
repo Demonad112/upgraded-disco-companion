@@ -25,8 +25,20 @@ import {
 import type { CharModel } from '../src/model/types.js'
 import { mainWithReferenceDefence } from './helpers/main-build.js'
 
+// The offence rules are told on a build at base crit chance. The main build crits 91% of the time, so its main skill
+// is set to the reference scenario's 5% at 2.48x with full hit chance, stated inline, and two crit-multiplier lines
+// are added: +37% on the main-hand weapon (active) and +20% on the idle weapon set's spear, plus a local crit-chance
+// roll on the weapon that must never count as multiplier points.
 const payload = mainWithReferenceDefence()
 const model = (payload.charModel ?? payload) as CharModel
+{
+  const first = (model.skills as { dps: { critChance?: number; critMultiplier?: number; hitChance?: number }[] }[])[0]!.dps[0]!
+  Object.assign(first, { critChance: 5, critMultiplier: 2.48, hitChance: 100 })
+  const mods = (slot: number) => (model.items as { itemSlot: number; itemData: { mods: { explicit: unknown[] } } }[]).find((i) => i.itemSlot === slot)!.itemData.mods
+  mods(7).explicit.push({ id: 'LocalCritMulti', stats: { 'additional_critical_strike_multiplier_+': 37 } })
+  mods(7).explicit.push({ id: 'LocalCritChance', stats: { local_critical_strike_chance: 186 } })
+  mods(15).explicit.push({ id: 'LocalCritMulti', stats: { 'additional_critical_strike_multiplier_+': 20 } })
+}
 const dps = analyzeDps(model)
 const items = normalizeItems(model)
 const ctx = { dps, items }
@@ -88,16 +100,16 @@ describe('effective crit multiplier', () => {
 
 describe('crit modifiers on gear', () => {
   it('counts only the active weapon set', () => {
-    // The reference character carries four crit modifiers, three of them on the
-    // idle set. Counting all four would describe a kit nobody is wearing.
+    // The scenario carries two crit-multiplier modifiers, one of them on the idle set.
+    // Counting both would describe a kit nobody is wearing.
     const mods = critModsOn(items)
     expect(mods.multiplierMods).toHaveLength(1)
-    expect(mods.multiplierMods[0]!.item.name).toBe('Brood Dart')
+    expect(mods.multiplierMods[0]!.item.name).toBe('Skull Song')
     expect(mods.additiveMultiplierPoints).toBe(37)
   })
 
   it('never folds a local increased-crit-chance roll into multiplier points', () => {
-    // Rapture Blast carries `local_critical_strike_chance: 186`. That is a
+    // Skull Song carries `local_critical_strike_chance: 186`. That is a
     // different quantity, and adding 186 points of "multiplier" would produce a
     // confidently wrong number.
     const mods = critModsOn(items)
@@ -124,7 +136,7 @@ describe('the crit investment rule', () => {
     // +37% multiplier at 5% chance: 1.074 / 1.0555 - 1 = 1.75%. This is the
     // figure that makes the finding concrete instead of a lecture.
     const note = found[0]!.evidence.map((e) => e.note).join(' ')
-    expect(note).toContain('Brood Dart')
+    expect(note).toContain('Skull Song')
     expect(note).toContain('+37%')
     expect(note).toMatch(/worth 1\.8% more damage/)
   })
