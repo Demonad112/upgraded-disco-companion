@@ -12,7 +12,7 @@ import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
 import { analyzeCharacter } from '../src/analyze.js'
 import { parsePobItemText, resolveRange, snapshotItems } from '../src/pob/items.js'
-import { readPobSnapshot } from '../src/pob/snapshot.js'
+import { activeItemSet, readPobSnapshot } from '../src/pob/snapshot.js'
 import { snapshotToCharModel } from '../src/pob/to-model.js'
 import { normalizeItems } from '../src/model/slots.js'
 import type { CharModel } from '../src/model/types.js'
@@ -143,16 +143,22 @@ describe('snapshotItems: the main build', () => {
     expect(bySlot[11]!.name).toBe('Mageblood')
   })
 
-  it('flasks and charms go to `flasks`, socketed jewels to `jewels`; an empty slot adds nothing', () => {
-    expect(flasks.map((f) => f.itemData.name ?? f.itemData.typeLine)).toEqual([
-      "Arakaali's Gift",
-      'Sanguis Heroum',
-      "Clinician's Golden Charm of the Endless",
-      'Vitiating Ultimate Life Flask of the Perpetual',
-      'Concentrated Ultimate Mana Flask of the Sylvan',
-    ])
+  it('flasks and charms that are not switched on are not read; an empty slot adds nothing', () => {
+    // The 0.23.1 export carries 2 flasks and 3 charms, none with active="true".
+    expect(flasks).toEqual([])
     expect(unmapped).toEqual([])
     expect(Array.isArray(jewels)).toBe(true)
+  })
+
+  it('a switched-on flask or charm goes to `flasks`', () => {
+    const set = activeItemSet(mainSnap)!
+    const on = structuredClone(mainSnap)
+    for (const slot of activeItemSet(on)!.slots) if (/^(Flask|Charm) \d+$/.test(slot.name)) slot.active = true
+    expect(set.slots.some((s) => s.active)).toBe(false)
+    const names = snapshotItems(on).flasks.map((f) => f.itemData.name ?? f.itemData.typeLine)
+    expect(names).toHaveLength(5)
+    expect(names).toContain("Arakaali's Gift")
+    expect(names).toContain('Concentrated Ultimate Mana Flask of the Sylvan')
   })
 
   it('splits implicit, rune and explicit lines by the Implicits count', () => {
