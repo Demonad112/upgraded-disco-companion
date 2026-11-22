@@ -1,6 +1,6 @@
 /**
  * CF2: rubric, ranking and wording for Yykiuy (audit items 5-19).
- * Fixture: yykiuy-v80.json. Every number asserted is poe.ninja's value as given,
+ * Scenario: the Yykiuy defence block on the main build (helpers/main-build.ts). Every number asserted is poe.ninja's value as given,
  * or derived from it (`whatIfDefense`, `assessBuild`).
  *
  * The ladder sample is a test stand-in: ninja's 192,498 DPS placed in the
@@ -20,10 +20,10 @@ import type { LadderSummary } from '../src/ninja/ladder.js'
 import { COST_WEIGHT } from '../src/recommend/rank.js'
 import { classifyDrift } from '../src/reconcile/index.js'
 import { assessBuild, defenceParts } from '../src/score/index.js'
-import { mainWithReferenceDefence } from './helpers/main-build.js'
+import { mainWithYykiuyDefence } from './helpers/main-build.js'
 
 const here = dirname(fileURLToPath(import.meta.url))
-const payload = mainWithReferenceDefence()
+const payload = mainWithYykiuyDefence()
 const tiers = new ModTiers(
   JSON.parse(readFileSync(join(here, '..', '..', 'data', 'generated', 'mod-tiers.json'), 'utf8')) as ModTierData,
 )

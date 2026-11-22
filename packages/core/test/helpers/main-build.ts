@@ -207,3 +207,142 @@ export function mainWithWeaponSets(size = 8): { code: string; set1: number[]; se
     .replace('useSecondWeaponSet="nil"', 'useSecondWeaponSet="false"')
   return { code: encodePob(xml), set1, set2, all: nodes }
 }
+
+/**
+ * The defence block of the Yykiuy capture (poe.ninja, 2026-11-13) as a stated input: lightning one cap short at
+ * 74 of 76, chaos 69, the lowest max hit physical at 4,399. The CF1 and CF2 tests tell their scenarios on it (PB-5
+ * deleted the capture; its numbers are kept here so every assertion stays exact).
+ */
+export const yykiuyDefence = {
+  life: 1477,
+  energyShield: 2922,
+  ward: 0,
+  mana: 662,
+  spirit: 147,
+  movementSpeed: 134,
+  lifeRegen: 35,
+  evasionRating: 8704,
+  evadeChance: 48,
+  evadeChanceMax: 95,
+  enemyAccuracy: 2114,
+  baseEvadeChance: 0,
+  armour: 0,
+  damageReductions: {
+    physical: null,
+    fire: null,
+    cold: null,
+    lightning: null,
+    chaos: null
+  },
+  deflectChance: 4,
+  deflectChanceMax: 95,
+  deflectionRating: 435,
+  deflectEffect: 40,
+  strength: 97,
+  dexterity: 142,
+  intelligence: 124,
+  enduranceCharges: 3,
+  frenzyCharges: 3,
+  powerCharges: 3,
+  effectiveHealthPool: 18456,
+  physicalMaximumHitTaken: 4399,
+  fireMaximumHitTaken: 15711,
+  coldMaximumHitTaken: 19126,
+  lightningMaximumHitTaken: 15169,
+  chaosMaximumHitTaken: 9477,
+  fireResistance: 75,
+  fireResistanceOverCap: 5,
+  fireResistanceMax: 75,
+  coldResistance: 80,
+  coldResistanceOverCap: 59,
+  coldResistanceMax: 80,
+  lightningResistance: 74,
+  lightningResistanceOverCap: 0,
+  lightningResistanceMax: 76,
+  chaosResistance: 69,
+  chaosResistanceOverCap: 0,
+  chaosResistanceMax: 75,
+  blockChance: 0,
+  itemRarity: 33,
+  physicalTakenAs: {
+    physical: 100,
+    lightning: 0,
+    fire: 0,
+    cold: 0,
+    chaos: 0
+  },
+  damageTypes: {
+    physical: null,
+    fire: {
+      takenAs: null,
+      takenAsFromHits: null,
+      attackMult: 1,
+      spellMult: 1,
+      dotMult: 0.25,
+      flat: null,
+      esBypass: null,
+      momShare: 0
+    },
+    cold: {
+      takenAs: null,
+      takenAsFromHits: null,
+      attackMult: 1,
+      spellMult: 1,
+      dotMult: 0.2,
+      flat: null,
+      esBypass: null,
+      momShare: 0
+    },
+    lightning: {
+      takenAs: null,
+      takenAsFromHits: null,
+      attackMult: 1,
+      spellMult: 1,
+      dotMult: 0.26,
+      flat: null,
+      esBypass: null,
+      momShare: 0
+    },
+    chaos: {
+      takenAs: null,
+      takenAsFromHits: null,
+      attackMult: 1,
+      spellMult: 1,
+      dotMult: 0.31,
+      flat: null,
+      esBypass: null,
+      momShare: 0
+    }
+  },
+  recovery: {
+    regen: {
+      life: 35,
+      energyShield: 0,
+      mana: 43
+    },
+    overleech: false,
+    recharge: {
+      energyShield: 365,
+      life: 0,
+      delay: 3.5088,
+      wardDelay: 2
+    },
+    recoup: null,
+    onIncomingHit: null,
+    maxLifeLeechRate: 295,
+    maxEnergyShieldLeechRate: 292
+  },
+  lifeLossPrevention: null,
+  companionRedirect: null,
+  lowestMaximumHitTaken: 4399
+}
+
+/** The main build with the Yykiuy defence block, level 88, and its main skill replaced by Falling Thunder at 192,498 DPS (12/49/31/8/0). */
+export function mainWithYykiuyDefence(): { type: string; charModel: CharModel } {
+  const p = mainPayload()
+  const skills = structuredClone(p.charModel.skills) as { dps?: Record<string, unknown>[] }[]
+  const first = skills.find((s) => s.dps?.[0])!
+  Object.assign(first.dps![0]!, { name: 'Falling Thunder', dps: 192_498, damageTypes: [12, 49, 31, 8, 0] })
+  p.charModel = { ...p.charModel, level: 88, defensiveStats: structuredClone(yykiuyDefence), skills } as CharModel
+  return p
+}
