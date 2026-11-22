@@ -207,15 +207,17 @@ describe('gear gap (pobCodeGaps)', () => {
   })
 })
 
-describe('cross-check: athrynas-v43 code items against its poe.ninja items', () => {
+describe('cross-check: the main code\'s items against the model built from them', () => {
   const payload = mainPayload()
+  // The poe.ninja capture this was once checked against is gone (PB-5); the check is now that mod resolution keeps
+  // every slot, name, base and text line the snapshot read, unchanged.
   const ninja: CharModel = payload.charModel ?? payload
   const code: string = ninja.pathOfBuildingExport ?? payload.pathOfBuildingExport
   const norm = (s: string): string => s.replace(/\[(?:[^\]|]+\|)?([^\]]+)\]/g, '$1').replace(/\s+/g, ' ').trim()
   const lines = (d: NinjaItem['itemData']): string[] =>
     [d.implicitMods, d.runeMods, d.explicitMods, d.craftedMods, d.desecratedMods, d.fracturedMods].flatMap((l) => (l ?? []).map(norm))
 
-  it('every slot the code fills matches poe.ninja by name and base, and most lines agree', async () => {
+  it('every slot the code fills keeps its name and base, and every line', async () => {
     const snap = await readPobSnapshotFromCode(code)
     const fromCode = snapshotItems(snap).items
     const bySlot = new Map((ninja.items ?? []).map((i) => [i.itemSlot, i.itemData]))
@@ -224,7 +226,7 @@ describe('cross-check: athrynas-v43 code items against its poe.ninja items', () 
     let total = 0
     for (const c of fromCode) {
       const n = bySlot.get(c.itemSlot)
-      expect(n, `slot ${c.itemSlot} exists on poe.ninja`).toBeDefined()
+      expect(n, `slot ${c.itemSlot} exists in the model`).toBeDefined()
       expect(norm(c.itemData.name ?? '')).toBe(norm(n!.name ?? ''))
       expect(norm(c.itemData.typeLine ?? '')).toBe(norm(n!.typeLine ?? ''))
       const theirs = new Set(lines(n!))
@@ -233,8 +235,8 @@ describe('cross-check: athrynas-v43 code items against its poe.ninja items', () 
         if (theirs.has(l)) same++
       }
     }
-    // PoB rounds a range to the nearest whole number; a line can differ by a point, so require most, not all.
-    expect(same / total).toBeGreaterThan(0.8)
+    // Resolution only adds `mods`; it never rewrites or drops a text line.
+    expect(same).toBe(total)
   })
 
   it('the converted model carries the same slots', async () => {

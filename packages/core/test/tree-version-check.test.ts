@@ -13,6 +13,7 @@ import { readFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 
 import { analyzeCharacter } from '../src/analyze.js'
+import { mainPayload } from './helpers/main-build.js'
 import { keystoneEffectsOf } from '../src/keystones/index.js'
 import { checkTreeVersion, PassiveTree, resolveAllocation, type PassiveTreeData } from '../src/tree/index.js'
 
@@ -34,13 +35,13 @@ describe('checkTreeVersion', () => {
     expect(check.missing).toEqual([999_999_001, 999_999_002])
   })
 
-  it('reads Yykiuy as current: PoB\'s tree carries the 3 nodes the old data lacked (DATA-1)', async () => {
-    const a = await analyzeCharacter(load('./fixtures/yykiuy-v80.json'), { tree })
+  it('reads the main build as current: PoB\'s tree carries every node it allocates (DATA-1)', async () => {
+    const a = await analyzeCharacter(mainPayload(), { tree })
     expect(a.treeCheck).toEqual({ status: 'current', treeName: tree.treeName, missing: [] })
   })
 
   it('is unchecked without tree data', async () => {
-    const a = await analyzeCharacter(load('./fixtures/athrynas-v43.json'))
+    const a = await analyzeCharacter(mainPayload())
     expect(a.treeCheck).toEqual({ status: 'unchecked', treeName: null, missing: [] })
   })
 })
