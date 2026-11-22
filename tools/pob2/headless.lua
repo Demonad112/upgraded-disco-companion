@@ -258,8 +258,11 @@ function M.snapshot(loadError)
 	return snap
 end
 
--- dkjson with every key in sorted order, so the CLI output is deterministic.
-function M.encode(value)
+M.object = object
+M.array = array
+
+-- dkjson with every key in sorted order, so the CLI output is deterministic. `compact` drops the indent (data exports).
+function M.encode(value, compact)
 	local keys, seen = {}, {}
 	local function collect(t)
 		for k, v in pairs(t) do
@@ -274,7 +277,7 @@ function M.encode(value)
 	end
 	collect(value)
 	table.sort(keys)
-	return require("dkjson").encode(value, { indent = true, keyorder = keys })
+	return require("dkjson").encode(value, { indent = not compact, keyorder = keys })
 end
 
 return M

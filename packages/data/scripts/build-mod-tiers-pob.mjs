@@ -9,8 +9,15 @@
  *
  * build-mod-tiers.mjs reads RePoE-fork, which was unreachable when 0.5.5 shipped,
  * so the artifact it last wrote predates the patch. PoB exports the game's item
- * data itself (`src/Data/ModItem.lua`, `ModJewel.lua`, `Bases/*.lua`) and its
- * fork is on hand, so this reads that instead.
+ * data itself, and its fork is vendored in this repo (vendor/pob2), so this reads
+ * that instead.
+ *
+ * ## How it reads PoB
+ *
+ * Not by parsing Lua text. tools/pob2/export/{mods,bases}.lua load PoB headless
+ * and dump the tables PoB itself uses (`data.itemMods.Item` / `.Jewel`,
+ * `data.itemBases`); scripts/pob2/run.mjs runs them. The revision is the one in
+ * vendor/pob2/PIN.json, so the build needs no PoB checkout and no POB2_DIR.
  *
  * ## What PoB does not carry: stat ids
  *
@@ -29,73 +36,43 @@
  * non-gear bases (currency and so on) are kept too; PoB's Bases/ only covers
  * equipment.
  *
- * Usage: POB2_DIR=/path/to/PathOfBuilding-PoE2 node scripts/build-mod-tiers-pob.mjs [--allow-missing]
+ * Usage: npm run build:mod-tiers:pob -w @poe2/data [-- --allow-missing]
  */
 
-import { execFileSync } from 'node:child_process'
-import { readFileSync, readdirSync, writeFileSync } from 'node:fs'
+import { readFileSync, writeFileSync } from 'node:fs'
 import { gzipSync } from 'node:zlib'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { writeDataVersion } from './lib/version.mjs'
+import { pobExport, pobSource, pobCommitShort } from './lib/pob.mjs'
+import { GAME_PATCH, writeDataVersion } from './lib/version.mjs'
 
 const here = dirname(fileURLToPath(import.meta.url))
 const outDir = join(here, '..', 'generated')
-const pobDir = process.env.POB2_DIR
-if (!pobDir) {
-  console.error('Set POB2_DIR to a Path of Building PoE2 checkout (github.com/PathOfBuildingCommunity/PathOfBuilding-PoE2).')
-  process.exit(1)
-}
 const allowMissing = process.argv.includes('--allow-missing')
-const dataDir = join(pobDir, 'src', 'Data')
-
-let pobCommit = null
-try {
-  pobCommit = execFileSync('git', ['-C', pobDir, 'rev-parse', '--short', 'HEAD'], { encoding: 'utf8' }).trim()
-} catch {
-  // Not a git checkout; the artifact just won't name a commit.
-}
 
 const previous = JSON.parse(readFileSync(join(outDir, 'mod-tiers.json'), 'utf8'))
 
 // --- mods --------------------------------------------------------------------
 
-/** Lua string literals in order, from the start of a table body up to its first `key =`. */
-function leadingStrings(rest) {
-  const out = []
-  const re = /\s*"([^"]*)",/y
-  let m
-  while ((m = re.exec(rest))) out.push(m[1])
-  return out
-}
-
-function listField(body, name, pattern) {
-  const raw = new RegExp(`${name} = \\{([^}]*)\\}`).exec(body)?.[1] ?? ''
-  return [...raw.matchAll(pattern)].map((m) => m[1])
-}
-
-function parseModFile(file) {
+/** Prefixes and suffixes of one exported mod table, in the shape the rest of this script uses. */
+function affixes(table) {
   const out = {}
-  const line = /^\t\["([^"]+)"\] = \{ type = "(Prefix|Suffix)", affix = "([^"]*)",(.*)$/
-  for (const text of readFileSync(join(dataDir, file), 'utf8').split('\n')) {
-    const m = line.exec(text)
-    if (!m) continue
-    const [, id, type, affix, rest] = m
-    const keys = listField(rest, 'weightKey', /"([^"]+)"/g)
-    const vals = listField(rest, 'weightVal', /(-?\d+)/g).map(Number)
+  for (const [id, m] of Object.entries(table)) {
+    if (m.type !== 'Prefix' && m.type !== 'Suffix') continue
     out[id] = {
-      t: type === 'Prefix' ? 'p' : 's',
-      affix: affix || null,
-      lines: leadingStrings(rest),
-      lvl: Number(/\blevel = (\d+)/.exec(rest)?.[1] ?? 0),
-      g: /\bgroup = "([^"]+)"/.exec(rest)?.[1] ?? null,
-      spawn: keys.map((k, i) => [k, vals[i] ?? 0]),
+      t: m.type === 'Prefix' ? 'p' : 's',
+      affix: m.affix || null,
+      lines: m.lines,
+      lvl: m.level ?? 0,
+      g: m.group ?? null,
+      spawn: m.weightKey.map((k, i) => [k, m.weightVal[i] ?? 0]),
     }
   }
   return out
 }
 
-const pobMods = { ...parseModFile('ModItem.lua'), ...parseModFile('ModJewel.lua') }
+const exportedMods = pobExport('mods')
+const pobMods = { ...affixes(exportedMods.item), ...affixes(exportedMods.jewel) }
 
 /** Numbers in display order: "+(5-8) to Strength" -> [5, 8]. */
 const numbers = (text) => [...(text ?? '').matchAll(/-?\d+(?:\.\d+)?/g)].map((m) => Number(m[0]))
@@ -167,15 +144,6 @@ const removed = Object.keys(previous.mods).filter((id) => !pobMods[id])
 
 // --- bases -------------------------------------------------------------------
 
-/** `{ Armour = 80, EnergyShield = 12, }` -> { Armour: 80, EnergyShield: 12 } */
-function numberTable(body, name) {
-  const raw = new RegExp(`\\n\\t${name} = \\{([^}]*)\\}`).exec(body)?.[1]
-  if (raw === undefined) return null
-  const out = {}
-  for (const m of raw.matchAll(/(\w+) = (-?\d+(?:\.\d+)?)/g)) out[m[1]] = Number(m[2])
-  return out
-}
-
 /** Item types that are not gear slots a replacement plan covers. */
 const NOT_GEAR = new Set(['Flask', 'Charm', 'Jewel', 'Fishing Rod', 'Transcendent Limb'])
 
@@ -184,41 +152,27 @@ const baseClass = { ...previous.baseClass }
 const bases = {}
 const addedBases = []
 const retagged = []
-const seen = new Set()
-for (const file of readdirSync(join(dataDir, 'Bases')).filter((f) => f.endsWith('.lua'))) {
-  const text = readFileSync(join(dataDir, 'Bases', file), 'utf8')
-  for (const m of text.matchAll(/^itemBases\["([^"]+)"\] = \{\n([\s\S]*?)^\}/gm)) {
-    const [, name, body] = m
-    const type = /\n\ttype = "([^"]+)"/.exec('\n' + body)?.[1]
-    if (!type) continue
-    const tags = Object.keys(
-      Object.fromEntries([...(/\ttags = \{([^}]*)\}/.exec(body)?.[1] ?? '').matchAll(/(\w+) = true/g)].map((t) => [t[1], 1])),
-    )
-    const hidden = /\n\thidden = true/.test('\n' + body)
+// PoB keys its bases by name, so a name defined twice (a hidden copy) is already one entry here.
+for (const [name, b] of Object.entries(pobExport('bases').bases)) {
+  const { type, tags } = b
+  if (!type) continue
+  if (!previous.baseTags[name]) addedBases.push(name)
+  else if ([...previous.baseTags[name]].sort().join() !== [...tags].sort().join()) retagged.push(name)
+  baseTags[name] = tags
+  baseClass[name] = previous.baseClass[name] ?? type
 
-    // Duplicate names (a hidden copy) carry the same tags; the first one wins.
-    if (!seen.has(name)) {
-      seen.add(name)
-      if (!previous.baseTags[name]) addedBases.push(name)
-      else if ([...previous.baseTags[name]].sort().join() !== [...tags].sort().join()) retagged.push(name)
-      baseTags[name] = tags
-      baseClass[name] = previous.baseClass[name] ?? type
-    }
-
-    if (NOT_GEAR.has(type) || bases[name]) continue
-    const implicit = /\n\timplicit = "([^"]*)"/.exec('\n' + body)?.[1]
-    bases[name] = {
-      type,
-      subType: /\n\tsubType = "([^"]+)"/.exec('\n' + body)?.[1] ?? null,
-      // Spawn tags are in mod-tiers.json's baseTags, keyed by the same name.
-      implicit: implicit ? implicit.split('\\n') : [],
-      armour: numberTable('\n' + body, 'armour'),
-      weapon: numberTable('\n' + body, 'weapon'),
-      req: numberTable('\n' + body, 'req') ?? {},
-      // Hidden bases and ones the game never sells or drops are kept for lookup
-      // but never suggested as something to buy.
-      obtainable: !hidden && !tags.includes('not_for_sale'),
-    }
+  if (NOT_GEAR.has(type)) continue
+  bases[name] = {
+    type,
+    subType: b.subType ?? null,
+    // Spawn tags are in mod-tiers.json's baseTags, keyed by the same name.
+    implicit: b.implicit ? b.implicit.split('\n') : [],
+    armour: b.armour ?? null,
+    weapon: b.weapon ?? null,
+    req: b.req ?? {},
+    // Hidden bases and ones the game never sells or drops are kept for lookup
+    // but never suggested as something to buy.
+    obtainable: !b.hidden && !tags.includes('not_for_sale'),
   }
 }
 
@@ -236,14 +190,14 @@ if (missing.length || mismatched.length) {
   for (const x of mismatched) delete mods[x.id]
 }
 
-const source = `PathOfBuilding-PoE2${pobCommit ? `@${pobCommit}` : ''}`
+const source = pobSource
 const artifact = {
   version: 1,
   generatedFrom: [
-    `${source} src/Data/ModItem.lua, ModJewel.lua, Bases/*.lua`,
+    `${source} data.itemMods (Item, Jewel) and data.itemBases, via tools/pob2/export`,
     'stat ids and displayOnly carried over from the RePoE-fork build (build-mod-tiers.mjs)',
   ],
-  gameVersion: '0.5.5',
+  gameVersion: GAME_PATCH,
   note: previous.note,
   baseTags,
   baseClass,
@@ -253,13 +207,13 @@ const artifact = {
 const json = JSON.stringify(artifact)
 writeFileSync(join(outDir, 'mod-tiers.json'), json)
 
-const basesJson = JSON.stringify({ version: 1, generatedFrom: `${source} src/Data/Bases/*.lua`, gameVersion: '0.5.5', bases })
+const basesJson = JSON.stringify({ version: 1, generatedFrom: `${source} data.itemBases, via tools/pob2/export`, gameVersion: GAME_PATCH, bases })
 writeFileSync(join(outDir, 'bases.json'), basesJson)
-writeDataVersion(outDir, { gameVersion: '0.5.5', pobCommit, source, artifacts: ['mod-tiers.json', 'bases.json'] })
+writeDataVersion(outDir)
 
 // --- report ------------------------------------------------------------------
 const size = (s) => `${(s.length / 1024).toFixed(0)} KB raw · ${(gzipSync(s, { level: 9 }).length / 1024).toFixed(0)} KB gzipped`
-console.log(`PoB source          ${source}`)
+console.log(`PoB source          ${source} (${pobCommitShort}, data ${GAME_PATCH})`)
 console.log(`PoB prefix/suffix   ${Object.keys(pobMods).length}`)
 console.log(`kept                ${Object.keys(mods).length} (previously ${Object.keys(previous.mods).length})`)
 console.log(`  removed           ${removed.length}${removed.length ? `: ${removed.join(', ')}` : ''}`)

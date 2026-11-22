@@ -11,7 +11,7 @@ const tree = new PassiveTree(JSON.parse(readFileSync(join(here, '..', '..', 'dat
 describe('listKeystones', () => {
   it('lists every keystone node, sorted by name, with rule notes where carried', () => {
     const all = listKeystones(tree)
-    expect(all.length).toBe(30)
+    expect(all.length).toBe(33)
     const names = all.map((k) => k.name)
     expect(names).toEqual([...names].sort((a, b) => a.localeCompare(b)))
     const ci = all.find((k) => k.name === 'Chaos Inoculation')!

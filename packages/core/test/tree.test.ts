@@ -25,14 +25,14 @@ const resolved = resolveAllocation(tree, allocation)
 
 describe('tree data', () => {
   it('loads every node and edge', () => {
-    expect(tree.size).toBe(4975)
-    expect([...tree.edgePairs()]).toHaveLength(5887)
+    // PoB's own tree (vendor/pob2, `npm run build:tree:pob`) without its decorative OnlyImage nodes.
+    expect(tree.size).toBe(4546)
+    expect([...tree.edgePairs()]).toHaveLength(5187)
   })
 
   it('treats connections as undirected', () => {
-    // The source stores them directed: 5,888 entries, of which exactly one is
-    // reciprocated and one is a self-loop (dropped), leaving 5,887 real edges.
-    // After loading, every edge must traverse both ways.
+    // PoB stores connections directed; the build writes each pair once and drops
+    // self-loops. After loading, every edge must traverse both ways.
     for (const [a, b] of tree.edgePairs()) {
       expect(tree.neighbours(a)).toContain(b)
       expect(tree.neighbours(b)).toContain(a)
@@ -41,18 +41,20 @@ describe('tree data', () => {
 
   it('classifies node kinds', () => {
     const all = [...tree.allNodes()]
-    expect(all.filter((n) => n.kind === NODE_KIND.notable)).toHaveLength(968)
-    expect(all.filter((n) => n.kind === NODE_KIND.keystone)).toHaveLength(30)
-    expect(all.filter((n) => n.kind === NODE_KIND.jewel)).toHaveLength(12)
+    expect(all.filter((n) => n.kind === NODE_KIND.notable)).toHaveLength(1193)
+    expect(all.filter((n) => n.kind === NODE_KIND.keystone)).toHaveLength(33)
+    // PoB's Socket nodes: the 12 plain sockets, the Sinister sockets and Zarokh's Gift.
+    expect(all.filter((n) => n.kind === NODE_KIND.jewel)).toHaveLength(18)
     expect(all.filter((n) => n.kind === NODE_KIND.start)).toHaveLength(6)
   })
 
-  it('tags ascendancy nodes by icon, covering all 19 classes', () => {
-    // `is_ascendancy` marks only the 17 class nodes, and the graph is a single
-    // connected component, so neither flag nor structure identifies these.
+  it("tags ascendancy nodes with PoB's ascendancy name, covering all 22 ascendancies", () => {
+    // PoB names the ascendancy on every wheel node, and the graph is a single
+    // connected component, so structure alone could not identify them.
     const ascendancyNodes = [...tree.allNodes()].filter((n) => n.ascendancy !== null)
-    expect(ascendancyNodes).toHaveLength(353)
-    expect(tree.ascendancies).toHaveLength(19)
+    expect(ascendancyNodes).toHaveLength(431)
+    expect(ascendancyNodes.filter((n) => n.isAscendancyClassNode)).toHaveLength(22)
+    expect(tree.ascendancies).toHaveLength(22)
     expect(tree.ascendancies).toContain('Deadeye')
     expect(tree.node(30)).toMatchObject({ name: 'Gathering Winds', ascendancy: 'Deadeye', kind: NODE_KIND.notable })
   })
@@ -70,7 +72,8 @@ describe('resolving the real allocation', () => {
   })
 
   it('separates ascendancy from main-tree allocation', () => {
-    expect(resolved.ascendancy.map((n) => n.ascendancy)).toEqual(Array(9).fill('Deadeye'))
+    // 9 allocated wheel nodes plus the Deadeye start node, which PoB's tree carries.
+    expect(resolved.ascendancy.map((n) => n.ascendancy)).toEqual(Array(10).fill('Deadeye'))
     expect(resolved.mainTree).toHaveLength(resolved.live.length - resolved.ascendancy.length)
   })
 
@@ -90,21 +93,21 @@ describe('resolving the real allocation', () => {
   })
 
   it('explains the allocation groups instead of warning about a broken tree', () => {
-    // V1 emitted "disconnected tree" warnings constantly. Multiple groups are
-    // normal: the ascendancy wheel is reached through the class node, and this
-    // data set does not carry every link. The game forbids a genuinely broken
-    // tree, so the groups are described rather than flagged.
-    expect(resolved.components).toHaveLength(3)
+    // V1 emitted "disconnected tree" warnings constantly. Two groups are normal:
+    // the ascendancy wheel is reached through the class node. The game forbids a
+    // genuinely broken tree, so the groups are described rather than flagged.
+    // The old data set lacked links and left 4 nodes in a third, detached group;
+    // PoB's tree carries every link, so there is none.
+    expect(resolved.components).toHaveLength(2)
 
-    const [mainTree, ascendancy, detached] = resolved.components
+    const [mainTree, ascendancy] = resolved.components
     expect(mainTree).toMatchObject({ kind: 'main-tree', ascendancy: null })
-    expect(mainTree!.nodes).toHaveLength(105)
+    expect(mainTree!.nodes).toHaveLength(109)
 
     expect(ascendancy).toMatchObject({ kind: 'ascendancy', ascendancy: 'Deadeye' })
     expect(ascendancy!.nodes).toHaveLength(10)
 
-    expect(detached).toMatchObject({ kind: 'detached' })
-    expect(detached!.nodes).toHaveLength(4)
+    expect(resolved.components.some((c) => c.kind === 'detached')).toBe(false)
 
     // Every allocated node belongs to exactly one group.
     const total = resolved.components.reduce((sum, c) => sum + c.nodes.length, 0)
@@ -153,11 +156,8 @@ describe('allocation coverage', () => {
     // knows. Every captured payload in test/fixtures is checked; a new capture
     // needs no edit here. A character known to need newer tree data is listed
     // with the most unresolved ids it may have; that number only ever goes down.
-    const KNOWN_DATA_GAPS: Record<string, number> = {
-      // Evidence pack: 3 allocated nodes missing from the data set, which
-      // predates patch 0.5.5. Remove once the tree data is refreshed.
-      'yykiuy': 3,
-    }
+    // DATA-1 closed: the tree is PoB's own, so Yykiuy's 3 missing nodes resolve and the list is empty.
+    const KNOWN_DATA_GAPS: Record<string, number> = {}
     for (const file of fixtureFiles()) {
       const m = unwrapCharModel(JSON.parse(readFileSync(fileURLToPath(new URL(`./fixtures/${file}`, import.meta.url)), 'utf8')))
       const r = resolveAllocation(tree, normalizePassives(m))
