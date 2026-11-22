@@ -99,7 +99,9 @@ async function view(doc: Record<string, unknown>, options: AnalyzeOptions = {}) 
       attributes: holding.attributes.value,
       movementSpeed: holding.movementSpeed.value,
     },
-    cacheKey: await analysisCacheKey({ model: (a.model as Record<string, unknown>), pobVersion: null, dataVersion: 'golden' }),
+    // First 12 hex characters only: a full SHA-256 in a golden reads as an API key to the secrets scan, and 12 still
+    // change whenever the key does.
+    cacheKey: (await analysisCacheKey({ model: (a.model as Record<string, unknown>), pobVersion: null, dataVersion: 'golden' })).slice(0, 12),
   }
 }
 
