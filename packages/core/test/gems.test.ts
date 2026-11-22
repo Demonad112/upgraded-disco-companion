@@ -1,5 +1,5 @@
 /**
- * Support-gem parsing and validation, against the real character payload.
+ * Support-gem parsing and validation, against hand-built poe.ninja-shaped setups (test/helpers/gem-skills.ts).
  *
  * The rules checked here come from the payload itself — each support ships its
  * own tags, its category, and the game's stated rule that a skill cannot hold
@@ -11,22 +11,19 @@ import { describe, expect, it } from 'vitest'
 import { readFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 
-import { unwrapCharModel } from '../src/analyze.js'
 import { indexSupports, parseAllSetups, parseSkillSetup, validateByName, validateSetup } from '../src/gems/index.js'
-import { mainWithReferenceDefence } from './helpers/main-build.js'
+import { handBuiltSkills } from './helpers/gem-skills.js'
 
-const model = unwrapCharModel(
-  mainWithReferenceDefence(),
-)
-const setups = parseAllSetups(model.skills)
+// Hand-built setups: a PoB code has no gem tags or categories, so the main build cannot feed these checks.
+const setups = parseAllSetups(handBuiltSkills())
 const known = indexSupports(setups)
 const iceShot = setups.find((s) => s.skill === 'Ice Shot')!
 
-describe('parsing real gem data from the payload', () => {
+describe('parsing gem data from the payload', () => {
   it('finds every skill setup and its supports', () => {
-    expect(setups.length).toBeGreaterThanOrEqual(11)
+    expect(setups).toHaveLength(4)
     const totalSupports = setups.reduce((n, s) => n + s.supports.length, 0)
-    expect(totalSupports).toBe(47)
+    expect(totalSupports).toBe(12)
   })
 
   it('reads a support’s own tags and category', () => {

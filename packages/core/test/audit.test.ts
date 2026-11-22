@@ -1,9 +1,11 @@
 /**
  * Checks over payload the rest of the analysis never read.
  *
- * Every number here was read off the real character before the test was written.
- * Strength really is 47 against a requirement of 45; the jewels really are three
- * Emeralds; spirit really is 159 with 79 unreserved.
+ * Every number here was read off the main build before the test was written.
+ * Dexterity really is 137 against a requirement of 137; the jewels really are an
+ * Emerald and two unique Diamonds; spirit really is 147 with 10 unreserved. A PoB
+ * code carries no gem tags, so the gem-quality checks run on hand-built setups
+ * (test/helpers/gem-skills.ts) added to the main build.
  */
 
 import { readFileSync } from 'node:fs'
@@ -26,10 +28,12 @@ import {
 } from '../src/gear/audit.js'
 import { normalizeItems } from '../src/model/slots.js'
 import type { CharModel } from '../src/model/types.js'
+import { handBuiltSkills } from './helpers/gem-skills.js'
 import { mainWithBreakdowns } from './helpers/main-build.js'
 
 const payload = mainWithBreakdowns()
 const model: CharModel = payload.charModel ?? payload
+model.skills = handBuiltSkills()
 const tiers = new ModTiers(
   JSON.parse(
     readFileSync(fileURLToPath(new URL('../../data/generated/mod-tiers.json', import.meta.url)), 'utf8'),
@@ -41,25 +45,26 @@ const audit = auditCharacter(model, tiers, pob.playerStats)
 describe('jewels', () => {
   it('resolves jewel modifiers, which the item-domain filter used to drop', () => {
     // Jewel affixes are RePoE domain `misc`, not `item`. Filtering to `item`
-    // left all twelve of these unresolvable and the jewels invisible.
+    // left them unresolvable and the jewels invisible. The rare Emerald's four
+    // modifiers resolve to tiers; the two unique Diamonds' lines are text-only.
     expect(audit.jewels).toHaveLength(3)
-    for (const jewel of audit.jewels) {
-      expect(jewel.baseType).toBe('Emerald')
-      expect(jewel.mods.length).toBeGreaterThan(0)
-      for (const mod of jewel.mods) {
-        expect(mod.tier).not.toBeNull()
-        expect(mod.text).not.toBe(mod.id)
-      }
+    expect(audit.jewels.map((j) => j.baseType).sort()).toEqual(['Diamond', 'Diamond', 'Emerald'])
+    const emerald = audit.jewels.find((j) => j.baseType === 'Emerald')!
+    expect(emerald.mods).toHaveLength(4)
+    for (const mod of emerald.mods) expect(mod.tier).not.toBeNull()
+    for (const mod of audit.jewels.flatMap((j) => j.mods)) {
+      expect(mod.text).not.toBe(mod.id)
     }
   })
 
   it('tiers a jewel against jewel spawn rules, not gear ones', () => {
-    const bowDamage = audit.jewels.flatMap((j) => j.mods).filter((m) => m.id === 'JewelBowDamage')
-    expect(bowDamage.length).toBe(3)
-    // JewelBowDamage spawns on `dexjewel`, which an Emerald carries.
-    expect(tiers.canSpawn('JewelBowDamage', tiers.tagsForBase('Emerald')!)).toBe(true)
-    // …and not on a bow, despite the name.
-    expect(tiers.canSpawn('JewelBowDamage', tiers.tagsForBase('Militant Bow')!)).toBe(false)
+    const emerald = audit.jewels.find((j) => j.baseType === 'Emerald')!
+    const quarterstaff = emerald.mods.filter((m) => m.id === 'JewelQuarterstaffDamage')
+    expect(quarterstaff.length).toBe(1)
+    // JewelQuarterstaffDamage spawns on `dexjewel`, which an Emerald carries.
+    expect(tiers.canSpawn('JewelQuarterstaffDamage', tiers.tagsForBase('Emerald')!)).toBe(true)
+    // …and not on a bow, despite being a weapon-type damage line.
+    expect(tiers.canSpawn('JewelQuarterstaffDamage', tiers.tagsForBase('Militant Bow')!)).toBe(false)
   })
 
   it('never calls a jewel modifier wasted', () => {
@@ -73,7 +78,7 @@ describe('jewels', () => {
 
 describe('empty sockets', () => {
   it('reports none when every socket is filled', () => {
-    // Six items carry sockets on this character and all are filled.
+    // Every socketed item on this build is filled.
     expect(audit.emptySockets).toEqual([])
   })
 
@@ -101,7 +106,7 @@ describe('gem quality', () => {
   it('flags levelled gems below maximum quality', () => {
     expect(MAX_GEM_QUALITY).toBe(20)
     const names = audit.gemQuality.map((g) => g.gem)
-    // Two Ice Shot copies sit at 0% while a third is at 20%.
+    // Two Ice Shot copies sit at 0% while a third is at 20% (hand-built setups).
     expect(names.filter((n) => n === 'Ice Shot')).toHaveLength(2)
     for (const gem of audit.gemQuality) expect(gem.quality).toBeLessThan(MAX_GEM_QUALITY)
   })
@@ -113,15 +118,14 @@ describe('gem quality', () => {
 
   it('ignores support gems, which report level 0 and quality 0 by convention', () => {
     // Treating those as unqualited would flag every support on every character.
-    const supports = ['Rapid Attacks II', 'Deliberation', 'Longshot II', 'Ice Bite II']
+    const supports = ['Rapid Attacks II', 'Deliberation', 'Longshot II', 'Ice Bite II', 'Rapid Casting II']
     for (const name of supports) {
       expect(audit.gemQuality.some((g) => g.gem === name)).toBe(false)
     }
   })
 
   it('names a triggered setup by its own gem rather than "unknown"', () => {
-    // Five of eleven setups carry no dps block — Marks, Mirage Archer — and were
-    // all rendering as "unknown skill".
+    // Setups with no dps block — Marks, Mirage Archer — were all rendering as "unknown skill".
     for (const gem of audit.gemQuality) {
       expect(gem.skill).not.toMatch(/unknown/i)
     }
@@ -131,26 +135,27 @@ describe('gem quality', () => {
 
 describe('attribute headroom', () => {
   it('reports how close each attribute is to its requirement', () => {
-    const str = audit.attributes.find((a) => a.attribute === 'strength')!
-    expect(str).toMatchObject({ have: 47, required: 45, headroom: 2 })
-    // Two points spare: losing any strength source unequips something.
-    expect(str.tight).toBe(true)
+    const dex = audit.attributes.find((a) => a.attribute === 'dexterity')!
+    expect(dex).toMatchObject({ have: 137, required: 137, headroom: 0 })
+    // Nothing spare: losing any dexterity source unequips something.
+    expect(dex.tight).toBe(true)
+    expect(audit.attributes.find((a) => a.attribute === 'intelligence')).toMatchObject({ have: 119, required: 116, headroom: 3, tight: true })
     expect(TIGHT_ATTRIBUTE_MARGIN).toBe(10)
   })
 
   it('puts the tightest attribute first', () => {
     const headrooms = audit.attributes.map((a) => a.headroom)
     expect([...headrooms].sort((a, b) => a - b)).toEqual(headrooms)
-    expect(audit.attributes[0]!.attribute).toBe('strength')
+    expect(audit.attributes[0]!.attribute).toBe('dexterity')
   })
 
   it('does not call excess dexterity waste', () => {
-    // 93 points over requirement, but dexterity grants accuracy and evasion —
+    // 12 points over requirement, but strength grants life and melee damage —
     // calling it waste would be a judgement about build direction.
-    const dex = audit.attributes.find((a) => a.attribute === 'dexterity')!
-    expect(dex.headroom).toBe(93)
-    expect(dex.tight).toBe(false)
-    expect(JSON.stringify(dex)).not.toMatch(/waste|excess/i)
+    const str = audit.attributes.find((a) => a.attribute === 'strength')!
+    expect(str.headroom).toBe(12)
+    expect(str.tight).toBe(false)
+    expect(JSON.stringify(str)).not.toMatch(/waste|excess/i)
   })
 
   it('returns nothing rather than guessing when the export is absent', () => {
@@ -161,8 +166,8 @@ describe('attribute headroom', () => {
 
 describe('spirit reservation', () => {
   it('reports reserved and unreserved spirit', () => {
-    expect(audit.spirit).toMatchObject({ total: 159, reserved: 80, unreserved: 79 })
-    expect(audit.spirit!.unreservedPercent).toBeCloseTo(49.7, 1)
+    expect(audit.spirit).toMatchObject({ total: 147, reserved: 137, unreserved: 10 })
+    expect(audit.spirit!.unreservedPercent).toBeCloseTo(6.8, 1)
   })
 
   it('needs the export, and says so rather than reporting zero', () => {
