@@ -247,3 +247,7 @@ One line each; reopen only when the trigger happens.
 | GF1-9b | Echo the data version and an import hash with each result | `Analysis.stamp` (`dataRevision`, `extractedAt`, `importHash` = first 16 hex of SHA-256 over the model without poe.ninja refresh times, `engineVersion`); shown at the foot of the Advanced tab; goldens carry `importHash` | GF1 item 9 | done |
 | OS-14 | Owner step 14: ask poe.ninja for API access | Owner disregarded it (2026-11-21); PoB code is the import path | NP1-1 | closed (disregarded) |
 
+## PoB2 alignment
+| ID | Item | Size | Origin | Notes | Status |
+|---|---|---|---|---|---|
+| PB-1 | B1: vendor PoB2 (byte-identical subset), `pob2:sync`/`pob2:verify`, edit guards, plan and docs | M | pob2-alignment | Sonnet, wave 1 | done (#226, 2026-11-22) |

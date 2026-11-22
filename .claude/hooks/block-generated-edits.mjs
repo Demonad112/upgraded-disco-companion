@@ -6,7 +6,8 @@ import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 
 export const MESSAGE =
-  'Generated file. Run the packages/data build:* scripts instead (vendor/pob2: npm run pob2:sync).';
+  'Generated file. Run the packages/data build:* scripts instead (vendor/pob2: npm run pob2:sync; ' +
+  '*.oracle.json: npm run pob2:oracle).';
 
 // Synced copies in apps/web/public (see apps/web/scripts/sync-data.mjs and .gitignore).
 const SYNCED = [
@@ -17,6 +18,8 @@ const SYNCED = [
 // vendor/pob2 is a byte-identical copy of the PoB2 fork; only scripts/pob2/sync.mjs (a Bash command) writes it.
 const DIRS = ['packages/data/generated/', 'apps/web/out/', 'vendor/pob2/'];
 const FILES = [...SYNCED];
+// PoB2 oracle snapshots, written only by npm run pob2:oracle (headless PoB on the sibling *.code.txt).
+const ORACLE = /(^|\/)packages\/core\/test\/pob2\/.+\.oracle\.json$/;
 
 export const LOCK_MESSAGE = 'package-lock.json is written by npm. Run npm install or npm ci instead of editing it.';
 export const E2E_REMINDER =
@@ -41,7 +44,7 @@ export function isGenerated(filePath) {
   if (typeof filePath !== 'string' || !filePath) return false;
   const p = filePath.replace(/\\/g, '/');
   const hit = (rel) => p === rel || p.endsWith(`/${rel}`);
-  return DIRS.some((d) => p.startsWith(d) || p.includes(`/${d}`)) || FILES.some(hit);
+  return DIRS.some((d) => p.startsWith(d) || p.includes(`/${d}`)) || FILES.some(hit) || ORACLE.test(p);
 }
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {

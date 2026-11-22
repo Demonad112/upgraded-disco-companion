@@ -41,3 +41,6 @@ apps/web/playwright-report/
 
 # Screenshots live in PRs, not git
 docs/**/*.png
+
+# Decoded fixture XML for the PoB2 busted specs (written by npm run pob2:spec).
+tools/pob2/spec/.fixtures/
