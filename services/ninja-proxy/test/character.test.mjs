@@ -32,6 +32,20 @@ test('a frame without a version is not-found', async () => {
   assert.deepEqual(await readVersion('https://x', undefined, { fetchImpl }), { error: 'not-found' })
 })
 
+// Measured 2026-11-22: for a character poe.ninja has not indexed, the stream
+// sends `event: notfound` with an empty `data:` line and then closes.
+test('an `event: notfound` frame with empty data is not-found, not "no version frame"', async () => {
+  const fetchImpl = async () => sse(['event: notfound\ndata:\n\n'], { hang: false })
+  assert.deepEqual(await readVersion('https://x', undefined, { fetchImpl }), { error: 'not-found' })
+})
+
+test('a notfound event is answered at once on a stream that stays open', async () => {
+  const fetchImpl = async () => sse(['event: notfound\ndata:\n\n'])
+  const started = Date.now()
+  assert.deepEqual(await readVersion('https://x', undefined, { fetchImpl, firstFrameMs: 5000 }), { error: 'not-found' })
+  assert.ok(Date.now() - started < 1000)
+})
+
 // --- model 404 right after a version event (2026-11-18) ---------------------
 //
 // poe.ninja announces a new version on the event stream a moment before the
