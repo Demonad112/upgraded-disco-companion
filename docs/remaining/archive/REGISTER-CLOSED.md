@@ -258,3 +258,10 @@ One line each; reopen only when the trigger happens.
 | ID | Item | Status |
 |---|---|---|
 | DATA-1 | `passive-tree.json` refreshed for 0.5.5: now built from PoB's latest tree (`build:tree:pob`); the tree check on the fixture reads current. Soul Cores continue as DATA-2 | done (B4, 2026-11-22) |
+
+## Closed in B5 (2026-11-22)
+| ID | Item | Status |
+|---|---|---|
+| PB-5 | Items from a code feed the gear analysis; the athrynas-v43, yykiuy-v51 and yykiuy-v80 captures and their goldens are deleted, and the core tests, web unit tests, e2e, mock proxy, screenshot and perf scripts run on the main build (`scripts/lib/main-payload.mjs`, `packages/core/test/helpers/main-build.ts`) | done (B5, 2026-11-22) |
+| NP1-6b | A pasted PoB code gets "Worth replacing", per-slot findings and weighted trade links from its items (text-matched mod ids; limits in the PR body, PB-8) | done (B5, 2026-11-22) |
+| PB-3c | Long runs go in the background: added to `docs/SESSION-PROTOCOL.md` | done (B5, 2026-11-22) |

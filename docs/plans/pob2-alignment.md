@@ -152,3 +152,11 @@ Result against the committed artifacts (built from `ce566ea`; the pin is now `60
 Suggestions for next batch: `install-luajit.sh` could fall back to `apt-get install lua-busted` (needs `LUA_PATH=";;/usr/share/lua/5.1/?.lua;/usr/share/lua/5.1/?/init.lua"`) when luarocks can't reach GitHub, as happened in this container. B7's `pob2:bump` should run `build:pob`. A CI job that rebuilds the data and fails on diff is owner queue PB-4a.
 
 - **Q: Why do PoB2's numbers differ from poe.ninja's?** A: The oracle uses the code's own saved config today; poe.ninja applies a fixed baseline (`docs/POB-NINJA-CONFIG.md`: boss, charges, buffs, debuffs). Applying it is PB-6 (Owner queue).
+
+### B5: Items from the code and the capture deletion
+Decisions:
+- Q: how are a code's items matched to mod ids? → A: by text, against the affix data (`gear/text-mods.ts`): an id only when the line, its roll and the item's base prove exactly one; every other line is listed as text only, never guessed. Limits are in PB-8.
+- Q: tests that loaded the captures? → A: moved onto the main build (owner): `helpers/main-build.ts` states the defence block, breakdowns and poe.ninja-only inputs inline; `helpers/gem-skills.ts` states gem setups. Changed numbers are in the PR body; `fixture.test.ts` became `payload-shape.test.ts`.
+- Q: e2e, mock proxy, screenshot and perf scripts? → A: `scripts/lib/main-payload.mjs` builds the payload from the code (identity stated as `Main`, since a code has none).
+- Q: route budget? → A: raised to 216,000 B br (owner approved; 215,597 B measured).
+Suggestions for next batch: B6 (PB-6 first: poe.ninja's config baseline in the runner, `docs/POB-NINJA-CONFIG.md`); then PoB-only import UX, now that a code is the primary source: lead the paste box, name what a code cannot give, drop the poe.ninja URL tab's prominence. PB-3b, PB-3d and PB-4a are know-about only.

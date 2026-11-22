@@ -42,6 +42,8 @@
    - per-workspace checks for what you touched: core → `npm run test:coverage -w @poe2/core`;
      `services/ninja-proxy` → `npm test` there.
 
+   Run long builds and suites with `run_in_background` (or a cheap subagent that reports only pass/fail and the failures), so an interruption never lands mid-build (PB-3c).
+
    The gate counts only if it tested something: no `writing actual` outside `e2e/visual.spec.ts` (screenshot tests are
    informational), and the skipped count is not higher
    than the last batch's. Every perf number states its profile (device, CPU/network throttle), live or local, and the run
