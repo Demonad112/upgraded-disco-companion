@@ -60,6 +60,12 @@ export function activeGem(name: string, tags: string[], level: number, quality: 
   }
 }
 
+/** Ice Shot's damage block: 84% cold (tuple order physical, lightning, cold, fire, chaos). */
+export const ICE_SHOT_DPS = {
+  name: 'Ice Shot', dps: 100_000, dotDps: 0, damageTypes: [4, 8, 84, 4, 0], dotDamageTypes: [0, 0, 0, 0, 0],
+  rate: 2.3, rateKind: 0, critChance: 5, critMultiplier: 2.48, hitChance: 100, projectiles: 2,
+}
+
 /**
  * Four setups: Ice Shot at 20% quality with five supports, two more Ice Shot copies at 0% (one with three supports,
  * one with three, one a Spell support that does nothing here), and a triggered Mirage Archer with no damage block. Twelve supports in all.
@@ -69,7 +75,7 @@ export function handBuiltSkills(): NinjaSkill[] {
   const setup = (level: number, quality: number, supports: string[], dps = true): NinjaSkill =>
     ({
       allGems: [activeGem('Ice Shot', iceTags, level, quality), ...supports.map(supportGem)],
-      ...(dps ? { dps: [{ name: 'Ice Shot', dps: 100_000 }] } : {}),
+      ...(dps ? { dps: [ICE_SHOT_DPS] } : {}),
     }) as unknown as NinjaSkill
   return [
     setup(19, 20, ['Rapid Attacks II', 'Elemental Armament II', 'Ice Bite II', 'Deliberation', 'Longshot II']),
