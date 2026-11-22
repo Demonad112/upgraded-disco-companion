@@ -3,16 +3,16 @@ import { readFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { analyzeCharacter, unwrapCharModel } from '../src/analyze.js'
 import { decodePobExport, readPlayerStats } from '../src/pob/export.js'
-import { mainWithReferenceDefence } from './helpers/main-build.js'
+import { mainPayload } from './helpers/main-build.js'
 
-// The fixture's own PoB export is the yardstick for the analyzer's figures
-// (checked 2026-10-18 against the numbers below). Fixture only; no live PoB.
-const raw = mainWithReferenceDefence()
+// The main build's own PoB export is the yardstick for the analyzer's figures
+// (its embedded PlayerStats; no live PoB).
+const raw = mainPayload()
 const model = unwrapCharModel(raw) as { pathOfBuildingExport?: string }
 const analysis = await analyzeCharacter(raw)
 const pob = readPlayerStats(await decodePobExport(model.pathOfBuildingExport ?? ''))
 
-describe('analyzer figures against the fixture PoB export', () => {
+describe('analyzer figures against the main build PoB export', () => {
   it('matches life, energy shield and resistances exactly', () => {
     expect(analysis.defense.life).toBe(pob.Life)
     expect(analysis.defense.energyShield).toBe(pob.EnergyShield)

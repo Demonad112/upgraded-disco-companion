@@ -4,13 +4,13 @@
  */
 
 import { describe, expect, it } from 'vitest'
-import { readFileSync } from 'node:fs'
+import { readdirSync, readFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 
 import { PassiveTree, NODE_KIND, pathToNode, resolveAllocation, type PassiveTreeData } from '../src/tree/index.js'
 import { normalizePassives } from '../src/model/passives.js'
 import { unwrapCharModel } from '../src/analyze.js'
-import { fixtureFiles } from './helpers/fixtures.js'
+import { pobToCharModel } from '../src/pob/to-model.js'
 import { mainWithReferenceDefence } from './helpers/main-build.js'
 
 const treeData = JSON.parse(
@@ -69,46 +69,56 @@ describe('tree data', () => {
 describe('resolving the real allocation', () => {
   it('resolves every allocated id — nothing is missing from the data set', () => {
     expect(resolved.unresolvedIds).toEqual([])
-    expect(resolved.live).toHaveLength(119) // 103 main + 16 from the active set
+    expect(resolved.live).toHaveLength(123) // the main code allocates 123 nodes and no weapon-set nodes
   })
 
   it('separates ascendancy from main-tree allocation', () => {
-    // 9 allocated wheel nodes plus the Deadeye start node, which PoB's tree carries.
-    expect(resolved.ascendancy.map((n) => n.ascendancy)).toEqual(Array(10).fill('Deadeye'))
+    // 9 allocated Martial Artist wheel nodes; the other 114 are the main tree.
+    expect(resolved.ascendancy.map((n) => n.ascendancy)).toEqual(Array(9).fill('Martial Artist'))
     expect(resolved.mainTree).toHaveLength(resolved.live.length - resolved.ascendancy.length)
+    expect(resolved.mainTree).toHaveLength(114)
   })
 
   it('never sums the two weapon sets', () => {
-    expect(resolved.main).toHaveLength(103)
-    expect(resolved.set1).toHaveLength(16)
-    expect(resolved.set2).toHaveLength(16)
-    // Set 1 is live (useSecondWeaponSet is false), so set 2 is excluded.
-    expect(resolved.live).toHaveLength(103 + 16)
+    // The main code allocates no weapon-set nodes, so main is all of `live` and both sets are empty.
+    expect(resolved.main).toHaveLength(123)
+    expect(resolved.set1).toHaveLength(0)
+    expect(resolved.set2).toHaveLength(0)
+    expect(resolved.live).toHaveLength(123)
+    // With two weapon sets stated, only the live one counts (inline variant of the main code's allocation).
+    const withSets = resolveAllocation(
+      tree,
+      normalizePassives({
+        ...model,
+        passiveSelection: resolved.main.map((n) => n.id).slice(0, 107),
+        passiveSelectionSet1: resolved.main.map((n) => n.id).slice(107, 115),
+        passiveSelectionSet2: resolved.main.map((n) => n.id).slice(115),
+        useSecondWeaponSet: false,
+      }),
+    )
+    expect(withSets.main).toHaveLength(107)
+    expect(withSets.set1).toHaveLength(8)
+    expect(withSets.set2).toHaveLength(8)
+    expect(withSets.live).toHaveLength(107 + 8)
   })
 
   it('finds the allocated notables and keystones', () => {
-    expect(resolved.notables.length).toBeGreaterThan(0)
-    // poe.ninja reports 0 keystones for this character.
+    expect(resolved.notables.length).toBe(39)
+    // The main code allocates no keystone; poe.ninja's `keystones` list is absent from a code.
     expect(resolved.keystones).toHaveLength(0)
-    expect(model.keystones).toEqual([])
+    expect(model.keystones).toBeUndefined()
   })
 
   it('explains the allocation groups instead of warning about a broken tree', () => {
-    // V1 emitted "disconnected tree" warnings constantly. Two groups are normal:
-    // the ascendancy wheel is reached through the class node. The game forbids a
-    // genuinely broken tree, so the groups are described rather than flagged.
-    // The old data set lacked links and left 4 nodes in a third, detached group;
-    // PoB's tree carries every link, so there is none.
-    expect(resolved.components).toHaveLength(2)
-
-    const [mainTree, ascendancy] = resolved.components
-    expect(mainTree).toMatchObject({ kind: 'main-tree', ascendancy: null })
-    expect(mainTree!.nodes).toHaveLength(109)
-
-    expect(ascendancy).toMatchObject({ kind: 'ascendancy', ascendancy: 'Deadeye' })
-    expect(ascendancy!.nodes).toHaveLength(10)
-
-    expect(resolved.components.some((c) => c.kind === 'detached')).toBe(false)
+    // V1 emitted "disconnected tree" warnings constantly. The game forbids a genuinely broken tree, so the groups
+    // are described rather than flagged. On the main code the largest group (116 nodes: the main tree joined to the
+    // ascendancy wheel) is labelled by its ascendancy, and 7 single nodes the code lists without their links are
+    // `detached` (PB-7 in REMAINING-WORK: the labelling of a joined wheel and those singles is not yet explained).
+    expect(resolved.components.map((c) => [c.kind, c.nodes.length])).toEqual([
+      ['ascendancy', 116],
+      ...Array(7).fill(['detached', 1]),
+    ])
+    expect(resolved.components[0]).toMatchObject({ kind: 'ascendancy', ascendancy: 'Martial Artist' })
 
     // Every allocated node belongs to exactly one group.
     const total = resolved.components.reduce((sum, c) => sum + c.nodes.length, 0)
@@ -152,15 +162,19 @@ describe('allocation coverage', () => {
     expect(r.unresolvedBySet.set2).toEqual([999_999_999])
   })
 
-  it('has no unresolved ids in any recorded fixture beyond the known data gaps', () => {
-    // Fails when any fixture allocates more nodes than the shipped tree data
-    // knows. Every captured payload in test/fixtures is checked; a new capture
-    // needs no edit here. A character known to need newer tree data is listed
+  it('has no unresolved ids in any committed PoB code beyond the known data gaps', async () => {
+    // Fails when a committed code (test/pob2/<league>/*.code.txt, the oracle's inputs) allocates more nodes than the
+    // shipped tree data knows; a new code needs no edit here. A character known to need newer tree data is listed
     // with the most unresolved ids it may have; that number only ever goes down.
-    // DATA-1 closed: the tree is PoB's own, so Yykiuy's 3 missing nodes resolve and the list is empty.
+    // DATA-1 closed: the tree is PoB's own, so the list is empty.
     const KNOWN_DATA_GAPS: Record<string, number> = {}
-    for (const file of fixtureFiles()) {
-      const m = unwrapCharModel(JSON.parse(readFileSync(fileURLToPath(new URL(`./fixtures/${file}`, import.meta.url)), 'utf8')))
+    const root = fileURLToPath(new URL('./pob2/', import.meta.url))
+    const codes = readdirSync(root, { withFileTypes: true })
+      .filter((d) => d.isDirectory())
+      .flatMap((d) => readdirSync(root + d.name).filter((f) => f.endsWith('.code.txt')).map((f) => `${d.name}/${f}`))
+    expect(codes.length).toBeGreaterThan(0)
+    for (const file of codes) {
+      const m = await pobToCharModel(readFileSync(root + file, 'utf8').trim())
       const r = resolveAllocation(tree, normalizePassives(m))
       const unresolved = new Set([...r.unresolvedIds, ...r.unresolvedBySet.main, ...r.unresolvedBySet.set1, ...r.unresolvedBySet.set2])
       const allowed = Object.entries(KNOWN_DATA_GAPS).find(([key]) => file.toLowerCase().startsWith(key))?.[1] ?? 0
