@@ -25,6 +25,8 @@ jobs:
     timeout-minutes: 5
     outputs:
       code: ${{ steps.scope.outputs.code }}
+      # PoB2 headless inputs changed: the pob2-oracle job runs.
+      pob2: ${{ steps.scope.outputs.pob2 }}
       # Draft PRs run typecheck, lint and unit tests only; e2e and Lighthouse wait until the PR is marked ready.
       heavy: ${{ steps.scope.outputs.code == 'true' && github.event.pull_request.draft != true }}
     steps:
@@ -37,6 +39,11 @@ jobs:
             echo "code=false" >> "$GITHUB_OUTPUT"; echo "Docs-only change: build and tests skipped."
           else
             echo "code=true" >> "$GITHUB_OUTPUT"
+          fi
+          if git diff --name-only HEAD^1 HEAD | grep -qE '^(vendor/pob2|tools/pob2|packages/core/test/pob2|scripts/pob2)/'; then
+            echo "pob2=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "pob2=false" >> "$GITHUB_OUTPUT"
           fi
   secrets:
     runs-on: ubuntu-latest
@@ -143,6 +150,35 @@ jobs:
           path: apps/web/e2e/visual.spec.ts-snapshots
           if-no-files-found: ignore
           retention-days: 14
+
+  pob2-oracle:
+    # Real PoB2 headless (vendor/pob2) in PoB's own tests image, pinned by digest in vendor/pob2/PIN.json (testsImage).
+    # The runner decodes the codes with @poe2/core (the image has no Node; PoB's headless Inflate is a stub) and every
+    # Lua step runs in the image via docker run (scripts/pob2/run.mjs, repo mounted read-only, no network).
+    # Not a required check yet: REMAINING-WORK § Owner queue PB-2a (make it required after 5 green runs).
+    needs: changes
+    if: needs.changes.outputs.pob2 == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      POB2_RUNNER: docker
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Build core (decodes the PoB codes)
+        run: npm run build --workspace @poe2/core
+      - name: Pull PoB tests image
+        run: docker pull "$(node -p "require('./vendor/pob2/PIN.json').testsImage")"
+      - name: Busted specs (tools/pob2/spec)
+        run: npm run pob2:spec
+      - name: Oracle files match PoB
+        # Regenerates every current-league packages/core/test/pob2/<league>/*.oracle.json and fails on any byte diff;
+        # the diff is printed in the log. Fix: npm run pob2:oracle, review, commit with the cause.
+        run: npm run pob2:oracle -- --check
 
   lighthouse:
     needs: changes

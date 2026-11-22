@@ -1,4 +1,4 @@
-// npm run pob2:sync -- [--commit <sha>]   (default: head of the fork's dev branch)
+// npm run pob2:sync -- [--commit <sha>] [--tests-image <ref@sha256:…>]   (default: head of the fork's dev branch)
 // Shallow-fetches Demonad112/PathOfBuilding-PoE2, copies the calc-relevant subset byte-identical into vendor/pob2/
 // and writes vendor/pob2/PIN.json. This is the only writer of vendor/pob2. Never commits to the fork.
 import { execFileSync } from 'node:child_process';
@@ -6,7 +6,8 @@ import { cpSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } f
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import {
-  BRANCH, PIN_NAME, REPO_URL, VENDOR_DIR, hashFiles, isVendored, latestTreeVersion, manifestVersion,
+  BRANCH, PIN_NAME, REPO_URL, VENDOR_DIR, hashFiles, isTestsImageRef, isVendored, latestTreeVersion,
+  manifestVersion,
 } from './lib.mjs';
 
 const arg = (name) => {
@@ -16,6 +17,19 @@ const arg = (name) => {
 const wanted = arg('--commit');
 if (wanted !== undefined && !/^[0-9a-f]{7,40}$/i.test(wanted)) {
   console.error('--commit needs a hex sha (7-40 chars).');
+  process.exit(2);
+}
+// PoB's tests Docker image (LuaJIT + luautf8 + busted), pinned by digest. Kept across syncs; --tests-image replaces it.
+let testsImage = arg('--tests-image');
+if (testsImage === undefined) {
+  try {
+    testsImage = JSON.parse(readFileSync(join(VENDOR_DIR, PIN_NAME), 'utf8')).testsImage;
+  } catch {
+    testsImage = undefined;
+  }
+}
+if (!isTestsImageRef(testsImage)) {
+  console.error('PIN.json needs testsImage as <image>@sha256:<64 hex>; pass --tests-image.');
   process.exit(2);
 }
 
@@ -52,6 +66,7 @@ try {
     commitDate,
     manifestVersion: manifestVersion(readFileSync(join(VENDOR_DIR, 'manifest.xml'), 'utf8')),
     latestTreeVersion: latestTreeVersion(readFileSync(join(VENDOR_DIR, 'src/GameVersions.lua'), 'utf8')),
+    testsImage,
     files: hashFiles(VENDOR_DIR, rels),
   };
   writeFileSync(join(VENDOR_DIR, PIN_NAME), JSON.stringify(pin, null, 2) + '\n');

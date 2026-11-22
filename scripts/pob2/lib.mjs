@@ -9,6 +9,10 @@ export const BRANCH = 'dev';
 export const VENDOR_DIR = join(dirname(fileURLToPath(import.meta.url)), '..', '..', 'vendor', 'pob2');
 export const PIN_NAME = 'PIN.json';
 
+/** A Docker image reference pinned by digest, e.g. ghcr.io/org/img@sha256:<64 hex>. Tags alone are rejected. */
+export const isTestsImageRef = (ref) =>
+  typeof ref === 'string' && /^[a-z0-9][a-z0-9./_-]*(:[\w.-]+)?@sha256:[0-9a-f]{64}$/.test(ref);
+
 // The calc-relevant subset of PoB2. Anything else (images, .dds.zst, Export/, exe/dll) is never copied.
 const RULES = [
   /^src\/[^/]+\.lua$/,

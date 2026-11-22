@@ -5,6 +5,7 @@
   "commitDate": "2026-11-10T14:28:18+13:00",
   "manifestVersion": "0.23.1",
   "latestTreeVersion": "0_5",
+  "testsImage": "ghcr.io/pathofbuildingcommunity/pathofbuilding-tests@sha256:171dc3da232b8c874882e4ae3b3aa4a6e130a6c9450a31904b312435a6bf5daf",
   "files": {
     "LICENSE.md": "b61f62cf2b8e301ef2a4a3c5f7de9460fea53327edf9f260b7c746502fc6bf97",
     "changelog.txt": "7e5a8787c2b03c2dc5f16cd4de91517f83040f30741a9134296eb8638f053514",

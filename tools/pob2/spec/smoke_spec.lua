@@ -1,0 +1,28 @@
+local H = dofile((os.getenv("POB2_ROOT") or ".") .. "/tools/pob2/spec/helper.lua")
+
+describe("PoB2 headless", function()
+	it("starts and loads an empty build", function()
+		assert.is_nil(H.pob.newBuild())
+		local snap = H.pob.snapshot(nil)
+		assert.are.equal(H.pob.strip(launch.versionNumber), snap.pobVersion)
+		assert.is_string(snap.pinCommit)
+		assert.is_number(snap.stats.Life)
+		assert.is_true(snap.stats.Life > 0)
+	end)
+
+	it("round-trips an empty build through SaveDB", function()
+		H.pob.newBuild()
+		local xml = build:SaveDB("x")
+		assert.is_nil(H.pob.load(xml))
+		local snap = H.pob.snapshot(nil)
+		assert.are.equal(snap.stats.Life, snap.export.PlayerStat.Life)
+	end)
+
+	it("reports a loadError for an export it cannot parse", function()
+		local err = H.pob.load("<PathOfBuilding2><Build level=")
+		assert.is_string(err)
+		assert.is_true(#err > 0)
+		-- and recovers for the next build
+		assert.is_nil(H.pob.newBuild())
+	end)
+end)

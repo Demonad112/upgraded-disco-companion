@@ -2,13 +2,14 @@
 
 ## Layout
 
-npm workspaces (`packages/*`, `apps/*`), Node >=22, TypeScript strict. `packages/core` is pure (no I/O; `fetch` is injected); `packages/data/generated/` is generated (rebuild with `npm run build:<name> -w @poe2/data`, see `packages/data/PROVENANCE.md`); `services/ninja-proxy` is **not a workspace** (own `package.json`, tested separately). `vendor/pob2/` is a byte-identical copy of the PoB2 fork's calc files (written only by `npm run pob2:sync`, verified by `npm run pob2:verify`; never edit it, never Read its `src/Data` or `src/TreeData`, use Grep; see `docs/POB2-SYNC.md`). `tools/pob2/` holds our own Lua (headless snapshot runner, data exporters, busted specs), added from B2 on.
+npm workspaces (`packages/*`, `apps/*`), Node >=22, TypeScript strict. `packages/core` is pure (no I/O; `fetch` is injected); `packages/data/generated/` is generated (rebuild with `npm run build:<name> -w @poe2/data`, see `packages/data/PROVENANCE.md`); `services/ninja-proxy` is **not a workspace** (own `package.json`, tested separately). `vendor/pob2/` is a byte-identical copy of the PoB2 fork's calc files (written only by `npm run pob2:sync`, verified by `npm run pob2:verify`; never edit it, never Read its `src/Data` or `src/TreeData`, use Grep; see `docs/POB2-SYNC.md`). `tools/pob2/` holds our own Lua (headless snapshot runner, busted specs; data exporters from B4).
 
 ## Commands
 
 - `npm run typecheck` builds `@poe2/core` first. The web app resolves core to its built `dist/`, so on a fresh checkout build core before running `tsc` in an app.
 - `npm run check:all` = typecheck + lint + test + script tests + ninja-proxy tests (every CI suite except build, e2e and Lighthouse).
 - `npm run test:coverage -w @poe2/core` enforces 90% statements / 75% branches. `npm run e2e -w @poe2/web` runs against `apps/web/out` (build first); `E2E_BASE_URL=<preview>` runs it against a deployed site.
+- PoB2 headless: `npm run pob2:oracle` regenerates `packages/core/test/pob2/<league>/*.oracle.json` (`-- --check` fails on diff, CI job `pob2-oracle`); `npm run pob2:spec` runs the busted specs; `npm run pob2:run -- <code-file>` prints one snapshot. Needs `scripts/pob2/install-luajit.sh` (session-only) or Docker, plus a built core. See `docs/POB2-SYNC.md`.
 - Core goldens (`packages/core/test/golden/`): review the diff, then `npx vitest run -u` in `packages/core` and commit the changed `*.expected.json` with the cause. This is the "golden diff" HG1-1 asks for.
 - Screenshot check (390 px + 1440 px, real character): `node scripts/screenshot.mjs [baseUrl] [outDir]`; write to the scratchpad, never git. Import path without network: `node scripts/mock-proxy.mjs [port]` serves the committed fixture.
 - Commit and push with the `commit-commands` plugin (enabled in `.claude/settings.json`): `/commit-commands:commit`, `/commit-commands:commit-push-pr`.
