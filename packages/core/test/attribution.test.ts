@@ -23,9 +23,9 @@ import {
 } from '../src/model/attribution.js'
 import { normalizeItems } from '../src/model/slots.js'
 import type { CharModel } from '../src/model/types.js'
+import { mainWithReferenceDefence } from './helpers/main-build.js'
 
-const fixturePath = fileURLToPath(new URL('./fixtures/athrynas-v43.json', import.meta.url))
-const raw = JSON.parse(readFileSync(fixturePath, 'utf8')) as unknown
+const raw = mainWithReferenceDefence() as unknown
 const model = unwrapCharModel(raw)
 
 const defense = analyzeDefense(model)

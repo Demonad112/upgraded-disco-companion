@@ -11,6 +11,7 @@ import { PassiveTree, NODE_KIND, pathToNode, resolveAllocation, type PassiveTree
 import { normalizePassives } from '../src/model/passives.js'
 import { unwrapCharModel } from '../src/analyze.js'
 import { fixtureFiles } from './helpers/fixtures.js'
+import { mainWithReferenceDefence } from './helpers/main-build.js'
 
 const treeData = JSON.parse(
   readFileSync(fileURLToPath(new URL('../../data/generated/passive-tree.json', import.meta.url)), 'utf8'),
@@ -18,7 +19,7 @@ const treeData = JSON.parse(
 const tree = new PassiveTree(treeData)
 
 const model = unwrapCharModel(
-  JSON.parse(readFileSync(fileURLToPath(new URL('./fixtures/athrynas-v43.json', import.meta.url)), 'utf8')),
+  mainWithReferenceDefence(),
 )
 const allocation = normalizePassives(model)
 const resolved = resolveAllocation(tree, allocation)
@@ -171,7 +172,7 @@ describe('allocation coverage', () => {
 describe('ailment immunities on the recorded character', () => {
   it('are read from the allocated tree when the tree data is given', async () => {
     const { analyzeCharacter } = await import('../src/analyze.js')
-    const raw = JSON.parse(readFileSync(fileURLToPath(new URL('./fixtures/athrynas-v43.json', import.meta.url)), 'utf8'))
+    const raw = mainWithReferenceDefence()
     const without = await analyzeCharacter(raw)
     const withTree = await analyzeCharacter(raw, { tree })
     expect(without.ailments.every((a) => a.status !== 'unknown' || /tree data was not loaded/.test(a.reason))).toBe(true)

@@ -14,12 +14,13 @@ import { analyzeItem } from '../src/gear/analyze.js'
 import { ModTiers, type ModTierData, type MonkGloveEntry } from '../src/gear/tiers.js'
 import { normalizeItems } from '../src/model/slots.js'
 import { deadReason } from '../src/recommend/gear.js'
+import { mainWithReferenceDefence } from './helpers/main-build.js'
 
 const here = dirname(fileURLToPath(import.meta.url))
 const tiers = new ModTiers(
   JSON.parse(readFileSync(join(here, '..', '..', 'data', 'generated', 'mod-tiers.json'), 'utf8')) as ModTierData,
 )
-const payload = JSON.parse(readFileSync(join(here, 'fixtures', 'yykiuy-v80.json'), 'utf8'))
+const payload = mainWithReferenceDefence()
 const analysis = await analyzeCharacter(payload, { tiers })
 const items = normalizeItems(payload.charModel)
   .filter((i) => i.active)

@@ -12,10 +12,9 @@ import { describe, expect, it } from 'vitest'
 import { analyzeCharacter } from '../src/analyze.js'
 import { analyzeFromPob, looksLikePobCode } from '../src/pob/analyze.js'
 import type { CharModel } from '../src/model/types.js'
+import { mainWithReferenceDefence } from './helpers/main-build.js'
 
-const payload = JSON.parse(
-  readFileSync(fileURLToPath(new URL('./fixtures/athrynas-v43.json', import.meta.url)), 'utf8'),
-)
+const payload = mainWithReferenceDefence()
 const model: CharModel = payload.charModel ?? payload
 const ninja = await analyzeCharacter(payload)
 const pob = await analyzeFromPob(model.pathOfBuildingExport!)

@@ -21,6 +21,7 @@ import { pobToCharModel } from '../src/pob/to-model.js'
 import { readPobSnapshotFromCode } from '../src/pob/export.js'
 import { normalizeItems } from '../src/model/slots.js'
 import type { CharModel, NinjaItem } from '../src/model/types.js'
+import { mainPayload } from './helpers/main-build.js'
 
 const here = dirname(fileURLToPath(import.meta.url))
 
@@ -207,7 +208,7 @@ describe('gear gap (pobCodeGaps)', () => {
 })
 
 describe('cross-check: athrynas-v43 code items against its poe.ninja items', () => {
-  const payload = JSON.parse(readFileSync(join(here, 'fixtures', 'athrynas-v43.json'), 'utf8'))
+  const payload = mainPayload()
   const ninja: CharModel = payload.charModel ?? payload
   const code: string = ninja.pathOfBuildingExport ?? payload.pathOfBuildingExport
   const norm = (s: string): string => s.replace(/\[(?:[^\]|]+\|)?([^\]]+)\]/g, '$1').replace(/\s+/g, ' ').trim()

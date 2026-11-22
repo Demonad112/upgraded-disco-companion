@@ -12,10 +12,11 @@ import { normalizeItems } from '../src/model/slots.js'
 import { ModTiers, type ModTierData } from '../src/gear/tiers.js'
 import { analyzeItem } from '../src/gear/analyze.js'
 import { planReplacement } from '../src/gear/replace.js'
+import { mainWithBreakdowns } from './helpers/main-build.js'
 
 const here = dirname(fileURLToPath(import.meta.url))
 const dataDir = join(here, '..', '..', 'data', 'generated')
-const payload = JSON.parse(readFileSync(join(here, 'fixtures', 'athrynas-v43.json'), 'utf8'))
+const payload = mainWithBreakdowns()
 const model = payload.charModel ?? payload
 const tiers = new ModTiers(JSON.parse(readFileSync(join(dataDir, 'mod-tiers.json'), 'utf8')) as ModTierData)
 const analysis = await analyzeCharacter(payload)

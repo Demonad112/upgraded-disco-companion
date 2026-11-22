@@ -14,12 +14,13 @@ import { fileURLToPath } from 'node:url'
 import { ModDatabase, modSkeleton, modValues, type ModData } from '../src/mods/index.js'
 import { unwrapCharModel } from '../src/analyze.js'
 import { normalizeItems } from '../src/model/slots.js'
+import { mainWithBreakdowns } from './helpers/main-build.js'
 
 const db = new ModDatabase(
   JSON.parse(readFileSync(fileURLToPath(new URL('../../data/generated/mods.json', import.meta.url)), 'utf8')) as ModData,
 )
 const model = unwrapCharModel(
-  JSON.parse(readFileSync(fileURLToPath(new URL('./fixtures/athrynas-v43.json', import.meta.url)), 'utf8')),
+  mainWithBreakdowns(),
 )
 
 describe('normalising mod text', () => {

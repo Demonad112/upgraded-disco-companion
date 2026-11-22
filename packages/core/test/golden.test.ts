@@ -20,9 +20,10 @@ import { pobToCharModel } from '../src/pob/to-model.js'
 import type { PobRecomputed } from '../src/pob/stale.js'
 import { analysisCacheKey } from '../src/cache/key.js'
 import { holdingUp } from '../src/constraints/holding-up.js'
+import { mainWithReferenceDefence } from './helpers/main-build.js'
 
 const here = (p: string) => fileURLToPath(new URL(p, import.meta.url))
-const recorded = JSON.parse(readFileSync(here('./fixtures/athrynas-v43.json'), 'utf8')) as Record<string, unknown>
+const recorded = mainWithReferenceDefence() as Record<string, unknown>
 
 interface Op {
   path: string

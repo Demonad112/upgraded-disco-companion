@@ -15,9 +15,9 @@ import { analyzeCharacter, unwrapCharModel } from '../src/analyze.js'
 import { decodePobExport } from '../src/pob/export.js'
 import { describePobConfig, humaniseCondition, isBossDps, NO_POB_CONFIG, readPobConfig, readPobInputs } from '../src/pob/config.js'
 import { PassiveTree, type PassiveTreeData } from '../src/tree/index.js'
+import { mainWithReferenceDefence } from './helpers/main-build.js'
 
-const fixturePath = fileURLToPath(new URL('./fixtures/athrynas-v43.json', import.meta.url))
-const raw = JSON.parse(readFileSync(fixturePath, 'utf8')) as unknown
+const raw = mainWithReferenceDefence() as unknown
 const model = unwrapCharModel(raw)
 const xml = await decodePobExport(model.pathOfBuildingExport!)
 const config = readPobConfig(xml)

@@ -15,8 +15,9 @@ import { analyzeCharacter } from '../src/analyze.js'
 import { pobToCharModel } from '../src/pob/to-model.js'
 import type { CharModel } from '../src/model/types.js'
 import { PassiveTree, type PassiveTreeData } from '../src/tree/index.js'
+import { mainWithReferenceDefence } from './helpers/main-build.js'
 
-const payload = JSON.parse(readFileSync(fileURLToPath(new URL('./fixtures/athrynas-v43.json', import.meta.url)), 'utf8'))
+const payload = mainWithReferenceDefence()
 const ninjaModel: CharModel = payload.charModel ?? payload
 const code = ninjaModel.pathOfBuildingExport!
 const treePath = fileURLToPath(new URL('../../data/generated/passive-tree.json', import.meta.url))

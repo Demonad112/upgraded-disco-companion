@@ -5,9 +5,10 @@ import { unwrapCharModel } from '../src/analyze.js'
 import { analyzeDefense } from '../src/defense/index.js'
 import { analyzePob } from './helpers/pob.js'
 import { reconcile } from '../src/reconcile/index.js'
+import { mainWithReferenceDefence } from './helpers/main-build.js'
 
 const model = unwrapCharModel(
-  JSON.parse(readFileSync(fileURLToPath(new URL('./fixtures/athrynas-v43.json', import.meta.url)), 'utf8')),
+  mainWithReferenceDefence(),
 )
 
 describe('evade chance', () => {

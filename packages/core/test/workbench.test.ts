@@ -26,9 +26,10 @@ import {
   tierOptions,
   type GearDraft,
 } from '../src/gear/workbench.js'
+import { mainWithBreakdowns } from './helpers/main-build.js'
 
 const here = dirname(fileURLToPath(import.meta.url))
-const payload = JSON.parse(readFileSync(join(here, 'fixtures', 'athrynas-v43.json'), 'utf8'))
+const payload = mainWithBreakdowns()
 const model = payload.charModel ?? payload
 const tiers = new ModTiers(
   JSON.parse(readFileSync(join(here, '..', '..', 'data', 'generated', 'mod-tiers.json'), 'utf8')) as ModTierData,

@@ -8,9 +8,10 @@ import { describe, expect, it } from 'vitest'
 import { readFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { analyzeCharacter } from '../src/analyze.js'
+import { mainWithReferenceDefence } from './helpers/main-build.js'
 
 const here = (p: string) => fileURLToPath(new URL(p, import.meta.url))
-const recorded = JSON.parse(readFileSync(here('./fixtures/athrynas-v43.json'), 'utf8')) as Record<string, unknown>
+const recorded = mainWithReferenceDefence() as Record<string, unknown>
 const ops = JSON.parse(readFileSync(here('./golden/sparse-defence.patch.json'), 'utf8')) as { ops: { path: string; set?: unknown; delete?: true }[] }
 
 function patched(): Record<string, unknown> {

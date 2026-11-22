@@ -6,6 +6,7 @@ import { unwrapCharModel } from '../src/analyze.js'
 import { analyzeCharacter } from '../src/analyze.js'
 import { reconcile } from '../src/reconcile/index.js'
 import type { CharModel } from '../src/model/types.js'
+import { mainWithReferenceDefence } from './helpers/main-build.js'
 
 /**
  * A model whose breakdowns hold one unmapped id (87) that does not equal its
@@ -77,7 +78,7 @@ describe('banner wording', () => {
 
 describe('DPS pairing', () => {
   const fixture = unwrapCharModel(
-    JSON.parse(readFileSync(fileURLToPath(new URL('./fixtures/athrynas-v43.json', import.meta.url)), 'utf8')),
+    mainWithReferenceDefence(),
   )
   const skills = analyzeDps(fixture).hitSkills
   const primary = skills[0]!

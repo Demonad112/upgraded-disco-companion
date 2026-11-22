@@ -17,9 +17,9 @@ import { indexBreakdowns, computeTotal, statSources } from '../src/model/breakdo
 import { normalizePassives, inactiveSetNodes } from '../src/model/passives.js'
 import { activeWeaponSet, normalizeItems } from '../src/model/slots.js'
 import { decodePobExport, readPlayerStats } from '../src/pob/export.js'
+import { mainWithReferenceDefence } from './helpers/main-build.js'
 
-const fixturePath = fileURLToPath(new URL('./fixtures/athrynas-v43.json', import.meta.url))
-const raw = JSON.parse(readFileSync(fixturePath, 'utf8')) as unknown
+const raw = mainWithReferenceDefence() as unknown
 const model = unwrapCharModel(raw)
 
 describe('identity', () => {

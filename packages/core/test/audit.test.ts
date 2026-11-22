@@ -26,10 +26,9 @@ import {
 } from '../src/gear/audit.js'
 import { normalizeItems } from '../src/model/slots.js'
 import type { CharModel } from '../src/model/types.js'
+import { mainWithBreakdowns } from './helpers/main-build.js'
 
-const payload = JSON.parse(
-  readFileSync(fileURLToPath(new URL('./fixtures/athrynas-v43.json', import.meta.url)), 'utf8'),
-)
+const payload = mainWithBreakdowns()
 const model: CharModel = payload.charModel ?? payload
 const tiers = new ModTiers(
   JSON.parse(

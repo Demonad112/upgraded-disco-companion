@@ -26,9 +26,9 @@ import {
   type CharacterSnapshot,
 } from '../src/progress/index.js'
 import { PassiveTree, type PassiveTreeData } from '../src/tree/index.js'
+import { mainWithReferenceDefence } from './helpers/main-build.js'
 
-const fixturePath = fileURLToPath(new URL('./fixtures/athrynas-v43.json', import.meta.url))
-const raw = JSON.parse(readFileSync(fixturePath, 'utf8')) as unknown
+const raw = mainWithReferenceDefence() as unknown
 const model = unwrapCharModel(raw)
 
 const treePath = fileURLToPath(new URL('../../data/generated/passive-tree.json', import.meta.url))

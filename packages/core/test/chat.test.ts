@@ -14,10 +14,9 @@ import { analyzeFromPob } from '../src/pob/analyze.js'
 import { buildChatContext, buildPobChatContext, SYSTEM_PROMPT } from '../src/chat/context.js'
 import { ChatError, PROVIDERS, chat, type ChatConfig } from '../src/chat/provider.js'
 import type { CharModel } from '../src/model/types.js'
+import { mainWithBreakdowns } from './helpers/main-build.js'
 
-const payload = JSON.parse(
-  readFileSync(fileURLToPath(new URL('./fixtures/athrynas-v43.json', import.meta.url)), 'utf8'),
-)
+const payload = mainWithBreakdowns()
 const model: CharModel = payload.charModel ?? payload
 const analysis = await analyzeCharacter(payload)
 const context = buildChatContext(analysis)

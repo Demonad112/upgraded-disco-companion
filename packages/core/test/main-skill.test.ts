@@ -7,6 +7,7 @@ import { analyzeDps } from '../src/dps/index.js'
 import { mainSkillNote } from '../src/dps/main-skill.js'
 import { decodePobExport } from '../src/pob/export.js'
 import { readPobMainSkill } from '../src/pob/main-skill.js'
+import { mainWithReferenceDefence } from './helpers/main-build.js'
 
 const here = (p: string) => fileURLToPath(new URL(p, import.meta.url))
 
@@ -42,7 +43,7 @@ describe('readPobMainSkill', () => {
   })
 
   it('reads the recorded character: group 4 is Ice Shot', async () => {
-    const raw = JSON.parse(readFileSync(here('./fixtures/athrynas-v43.json'), 'utf8')) as { charModel?: { pathOfBuildingExport: string }; pathOfBuildingExport?: string }
+    const raw = mainWithReferenceDefence() as { charModel?: { pathOfBuildingExport: string }; pathOfBuildingExport?: string }
     const code = raw.charModel?.pathOfBuildingExport ?? raw.pathOfBuildingExport ?? ''
     expect(readPobMainSkill(await decodePobExport(code))).toEqual({ group: 4, name: 'Ice Shot' })
   })
@@ -95,7 +96,7 @@ describe('analyzeDps preferredSkill', () => {
 
 describe('analyzeCharacter main skill', () => {
   it('makes the export main skill primary on the recorded character', async () => {
-    const raw = JSON.parse(readFileSync(here('./fixtures/athrynas-v43.json'), 'utf8'))
+    const raw = mainWithReferenceDefence()
     const a = await analyzeCharacter(raw)
     expect(a.dps.mainSkill?.exportMain).toBe('Ice Shot')
     expect(a.dps.primary?.name).toBe('Ice Shot')

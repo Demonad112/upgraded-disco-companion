@@ -3,9 +3,10 @@ import { readFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { analysisCacheKey, canonicalJson } from '../src/cache/key.js'
 import { unwrapCharModel } from '../src/analyze.js'
+import { mainWithReferenceDefence } from './helpers/main-build.js'
 
 const model = unwrapCharModel(
-  JSON.parse(readFileSync(fileURLToPath(new URL('./fixtures/athrynas-v43.json', import.meta.url)), 'utf8')),
+  mainWithReferenceDefence(),
 ) as Record<string, unknown>
 const input = { model, pobVersion: '2.55.0', dataVersion: '0.5.5' }
 

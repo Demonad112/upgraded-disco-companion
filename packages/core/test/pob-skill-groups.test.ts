@@ -5,6 +5,7 @@ import { analyzeCharacter, unwrapCharModel } from '../src/analyze.js'
 import { decodePobExport } from '../src/pob/export.js'
 import { inactiveSetFromPob, pobSkillsInWeaponSet, readPobSkillGroups } from '../src/pob/skill-groups.js'
 import { inactiveSetReport } from '../src/model/slots.js'
+import { mainWithReferenceDefence } from './helpers/main-build.js'
 
 const gem = (name: string, id = 'Skill') => `<Gem skillId="${id}" nameSpec="${name}" enabled="true"/>`
 const xml = (groups: string, items = '') => `
@@ -65,7 +66,7 @@ describe('inactiveSetFromPob', () => {
 })
 
 describe('on the recorded export', () => {
-  const raw = JSON.parse(readFileSync(fileURLToPath(new URL('./fixtures/athrynas-v43.json', import.meta.url)), 'utf8'))
+  const raw = mainWithReferenceDefence()
   it('reads every skill group and ties none to a weapon set it does not state', async () => {
     const groups = readPobSkillGroups(await decodePobExport(unwrapCharModel(raw).pathOfBuildingExport!))
     expect(groups).toHaveLength(12)

@@ -13,9 +13,10 @@ import { fileURLToPath } from 'node:url'
 
 import { unwrapCharModel } from '../src/analyze.js'
 import { indexSupports, parseAllSetups, parseSkillSetup, validateByName, validateSetup } from '../src/gems/index.js'
+import { mainWithReferenceDefence } from './helpers/main-build.js'
 
 const model = unwrapCharModel(
-  JSON.parse(readFileSync(fileURLToPath(new URL('./fixtures/athrynas-v43.json', import.meta.url)), 'utf8')),
+  mainWithReferenceDefence(),
 )
 const setups = parseAllSetups(model.skills)
 const known = indexSupports(setups)

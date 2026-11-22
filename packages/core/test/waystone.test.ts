@@ -19,12 +19,13 @@ import {
   XP_WORTH_FLOOR,
   xpMultiplier,
 } from '../src/gear/waystone.js'
+import { mainWithReferenceDefence } from './helpers/main-build.js'
 
 const here = dirname(fileURLToPath(import.meta.url))
 const monsters = JSON.parse(
   readFileSync(join(here, '..', '..', 'data', 'generated', 'monster-stats.json'), 'utf8'),
 ) as MonsterStatData
-const analysis = await analyzeCharacter(JSON.parse(readFileSync(join(here, 'fixtures', 'athrynas-v43.json'), 'utf8')))
+const analysis = await analyzeCharacter(mainWithReferenceDefence())
 const report = analyzeContent(analysis.defense, monsters)
 
 describe('xp penalty', () => {

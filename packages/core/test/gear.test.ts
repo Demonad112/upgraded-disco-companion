@@ -17,11 +17,12 @@ import { ModTiers, type ModTierData } from '../src/gear/tiers.js'
 import { analyzeItem, findResistanceSwaps, findTierUpgrades, summarizeSwaps } from '../src/gear/analyze.js'
 import { analyzeContent, type MonsterStatData } from '../src/gear/content.js'
 import type { CharModel } from '../src/model/types.js'
+import { mainWithBreakdowns } from './helpers/main-build.js'
 
 const here = dirname(fileURLToPath(import.meta.url))
 const dataDir = join(here, '..', '..', 'data', 'generated')
 
-const payload = JSON.parse(readFileSync(join(here, 'fixtures', 'athrynas-v43.json'), 'utf8'))
+const payload = mainWithBreakdowns()
 const model: CharModel = payload.charModel ?? payload
 const tiers = new ModTiers(JSON.parse(readFileSync(join(dataDir, 'mod-tiers.json'), 'utf8')) as ModTierData)
 const analysis = await analyzeCharacter(payload)

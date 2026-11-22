@@ -12,9 +12,9 @@ import { fileURLToPath } from 'node:url'
 import { unwrapCharModel } from '../src/analyze.js'
 import { compareRecommendations, recommend } from '../src/recommend/index.js'
 import type { CharModel } from '../src/model/types.js'
+import { mainWithReferenceDefence } from './helpers/main-build.js'
 
-const fixturePath = fileURLToPath(new URL('./fixtures/athrynas-v43.json', import.meta.url))
-const model = unwrapCharModel(JSON.parse(readFileSync(fixturePath, 'utf8')))
+const model = unwrapCharModel(mainWithReferenceDefence())
 const report = recommend(model)
 const byId = new Map(report.recommendations.map((r) => [r.id, r]))
 

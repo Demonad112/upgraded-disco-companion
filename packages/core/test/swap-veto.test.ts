@@ -15,6 +15,7 @@ import { analyzeItem, type ItemAnalysis } from '../src/gear/analyze.js'
 import { planReplacement } from '../src/gear/replace.js'
 import { swapVetoes } from '../src/gear/veto.js'
 import type { EquippedItem } from '../src/model/slots.js'
+import { mainWithBreakdowns } from './helpers/main-build.js'
 
 const SPIRIT = 'base_spirit_from_equipment'
 const MOVE = 'base_movement_velocity_+%'
@@ -92,7 +93,7 @@ describe('swapVetoes', () => {
 
 describe('planReplacement carries the notes', () => {
   const here = dirname(fileURLToPath(import.meta.url))
-  const payload = JSON.parse(readFileSync(join(here, 'fixtures', 'athrynas-v43.json'), 'utf8'))
+  const payload = mainWithBreakdowns()
   const model = payload.charModel ?? payload
   const tiers = new ModTiers(JSON.parse(readFileSync(join(here, '..', '..', 'data', 'generated', 'mod-tiers.json'), 'utf8')) as ModTierData)
 

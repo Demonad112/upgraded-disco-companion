@@ -23,10 +23,9 @@ import {
   effectiveCritMultiplier,
 } from '../src/recommend/offence.js'
 import type { CharModel } from '../src/model/types.js'
+import { mainWithReferenceDefence } from './helpers/main-build.js'
 
-const payload = JSON.parse(
-  readFileSync(fileURLToPath(new URL('./fixtures/athrynas-v43.json', import.meta.url)), 'utf8'),
-)
+const payload = mainWithReferenceDefence()
 const model = (payload.charModel ?? payload) as CharModel
 const dps = analyzeDps(model)
 const items = normalizeItems(model)

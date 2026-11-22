@@ -15,10 +15,9 @@ import { ModTiers, type ModTierData } from '../src/gear/tiers.js'
 import { mergeGearRecommendations, mergeSameLineSwaps } from '../src/recommend/gear.js'
 import { compareRecommendations } from '../src/recommend/rank.js'
 import type { Recommendation } from '../src/recommend/types.js'
+import { mainWithBreakdowns } from './helpers/main-build.js'
 
-const payload = JSON.parse(
-  readFileSync(fileURLToPath(new URL('./fixtures/athrynas-v43.json', import.meta.url)), 'utf8'),
-)
+const payload = mainWithBreakdowns()
 const tiers = new ModTiers(
   JSON.parse(
     readFileSync(fileURLToPath(new URL('../../data/generated/mod-tiers.json', import.meta.url)), 'utf8'),

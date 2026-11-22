@@ -4,9 +4,10 @@ import { fileURLToPath } from 'node:url'
 
 import { analyzeCharacter } from '../src/analyze.js'
 import { inactiveSetReport } from '../src/model/slots.js'
+import { mainWithReferenceDefence } from './helpers/main-build.js'
 
 const here = (p: string) => fileURLToPath(new URL(p, import.meta.url))
-const recorded = JSON.parse(readFileSync(here('./fixtures/athrynas-v43.json'), 'utf8')) as { charModel?: Record<string, unknown> }
+const recorded = mainWithReferenceDefence() as { charModel?: Record<string, unknown> }
 const model = (recorded.charModel ?? recorded) as Parameters<typeof inactiveSetReport>[0]
 
 const weapon = (itemSlot: number, name: string, grantedSkills: unknown[] = []) => ({ itemSlot, itemData: { name, grantedSkills } })

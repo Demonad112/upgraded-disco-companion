@@ -20,9 +20,10 @@ import type { LadderSummary } from '../src/ninja/ladder.js'
 import { COST_WEIGHT } from '../src/recommend/rank.js'
 import { classifyDrift } from '../src/reconcile/index.js'
 import { assessBuild, defenceParts } from '../src/score/index.js'
+import { mainWithReferenceDefence } from './helpers/main-build.js'
 
 const here = dirname(fileURLToPath(import.meta.url))
-const payload = JSON.parse(readFileSync(join(here, 'fixtures', 'yykiuy-v80.json'), 'utf8'))
+const payload = mainWithReferenceDefence()
 const tiers = new ModTiers(
   JSON.parse(readFileSync(join(here, '..', '..', 'data', 'generated', 'mod-tiers.json'), 'utf8')) as ModTierData,
 )

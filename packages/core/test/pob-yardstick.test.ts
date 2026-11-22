@@ -3,10 +3,11 @@ import { readFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { analyzeCharacter, unwrapCharModel } from '../src/analyze.js'
 import { decodePobExport, readPlayerStats } from '../src/pob/export.js'
+import { mainWithReferenceDefence } from './helpers/main-build.js'
 
 // The fixture's own PoB export is the yardstick for the analyzer's figures
 // (checked 2026-10-18 against the numbers below). Fixture only; no live PoB.
-const raw = JSON.parse(readFileSync(fileURLToPath(new URL('./fixtures/athrynas-v43.json', import.meta.url)), 'utf8'))
+const raw = mainWithReferenceDefence()
 const model = unwrapCharModel(raw) as { pathOfBuildingExport?: string }
 const analysis = await analyzeCharacter(raw)
 const pob = readPlayerStats(await decodePobExport(model.pathOfBuildingExport ?? ''))
