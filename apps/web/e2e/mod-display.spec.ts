@@ -6,7 +6,7 @@ import { PROFILE_URL, expect, openTab, test } from './fixtures'
  * Unique/corrupted mods have no craftable ladder; their text comes from mod-display.json,
  * fetched only when a character has one. The main build has none, so one jewel's mods are replaced by a unique's.
  */
-const fixture = structuredClone(mainPayload) as { charModel: { jewels: { itemData: { mods?: Record<string, unknown> } }[] } }
+const fixture = structuredClone(mainPayload) as unknown as { charModel: { jewels: { itemData: { mods?: Record<string, unknown> } }[] } }
 // A code gives the jewel's lines as text only, so its mods are stated as the poe.ninja id the page must render.
 fixture.charModel.jewels[0]!.itemData.mods = { explicit: [{ id: 'UniqueCharmIgniteEnemiesInPresence1', stats: {} }] }
 const body = JSON.stringify(fixture)
