@@ -140,11 +140,6 @@ export function pobCodeGaps(stats: Record<string, number>): PobGap[] {
       why: 'Items in a code are not read yet, so no gear finding or trade search is built from them.',
     },
     {
-      what: 'Weapon-set passives',
-      why:
-        'A code lists the main tree and both weapon sets’ nodes together, so a keystone counts only where your stats confirm it.',
-    },
-    {
       what: 'Stat attribution — which item or passive grants each point',
       why:
         'That needs poe.ninja’s per-stat breakdowns, which a code does not carry. ' +

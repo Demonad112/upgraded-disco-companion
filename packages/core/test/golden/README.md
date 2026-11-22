@@ -9,6 +9,8 @@
 | `sparse-defence` | **Derived.** `defensiveStats` cut to life and energy shield, breakdowns removed. Absent resistances come out as null (missing), not 0, in both the defence summary and `holdingUp`. |
 | `second-weapon-set` | **Derived.** The second weapon set made live. |
 | `no-skills` | **Derived.** Per-skill damage removed. |
+| `pob-code-athrynas-v43` | The recorded capture's own Path of Building code, through `pobToCharModel` (NP1-6): no items, tree split by weapon set. |
+| `pob-code-main` | The owner's main build code (`../pob2/forbidden-rites/main.code.txt`) with PoB's recomputed export (`main.oracle.json`), so the stale-export finding is pinned. |
 
 Only one of the five is a real capture. The others are patches (`*.patch.json`: a list of `set` / `delete` operations on dotted paths) applied to it in memory, so they pin behaviour on partial and unusual payloads but say nothing about real characters. The suite runs without a ladder sample, a passive tree or the affix data, so it does not exercise the offence grade, keystone corrections or tiered gear advice.
 

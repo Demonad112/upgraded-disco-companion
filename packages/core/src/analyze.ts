@@ -24,6 +24,8 @@ import type { MainSkillContext } from './recommend/gear.js'
 import { effectiveCritMultiplier } from './recommend/offence.js'
 import { CRIT_UNINVESTED, DAMAGE_TYPE_MIN_SHARE } from './thresholds.js'
 import { decodePobExport, readPlayerStats } from './pob/export.js'
+import { readPobSnapshot } from './pob/snapshot.js'
+import { describeStaleExport, staleExport, type PobRecomputed, type StaleExport } from './pob/stale.js'
 import { readPobConfig, type PobConfig } from './pob/config.js'
 import { pobCodeGaps, type PobGap } from './pob/analyze.js'
 import { readPobMainSkill } from './pob/main-skill.js'
@@ -111,6 +113,13 @@ export interface Analysis {
    * ignited and bleeding".
    */
   pobConfig: PobConfig | null
+  /** PoB's `<MinionStat>` table from the attached export; empty when the build has no minion, null with no export. */
+  pobMinionStats: Record<string, number> | null
+  /**
+   * Embedded stats that differ from what PoB's engine computes for the code now. Only set when
+   * `AnalyzeOptions.pobRecomputed` was given (never computed by the site); null otherwise or when all match.
+   */
+  staleExport: StaleExport | null
   /** Which data and which import produced this result (GF1 item 9). */
   stamp: AnalysisStamp
   /** Non-fatal problems worth telling the user about. */
@@ -205,6 +214,12 @@ export interface AnalyzeOptions {
   source?: AnalysisSource
   /** The shipped game data version (`readDataVersion` of `version.json`), echoed in `Analysis.stamp`. */
   dataVersion?: DataVersion | null
+  /**
+   * What PoB's own engine computes for the attached code now (`pob-sim`: the headless oracle today, a
+   * calc service later). With it, embedded stats that differ are reported as `staleExport`. Never
+   * computed by the site.
+   */
+  pobRecomputed?: PobRecomputed | null
 }
 
 /**
@@ -309,13 +324,18 @@ export async function analyzeCharacter(
   let pobConfig: PobConfig | null = null
   let exportMain: string | null = null
   let pobSkillGroups: PobSkillGroup[] | null = null
+  let pobMinionStats: Record<string, number> | null = null
+  let stale: StaleExport | null = null
   if (model.pathOfBuildingExport) {
     try {
-      const xml = await decodePobExport(model.pathOfBuildingExport)
-      pobStats = readPlayerStats(xml)
-      exportMain = readPobMainSkill(xml)?.name ?? null
-      pobConfig = readPobConfig(xml)
-      pobSkillGroups = readPobSkillGroups(xml)
+      const snapshot = readPobSnapshot(await decodePobExport(model.pathOfBuildingExport))
+      pobStats = readPlayerStats(snapshot)
+      exportMain = readPobMainSkill(snapshot)?.name ?? null
+      pobConfig = readPobConfig(snapshot)
+      pobSkillGroups = readPobSkillGroups(snapshot)
+      pobMinionStats = snapshot.minionStats
+      stale = options.pobRecomputed ? staleExport(snapshot, options.pobRecomputed) : null
+      if (stale) warnings.push(describeStaleExport(stale))
     } catch (err) {
       warnings.push(
         `The attached Path of Building export could not be decoded (${(err as Error).message}), so poe.ninja's numbers could not be cross-checked.`,
@@ -341,9 +361,9 @@ export async function analyzeCharacter(
   // is known to match the character's; a contradicted one never is.
   const keystones = resolvedTree
     ? keystoneEffectsOf(resolvedTree.keystones, defense, {
-        // A code's tree spec lists both weapon sets with the main tree, so an inactive set's keystone would look
-        // allocated: from a code, a keystone counts only when the stats corroborate it.
-        treeCurrent: treeCheck.status === 'current' && !fromCode,
+        // A code's weapon-set nodes are split off its main tree (`snapshotToCharModel`), so `passives.live`
+        // is the live tree for a code as for poe.ninja.
+        treeCurrent: treeCheck.status === 'current',
       })
     : NO_KEYSTONE_EFFECTS
   if (treeCheck.status === 'stale') {
@@ -404,6 +424,8 @@ export async function analyzeCharacter(
     reconciliation,
     pobStats,
     pobConfig,
+    pobMinionStats,
+    staleExport: stale,
     stamp: {
       dataRevision: options.dataVersion?.dataRevision ?? null,
       extractedAt: options.dataVersion?.extractedAt ?? null,

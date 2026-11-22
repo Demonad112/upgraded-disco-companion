@@ -45,10 +45,16 @@ describe('pobToCharModel', () => {
     expect(converted.pathOfBuildingExport).toBe(code)
   })
 
-  it('carries the allocated tree', () => {
-    const nodes = converted.passiveSelection as number[]
-    expect(nodes.length).toBe(136)
-    expect(nodes).toContain(50459)
+  it('splits the tree as PoB loads it: main tree, two weapon-set trees, the live-set flag and tree version (NP1-6b)', () => {
+    // PoB's `nodes` lists all 136 allocated nodes; <WeaponSet1/2> name the 16 + 16 that belong to one set only.
+    const main = converted.passiveSelection as number[]
+    expect(main.length).toBe(104)
+    expect(main).toContain(50459)
+    expect(converted.passiveSelectionSet1).toHaveLength(16)
+    expect(converted.passiveSelectionSet2).toHaveLength(16)
+    for (const n of [...converted.passiveSelectionSet1!, ...converted.passiveSelectionSet2!]) expect(main).not.toContain(n)
+    expect(converted.useSecondWeaponSet).toBe(false)
+    expect(converted.passiveTreeName).toBe(ninjaModel.passiveTreeName)
   })
 })
 
@@ -101,17 +107,19 @@ describe('analysing a converted code', () => {
 
   it('runs the tree check and keystones from the code’s tree, as the poe.ninja path does', () => {
     expect(fromCode.treeCheck.status).toBe(ninja.treeCheck.status)
-    // A code's tree spec lists the main tree and both weapon sets' nodes in one list: poe.ninja's three arrays,
-    // plus the class start node (50459, Ranger), which PoB lists and poe.ninja leaves out.
-    const all = [...ninja.passives.main, ...ninja.passives.set1, ...ninja.passives.set2, 50459].sort()
-    expect([...fromCode.passives.main].sort()).toEqual(all)
-    expect(fromCode.sourceGaps.map((g) => g.what)).toContain('Weapon-set passives')
+    // The split matches poe.ninja's three arrays exactly, plus the class start node (50459, Ranger) in the
+    // main tree, which PoB lists and poe.ninja leaves out.
+    expect(fromCode.passives.main).toEqual([...ninja.passives.main, 50459].sort((a, b) => a - b))
+    expect(fromCode.passives.set1).toEqual(ninja.passives.set1)
+    expect(fromCode.passives.set2).toEqual(ninja.passives.set2)
+    expect(fromCode.passives.activeSet).toBe(ninja.passives.activeSet)
+    expect(fromCode.passives.live).toEqual([...ninja.passives.live, 50459].sort((a, b) => a - b))
+    expect(fromCode.sourceGaps.map((g) => g.what)).not.toContain('Weapon-set passives')
   })
 
-  it('trusts a keystone from a code only when the stats confirm it, since the weapon sets are not split', () => {
-    // Nothing is applied on the tree's word alone: every applied keystone is one the sheet corroborates.
-    expect(fromCode.keystones.fromTree).toEqual([])
-    for (const k of fromCode.keystones.applied) expect(ninja.keystones.applied).toContain(k)
+  it('trusts keystones from a code by the same rule as poe.ninja, now that the weapon sets are split', () => {
+    expect(fromCode.keystones.fromTree).toEqual(ninja.keystones.fromTree)
+    expect(fromCode.keystones.applied).toEqual(ninja.keystones.applied)
   })
 
   it('grades a range without a ladder sample, never a guessed letter', () => {

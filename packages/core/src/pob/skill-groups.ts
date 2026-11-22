@@ -18,10 +18,12 @@
  *
  * Anything else has `weaponSet: null`: not stated, not "set 1".
  *
- * Regex-based so it runs identically in Node and the browser.
+ * Read through `PobSnapshot`.
  */
 
 import type { InactiveSetReport } from '../model/slots.js'
+import { snapshotOf, type PobSource } from './export.js'
+import { activeItemSet, activeSkillSet, type PobGem } from './snapshot.js'
 
 export type PobSkillSource = 'gems' | 'tree' | 'item' | 'other'
 
@@ -44,45 +46,30 @@ export interface PobSkillGroup {
   weaponSetBasis: string | null
 }
 
-function attrOf(tag: string, name: string): string | null {
-  return new RegExp(`\\b${name}="([^"]*)"`).exec(tag)?.[1] ?? null
-}
-
 /** Weapon set a slot name belongs to, or null for a non-weapon slot. */
 function weaponSetOfSlot(slot: string): 1 | 2 | null {
   if (!/^Weapon \d/.test(slot)) return null
   return /\bSwap\b/i.test(slot) ? 2 : 1
 }
 
-export function readPobSkillGroups(xml: string): PobSkillGroup[] {
-  const skillsTag = /<Skills\b[^>]*>/.exec(xml)?.[0] ?? ''
-  const activeId = attrOf(skillsTag, 'activeSkillSet')
+export function readPobSkillGroups(source: PobSource): PobSkillGroup[] {
+  const snap = snapshotOf(source)
+  const active = activeSkillSet(snap)
 
   // Item ids placed in each weapon slot of the item set PoB has active.
-  const itemSets = [...xml.matchAll(/<ItemSet\b([^>]*)>([\s\S]*?)<\/ItemSet>/g)]
-  const activeItemSet = attrOf(/<Items\b[^>]*>/.exec(xml)?.[0] ?? '', 'activeItemSet')
-  const itemSet = itemSets.find((s) => attrOf(s[1] ?? '', 'id') === activeItemSet) ?? itemSets[0]
-  const setOfItem = new Map<string, { set: 1 | 2; slot: string }>()
-  for (const slot of (itemSet?.[2] ?? '').matchAll(/<Slot\b([^>]*)\/?>/g)) {
-    const name = attrOf(slot[1] ?? '', 'name') ?? ''
-    const id = attrOf(slot[1] ?? '', 'itemId')
-    const set = weaponSetOfSlot(name)
-    if (set && id && id !== '0') setOfItem.set(id, { set, slot: name })
+  const setOfItem = new Map<number, { set: 1 | 2; slot: string }>()
+  for (const slot of activeItemSet(snap)?.slots ?? []) {
+    const set = weaponSetOfSlot(slot.name)
+    if (set && slot.itemId !== 0) setOfItem.set(slot.itemId, { set, slot: slot.name })
   }
 
   const groups: PobSkillGroup[] = []
-  for (const set of xml.matchAll(/<SkillSet\b([^>]*)>([\s\S]*?)<\/SkillSet>/g)) {
-    const id = attrOf(set[1] ?? '', 'id')
-    let index = 0
-    for (const g of (set[2] ?? '').matchAll(/<Skill\b([^>]*?)(?:\/>|>([\s\S]*?)<\/Skill>)/g)) {
-      index += 1
-      const tag = g[1] ?? ''
-      const gems = [...(g[2] ?? '').matchAll(/<Gem\b([^>]*)>/g)].map((m) => m[1] ?? '')
-      const enabled = gems.filter((x) => attrOf(x, 'enabled') !== 'false')
-      const isSupport = (x: string) => (attrOf(x, 'skillId') ?? '').startsWith('Support')
-      const name = (x: string) => attrOf(x, 'nameSpec')?.trim() ?? ''
-
-      const sourceRaw = attrOf(tag, 'source')
+  for (const set of snap.skills.sets) {
+    const id = set.id === null ? null : String(set.id)
+    set.groups.forEach((g, i) => {
+      const enabled = g.gems.filter((x) => x.enabled)
+      const isSupport = (x: PobGem) => (x.skillId ?? '').startsWith('Support')
+      const sourceRaw = g.source
       const source: PobSkillSource = !sourceRaw
         ? 'gems'
         : sourceRaw.startsWith('Tree:')
@@ -93,14 +80,13 @@ export function readPobSkillGroups(xml: string): PobSkillGroup[] {
 
       let weaponSet: 1 | 2 | null = null
       let weaponSetBasis: string | null = null
-      const slot = attrOf(tag, 'slot')
-      const bySlot = slot ? weaponSetOfSlot(slot) : null
-      if (slot && bySlot) {
+      const bySlot = g.slot ? weaponSetOfSlot(g.slot) : null
+      if (g.slot && bySlot) {
         weaponSet = bySlot
-        weaponSetBasis = `The export links this group to ${slot}.`
+        weaponSetBasis = `The export links this group to ${g.slot}.`
       } else if (source === 'item') {
         const itemId = /^Item:(\d+)/.exec(sourceRaw ?? '')?.[1]
-        const placed = itemId ? setOfItem.get(itemId) : undefined
+        const placed = itemId ? setOfItem.get(Number(itemId)) : undefined
         if (placed) {
           weaponSet = placed.set
           weaponSetBasis = `Granted by the item in ${placed.slot}.`
@@ -108,19 +94,19 @@ export function readPobSkillGroups(xml: string): PobSkillGroup[] {
       }
 
       groups.push({
-        index,
+        index: i + 1,
         skillSet: id,
-        activeSkillSet: id === activeId || (activeId === null && groups.every((x) => x.skillSet === id)),
-        enabled: attrOf(tag, 'enabled') !== 'false',
-        label: attrOf(tag, 'label') ?? '',
+        activeSkillSet: set === active,
+        enabled: g.enabled,
+        label: g.label,
         source,
         sourceRaw,
-        skills: enabled.filter((x) => !isSupport(x)).map(name).filter(Boolean),
-        supports: enabled.filter(isSupport).map(name).filter(Boolean),
+        skills: enabled.filter((x) => !isSupport(x)).map((x) => x.nameSpec).filter(Boolean),
+        supports: enabled.filter(isSupport).map((x) => x.nameSpec).filter(Boolean),
         weaponSet,
         weaponSetBasis,
       })
-    }
+    })
   }
   return groups
 }

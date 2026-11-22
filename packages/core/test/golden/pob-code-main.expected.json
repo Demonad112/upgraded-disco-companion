@@ -1,0 +1,283 @@
+{
+  "source": "pob-export",
+  "sourceGaps": [
+    "Per-skill damage",
+    "Gear findings and trade searches",
+    "Stat attribution — which item or passive grants each point",
+    "Ward",
+    "Block chance"
+  ],
+  "passives": {
+    "main": 123,
+    "set1": 0,
+    "set2": 0,
+    "activeSet": 1
+  },
+  "skills": [
+    {
+      "name": "Storm Wave",
+      "totalDps": 186975.76477486314
+    }
+  ],
+  "staleExport": {
+    "pobVersion": "0.23.1",
+    "stats": [
+      {
+        "stat": "AverageBurstDamage",
+        "embedded": 110053.90652383,
+        "recomputed": 120123.65946616
+      },
+      {
+        "stat": "AverageDamage",
+        "embedded": 110053.90652383,
+        "recomputed": 120123.65946616
+      },
+      {
+        "stat": "ChaosMaximumHitTaken",
+        "embedded": 7788,
+        "recomputed": 6922
+      },
+      {
+        "stat": "ColdMaximumHitTaken",
+        "embedded": 21726,
+        "recomputed": 19957
+      },
+      {
+        "stat": "CombinedDPS",
+        "embedded": 186975.76477486,
+        "recomputed": 204059.0147246
+      },
+      {
+        "stat": "CritChance",
+        "embedded": 91.49712,
+        "recomputed": 91.5
+      },
+      {
+        "stat": "FireMaximumHitTaken",
+        "embedded": 17846,
+        "recomputed": 16393
+      },
+      {
+        "stat": "IgniteDPS",
+        "embedded": 269.31235718314,
+        "recomputed": 269.22644026885
+      },
+      {
+        "stat": "LightningMaximumHitTaken",
+        "embedded": 18507,
+        "recomputed": 17000
+      },
+      {
+        "stat": "PhysicalMaximumHitTaken",
+        "embedded": 5004,
+        "recomputed": 4597
+      },
+      {
+        "stat": "PreEffectiveCritChance",
+        "embedded": 91.49712,
+        "recomputed": 91.5
+      },
+      {
+        "stat": "TotalDPS",
+        "embedded": 186706.45241768,
+        "recomputed": 203789.78828433
+      },
+      {
+        "stat": "TotalDotDPS",
+        "embedded": 269.31235718314,
+        "recomputed": 269.22644026885
+      },
+      {
+        "stat": "TotalEHP",
+        "embedded": 19698.376298835,
+        "recomputed": 17975.374699253
+      },
+      {
+        "stat": "Ward",
+        "embedded": null,
+        "recomputed": 423
+      },
+      {
+        "stat": "WardCost",
+        "embedded": null,
+        "recomputed": 0
+      },
+      {
+        "stat": "WardPerSecondCost",
+        "embedded": null,
+        "recomputed": 0
+      },
+      {
+        "stat": "WardPercentCost",
+        "embedded": null,
+        "recomputed": 0
+      },
+      {
+        "stat": "WardRegenRecovery",
+        "embedded": null,
+        "recomputed": 21.2
+      },
+      {
+        "stat": "WithBleedDPS",
+        "embedded": 186706.45241768,
+        "recomputed": 203789.78828433
+      },
+      {
+        "stat": "WithIgniteDPS",
+        "embedded": 186975.76477486,
+        "recomputed": 204059.0147246
+      },
+      {
+        "stat": "WithPoisonDPS",
+        "embedded": 186706.45241768,
+        "recomputed": 203789.78828433
+      }
+    ]
+  },
+  "identity": {
+    "name": "",
+    "account": "",
+    "league": "",
+    "level": 90,
+    "className": "Martial Artist",
+    "updatedUtc": null
+  },
+  "defence": {
+    "lowestMaximumHit": 5004,
+    "lowestMaximumHitType": "physical",
+    "life": 1494,
+    "energyShield": 2673,
+    "resistances": [
+      {
+        "type": "fire",
+        "value": 75,
+        "max": 75,
+        "overCap": 12,
+        "underCap": 0
+      },
+      {
+        "type": "cold",
+        "value": 80,
+        "max": 80,
+        "overCap": 59,
+        "underCap": 0
+      },
+      {
+        "type": "lightning",
+        "value": 76,
+        "max": 76,
+        "overCap": 54,
+        "underCap": 0
+      },
+      {
+        "type": "chaos",
+        "value": 53,
+        "max": 75,
+        "overCap": 0,
+        "underCap": 22
+      }
+    ]
+  },
+  "activeSlots": [],
+  "primarySkill": {
+    "name": "Storm Wave",
+    "totalDps": 186975.76477486314
+  },
+  "assessment": {
+    "score": null,
+    "scoreRange": {
+      "min": 0.4,
+      "max": 0.9
+    },
+    "tier": null,
+    "tierRange": {
+      "worst": "C",
+      "best": "A"
+    },
+    "offenceUnscoredReason": "No ladder sample was available for this league and ascendancy, and this codebase does not carry invented damage thresholds to fall back on.",
+    "weaknesses": [
+      "critical: Chaos resistance below its cap (Chaos 53% of 75%, 88% more chaos damage taken)",
+      "warning: 2 weak damage types — Physical 5,004, Chaos 7,788, against 21,726 at best"
+    ]
+  },
+  "recommendations": [
+    "res-chaos-under-cap",
+    "one-shot-physical"
+  ],
+  "pobConfigInputCount": 22,
+  "warnings": [
+    "Stale export: re-export from current Path of Building. 22 stats differ from what Path of Building 0.23.1 computes for this build now, including TotalDPS (186,706 in the code, 203,790 now)."
+  ],
+  "importHash": "5bd8465f2688a0a7",
+  "holdingUp": {
+    "resistances": [
+      {
+        "type": "fire",
+        "known": true,
+        "value": 75,
+        "max": 75,
+        "slack": 12,
+        "short": 0,
+        "source": "ninja"
+      },
+      {
+        "type": "cold",
+        "known": true,
+        "value": 80,
+        "max": 80,
+        "slack": 59,
+        "short": 0,
+        "source": "ninja"
+      },
+      {
+        "type": "lightning",
+        "known": true,
+        "value": 76,
+        "max": 76,
+        "slack": 54,
+        "short": 0,
+        "source": "ninja"
+      },
+      {
+        "type": "chaos",
+        "known": true,
+        "value": 53,
+        "max": 75,
+        "slack": 0,
+        "short": 22,
+        "source": "ninja"
+      }
+    ],
+    "items": [],
+    "spirit": {
+      "total": 147,
+      "reserved": 137,
+      "unreserved": 10,
+      "unreservedPercent": 6.8
+    },
+    "attributes": [
+      {
+        "attribute": "dexterity",
+        "have": 137,
+        "required": 137,
+        "headroom": 0,
+        "tight": true
+      },
+      {
+        "attribute": "intelligence",
+        "have": 119,
+        "required": 116,
+        "headroom": 3,
+        "tight": true
+      },
+      {
+        "attribute": "strength",
+        "have": 92,
+        "required": 80,
+        "headroom": 12,
+        "tight": false
+      }
+    ],
+    "movementSpeed": null
+  }
+}
