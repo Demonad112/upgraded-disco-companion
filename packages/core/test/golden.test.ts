@@ -99,9 +99,7 @@ async function view(doc: Record<string, unknown>, options: AnalyzeOptions = {}) 
       attributes: holding.attributes.value,
       movementSpeed: holding.movementSpeed.value,
     },
-    // First 12 hex characters only: a full SHA-256 in a golden reads as an API key to the secrets scan, and 12 still
-    // change whenever the key does.
-    cacheKey: (await analysisCacheKey({ model: (a.model as Record<string, unknown>), pobVersion: null, dataVersion: 'golden' })).slice(0, 12),
+    cacheKey: await analysisCacheKey({ model: (a.model as Record<string, unknown>), pobVersion: null, dataVersion: 'golden' }),
   }
 }
 
@@ -111,7 +109,8 @@ describe('golden outputs', () => {
       const doc = v.patch
         ? applyPatch(recorded, (JSON.parse(readFileSync(here(`./golden/${v.patch}.patch.json`), 'utf8')) as { ops: Op[] }).ops)
         : recorded
-      const out = await view(doc)
+      // Leave out the cache key (a SHA-256 the secrets scan reads as an API key); the test below covers key changes.
+      const { cacheKey: _key, ...out } = await view(doc)
       await expect(`${JSON.stringify(out, null, 2)}\n`).toMatchFileSnapshot(`./golden/${v.name}.expected.json`)
     })
   }

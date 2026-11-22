@@ -5,7 +5,7 @@
 # and a monster skill name string in Spectres.lua. Each `npm run pob2:sync` commit needs its own fingerprints (B7 pob2:bump prints them).
 c6e78123eb03a219e9c9ad5f416010b2b11c6cd2:vendor/pob2/PIN.json:generic-api-key:75
 c6e78123eb03a219e9c9ad5f416010b2b11c6cd2:vendor/pob2/src/Data/Spectres.lua:algolia-api-key:12603
-# PB-5: the analysis cache key (a SHA-256) in five goldens added in b7fcd1e; shortened to 12 characters in the next commit. Not credentials.
+# PB-5: the analysis cache key (a SHA-256) in five goldens added in b7fcd1e; removed from the goldens in the next commit (history keeps them). Not credentials.
 b7fcd1e84d8409d14f806d4939289ad7f3dab610:packages/core/test/golden/sparse-defence.expected.json:generic-api-key:162
 b7fcd1e84d8409d14f806d4939289ad7f3dab610:packages/core/test/golden/no-pob-export.expected.json:generic-api-key:141
 b7fcd1e84d8409d14f806d4939289ad7f3dab610:packages/core/test/golden/no-skills.expected.json:generic-api-key:167
