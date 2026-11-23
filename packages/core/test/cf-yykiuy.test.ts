@@ -1,6 +1,6 @@
 /**
  * CF1: data-correctness fixes found by the Yykiuy audit (items 1-4).
- * Fixture: yykiuy-v80.json, captured verbatim 2026-11-13 (model of 2026-11-12T23:34Z).
+ * Scenario: the Yykiuy defence block (captured 2026-11-13) on the main build (helpers/main-build.ts).
  * Every number asserted here is poe.ninja's value as given, or derived from it.
  */
 
@@ -14,12 +14,25 @@ import { analyzeItem } from '../src/gear/analyze.js'
 import { ModTiers, type ModTierData, type MonkGloveEntry } from '../src/gear/tiers.js'
 import { normalizeItems } from '../src/model/slots.js'
 import { deadReason } from '../src/recommend/gear.js'
+import { mainWithYykiuyDefence } from './helpers/main-build.js'
 
 const here = dirname(fileURLToPath(import.meta.url))
 const tiers = new ModTiers(
   JSON.parse(readFileSync(join(here, '..', '..', 'data', 'generated', 'mod-tiers.json'), 'utf8')) as ModTierData,
 )
-const payload = JSON.parse(readFileSync(join(here, 'fixtures', 'yykiuy-v80.json'), 'utf8'))
+const payload = mainWithYykiuyDefence()
+{
+  // Two lines the code gives as text only, stated as the ids poe.ninja gave them (see PB-12 in REMAINING-WORK):
+  // the amulet's "+1 Prefix / -1 Suffix Modifier allowed" implicit, and the Martial Artist gloves' transformed lines.
+  const mods = (slot: number) => (payload.charModel.items as { itemSlot: number; itemData: { mods: Record<string, unknown[]> } }[]).find((i) => i.itemSlot === slot)!.itemData.mods
+  mods(4).implicit = [
+    { id: 'AmuletImplicitPrefixSuffixAllowed1', stats: { 'local_maximum_prefixes_allowed_+': 1, 'local_maximum_suffixes_allowed_+': -1 } },
+  ]
+  mods(2).explicit = [
+    { id: 'HandWrapsAddedLightningDamage7', stats: { 'non_skill_base_all_damage_%_to_gain_as_lightning_with_attacks': 17 } },
+    { id: 'HandWrapsAddedColdDamage7', stats: { 'non_skill_base_all_damage_%_to_gain_as_cold_with_attacks': 17 } },
+  ]
+}
 const analysis = await analyzeCharacter(payload, { tiers })
 const items = normalizeItems(payload.charModel)
   .filter((i) => i.active)
@@ -44,7 +57,8 @@ describe('CF1 item 2: affix slot limits', () => {
 
   it('applies +1 prefix / -1 suffix allowed from the implicit', () => {
     expect(pendant.affixCapacity).toEqual({ prefix: 4, suffix: 2 })
-    expect(pendant.affixCounts).toEqual({ prefix: 4, suffix: 2 })
+    // Its fourth prefix ("28% increased Global Armour, Evasion and Energy Shield") is text only, so three are counted.
+    expect(pendant.affixCounts).toEqual({ prefix: 3, suffix: 2 })
   })
 
   it('reports no open slot on Demon Pendant', () => {
@@ -61,7 +75,7 @@ describe('CF1 item 4: Martial Artist gloves', () => {
   const withMonk = tiers.withMonkGloves(monk)
   const grip = () =>
     normalizeItems(payload.charModel)
-      .filter((i) => i.active && i.name === 'Damnation Grip')
+      .filter((i) => i.active && i.name === 'Skull Nails')
       .map((i) => analyzeItem(i, withMonk, analysis.defense))[0]!
 
   it('has the 588-row transform table', () => {
@@ -85,7 +99,7 @@ describe('CF1 item 4: Martial Artist gloves', () => {
 
   it('leaves the glove untiered without the table', () => {
     const plain = normalizeItems(payload.charModel)
-      .filter((i) => i.active && i.name === 'Damnation Grip')
+      .filter((i) => i.active && i.name === 'Skull Nails')
       .map((i) => analyzeItem(i, tiers, analysis.defense))[0]!
     expect(plain.mods.find((x) => x.id === 'HandWrapsAddedColdDamage7')!.tier).toBeNull()
   })

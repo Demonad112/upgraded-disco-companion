@@ -4,7 +4,7 @@ const importUrl = `character/?import=${encodeURIComponent(PROFILE_URL)}`
 
 async function importCharacter(page: import('@playwright/test').Page) {
   await page.goto(importUrl)
-  await expect(page.getByRole('heading', { name: /Athrynas/ }).first()).toBeVisible({ timeout: 30_000 })
+  await expect(page.getByRole('heading', { name: /Main/ }).first()).toBeVisible({ timeout: 30_000 })
 }
 
 test('"Copy link" copies a link that re-imports this character', async ({ page }) => {
@@ -42,7 +42,7 @@ test('two imported characters can be compared', async ({ page }) => {
     localStorage.setItem(recentsKey, JSON.stringify(recents))
   })
   await page.reload()
-  await expect(page.getByRole('heading', { name: /Athrynas/ }).first()).toBeVisible({ timeout: 30_000 })
+  await expect(page.getByRole('heading', { name: /Main/ }).first()).toBeVisible({ timeout: 30_000 })
   await openTab(page, 'progress')
   const panel = page.locator('details#compare')
   await panel.locator('summary').click()

@@ -4,9 +4,10 @@ import { fileURLToPath } from 'node:url'
 
 import { analyzeCharacter } from '../src/analyze.js'
 import { inactiveSetReport } from '../src/model/slots.js'
+import { mainPayload } from './helpers/main-build.js'
 
 const here = (p: string) => fileURLToPath(new URL(p, import.meta.url))
-const recorded = JSON.parse(readFileSync(here('./fixtures/athrynas-v43.json'), 'utf8')) as { charModel?: Record<string, unknown> }
+const recorded = mainPayload() as { charModel?: Record<string, unknown> }
 const model = (recorded.charModel ?? recorded) as Parameters<typeof inactiveSetReport>[0]
 
 const weapon = (itemSlot: number, name: string, grantedSkills: unknown[] = []) => ({ itemSlot, itemData: { name, grantedSkills } })
@@ -17,7 +18,7 @@ describe('inactiveSetReport', () => {
     const r = inactiveSetReport(model)
     expect(r.activeSet).toBe(1)
     expect(r.inactiveSet).toBe(2)
-    expect(r.items.map((i) => i.slotLabel).sort()).toEqual(['Main Hand', 'Off Hand'])
+    expect(r.items.map((i) => i.slotLabel).sort()).toEqual(['Main Hand'])
     expect(r.skills.status).toBe('unknown')
   })
 
@@ -31,7 +32,7 @@ describe('inactiveSetReport', () => {
   it('flips when the second set is live', () => {
     const r = inactiveSetReport({ ...model, useSecondWeaponSet: true })
     expect(r.activeSet).toBe(2)
-    expect(r.items.map((i) => i.name)).toEqual(expect.arrayContaining(['Loath Bane', 'Brood Dart']))
+    expect(r.items.map((i) => i.name)).toEqual(expect.arrayContaining(['Skull Song']))
   })
 
   it('names granted skills of inactive-set items', () => {
@@ -58,6 +59,8 @@ describe('analyzeCharacter inactiveSet', () => {
   it('is attached to the analysis', async () => {
     const a = await analyzeCharacter(recorded)
     expect(a.inactiveSet.inactiveSet).toBe(2)
-    expect(a.inactiveSet.skills.status).toBe('unknown')
+    // The code's own skill groups say Spear Throw (from Daevata's Wind) belongs to weapon set 2, so the skills are known.
+    expect(a.inactiveSet.skills).toMatchObject({ status: 'known' })
+    expect((a.inactiveSet.skills as { names: string[] }).names).toContain('Spear Throw')
   })
 })

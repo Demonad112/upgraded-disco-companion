@@ -8,6 +8,7 @@
  * Usage: node scripts/screenshot.mjs [baseUrl] [outDir]
  */
 
+import { mainPayloadJson } from './lib/main-payload.mjs'
 import { chromium } from 'playwright'
 import { watchConsole } from './console-errors.mjs'
 import { readFileSync, readdirSync, mkdirSync, existsSync } from 'node:fs'
@@ -17,7 +18,7 @@ import { dirname, join } from 'node:path'
 const here = dirname(fileURLToPath(import.meta.url))
 const baseUrl = process.argv[2] ?? 'http://127.0.0.1:3210/character/'
 const outDir = process.argv[3] ?? join(here, '..', 'screenshots')
-const fixture = readFileSync(join(here, '..', 'packages/core/test/fixtures/athrynas-v43.json'), 'utf8')
+const fixture = await mainPayloadJson()
 
 mkdirSync(outDir, { recursive: true })
 
@@ -71,7 +72,7 @@ for (const vp of VIEWPORTS) {
     await page.getByRole('button', { name: 'Analyse pasted data' }).click()
 
     // The character heading only appears once analysis has completed.
-    await page.getByRole('heading', { name: 'Athrynas', level: 2 }).waitFor({ timeout: 20_000 })
+    await page.getByRole('heading', { name: 'Main', level: 2 }).waitFor({ timeout: 20_000 })
 
     // The detail panels default collapsed — accordion triage is the point —
     // so the figures below only reach `innerText` once expanded, same as a

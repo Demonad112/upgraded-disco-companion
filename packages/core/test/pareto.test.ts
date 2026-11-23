@@ -7,6 +7,7 @@ import { describe, expect, it } from 'vitest'
 import { analyzeCharacter } from '../src/analyze.js'
 import { paretoView } from '../src/recommend/pareto.js'
 import type { CostKind, Recommendation } from '../src/recommend/types.js'
+import { mainWithReferenceDefence } from './helpers/main-build.js'
 
 const rec = (id: string, kind: CostKind, amount: number, grade: number | null): Recommendation =>
   ({ id, cost: { kind, amount, detail: '' }, measured: { grade, lowestMaxHit: null, dps: null } }) as unknown as Recommendation
@@ -35,7 +36,7 @@ describe('paretoView', () => {
 
   it('leaves the engine order alone on the recorded character', async () => {
     const here = dirname(fileURLToPath(import.meta.url))
-    const payload = JSON.parse(readFileSync(join(here, 'fixtures', 'athrynas-v43.json'), 'utf8'))
+    const payload = mainWithReferenceDefence()
     const recs = (await analyzeCharacter(payload)).recommendations.recommendations
     const before = recs.map((r) => r.id)
     const v = paretoView(recs)

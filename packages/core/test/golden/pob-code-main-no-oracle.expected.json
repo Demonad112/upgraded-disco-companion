@@ -1,0 +1,184 @@
+{
+  "source": "pob-export",
+  "sourceGaps": [
+    "Per-skill damage",
+    "Stat attribution — which item or passive grants each point",
+    "Ward",
+    "Block chance"
+  ],
+  "passives": {
+    "main": 123,
+    "set1": 0,
+    "set2": 0,
+    "activeSet": 1
+  },
+  "skills": [
+    {
+      "name": "Storm Wave",
+      "totalDps": 125666.43524555388
+    }
+  ],
+  "staleExport": null,
+  "identity": {
+    "name": "",
+    "account": "",
+    "league": "",
+    "level": 90,
+    "className": "Martial Artist",
+    "updatedUtc": null
+  },
+  "defence": {
+    "lowestMaximumHit": 5004,
+    "lowestMaximumHitType": "physical",
+    "life": 1494,
+    "energyShield": 2673,
+    "resistances": [
+      {
+        "type": "fire",
+        "value": 75,
+        "max": 75,
+        "overCap": 12,
+        "underCap": 0
+      },
+      {
+        "type": "cold",
+        "value": 80,
+        "max": 80,
+        "overCap": 59,
+        "underCap": 0
+      },
+      {
+        "type": "lightning",
+        "value": 76,
+        "max": 76,
+        "overCap": 54,
+        "underCap": 0
+      },
+      {
+        "type": "chaos",
+        "value": 53,
+        "max": 75,
+        "overCap": 0,
+        "underCap": 22
+      }
+    ]
+  },
+  "activeSlots": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    7,
+    8,
+    9,
+    11
+  ],
+  "primarySkill": {
+    "name": "Storm Wave",
+    "totalDps": 125666.43524555388
+  },
+  "assessment": {
+    "score": null,
+    "scoreRange": {
+      "min": 0.4,
+      "max": 0.9
+    },
+    "tier": null,
+    "tierRange": {
+      "worst": "C",
+      "best": "A"
+    },
+    "offenceUnscoredReason": "No ladder sample was available for this league and ascendancy, and this codebase does not carry invented damage thresholds to fall back on.",
+    "weaknesses": [
+      "critical: Chaos resistance below its cap (Chaos 53% of 75%, 88% more chaos damage taken)",
+      "warning: 2 weak damage types — Physical 5,004, Chaos 7,788, against 24,985 at best"
+    ]
+  },
+  "recommendations": [
+    "res-chaos-under-cap",
+    "one-shot-physical"
+  ],
+  "pobConfigInputCount": 11,
+  "warnings": [],
+  "importHash": "51538e29b46de88e",
+  "holdingUp": {
+    "resistances": [
+      {
+        "type": "fire",
+        "known": true,
+        "value": 75,
+        "max": 75,
+        "slack": 12,
+        "short": 0,
+        "source": "ninja"
+      },
+      {
+        "type": "cold",
+        "known": true,
+        "value": 80,
+        "max": 80,
+        "slack": 59,
+        "short": 0,
+        "source": "ninja"
+      },
+      {
+        "type": "lightning",
+        "known": true,
+        "value": 76,
+        "max": 76,
+        "slack": 54,
+        "short": 0,
+        "source": "ninja"
+      },
+      {
+        "type": "chaos",
+        "known": true,
+        "value": 53,
+        "max": 75,
+        "slack": 0,
+        "short": 22,
+        "source": "ninja"
+      }
+    ],
+    "items": [
+      {
+        "slot": 4,
+        "holds": [],
+        "anoint": [
+          "Allocates Overwhelming Strike"
+        ]
+      }
+    ],
+    "spirit": {
+      "total": 147,
+      "reserved": 137,
+      "unreserved": 10,
+      "unreservedPercent": 6.8
+    },
+    "attributes": [
+      {
+        "attribute": "dexterity",
+        "have": 137,
+        "required": 137,
+        "headroom": 0,
+        "tight": true
+      },
+      {
+        "attribute": "intelligence",
+        "have": 119,
+        "required": 116,
+        "headroom": 3,
+        "tight": true
+      },
+      {
+        "attribute": "strength",
+        "have": 92,
+        "required": 80,
+        "headroom": 12,
+        "tight": false
+      }
+    ],
+    "movementSpeed": null
+  }
+}

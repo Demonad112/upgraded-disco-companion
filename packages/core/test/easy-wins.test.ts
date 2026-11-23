@@ -1,7 +1,8 @@
 /**
  * Easy wins: merged findings ranked by effort, then by measured score gain
  * (Δgrade, Δ lowest max hit, ΔDPS; CF2, audit item 8). Numbers come from the
- * two captured fixtures, through `whatIfDefense` and the score rubric.
+ * two scenarios on the main build (the Yykiuy and the reference defence blocks, see helpers/main-build.ts),
+ * through `whatIfDefense` and the score rubric.
  */
 
 import { readFileSync } from 'node:fs'
@@ -13,6 +14,7 @@ import { analyzeItem } from '../src/gear/analyze.js'
 import { rankReplacements } from '../src/gear/priority.js'
 import { ModTiers, type ModTierData } from '../src/gear/tiers.js'
 import { normalizeItems } from '../src/model/slots.js'
+import { mainForRecommend, mainWithYykiuyDefence } from './helpers/main-build.js'
 import { COST_WEIGHT, rankEasyWins, type EasyWinsInput, type Recommendation } from '../src/recommend/index.js'
 
 const here = dirname(fileURLToPath(import.meta.url))
@@ -20,8 +22,7 @@ const tiers = new ModTiers(
   JSON.parse(readFileSync(join(here, '..', '..', 'data', 'generated', 'mod-tiers.json'), 'utf8')) as ModTierData,
 )
 
-async function load(name: string) {
-  const payload = JSON.parse(readFileSync(join(here, 'fixtures', `${name}.json`), 'utf8'))
+async function load(payload: { charModel: { skills?: unknown } }) {
   const analysis = await analyzeCharacter(payload, { tiers })
   const items = normalizeItems(payload.charModel ?? payload)
     .filter((i) => i.active)
@@ -35,8 +36,11 @@ async function load(name: string) {
   return { analysis, input, report: rankEasyWins(input) }
 }
 
-const yk = await load('yykiuy-v51')
-const at = await load('athrynas-v43')
+const yk = await load(mainWithYykiuyDefence())
+// The reference scenario at base crit chance, so the crit finding applies (as in offence.test.ts).
+const atPayload = mainForRecommend(true)
+Object.assign((atPayload.charModel.skills as { dps: object[] }[])[0]!.dps[0]!, { critChance: 5, critMultiplier: 2.48, hitChance: 100 })
+const at = await load(atPayload)
 const win = (r: typeof yk.report, id: string) => r.wins.find((w) => w.id === id)!
 
 describe('COST_WEIGHT', () => {
@@ -71,7 +75,8 @@ describe('Athrynas', () => {
   it('ranks measured gains first within an effort, and unknown cost last', () => {
     expect(at.report.wins.map((w) => [w.id, w.effort])).toEqual([
       ['gear-swap-chaos', 'gear'],
-      ['gear-swap-cold', 'gear'],
+      // Cold is the same-line alternative of the chaos swap on the main build, so it stays the generic finding.
+      ['res-cold-under-cap', 'gear'],
       ['weapon-ilvl-lag', 'gear'],
       ['one-shot-chaos', 'gear'],
       ['anoint-unused', 'currency'],

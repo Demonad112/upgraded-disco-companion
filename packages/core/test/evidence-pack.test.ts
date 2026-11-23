@@ -1,8 +1,9 @@
 /**
- * Regression test for the character the analyzer was validated against: Yykiuy,
- * level 88 Martial Artist (test/fixtures/yykiuy-v51.json, captured 2026-11-08).
- * Expected values come from the evidence pack: what this app read from poe.ninja
- * and the attached PoB export. The reference tool's different numbers (uncapped
+ * Regression test for the numbers the analyzer was validated against: Yykiuy,
+ * level 88 Martial Artist (captured 2026-11-08, its defence block kept inline in
+ * helpers/main-build.ts since PB-5 deleted the capture; the DPS agreement is
+ * checked on the main build's own code). Expected values come from the evidence
+ * pack: what this app read from poe.ninja and the attached PoB export. The reference tool's different numbers (uncapped
  * resistances +10, higher max hits) are deliberately NOT asserted: they are
  * hints to verify, not targets to match. Athrynas was dropped from the pack.
  */
@@ -11,19 +12,20 @@ import { beforeAll, describe, expect, it } from 'vitest'
 import type { Analysis } from '../src/analyze.js'
 import { analyzeCharacter } from '../src/analyze.js'
 import { analyzePob } from './helpers/pob.js'
-import { findFixture } from './helpers/fixtures.js'
+import { mainPayload, mainWithYykiuyDefence } from './helpers/main-build.js'
 
-const yykiuy = findFixture(/^yykiuy-v51\.json$/)
+const yykiuy = mainWithYykiuyDefence()
+const yModel = yykiuy.charModel
 
 describe('Yykiuy (level 88 Martial Artist) evidence pack', () => {
   let a: Analysis
-  const s = yykiuy?.model.defensiveStats ?? {}
+  const s = yModel.defensiveStats ?? {}
   beforeAll(async () => {
-    a = await analyzeCharacter(yykiuy!.raw)
+    a = await analyzeCharacter(yykiuy)
   })
 
   it('reads the observed defensive stats', () => {
-    expect(yykiuy!.model.level).toBe(88)
+    expect(yModel.level).toBe(88)
     expect(s.life).toBe(1477)
     expect(s.energyShield).toBe(2922)
     expect(s.mana).toBe(662)
@@ -44,16 +46,26 @@ describe('Yykiuy (level 88 Martial Artist) evidence pack', () => {
     expect(a.defense.effectiveHealthPool).toBe(18456)
   })
 
-  it('reads Falling Thunder DPS and agrees with the export', async () => {
+  it('reads the main skill DPS as given, and agrees with the export where both come from the code', async () => {
     const top = a.dps.skills.find((k) => k.name === 'Falling Thunder')
-    expect(top?.dps).toBeGreaterThan(225_000)
-    expect(top?.dps).toBeLessThan(226_000)
-    const stats = await analyzePob(yykiuy!.model)
-    expect(stats.TotalDPS).toBeCloseTo(225_652, -1)
+    expect(top?.dps).toBe(192_498)
+    // The main build's own code: the analyzer's figure and PoB's TotalDPS are the same number.
+    const code = mainPayload()
+    const main = await analyzeCharacter(code)
+    const stats = await analyzePob(code.charModel)
+    expect(stats.TotalDPS).toBeCloseTo(125_658, -1)
+    expect(main.dps.primary?.dps).toBeCloseTo(stats.TotalDPS, 0)
   })
 
-
-  it('does not raise a banner for the unmapped stat id', () => {
-    expect(a.warnings.join(' ')).not.toMatch(/disagree between poe.ninja/)
+  it('does not raise a banner for the unmapped stat id', async () => {
+    // The main build agrees with its own export; one breakdown stat id nothing maps (99) must not change that.
+    const code = mainPayload()
+    ;(code.charModel as { breakdowns?: unknown }).breakdowns = {
+      sources: [[0]],
+      stats: { '99': { base: 0, inc: 0, more: 1, total: 0, basePercent: false, mods: [] } },
+    }
+    const b = await analyzeCharacter(code)
+    expect(b.breakdowns.unmappedIds).toEqual([99])
+    expect(b.warnings.join(' ')).not.toMatch(/disagree between poe.ninja/)
   })
 })

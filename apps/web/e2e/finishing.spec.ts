@@ -4,17 +4,17 @@ const importUrl = `character/?import=${encodeURIComponent(PROFILE_URL)}`
 
 test('the share card previews and downloads a PNG of the verdict', async ({ page }) => {
   await page.goto(importUrl)
-  await expect(page.getByRole('heading', { name: /Athrynas/ }).first()).toBeVisible({ timeout: 30_000 })
+  await expect(page.getByRole('heading', { name: /Main/ }).first()).toBeVisible({ timeout: 30_000 })
   await page.getByRole('button', { name: 'Share card' }).click()
   const dialog = page.getByRole('dialog', { name: 'Share card' })
-  const img = dialog.getByRole('img', { name: /Share card for Athrynas/ })
+  const img = dialog.getByRole('img', { name: /Share card for Main/ })
   await expect(img).toBeVisible()
   expect(await img.evaluate((el: HTMLImageElement) => [el.naturalWidth, el.naturalHeight])).toEqual([1200, 630])
   const [download] = await Promise.all([
     page.waitForEvent('download'),
     dialog.getByRole('link', { name: 'Download PNG' }).click(),
   ])
-  expect(download.suggestedFilename()).toBe('athrynas-poe2-card.png')
+  expect(download.suggestedFilename()).toBe('main-poe2-card.png')
   await page.keyboard.press('Escape')
   await expect(dialog).toBeHidden()
   await expect(page.getByRole('button', { name: 'Share card' })).toBeFocused()
@@ -70,7 +70,7 @@ test('glossary terms never sit inside another interactive element', async ({ pag
   expect(await page.evaluate(nestedTerms)).toBe(0)
 
   await page.goto(importUrl)
-  await expect(page.getByRole('heading', { name: /Athrynas/ }).first()).toBeVisible({ timeout: 30_000 })
+  await expect(page.getByRole('heading', { name: /Main/ }).first()).toBeVisible({ timeout: 30_000 })
   // Each tab mounts its own panel, so open and check every one.
   for (const id of ['overview', 'defences', 'damage', 'gear', 'progress', 'advanced'] as const) {
     await openTab(page, id)

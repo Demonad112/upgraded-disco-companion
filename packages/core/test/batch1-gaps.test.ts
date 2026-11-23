@@ -12,6 +12,7 @@ import type { Recommendation } from '../src/recommend/types.js'
 import { scoreUpgrade } from '../src/upgrade/scoring.js'
 import { withCardWarnings } from '../src/upgrade/warn.js'
 import type { ObservedCard } from '../src/upgrade/types.js'
+import { mainWithReferenceDefence } from './helpers/main-build.js'
 
 const here = (p: string) => fileURLToPath(new URL(p, import.meta.url))
 
@@ -119,7 +120,7 @@ describe('primarySkillInInactiveSet', () => {
   })
 
   it('is null on the recorded character, which carries no weapon-set markers', async () => {
-    const payload = JSON.parse(readFileSync(here('./fixtures/athrynas-v43.json'), 'utf8'))
+    const payload = mainWithReferenceDefence()
     const a = await analyzeCharacter(payload)
     expect(primarySkillInInactiveSet(a.dps.primary?.name ?? null, a.inactiveSet)).toBeNull()
     expect(inactiveSetReport(payload.charModel ?? payload).skills.status).toBe('unknown')

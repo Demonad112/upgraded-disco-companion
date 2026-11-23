@@ -15,6 +15,7 @@ import { analyzeItem, type ItemAnalysis } from '../src/gear/analyze.js'
 import { planReplacement } from '../src/gear/replace.js'
 import { swapVetoes } from '../src/gear/veto.js'
 import type { EquippedItem } from '../src/model/slots.js'
+import { mainWithBreakdowns } from './helpers/main-build.js'
 
 const SPIRIT = 'base_spirit_from_equipment'
 const MOVE = 'base_movement_velocity_+%'
@@ -92,20 +93,22 @@ describe('swapVetoes', () => {
 
 describe('planReplacement carries the notes', () => {
   const here = dirname(fileURLToPath(import.meta.url))
-  const payload = JSON.parse(readFileSync(join(here, 'fixtures', 'athrynas-v43.json'), 'utf8'))
+  const payload = mainWithBreakdowns()
   const model = payload.charModel ?? payload
   const tiers = new ModTiers(JSON.parse(readFileSync(join(here, '..', '..', 'data', 'generated', 'mod-tiers.json'), 'utf8')) as ModTierData)
 
-  it('lists the amulet\'s spirit on the real character, with the sheet figure', async () => {
+  it('lists the amulet\'s spirit on the main build, with the sheet figure', async () => {
     const analysis = await analyzeCharacter(payload)
     const items = normalizeItems(model).filter((i) => i.active)
     const analysed = items.map((i) => analyzeItem(i, tiers, analysis.defense))
-    const amulet = analysed.find((i) => i.baseType === 'Solar Amulet')!
+    const amulet = analysed.find((i) => i.baseType === 'Dusk Amulet')!
     const args = { target: amulet, items: analysed, rawItems: items, defense: analysis.defense, attribution: analysis.attribution, tiers }
-    const withSheet = planReplacement({ ...args, sheet: model.defensiveStats })
-    expect(withSheet.vetoes.some((v) => v.check === 'spirit')).toBe(true)
-    expect(withSheet.vetoes.find((v) => v.check === 'spirit' && v.status === 'cant-check')!.text).toMatch(/spirit would drop from 159/i)
+    // The planner keeps the amulet's Spirit line in the replacement spec, so it charges no spirit loss.
+    expect(planReplacement({ ...args, sheet: model.defensiveStats }).vetoes.some((v) => v.check === 'spirit')).toBe(false)
+    // A replacement without the line would lose 47 of the sheet's 159; reserved spirit can't be checked, so it is a note.
+    const withSheet = swapVetoes({ target: amulet, spec: [], others: [], sheet: model.defensiveStats })
+    expect(withSheet.find((v) => v.check === 'spirit' && v.status === 'cant-check')!.text).toMatch(/spirit would drop from 159 to 112/i)
     // Without the sheet: unknown, not clear.
-    expect(planReplacement(args).vetoes.find((v) => v.check === 'spirit')!.status).toBe('cant-check')
+    expect(swapVetoes({ target: amulet, spec: [], others: [], sheet: null }).find((v) => v.check === 'spirit')!.status).toBe('cant-check')
   })
 })

@@ -1,8 +1,7 @@
 /**
- * Per-item stat attribution, against the REAL captured character.
+ * Per-item stat attribution, against the main build with poe.ninja-shaped breakdowns.
  *
- * Every figure asserted here was recomputed from poe.ninja's own `breakdowns`
- * block and cross-checked against the character sheet. The point of the feature
+ * Every figure asserted here follows from the breakdown block `mainWithBreakdowns` builds and is cross-checked against the character sheet. The point of the feature
  * is that a gear recommendation can state what a swap costs, so the numbers
  * being right is the whole feature.
  */
@@ -23,9 +22,11 @@ import {
 } from '../src/model/attribution.js'
 import { normalizeItems } from '../src/model/slots.js'
 import type { CharModel } from '../src/model/types.js'
+import { addBreakdownMod, mainWithBreakdowns } from './helpers/main-build.js'
 
-const fixturePath = fileURLToPath(new URL('./fixtures/athrynas-v43.json', import.meta.url))
-const raw = JSON.parse(readFileSync(fixturePath, 'utf8')) as unknown
+// The main build with poe.ninja-shaped breakdowns built from its items' text (see the helper). Numbers below are
+// that scenario's own; an increased-only contributor and a charm are added inline where a test needs one.
+const raw = mainWithBreakdowns() as unknown
 const model = unwrapCharModel(raw)
 
 const defense = analyzeDefense(model)
@@ -56,10 +57,10 @@ describe('the invariant everything rests on', () => {
 
 describe('stat totals', () => {
   it('reads the reference character’s pools', () => {
-    expect(attributionForStat(report, 'life')).toMatchObject({ base: 1379, increasedPercent: 5, total: 1448 })
-    expect(attributionForStat(report, 'energyShield')).toMatchObject({ base: 846, increasedPercent: 129, total: 1937 })
-    expect(attributionForStat(report, 'evasionRating')).toMatchObject({ base: 1823, increasedPercent: 256, total: 6490 })
-    expect(attributionForStat(report, 'ward')).toMatchObject({ base: 487, increasedPercent: 45, total: 706 })
+    expect(attributionForStat(report, 'life')).toMatchObject({ base: 1448, increasedPercent: 0, total: 1448 })
+    expect(attributionForStat(report, 'energyShield')).toMatchObject({ base: 1937, increasedPercent: 0, total: 1937 })
+    expect(attributionForStat(report, 'evasionRating')).toMatchObject({ base: 6490, increasedPercent: 0, total: 6490 })
+    expect(attributionForStat(report, 'ward')).toMatchObject({ base: 706, increasedPercent: 0, total: 706 })
   })
 
   it('reports overcap only on capped stats, and only where it exists', () => {
@@ -78,17 +79,22 @@ describe('stat totals', () => {
 describe('per-item attribution', () => {
   it('credits the body armour with the evasion it actually carries', () => {
     const body = attributionForSlot(report, 3)
-    expect(body?.itemName).toBe('Viper Hide')
+    expect(body?.itemName).toBe('Morbid Mantle')
     const evasion = body?.contributions.find((c) => c.stat === 'evasionRating')
-    // 1,119 flat off a 1,823 base. Removing it leaves 704 * 3.56 = 2,506.
-    expect(evasion).toMatchObject({ flat: 1119, increased: 0, without: 2506, loss: 3984 })
+    // 224 flat off a 6,490 base. Removing it leaves 6,266.
+    expect(evasion).toMatchObject({ flat: 224, increased: 0, without: 6266, loss: 224 })
   })
 
   it('reads an increased-only contributor as increased, not flat', () => {
-    const amulet = attributionForSlot(report, 4)
-    expect(amulet?.itemName).toBe('Havoc Medallion')
+    const p = mainWithBreakdowns()
+    addBreakdownMod(p, 5, { typeId: 2, label: 'Demon Pendant, Dusk Amulet' }, 'increased', 42)
+    const cm = unwrapCharModel(p)
+    const out = attributeToItems(indexBreakdowns(cm), normalizeItems(cm), analyzeDefense(cm))
+    const amulet = attributionForSlot(out, 4)
+    expect(amulet?.itemName).toBe('Demon Pendant')
     const evasion = amulet?.contributions.find((c) => c.stat === 'evasionRating')
-    expect(evasion).toMatchObject({ flat: 0, increased: 42, without: 5724 })
+    // 42% increased on a 4,570 flat base (6,490 with it): without it the stat is the bare base.
+    expect(evasion).toMatchObject({ flat: 0, increased: 42, without: 4570 })
   })
 
   it('sorts an item’s stats by what removing it would actually cost', () => {
@@ -98,59 +104,55 @@ describe('per-item attribution', () => {
   })
 
   it('folds a rune’s resistance into the item that carries it, same as any other flat mod', () => {
-    // The body armour (Viper Hide, "Runeforged Hawker's Jacket") carries a
-    // +18% Cold Resistance rune on top of its own +26% explicit affix. Runes
-    // never appear in an item's structured `mods` — poe.ninja ships them as
-    // display text only — but they DO appear as their own entry in
-    // `charModel.breakdowns`, credited to the same item, indistinguishable
-    // from an explicit affix's contribution. Since this reads the breakdown
-    // ledger rather than reconstructing resistances from item text, the rune
-    // is already folded in: two flat contributions (18 and 26) summing to 44,
-    // not the 26 an item-mods-only reading would see.
-    const body = attributionForSlot(report, 3)
-    const cold = body?.contributions.find((c) => c.stat === 'coldResistance')
-    expect(cold).toMatchObject({ flat: 44, increased: 0, without: 30, loss: 44 })
+    // Dire Span's Cold Resistance is its rune and its explicit line together: runes appear as display text only on an
+    // item but as part of the same item's entry in `breakdowns`, so one flat contribution carries both.
+    const boots = attributionForSlot(report, 5)
+    const cold = boots?.contributions.find((c) => c.stat === 'coldResistance')
+    expect(cold).toMatchObject({ flat: 36, increased: 0, without: 38, loss: 36 })
   })
 })
 
 describe('the overcap question a gear swap has to answer', () => {
   it('reports no loss when overcap absorbs the whole contribution', () => {
-    // Gale Turn carries 22 fire resistance against 24 points of overcap. The
-    // naive answer — "you lose 22% fire" — is wrong: the sheet does not move.
-    const ring = attributionForSlot(report, 8)!
-    expect(ring.itemName).toBe('Gale Turn')
-    const fire = ring.contributions.find((c) => c.stat === 'fireResistance')!
-    expect(fire.flat).toBe(22)
-    expect(fire.withoutUncapped).toBe(77)
+    // Hypnotic Keep carries 18 fire resistance against 24 points of overcap. The naive answer, "you lose 18% fire",
+    // is wrong: the sheet does not move.
+    const helmet = attributionForSlot(report, 1)!
+    expect(helmet.itemName).toBe('Hypnotic Keep')
+    const fire = helmet.contributions.find((c) => c.stat === 'fireResistance')!
+    expect(fire.flat).toBe(18)
+    expect(fire.withoutUncapped).toBe(81)
     expect(fire.without).toBe(75)
     expect(fire.loss).toBe(0)
     expect(fire.dropsBelowCap).toBe(false)
   })
 
   it('flags the swap that does break the cap', () => {
-    const ring = attributionForSlot(report, 8)!
+    const ring = attributionForSlot(report, 9)!
     const lightning = ring.contributions.find((c) => c.stat === 'lightningResistance')!
-    // 35 points against 8 of overcap: capped 75 falls to 48.
-    expect(lightning.without).toBe(48)
-    expect(lightning.loss).toBe(27)
+    // 42 points against 8 of overcap: capped 75 falls to 41.
+    expect(lightning.without).toBe(41)
+    expect(lightning.loss).toBe(34)
     expect(lightning.dropsBelowCap).toBe(true)
   })
 
   it('ranks the items carrying a stat by what each is worth', () => {
     const carriers = itemsCarrying(report, 'lightningResistance')
-    expect(carriers.map((c) => c.item.itemName)).toEqual(['Hypnotic Halo', 'Havoc Medallion', 'Gale Turn', 'Sorrow Twirl'])
-    expect(carriers[0]!.contribution.loss).toBe(30)
-    // Every one of them breaks the cap — the build has no slack here.
+    expect(carriers.map((c) => c.item.itemName)).toEqual(['Morbid Mantle', 'Viper Whorl', 'Hypnotic Keep'])
+    expect(carriers[0]!.contribution.loss).toBe(35)
+    // Every one of them breaks the cap: the build has no slack here.
     expect(carriers.every((c) => c.contribution.dropsBelowCap)).toBe(true)
   })
 })
 
 describe('sources that are not equipped items', () => {
   it('names charms as unmatched rather than dropping them', () => {
-    // Charms contribute to the breakdown but are not in `items`, so they
-    // cannot be attributed to a slot. Silence would read as "nothing else
-    // contributes", which is a different and false claim.
-    expect(report.unmatchedSources).toContain('Dawnlit Amethyst Charm of the Bottomless')
+    // Charms contribute to the breakdown but are not in `items`, so they cannot be attributed to a slot. Silence
+    // would read as "nothing else contributes", which is a different and false claim.
+    const p = mainWithBreakdowns()
+    addBreakdownMod(p, 17, { typeId: 2, label: 'Dawnlit Amethyst Charm of the Bottomless' }, 'flat', 10)
+    const cm = unwrapCharModel(p)
+    const out = attributeToItems(indexBreakdowns(cm), normalizeItems(cm), analyzeDefense(cm))
+    expect(out.unmatchedSources).toContain('Dawnlit Amethyst Charm of the Bottomless')
   })
 
   it('attributes nothing to passives, quests or the character base', () => {

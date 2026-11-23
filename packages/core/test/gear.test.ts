@@ -1,10 +1,10 @@
 /**
- * Gear analysis against the real captured character.
+ * Gear analysis against the main build (the owner's PoB code, items read through text-mods).
  *
- * Every number asserted here was read off the live payload and the published
- * affix data, not chosen to make the code pass. The bow really is item level 76;
- * `LocalIncreasedPhysicalDamagePercent8` really does require 82; that gap really
- * is why its physical damage cannot be improved without a new base.
+ * Every number asserted here was read off the build's items and the published
+ * affix data, not chosen to make the code pass. The quarterstaff really is item
+ * level 80; `LocalAddedLightningDamageTwoHand9`'s top tier really does require 81;
+ * that gap really is why its lightning damage cannot be improved without a new base.
  */
 
 import { readFileSync } from 'node:fs'
@@ -17,18 +17,19 @@ import { ModTiers, type ModTierData } from '../src/gear/tiers.js'
 import { analyzeItem, findResistanceSwaps, findTierUpgrades, summarizeSwaps } from '../src/gear/analyze.js'
 import { analyzeContent, type MonsterStatData } from '../src/gear/content.js'
 import type { CharModel } from '../src/model/types.js'
+import { mainWithBreakdowns } from './helpers/main-build.js'
 
 const here = dirname(fileURLToPath(import.meta.url))
 const dataDir = join(here, '..', '..', 'data', 'generated')
 
-const payload = JSON.parse(readFileSync(join(here, 'fixtures', 'athrynas-v43.json'), 'utf8'))
+const payload = mainWithBreakdowns()
 const model: CharModel = payload.charModel ?? payload
 const tiers = new ModTiers(JSON.parse(readFileSync(join(dataDir, 'mod-tiers.json'), 'utf8')) as ModTierData)
 const analysis = await analyzeCharacter(payload)
 const items = normalizeItems(model)
 const analysed = items.map((i) => analyzeItem(i, tiers, analysis.defense))
 
-const bow = analysed.find((i) => i.slotId === 7)!
+const staff = analysed.find((i) => i.slotId === 7)!
 
 describe('affix ladders', () => {
   it('resolves ladders per item class, not globally', () => {
@@ -71,34 +72,34 @@ describe('affix ladders', () => {
   })
 })
 
-describe('the real bow', () => {
-  it('reads mods from poe.ninja ids rather than matching text', () => {
-    const phys = bow.mods.find((m) => m.id === 'LocalIncreasedPhysicalDamagePercent7')!
+describe('the real quarterstaff', () => {
+  it('reads mods from resolved ids, matched from the code\'s text', () => {
+    const phys = staff.mods.find((m) => m.id === 'LocalAddedPhysicalDamageTwoHand8')!
     expect(phys.kind).toBe('prefix')
-    expect(phys.affix).toBe('Tyrannical')
-    expect(phys.rolled[0]).toMatchObject({ id: 'local_physical_damage_+%', value: 155 })
+    expect(phys.affix).toBe('Tempered')
+    expect(phys.rolled[0]).toMatchObject({ id: 'local_minimum_added_physical_damage', value: 32 })
     expect(phys.unresolved).toBeNull()
   })
 
-  it('tiers against the Bow ladder', () => {
-    const phys = bow.mods.find((m) => m.id === 'LocalIncreasedPhysicalDamagePercent7')!
-    expect(phys).toMatchObject({ tier: 2, tiers: 8, ilvlRequired: 75 })
+  it('tiers against the weapon ladder', () => {
+    const phys = staff.mods.find((m) => m.id === 'LocalAddedPhysicalDamageTwoHand8')!
+    expect(phys).toMatchObject({ tier: 2, tiers: 9, ilvlRequired: 65 })
   })
 
   it('separates upgrades reachable on this item from those needing a better base', () => {
-    expect(bow.itemLevel).toBe(76)
+    expect(staff.itemLevel).toBe(80)
 
-    // T1 physical damage needs ilvl 82. The bow is 76 — a new base is required.
-    const phys = bow.mods.find((m) => m.id === 'LocalIncreasedPhysicalDamagePercent7')!
-    expect(phys.upgrades[0]).toMatchObject({ tier: 1, ilvl: 82, reachableOnThisItem: false })
+    // T1 added lightning damage needs ilvl 81. The staff is 80: a new base is required.
+    const lightning = staff.mods.find((m) => m.id === 'LocalAddedLightningDamageTwoHand9')!
+    expect(lightning.upgrades[0]).toMatchObject({ tier: 1, ilvl: 81, reachableOnThisItem: false })
 
-    // T1 dexterity needs ilvl 74. The bow is 76 — achievable right now.
-    const dex = bow.mods.find((m) => m.id === 'Dexterity7')!
-    expect(dex.upgrades[0]).toMatchObject({ tier: 1, ilvl: 74, reachableOnThisItem: true })
+    // T1 added physical damage needs ilvl 75. The staff is 80: achievable right now.
+    const phys = staff.mods.find((m) => m.id === 'LocalAddedPhysicalDamageTwoHand8')!
+    expect(phys.upgrades[0]).toMatchObject({ tier: 1, ilvl: 75, reachableOnThisItem: true })
   })
 
   it('reports rune lines without pretending they have tiers', () => {
-    const runes = bow.mods.filter((m) => m.source === 'rune')
+    const runes = staff.mods.filter((m) => m.source === 'rune')
     expect(runes.length).toBeGreaterThan(0)
     for (const rune of runes) {
       expect(rune.tier).toBeNull()
@@ -107,7 +108,7 @@ describe('the real bow', () => {
   })
 
   it('scores roll quality inside the tier range', () => {
-    const phys = bow.mods.find((m) => m.id === 'LocalIncreasedPhysicalDamagePercent7')!
+    const phys = staff.mods.find((m) => m.id === 'LocalAddedPhysicalDamageTwoHand8')!
     const roll = phys.rolled[0]!
     expect(roll.min).not.toBeNull()
     expect(roll.value).toBeGreaterThanOrEqual(roll.min!)
@@ -119,20 +120,24 @@ describe('the real bow', () => {
 
 describe('things the real payload got wrong first time', () => {
   it('renders an implicit as text, not as its raw mod id', () => {
-    const ring = analysed.find((i) => i.slotLabel === 'Ring 1')!
-    const implicit = ring.mods.find((m) => m.id === 'RingImplicitFireResistance1')!
-    // It used to print "RingImplicitFireResistance1", which reads as a bug.
-    expect(implicit.text).toContain('Fire Resistance')
-    expect(implicit.text).not.toBe('RingImplicitFireResistance1')
+    const ring = analysed.find((i) => i.slotLabel === 'Ring 2')!
+    const implicit = ring.mods.find((m) => m.id === 'RingImplicitAdditionalSkillSlots1')!
+    // It used to print "RingImplicitAdditionalSkillSlots1", which reads as a bug.
+    expect(implicit.text).toContain('Skill Slot')
+    expect(implicit.text).not.toBe('RingImplicitAdditionalSkillSlots1')
     // Renderable is not the same as tierable. An implicit has no affix ladder.
     expect(implicit.tier).toBeNull()
     expect(implicit.unresolved).toContain('no tier ladder')
   })
 
   it('reports a gain as positive on ladders that improve downward', () => {
-    // Reduced attribute requirements runs -15 -> -35 as tiers improve, so a
-    // naive `betterMax - current` reports the upgrade as a loss.
-    const attr = bow.mods.find((m) => m.id === 'ReducedLocalAttributeRequirements3')!
+    // Reduced attribute requirements runs -15 -> -35 as tiers improve, so a naive `betterMax - current` reports the
+    // upgrade as a loss. The main build has no such line, so one is added to the gloves inline.
+    const withLine = structuredClone(payload)
+    const gloves = (withLine.charModel.items as { itemSlot: number; itemData: { mods: { explicit: unknown[] } } }[]).find((i) => i.itemSlot === 2)!
+    gloves.itemData.mods.explicit.push({ id: 'ReducedLocalAttributeRequirements3', stats: { 'local_attribute_requirements_+%': -25 } })
+    const glove = normalizeItems(withLine.charModel).find((i) => i.slotId === 2)!
+    const attr = analyzeItem(glove, tiers, analysis.defense).mods.find((m) => m.id === 'ReducedLocalAttributeRequirements3')!
     expect(attr.rolled[0]!.value).toBe(-25)
     const t1 = attr.upgrades.find((u) => u.tier === 1)!
     expect(t1.lowerIsBetter).toBe(true)
@@ -253,8 +258,8 @@ describe('tier upgrades', () => {
     for (const mod of needsBetterBase) {
       expect(mod.upgrades.every((u) => !u.reachableOnThisItem)).toBe(true)
     }
-    // The bow's physical damage is the textbook needs-a-better-base case.
-    expect(needsBetterBase.some((m) => m.id === 'LocalIncreasedPhysicalDamagePercent7')).toBe(true)
+    // The quarterstaff's added lightning damage is the textbook needs-a-better-base case.
+    expect(needsBetterBase.some((m) => m.id === 'LocalAddedLightningDamageTwoHand9')).toBe(true)
   })
 
   it('leaves corrupted items alone, since their affixes cannot change', () => {
@@ -330,12 +335,12 @@ describe('content headroom', () => {
 
 describe('display text', () => {
   it('strips PoE markup so a rune line is readable', () => {
-    const runes = bow.mods.filter((m) => m.source === 'rune')
+    const runes = staff.mods.filter((m) => m.source === 'rune')
     for (const rune of runes) {
-      // poe.ninja passes "[ElementalDamage|Elemental]" through verbatim.
+      // A code and poe.ninja both pass "[ElementalDamage|Elemental]" markup through verbatim.
       expect(rune.text).not.toMatch(/\[[^\]]*\|/)
       expect(rune.text).not.toContain('[')
     }
-    expect(runes.some((r) => /increased Elemental Damage with Attacks/.test(r.text))).toBe(true)
+    expect(runes.some((r) => /Penetrate 15% Elemental Resistances/.test(r.text))).toBe(true)
   })
 })

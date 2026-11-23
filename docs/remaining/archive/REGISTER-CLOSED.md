@@ -259,8 +259,22 @@ One line each; reopen only when the trigger happens.
 |---|---|---|
 | DATA-1 | `passive-tree.json` refreshed for 0.5.5: now built from PoB's latest tree (`build:tree:pob`); the tree check on the fixture reads current. Soul Cores continue as DATA-2 | done (B4, 2026-11-22) |
 
-## Closed in B5 (2026-11-23)
-| ID | Item | Size | Origin | Notes | Status |
-|---|---|---|---|---|---|
-| NP1-6b | A pasted PoB code gets the full analysis (NP1-6) but without gear: no "Worth replacing", trade links or per-slot findings. The weapon-set half is done (PB-3): `snapshotToCharModel` splits `<WeaponSet1/2>` off the main tree, matching poe.ninja's three arrays on athrynas-v43, so keystones from a code follow the same trust rule | M | NP1-6 | Items half is PB-5: parse `PobSnapshot.items` (raw text + `modRanges`) into `CharModel.items`; red test first on athrynas-v43 against poe.ninja's items | done (PB-5): items read from the code; see HISTORY |
-| PB-5 | B5: items from the code → gear analysis; then delete athrynas-v43, yykiuy-v51, yykiuy-v80 and their goldens, moving the core tests, web unit tests, e2e (`e2e/fixtures.ts`, mock proxy, screenshot script) onto `main` | L | pob2-alignment | Sonnet, wave 4; closes NP1-6b's items half. Deletion deferred from B3 by owner answer (PB-3) | done for the items half (PB-5); the capture deletion moved to PB-5b |
+## Closed in B5 (2026-11-22)
+| ID | Item | Status |
+|---|---|---|
+| PB-5 | Items from a code feed the gear analysis; the athrynas-v43, yykiuy-v51 and yykiuy-v80 captures and their goldens are deleted, and the core tests, web unit tests, e2e, mock proxy, screenshot and perf scripts run on the main build (`scripts/lib/main-payload.mjs`, `packages/core/test/helpers/main-build.ts`) | done (B5, 2026-11-22) |
+| NP1-6b | A pasted PoB code gets "Worth replacing", per-slot findings and weighted trade links from its items (text-matched mod ids; limits in the PR body, PB-12) | done (B5, 2026-11-22) |
+| PB-3c | Long runs go in the background: added to `docs/SESSION-PROTOCOL.md` | done (B5, 2026-11-22) |
+
+
+## Moved 2026-11-22 (superseded or answered)
+NP1-1, NP1-4, NP1-5 are superseded by PoB-code import (`docs/plans/pob2-alignment.md`); GF1-1..3 are answered. Rows unchanged. Reopen NP1 rows only if poe.ninja grants sanctioned access.
+
+| ID | Question | Recommended answer | Source |
+|---|---|---|---|
+| NP1-1 (superseded: PoB-code import is primary, `docs/plans/pob2-alignment.md`) | poe.ninja moved the character model and the builds search (2026-11-18). The owner's HAR shows the model now at `/api/protected/characters/poe2/profile/characters/<acct>/<league>/<char>/model/<v>`, fetched with the browser's `cf_clearance` and session cookies; without them it answers 403 (Cloudflare challenge) from any server. A second HAR shows the builds search at `/api/protected/poe2/builds/<version>/search?overview=<snapshotName>`, same cookies, so ladder and grade are blocked the same way | Don't replay browser cookies or solve the challenge: poe.ninja put this path behind bot protection on purpose. Ask poe.ninja for sanctioned access; until then the app's paste-JSON and PoB-code imports are the working path, and the proxy's import error says so (done in #214). The ladder grade stays unavailable until then. Snapshot lookup and dictionaries (`/api/lookup/…`) are not protected | NP1 |
+| NP1-4 (superseded: PoB-code import is primary, `docs/plans/pob2-alignment.md`) | Official GGG OAuth API as the character and ladder source after poe.ninja's block (NP1-1) | Don't pursue yet: `/developer/docs` says "We are currently unable to process new applications." and the PoE2 ladder needs a confidential `service:leagues:ladder` client (server-side secret, a proxy). Revisit if registration reopens; until then keep PoB-code paste as the fallback | NP1-1 |
+| NP1-5 (superseded: PoB-code import is primary, `docs/plans/pob2-alignment.md`) | poe.ninja's docs call builds and profile endpoints internal and "not available for third-party use" (search excerpt, poe.ninja/docs/api, not fetched) | Treat the proxy's character import as unsupported by poe.ninja; keep it best-effort, and ask poe.ninja (Discord) for a keyed or sanctioned route before building anything further on it | NP1-1 |
+| GF1-1 | May the per-item Gear fit readout (`gear/fit.ts`) appear in the UI? | **Answered yes (owner):** labelled readout only (`GEAR_FIT_BASIS` is the copy) | GF1 (`docs/plans/gear-fit-ranking.md`) |
+| GF1-2 | May the Gear fit influence recommendation order or the build grade? | No. Gear ranking stays "ordered, not weighed" (`priority.ts`) | GF1 |
+| GF1-3 | The archetype and fit cut-offs (`ARCHETYPE`, `GEAR_FIT` in `thresholds.ts`) are borrowed ideas from ets-public/poe2-upgrade-checker, not checked against its source (GPL-3.0, ideas only) | **Run on Yykiuy (GF1-6): no cut-off changes the readout today.** `ARCHETYPE` only fills `Analysis.gearFit.archetype`, which no screen reads, and the weights come from the worn items. It does mislabel Yykiuy: ES 2,922 vs 2 × life 2,954 misses by 32, so an evasion + ES build reads "evasion". Not tuned on one sample; revisit if a screen starts reading the archetype. `rollCeilingRatio` 1.15 clamped nothing here | GF1 |

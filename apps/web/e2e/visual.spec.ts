@@ -27,7 +27,7 @@ for (const width of WIDTHS) {
       test.skip(width < 1000 ? info.project.name !== 'mobile' : info.project.name !== 'desktop')
       await page.setViewportSize({ width, height: width < 1000 ? 844 : 900 })
       await page.goto(path)
-      if (name === 'character-imported') await page.getByRole('heading', { name: /Athrynas/ }).first().waitFor({ timeout: 30_000 })
+      if (name === 'character-imported') await page.getByRole('heading', { name: /Main/ }).first().waitFor({ timeout: 30_000 })
       await page.evaluate(() => document.fonts.ready)
       await expect(page).toHaveScreenshot(`${name}-${width}.png`, {
         fullPage: true,

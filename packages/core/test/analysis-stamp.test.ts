@@ -9,8 +9,9 @@ import { describe, expect, it } from 'vitest'
 import { analyzeCharacter } from '../src/analyze.js'
 import { ANALYSIS_ENGINE_VERSION, importHash } from '../src/cache/key.js'
 import { readDataVersion } from '../src/provenance/index.js'
+import { mainWithReferenceDefence } from './helpers/main-build.js'
 
-const payload = JSON.parse(readFileSync(fileURLToPath(new URL('./fixtures/athrynas-v43.json', import.meta.url)), 'utf8'))
+const payload = mainWithReferenceDefence()
 const version = readDataVersion({ dataRevision: '0.5.5@abc1234', gameVersion: '0.5.5', extractedAt: '2026-09-25', source: 'PoB2' })
 
 describe('analysis stamp', () => {

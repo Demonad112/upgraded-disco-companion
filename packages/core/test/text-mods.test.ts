@@ -1,194 +1,248 @@
 /**
- * PB-5: a code's item text is matched to mod ids only where the text proves one (`gear/text-mods.ts`),
- * and the analysis lists whatever stays text. Inline affix data keeps every number exact.
+ * PB-5: matching a code's item text to mod ids (`gear/text-mods.ts`), the analysis that carries them
+ * (`withResolvedMods` via `analyzeCharacter`), the `textOnlyMods` findings (`gear/analyze.ts`), the
+ * conditional gear gap (`pobCodeGaps`), and a cross-check of a parsed code's items against poe.ninja's.
+ *
+ * Rules held here: text proves an id or the line stays text; nothing is guessed from a tier overlap, a base
+ * the data does not know, or a rarity mismatch.
  */
 
+import { readFileSync } from 'node:fs'
+import { dirname, join } from 'node:path'
+import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
 import { analyzeCharacter } from '../src/analyze.js'
 import { analyzeItem } from '../src/gear/analyze.js'
-import { ModTiers, type ModTierData } from '../src/gear/tiers.js'
 import { matchModLine, resolveItemMods } from '../src/gear/text-mods.js'
+import { ModTiers, type ModTierData } from '../src/gear/tiers.js'
+import { pobCodeGaps } from '../src/pob/analyze.js'
+import { snapshotItems } from '../src/pob/items.js'
+import { pobToCharModel } from '../src/pob/to-model.js'
+import { readPobSnapshotFromCode } from '../src/pob/export.js'
 import { normalizeItems } from '../src/model/slots.js'
 import type { CharModel, NinjaItem } from '../src/model/types.js'
-import { pobCodeGaps } from '../src/pob/analyze.js'
+import { mainPayload } from './helpers/main-build.js'
 
-const LIFE = 'base_maximum_life'
-const FIRE = 'base_fire_damage_resistance_%'
-const COLD = 'base_cold_damage_resistance_%'
-const helm: [string, number][] = [['helmet', 1], ['gloves', 1]]
-const affix = (g: string, t: 'p' | 's', lvl: number, stat: string, min: number, max: number, text: string, spawn = helm) => ({
-  g,
-  t,
-  lvl,
-  name: g,
-  stats: [[stat, min, max]] as [string, number, number][],
-  text,
-  spawn,
-})
+const here = dirname(fileURLToPath(import.meta.url))
 
-const tiers = new ModTiers({
+// A tiny affix table: a ring can roll cold resistance in two tiers that overlap at 21–30, life in one tier;
+// a quarterstaff cannot roll resistance. Display-only: one implicit, one unique line.
+const data: ModTierData = {
   version: 1,
-  generatedFrom: ['inline test data'],
+  generatedFrom: [],
   note: '',
-  baseTags: { 'Test Helm': ['helmet'], 'Test Shield': ['shield'], 'Test Gloves': ['gloves'] },
-  baseClass: { 'Test Helm': 'Helmets', 'Test Shield': 'Shields', 'Test Gloves': 'Gloves' },
+  baseTags: { 'Sapphire Ring': ['ring', 'default'], 'Skullcrusher Quarterstaff': ['staff', 'default'] },
+  baseClass: { 'Sapphire Ring': 'Ring', 'Skullcrusher Quarterstaff': 'Quarterstaff' },
   mods: {
-    Life1: affix('Life', 'p', 1, LIFE, 40, 49, '+(40-49) to maximum Life'),
-    Life2: affix('Life', 'p', 50, LIFE, 50, 59, '+(50-59) to maximum Life'),
-    Fire1: affix('FireRes', 's', 1, FIRE, 26, 30, '+(26-30)% to Fire Resistance'),
-    Cold1: affix('ColdRes', 's', 1, COLD, 20, 30, '+(20-30)% to Cold Resistance'),
-    Cold2: affix('ColdRes', 's', 40, COLD, 28, 35, '+(28-35)% to Cold Resistance'),
-    DupP: affix('DupP', 'p', 1, 'dup_stat', 5, 9, '+(5-9) Duplicated'),
-    DupS: affix('DupS', 's', 1, 'dup_stat', 5, 9, '+(5-9) Duplicated'),
-    // A hybrid prints its second stat as its own line: "+(40-49) to maximum Life" is also this mod's line 2.
-    HybridLife: {
-      g: 'HybridLife',
-      t: 'p' as const,
-      lvl: 1,
-      name: 'Hybrid',
-      stats: [['hybrid_stat', 10, 20], [LIFE, 40, 49]] as [string, number, number][],
-      text: '(10-20)% increased Hybrid',
-      spawn: [['gloves', 1]] as [string, number][],
+    Life1: { g: 'Life', t: 'p', lvl: 1, name: 'Healthy', stats: [['base_life', 10, 20]], text: '+(10-20) to maximum Life', spawn: [['default', 1]] },
+    Cold1: { g: 'ColdResist', t: 's', lvl: 1, name: 'of the Cub', stats: [['cold_res', 6, 30]], text: '+(6-30)% to Cold Resistance', spawn: [['ring', 1], ['default', 0]] },
+    Cold2: { g: 'ColdResist', t: 's', lvl: 40, name: 'of the Wolf', stats: [['cold_res', 21, 40]], text: '+(21-40)% to Cold Resistance', spawn: [['ring', 1], ['default', 0]] },
+    FireA: { g: 'FireResist', t: 's', lvl: 1, name: 'of the Fox', stats: [['fire_res', 6, 10]], text: '+(6-10)% to Fire Resistance', spawn: [['ring', 1], ['default', 0]] },
+    Hybrid1: {
+      g: 'Hybrid', t: 'p', lvl: 1, name: 'Stalwart', stats: [['base_life', 5, 9], ['es', 3, 5]],
+      text: '+(5-9) to maximum Life\n+(3-5) to maximum Energy Shield', spawn: [['default', 1]],
     },
-    // Stats stored in other units than the text shows (permyriad, negated "reduced").
-    Leech1: affix('Leech', 'p', 1, 'leech_permyriad', 500, 1000, '(5-10)% Leeched'),
-    Slow1: affix('Slow', 's', 1, 'slow_+%', -20, -10, '(10-20)% reduced Slow'),
-    ShieldOnly: affix('Block', 'p', 1, 'block', 5, 9, '+(5-9)% to Block', [['shield', 1]]),
   },
   displayOnly: {
-    ImpSpirit: { t: 'o', name: null, text: '+(10-20) to Spirit', stats: [['spirit', 10, 20]] },
-    UniqFire: { t: 'o', name: null, text: '+(26-30)% to Fire Resistance', stats: [[FIRE, 26, 30]] },
+    Imp1: { t: 'o', name: null, text: '+(1-2) to Level of all Skills', stats: [['skill_lvl', 1, 2]] },
+    Uniq1: { t: 'o', name: null, text: '+(20-30) to Strength', stats: [['str', 20, 30]] },
   },
-} satisfies ModTierData)
-
-const rare = { rarity: 'Rare', baseTags: ['helmet'] }
+}
+const tiers = new ModTiers(data)
+const ring = { rarity: 'Rare', baseTags: tiers.tagsForBase('Sapphire Ring') }
+const staff = { rarity: 'Rare', baseTags: tiers.tagsForBase('Skullcrusher Quarterstaff') }
 
 describe('matchModLine', () => {
-  it('matches a rolled line to its mod and returns the rolled stat', () => {
-    expect(matchModLine('+45 to maximum Life', 'explicit', rare, tiers)).toEqual({ id: 'Life1', stats: { [LIFE]: 45 } })
-    expect(matchModLine('+55 to maximum Life', 'explicit', rare, tiers)?.id).toBe('Life2')
+  it('a rare ring line within one tier resolves to its id and rolled stat', () => {
+    expect(matchModLine('+15 to maximum Life', 'explicit', ring, tiers)).toEqual({ id: 'Life1', stats: { base_life: 15 } })
+    expect(matchModLine('+8% to Fire Resistance', 'explicit', ring, tiers)).toEqual({ id: 'FireA', stats: { fire_res: 8 } })
   })
-  it('ignores [Tag|text] markup', () => {
-    expect(matchModLine('+27% to [Resistances|Fire Resistance]', 'explicit', rare, tiers)?.id).toBe('Fire1')
+
+  it('a roll outside every range, or with the wrong number of values, is unresolved', () => {
+    expect(matchModLine('+21 to maximum Life', 'explicit', ring, tiers)).toBeNull()
+    expect(matchModLine('+15 to +20 to maximum Life', 'explicit', ring, tiers)).toBeNull()
   })
-  it('rejects a roll outside the mod range, and a different line count', () => {
-    expect(matchModLine('+39 to maximum Life', 'explicit', rare, tiers)).toBeNull()
-    expect(matchModLine('+60 to maximum Life', 'explicit', rare, tiers)).toBeNull()
+
+  it('a roll that fits two tiers of one group is a guess, so it stays text', () => {
+    expect(matchModLine('+25% to Cold Resistance', 'explicit', ring, tiers)).toBeNull()
+    // Outside the overlap it is proven.
+    expect(matchModLine('+10% to Cold Resistance', 'explicit', ring, tiers)).toMatchObject({ id: 'Cold1' })
+    expect(matchModLine('+35% to Cold Resistance', 'explicit', ring, tiers)).toMatchObject({ id: 'Cold2' })
   })
-  it('does not give an id when two tiers of one group both contain the roll', () => {
-    expect(matchModLine('+29% to Cold Resistance', 'explicit', rare, tiers)).toBeNull()
-    expect(matchModLine('+22% to Cold Resistance', 'explicit', rare, tiers)?.id).toBe('Cold1')
-    expect(matchModLine('+33% to Cold Resistance', 'explicit', rare, tiers)?.id).toBe('Cold2')
+
+  it('an affix that cannot spawn on the base, or a base the data does not know, is unresolved', () => {
+    expect(matchModLine('+10% to Cold Resistance', 'explicit', staff, tiers)).toBeNull()
+    expect(matchModLine('+10% to Cold Resistance', 'explicit', { rarity: 'Rare', baseTags: null }, tiers)).toBeNull()
   })
-  it('does not give an id when a prefix and a suffix share the text', () => {
-    expect(matchModLine('+7 Duplicated', 'explicit', rare, tiers)).toBeNull()
+
+  it('a unique line matches display data only, a rare line never matches a display mod', () => {
+    const unique = { rarity: 'Unique', baseTags: tiers.tagsForBase('Sapphire Ring') }
+    expect(matchModLine('+25 to Strength', 'explicit', unique, tiers)).toMatchObject({ id: 'Uniq1' })
+    expect(matchModLine('+25 to Strength', 'explicit', ring, tiers)).toBeNull()
+    // A unique's craftable-looking line is not given a craftable tier.
+    expect(matchModLine('+15 to maximum Life', 'explicit', unique, tiers)).toBeNull()
   })
-  it('needs the affix to be able to spawn on the base, and an unknown base resolves no affix', () => {
-    expect(matchModLine('+7% to Block', 'explicit', rare, tiers)).toBeNull()
-    expect(matchModLine('+45 to maximum Life', 'explicit', { rarity: 'Rare', baseTags: null }, tiers)).toBeNull()
+
+  it('an implicit matches display data on any rarity, even on an unknown base', () => {
+    expect(matchModLine('+1 to Level of all Skills', 'implicit', { rarity: 'Rare', baseTags: null }, tiers)).toMatchObject({ id: 'Imp1' })
   })
-  it('matches an implicit against display mods only, and a unique line is never given a craftable tier', () => {
-    expect(matchModLine('+15 to Spirit', 'implicit', rare, tiers)?.id).toBe('ImpSpirit')
-    expect(matchModLine('+15 to Spirit', 'explicit', rare, tiers)).toBeNull()
-    expect(matchModLine('+27% to Fire Resistance', 'explicit', { rarity: 'Unique', baseTags: ['helmet'] }, tiers)?.id).toBe('UniqFire')
-    expect(matchModLine('+45 to maximum Life', 'explicit', { rarity: 'Unique', baseTags: ['helmet'] }, tiers)).toBeNull()
+
+  it('strips [Tag|Display] markup before matching', () => {
+    expect(matchModLine('+15 to [Life|maximum Life]', 'explicit', ring, tiers)).toMatchObject({ id: 'Life1' })
+  })
+
+  it('a line with no range-free numbers and no match is null, not an error', () => {
+    expect(matchModLine('Cannot be Frozen', 'explicit', ring, tiers)).toBeNull()
+    expect(matchModLine('', 'explicit', ring, tiers)).toBeNull()
+  })
+
+  it('a hybrid mod line 1 is not resolved: its text spans two lines', () => {
+    // 7 fits the hybrid's first range, but a single line is never proven to be a two-line mod.
+    expect(matchModLine('+7 to maximum Life', 'explicit', ring, tiers)).toBeNull()
   })
 })
 
-const item = (itemSlot: number, rarity: string, base: string, explicitMods: string[], implicitMods: string[] = []): NinjaItem => ({
-  itemSlot,
-  itemData: { name: 'Thing', typeLine: base, baseType: base, rarity, ilvl: 80, frameType: rarity === 'Unique' ? 3 : 2, explicitMods, implicitMods },
-})
-
-describe('rolled stats are in the stat own units', () => {
-  it('scales a displayed number to the stat range (permyriad), and keeps the sign of a reduced stat', () => {
-    expect(matchModLine('8.4% Leeched', 'explicit', rare, tiers)).toEqual({ id: 'Leech1', stats: { leech_permyriad: 840 } })
-    expect(matchModLine('15% reduced Slow', 'explicit', rare, tiers)).toEqual({ id: 'Slow1', stats: { 'slow_+%': -15 } })
-  })
-})
-
-describe('hybrid second lines', () => {
-  const gloves = { rarity: 'Rare', baseTags: ['gloves'] }
-  it('is not given the plain mod when a hybrid that can spawn here could print the same line', () => {
-    expect(matchModLine('+45 to maximum Life', 'explicit', gloves, tiers)).toBeNull()
-    expect(matchModLine('+45 to maximum Life', 'explicit', rare, tiers)?.id).toBe('Life1')
-  })
-  it('is still given the plain mod when the roll lies outside the hybrid line range', () => {
-    expect(matchModLine('+55 to maximum Life', 'explicit', gloves, tiers)?.id).toBe('Life2')
-  })
-  it('the hybrid first line resolves as before', () => {
-    expect(matchModLine('15% increased Hybrid', 'explicit', gloves, tiers)?.id).toBe('HybridLife')
-  })
-})
+function item(slot: number, data: NinjaItem['itemData']): NinjaItem {
+  return { itemSlot: slot, itemData: data }
+}
 
 describe('resolveItemMods', () => {
-  const input = [item(1, 'Rare', 'Test Helm', ['+45 to maximum Life', '+29% to Cold Resistance', 'Unmatched line'], ['+15 to Spirit', 'Odd implicit'])]
-  const out = resolveItemMods(input, tiers)[0]!.itemData
+  const input = item(4, {
+    name: 'Doom Loop',
+    typeLine: 'Sapphire Ring',
+    rarity: 'Rare',
+    implicitMods: ['+1 to Level of all Skills', 'unknown implicit'],
+    explicitMods: ['+15 to maximum Life', '+25% to Cold Resistance', 'Cannot be Frozen'],
+  })
+  const [out] = resolveItemMods([input], tiers)
 
-  it('attaches ids by bucket and lists unresolved explicit-type lines as text-only', () => {
-    expect(out.mods?.explicit).toEqual([{ id: 'Life1', stats: { [LIFE]: 45 } }])
-    expect(out.mods?.implicit?.map((m) => m.id)).toEqual(['ImpSpirit'])
-    expect(out.textOnlyMods).toEqual(['+29% to Cold Resistance', 'Unmatched line'])
+  it('attaches ids in poe.ninja shape, keyed by line kind', () => {
+    expect(out!.itemData.mods).toEqual({
+      implicit: [{ id: 'Imp1', stats: { skill_lvl: 1 } }],
+      explicit: [{ id: 'Life1', stats: { base_life: 15 } }],
+    })
   })
-  it('does not list an unresolved implicit as text-only (it is already shown as text)', () => {
-    expect(out.textOnlyMods).not.toContain('Odd implicit')
+
+  it('lists unresolved explicit lines as text only, but not an unresolved implicit', () => {
+    expect(out!.itemData.textOnlyMods).toEqual(['+25% to Cold Resistance', 'Cannot be Frozen'])
   })
-  it('does not mutate its input and leaves an item with nothing to resolve as it was', () => {
-    expect(input[0]!.itemData.mods).toBeUndefined()
-    const plain = [item(2, 'Normal', 'Test Helm', [])]
-    const res = resolveItemMods(plain, tiers)[0]!.itemData
-    expect(res.mods).toBeUndefined()
-    expect(res.textOnlyMods).toBeUndefined()
+
+  it('does not mutate its input, and keeps the item when nothing matches', () => {
+    expect(input.itemData.mods).toBeUndefined()
+    expect(input.itemData.textOnlyMods).toBeUndefined()
+    const [bare] = resolveItemMods([item(1, { typeLine: 'Nowhere Base', rarity: 'Rare', explicitMods: ['+15 to maximum Life'] })], tiers)
+    expect(bare!.itemData.mods).toBeUndefined()
+    expect(bare!.itemData.textOnlyMods).toEqual(['+15 to maximum Life'])
+  })
+
+  it('treats a missing rarity as Normal, so an affix line is not proven by a display mod', () => {
+    const [normal] = resolveItemMods([item(4, { typeLine: 'Sapphire Ring', explicitMods: ['+25 to Strength'] })], tiers)
+    expect(normal!.itemData.textOnlyMods).toEqual(['+25 to Strength'])
   })
 })
 
-describe('analysis of a code with resolved mods (withResolvedMods)', () => {
-  const model = (items: NinjaItem[], jewels: NinjaItem[] = []): CharModel =>
-    ({ name: 'T', class: 'Monk', level: 80, league: 'L', account: '', items, jewels, skills: [], stats: {} }) as unknown as CharModel
+describe('withResolvedMods (through analyzeCharacter)', () => {
+  const model: CharModel = {
+    name: 'T', level: 80, class: 'Monk',
+    items: [item(4, { name: 'Doom Loop', typeLine: 'Sapphire Ring', rarity: 'Rare', explicitMods: ['+15 to maximum Life', '+25% to Cold Resistance'] })],
+    jewels: [item(12, { name: 'Gem', typeLine: 'Sapphire Ring', rarity: 'Rare', explicitMods: ['+15 to maximum Life'] })],
+  } as unknown as CharModel
 
-  it('resolves ids for a code (pob-export) when affix data is passed, items and jewels alike', async () => {
-    const a = await analyzeCharacter(model([item(1, 'Rare', 'Test Helm', ['+45 to maximum Life'])]), { source: 'pob-export', tiers })
-    const mods = a.items[0]!.mods
-    expect(mods.find((m) => m.id === 'Life1')?.tier).not.toBeNull()
+  const mods = (a: Awaited<ReturnType<typeof analyzeCharacter>>, key: 'items' | 'jewels') =>
+    ((a.model[key] as NinjaItem[])[0]!.itemData.mods as Record<string, { id: string }[]> | undefined)
+
+  it('resolves items and jewels of a code when the affix data is given', async () => {
+    const a = await analyzeCharacter(model, { source: 'pob-export', tiers })
+    expect(mods(a, 'items')!.explicit!.map((m) => m.id)).toEqual(['Life1'])
+    expect(mods(a, 'jewels')!.explicit!.map((m) => m.id)).toEqual(['Life1'])
+    expect(a.sourceGaps.find((g) => g.what === 'Gear findings and trade searches')!.why).toContain('1 mod line could not')
   })
-  it('does not rewrite a poe.ninja character, and does nothing without affix data', async () => {
-    const m = model([item(1, 'Rare', 'Test Helm', ['+45 to maximum Life'])])
-    const ninja = await analyzeCharacter(m, { tiers })
-    expect(ninja.items[0]!.mods.find((x) => x.id === 'Life1')).toBeUndefined()
-    const noTiers = await analyzeCharacter(m, { source: 'pob-export' })
-    expect(noTiers.items[0]!.mods.find((x) => x.id === 'Life1')).toBeUndefined()
+
+  it('leaves them as text without the affix data, and never for a poe.ninja source', async () => {
+    expect(mods(await analyzeCharacter(model, { source: 'pob-export' }), 'items')).toBeUndefined()
+    expect(mods(await analyzeCharacter(model, { tiers }), 'items')).toBeUndefined()
   })
 })
 
-describe('textOnlyMods in the item analysis', () => {
-  const [equipped] = normalizeItems({ items: [item(1, 'Rare', 'Test Helm', [], [])].map((i) => ({ ...i, itemData: { ...i.itemData, textOnlyMods: ['[Tag|Odd] line'] } })) })
+describe('textOnlyMods in gear/analyze', () => {
+  const [resolved] = resolveItemMods(
+    [item(4, { name: 'Doom Loop', typeLine: 'Sapphire Ring', rarity: 'Rare', explicitMods: ['+15 to maximum Life', '+25% to Cold Resistance'] })],
+    tiers,
+  )
+  const [equipped] = normalizeItems({ items: [resolved!] } as unknown as CharModel)
   const analysis = analyzeItem(equipped!, tiers)
-  const line = analysis.mods.find((m) => m.text === 'Odd line')
 
-  it('shows the line with no id or tier and says why', () => {
-    expect(line).toMatchObject({ id: null, source: 'explicit', tier: null, tiers: null })
-    expect(line!.unresolved).toMatch(/text only/)
+  it('each text-only line is an explicit mod with no id, tier or upgrade, and says why', () => {
+    const text = analysis.mods.find((m) => m.text === '+25% to Cold Resistance')!
+    expect(text).toMatchObject({ id: null, source: 'explicit', tier: null, tiers: null, upgrades: [], waste: null })
+    expect(text.unresolved).toMatch(/text only/)
+  })
+
+  it('a resolved line next to it keeps its id', () => {
+    expect(analysis.mods.find((m) => m.id === 'Life1')).toMatchObject({ source: 'explicit', kind: 'prefix' })
   })
 })
 
-describe('pobCodeGaps: the gear gap', () => {
+describe('gear gap (pobCodeGaps)', () => {
   const gap = (gear?: Parameters<typeof pobCodeGaps>[1]) => pobCodeGaps({}, gear).find((g) => g.what === 'Gear findings and trade searches')
 
-  it('says the view does not read items when no gear info is passed', () => {
-    expect(gap()?.why).toMatch(/does not read the items/)
+  it('no gear info (the reduced PoB-only view) says it does not read items', () => {
+    expect(gap()!.why).toBe('This view does not read the items in a code.')
   })
-  it('says there are no items when the active set is empty', () => {
-    expect(gap({ items: 0, unmapped: [], textOnly: 0 })?.why).toMatch(/no items in its active item set/)
+
+  it('no items in the active set says so', () => {
+    expect(gap({ items: 0, unmapped: [], textOnly: 0 })!.why).toMatch(/no items in its active item set/)
   })
-  it('names an unmapped slot', () => {
-    expect(gap({ items: 5, unmapped: ['Ring 3'], textOnly: 0 })?.why).toBe('Ring 3 has no slot on poe.ninja, so it is not read.')
+
+  it('everything read and resolved removes the gap', () => {
+    expect(gap({ items: 10, unmapped: [], textOnly: 0 })).toBeUndefined()
   })
-  it('counts text-only lines with the right number agreement', () => {
-    expect(gap({ items: 5, unmapped: [], textOnly: 1 })?.why).toMatch(/^1 mod line could not .* it has no tier\.$/)
-    expect(gap({ items: 5, unmapped: [], textOnly: 3 })?.why).toMatch(/^3 mod lines could not .* they have no tier\.$/)
+
+  it('an unmapped slot is named, a text-only line is counted with singular and plural grammar', () => {
+    expect(gap({ items: 9, unmapped: ['Ring 3'], textOnly: 0 })!.why).toBe('Ring 3 has no slot on poe.ninja, so it is not read.')
+    expect(gap({ items: 9, unmapped: [], textOnly: 1 })!.why).toBe('1 mod line could not be matched to exactly one mod, so it has no tier.')
+    expect(gap({ items: 9, unmapped: ['Ring 3', 'Arm 1'], textOnly: 3 })!.why).toBe(
+      'Ring 3, Arm 1 has no slot on poe.ninja, so it is not read; 3 mod lines could not be matched to exactly one mod, so they have no tier.',
+    )
   })
-  it('joins both parts, and adds no gap when everything was read', () => {
-    expect(gap({ items: 5, unmapped: ['Ring 3'], textOnly: 2 })?.why).toContain('; 2 mod lines')
-    expect(gap({ items: 5, unmapped: [], textOnly: 0 })).toBeUndefined()
+})
+
+describe('cross-check: the main code\'s items against the model built from them', () => {
+  const payload = mainPayload()
+  // The poe.ninja capture this was once checked against is gone (PB-5); the check is now that mod resolution keeps
+  // every slot, name, base and text line the snapshot read, unchanged.
+  const ninja: CharModel = payload.charModel ?? payload
+  const code: string = ninja.pathOfBuildingExport ?? payload.pathOfBuildingExport
+  const norm = (s: string): string => s.replace(/\[(?:[^\]|]+\|)?([^\]]+)\]/g, '$1').replace(/\s+/g, ' ').trim()
+  const lines = (d: NinjaItem['itemData']): string[] =>
+    [d.implicitMods, d.runeMods, d.explicitMods, d.craftedMods, d.desecratedMods, d.fracturedMods].flatMap((l) => (l ?? []).map(norm))
+
+  it('every slot the code fills keeps its name and base, and every line', async () => {
+    const snap = await readPobSnapshotFromCode(code)
+    const fromCode = snapshotItems(snap).items
+    const bySlot = new Map((ninja.items ?? []).map((i) => [i.itemSlot, i.itemData]))
+    expect(fromCode.length).toBeGreaterThan(5)
+    let same = 0
+    let total = 0
+    for (const c of fromCode) {
+      const n = bySlot.get(c.itemSlot)
+      expect(n, `slot ${c.itemSlot} exists in the model`).toBeDefined()
+      expect(norm(c.itemData.name ?? '')).toBe(norm(n!.name ?? ''))
+      expect(norm(c.itemData.typeLine ?? '')).toBe(norm(n!.typeLine ?? ''))
+      const theirs = new Set(lines(n!))
+      for (const l of lines(c.itemData)) {
+        total++
+        if (theirs.has(l)) same++
+      }
+    }
+    // Resolution only adds `mods`; it never rewrites or drops a text line.
+    expect(same).toBe(total)
+  })
+
+  it('the converted model carries the same slots', async () => {
+    const model = await pobToCharModel(code)
+    expect(new Set((model.items ?? []).map((i) => i.itemSlot))).toEqual(
+      new Set(snapshotItems(await readPobSnapshotFromCode(code)).items.map((i) => i.itemSlot)),
+    )
   })
 })

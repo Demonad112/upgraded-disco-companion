@@ -1,22 +1,20 @@
-import { readFileSync } from 'node:fs'
-import { resolve } from 'node:path'
 import { test as base, expect, type Page } from '@playwright/test'
+import { mainPayloadJson } from './main-payload'
 
 /**
  * Every test runs offline: requests leaving the site under test are refused,
- * except the character proxy, which answers with the captured fixture the core
- * tests use. The site is localhost unless E2E_BASE_URL points the suite at a
+ * except the character proxy, which answers with the main build's payload (e2e/main-payload.ts). The site is localhost unless E2E_BASE_URL points the suite at a
  * deployment (the post-deploy smoke run), whose host is then let through.
  * Console errors and uncaught exceptions fail the test.
  */
 // Playwright runs from apps/web (where its config lives).
-const character = readFileSync(resolve('../../packages/core/test/fixtures/athrynas-v43.json'))
+const character = mainPayloadJson
 
 const siteHost = process.env.E2E_BASE_URL ? new URL(process.env.E2E_BASE_URL).host : 'localhost'
 const offsite = (url: URL) =>
   (url.protocol === 'http:' || url.protocol === 'https:') && url.hostname !== 'localhost' && url.host !== siteHost
 
-export const PROFILE_URL = 'https://poe.ninja/poe2/profile/Demonad112-2589/runesofaldur/character/Athrynas'
+export const PROFILE_URL = 'https://poe.ninja/poe2/profile/Demonad112-2589/runesofaldur/character/Main'
 
 /** The character page's tabs, by hash id, and their visible labels (see CharacterResults). */
 export const CHARACTER_TABS = {

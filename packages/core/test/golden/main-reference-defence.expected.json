@@ -1,30 +1,10 @@
 {
-  "source": "pob-export",
-  "sourceGaps": [
-    "Per-skill damage",
-    "Stat attribution — which item or passive grants each point",
-    "Ward",
-    "Block chance"
-  ],
-  "passives": {
-    "main": 104,
-    "set1": 16,
-    "set2": 16,
-    "activeSet": 1
-  },
-  "skills": [
-    {
-      "name": "Ice Shot",
-      "totalDps": 110157.73781379715
-    }
-  ],
-  "staleExport": null,
   "identity": {
     "name": "",
     "account": "",
     "league": "",
-    "level": 86,
-    "className": "Deadeye",
+    "level": 90,
+    "className": "Martial Artist",
     "updatedUtc": null
   },
   "defence": {
@@ -69,15 +49,14 @@
     3,
     4,
     5,
-    6,
     7,
     8,
     9,
     11
   ],
   "primarySkill": {
-    "name": "Ice Shot",
-    "totalDps": 110157.73781379715
+    "name": "Storm Wave",
+    "totalDps": 109867.25202098387
   },
   "assessment": {
     "score": null,
@@ -94,19 +73,21 @@
     "weaknesses": [
       "warning: Uncapped elemental resistance (Cold 74% of 75%, 4% more cold damage taken)",
       "critical: Chaos resistance below its cap (Chaos 18% of 75%, 228% more chaos damage taken)",
+      "warning: Little armour or block — leaning on evasion and resistances alone",
       "warning: 2 weak damage types — Chaos 3,808, Physical 4,264, against 14,611 at best"
     ]
   },
   "recommendations": [
     "res-chaos-under-cap",
     "res-cold-under-cap",
-    "weapon-ilvl-lag",
     "one-shot-chaos",
-    "weapon-set-idle"
+    "armour-negligible"
   ],
-  "pobConfigInputCount": 20,
-  "warnings": [],
-  "importHash": "ae334af7eadcd2ac",
+  "pobConfigInputCount": 11,
+  "warnings": [
+    "9 stats disagree between poe.ninja and the attached Path of Building export. See the reconciliation report before trusting those figures."
+  ],
+  "importHash": "e21efe1b8bffef99",
   "holdingUp": {
     "resistances": [
       {
@@ -146,36 +127,44 @@
         "source": "ninja"
       }
     ],
-    "items": [],
+    "items": [
+      {
+        "slot": 4,
+        "holds": [],
+        "anoint": [
+          "Allocates Overwhelming Strike"
+        ]
+      }
+    ],
     "spirit": {
-      "total": 159,
-      "reserved": 80,
-      "unreserved": 79,
-      "unreservedPercent": 49.7
+      "total": 147,
+      "reserved": 137,
+      "unreserved": 10,
+      "unreservedPercent": 6.8
     },
     "attributes": [
       {
-        "attribute": "strength",
-        "have": 47,
-        "required": 45,
-        "headroom": 2,
+        "attribute": "dexterity",
+        "have": 137,
+        "required": 137,
+        "headroom": 0,
         "tight": true
       },
       {
         "attribute": "intelligence",
-        "have": 109,
-        "required": 83,
-        "headroom": 26,
-        "tight": false
+        "have": 119,
+        "required": 116,
+        "headroom": 3,
+        "tight": true
       },
       {
-        "attribute": "dexterity",
-        "have": 240,
-        "required": 147,
-        "headroom": 93,
+        "attribute": "strength",
+        "have": 92,
+        "required": 80,
+        "headroom": 12,
         "tight": false
       }
     ],
-    "movementSpeed": null
+    "movementSpeed": 144
   }
 }

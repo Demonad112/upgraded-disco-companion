@@ -1,8 +1,9 @@
 const { chromium } = require('playwright'); const fs = require('fs')
-const FX = { Yykiuy: ['yykiuy-v51.json', 'https://poe.ninja/poe2/profile/Demonad112-2589/forbiddenrites/character/Yykiuy'], Athrynas: ['athrynas-v43.json', 'https://poe.ninja/poe2/profile/Demonad112-2589/runesofaldur/character/Athrynas'] }
+// PB-5: the character is the main build (scripts/lib/main-payload.mjs); the URL only has to parse as a poe.ninja profile.
+const FX = { Main: [null, 'https://poe.ninja/poe2/profile/Demonad112-2589/runesofaldur/character/Main'] }
 const MODE = process.env.MODE || 'plain'
-const name = process.argv[2] || 'Yykiuy', runs = +(process.argv[3] || 3), PROXY_MS = +(process.argv[4] || 410)
-const body = fs.readFileSync(require('path').join(__dirname, '..', 'packages', 'core', 'test', 'fixtures') + '/' + FX[name][0])
+const name = process.argv[2] || 'Main', runs = +(process.argv[3] || 3), PROXY_MS = +(process.argv[4] || 410)
+let body
 const init = () => {
   const P = (window.__p = { fetch: [], json: [], lt: [], cls: [], marks: {}, show: [], top: [] })
   const of = window.fetch
@@ -22,6 +23,7 @@ const init = () => {
   addEventListener('click', (e) => { if (/Analyse/.test(e.target.textContent || '') && !P.marks.t0) { P.marks.t0 = performance.now(); performance.mark('pp-t0') } }, true)
 }
 ;(async () => {
+  body = await (await import('./lib/main-payload.mjs')).mainPayloadJson()
   const b = await chromium.launch(process.env.PW_CHROMIUM ? { executablePath: process.env.PW_CHROMIUM } : {}); const out = []
   for (let i = 0; i < runs; i++) {
     const ctx = await b.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 3, isMobile: true, hasTouch: true, serviceWorkers: 'block' })

@@ -10,9 +10,9 @@ import { fileURLToPath } from 'node:url'
 import { unwrapCharModel } from '../src/analyze.js'
 import { recommend } from '../src/recommend/index.js'
 import type { CharModel } from '../src/model/types.js'
+import { mainForRecommend } from './helpers/main-build.js'
 
-const fixturePath = fileURLToPath(new URL('./fixtures/athrynas-v43.json', import.meta.url))
-const model = unwrapCharModel(JSON.parse(readFileSync(fixturePath, 'utf8')))
+const model = unwrapCharModel(mainForRecommend())
 
 describe('significance is derived and bounded', () => {
   const report = recommend(model)

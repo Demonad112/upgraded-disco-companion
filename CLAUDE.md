@@ -7,7 +7,7 @@ npm workspaces (`packages/*`, `apps/*`), Node >=22, TypeScript strict. `packages
 ## Commands
 
 - `npm run typecheck` builds `@poe2/core` first. The web app resolves core to its built `dist/`, so on a fresh checkout build core before running `tsc` in an app.
-- `npm run check:all` = typecheck + lint + test + script tests + ninja-proxy tests (every CI suite except build, e2e and Lighthouse).
+- `npm run gate` runs only the checks the changed paths need (use this, not `check:all`, before a PR). `npm run check:all` = typecheck + lint + test + script tests + ninja-proxy tests (every CI suite except build, e2e and Lighthouse).
 - `npm run test:coverage -w @poe2/core` enforces 90% statements / 75% branches. `npm run e2e -w @poe2/web` runs against `apps/web/out` (build first); `E2E_BASE_URL=<preview>` runs it against a deployed site.
 - PoB2 headless: `npm run pob2:oracle` regenerates `packages/core/test/pob2/<league>/*.oracle.json` (`-- --check` fails on diff, CI job `pob2-oracle`); `npm run pob2:spec` runs the busted specs; `npm run pob2:run -- <code-file>` prints one snapshot. Needs `scripts/pob2/install-luajit.sh` (session-only) or Docker, plus a built core. See `docs/POB2-SYNC.md`.
 - Core goldens (`packages/core/test/golden/`): review the diff, then `npx vitest run -u` in `packages/core` and commit the changed `*.expected.json` with the cause. This is the "golden diff" HG1-1 asks for.
@@ -33,7 +33,7 @@ In `apps/web/CLAUDE.md` (design rules are decided; change only with the owner).
 See `docs/DEPENDENCY-BUMPS.md` (per-workspace checks; never split CI per workspace).
 
 ## Sessions
-Every session follows docs/SESSION-PROTOCOL.md; finished work in docs/HISTORY.md, open rows in docs/remaining/REMAINING-WORK.md.
+Sessions follow docs/SESSION-PROTOCOL.md (no required reading). Run the gate with `npm run gate`; it tests only the changed areas, once.
 
 ## Cloud sessions
 

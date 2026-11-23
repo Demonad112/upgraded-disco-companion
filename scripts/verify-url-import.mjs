@@ -17,7 +17,7 @@ import { existsSync } from 'node:fs'
 import { watchConsole } from './console-errors.mjs'
 
 const baseUrl = process.argv[2] ?? 'http://127.0.0.1:3210/character/'
-const PROFILE = 'https://poe.ninja/poe2/profile/Demonad112-2589/runesofaldur/character/Athrynas'
+const PROFILE = 'https://poe.ninja/poe2/profile/Demonad112-2589/runesofaldur/character/Main'
 const MISSING = 'https://poe.ninja/poe2/profile/Demonad112-2589/runesofaldur/character/NoSuchCharacter'
 
 const explicitPath = process.env.CHROMIUM_PATH ?? '/opt/pw-browsers/chromium-1194/chrome-linux/chrome'
@@ -37,7 +37,7 @@ async function newPage() {
   const { context, page, errors } = await newPage()
   await page.getByLabel('poe.ninja character URL').fill(PROFILE)
   await page.getByRole('button', { name: 'Analyse' }).click()
-  await page.getByRole('heading', { name: 'Athrynas', level: 2 }).waitFor({ timeout: 30_000 })
+  await page.getByRole('heading', { name: 'Main', level: 2 }).waitFor({ timeout: 30_000 })
 
   // The ladder sample arrives after the first render and the analysis re-runs
   // with it, so wait for the scored verdict rather than racing it.

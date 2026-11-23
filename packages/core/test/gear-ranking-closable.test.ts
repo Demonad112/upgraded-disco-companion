@@ -1,7 +1,7 @@
 /**
  * HG1-10: with the affix data, items are ranked first by the resistance
- * shortfall a replacement could close. Yykiuy is short of resistance; the
- * weapon can't roll any, so it no longer heads the list.
+ * shortfall a replacement could close. The main build with the Yykiuy defence block is
+ * short of resistance; the weapon can't roll any, so it no longer heads the list.
  */
 import { describe, expect, it } from 'vitest'
 import { readFileSync } from 'node:fs'
@@ -12,10 +12,11 @@ import { analyzeItem } from '../src/gear/analyze.js'
 import { rankReplacements } from '../src/gear/priority.js'
 import { ModTiers, type ModTierData } from '../src/gear/tiers.js'
 import { resistanceShortfalls } from '../src/defense/index.js'
+import { mainWithYykiuyDefence } from './helpers/main-build.js'
 
 const read = (p: string) => JSON.parse(readFileSync(fileURLToPath(new URL(p, import.meta.url)), 'utf8')) as unknown
 const tiers = new ModTiers(read('../../data/generated/mod-tiers.json') as ModTierData)
-const a = await analyzeCharacter(read('./fixtures/yykiuy-v80.json'))
+const a = await analyzeCharacter(mainWithYykiuyDefence())
 const analysed = a.items.filter((i) => i.active).map((i) => analyzeItem(i, tiers, a.defense))
 
 describe('rank by closable shortfall', () => {

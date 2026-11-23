@@ -8,12 +8,13 @@
  * Usage: node scripts/verify-tree.mjs [baseUrl]
  */
 
+import { mainPayloadJson } from './lib/main-payload.mjs'
 import { chromium } from 'playwright'
 import { watchConsole } from './console-errors.mjs'
 import { readFileSync, existsSync } from 'node:fs'
 
 const baseUrl = process.argv[2] ?? 'http://127.0.0.1:3210/character/'
-const fixture = readFileSync('packages/core/test/fixtures/athrynas-v43.json', 'utf8')
+const fixture = await mainPayloadJson()
 const tree = JSON.parse(readFileSync('packages/data/generated/passive-tree.json', 'utf8'))
 const model = JSON.parse(fixture).charModel
 
@@ -29,7 +30,7 @@ await page.goto(baseUrl, { waitUntil: 'networkidle' })
 await page.getByRole('tab', { name: 'Paste data' }).click()
 await page.getByLabel('Character model JSON').fill(fixture)
 await page.getByRole('button', { name: 'Analyse pasted data' }).click()
-await page.getByRole('heading', { name: 'Athrynas', level: 2 }).waitFor({ timeout: 30_000 })
+await page.getByRole('heading', { name: 'Main', level: 2 }).waitFor({ timeout: 30_000 })
 
 const canvas = page.locator('canvas')
 await canvas.waitFor({ timeout: 30_000 })

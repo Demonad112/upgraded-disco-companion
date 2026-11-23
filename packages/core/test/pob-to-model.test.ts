@@ -15,8 +15,11 @@ import { analyzeCharacter } from '../src/analyze.js'
 import { pobToCharModel } from '../src/pob/to-model.js'
 import type { CharModel } from '../src/model/types.js'
 import { PassiveTree, type PassiveTreeData } from '../src/tree/index.js'
+import { mainPayload, mainWithWeaponSets } from './helpers/main-build.js'
 
-const payload = JSON.parse(readFileSync(fileURLToPath(new URL('./fixtures/athrynas-v43.json', import.meta.url)), 'utf8'))
+// The embedded model is the main build read from its own code, so every cross-check below compares the converter and
+// the poe.ninja-shaped path on the same numbers; the absolute figures pin PoB's own output (the oracle).
+const payload = mainPayload()
 const ninjaModel: CharModel = payload.charModel ?? payload
 const code = ninjaModel.pathOfBuildingExport!
 const treePath = fileURLToPath(new URL('../../data/generated/passive-tree.json', import.meta.url))
@@ -32,8 +35,8 @@ function encode(s: string): string {
 
 describe('pobToCharModel', () => {
   it('reads identity from the code and leaves what a code lacks absent', () => {
-    expect(converted.level).toBe(86)
-    expect(converted.class).toBe('Deadeye')
+    expect(converted.level).toBe(90)
+    expect(converted.class).toBe('Martial Artist')
     expect(converted.name).toBeUndefined()
     expect(converted.account).toBeUndefined()
     expect(converted.league).toBeUndefined()
@@ -45,16 +48,21 @@ describe('pobToCharModel', () => {
     expect(converted.pathOfBuildingExport).toBe(code)
   })
 
-  it('splits the tree as PoB loads it: main tree, two weapon-set trees, the live-set flag and tree version (NP1-6b)', () => {
-    // PoB's `nodes` lists all 136 allocated nodes; <WeaponSet1/2> name the 16 + 16 that belong to one set only.
-    const main = converted.passiveSelection as number[]
-    expect(main.length).toBe(104)
-    expect(main).toContain(50459)
-    expect(converted.passiveSelectionSet1).toHaveLength(16)
-    expect(converted.passiveSelectionSet2).toHaveLength(16)
-    for (const n of [...converted.passiveSelectionSet1!, ...converted.passiveSelectionSet2!]) expect(main).not.toContain(n)
-    expect(converted.useSecondWeaponSet).toBe(false)
+  it('splits the tree as PoB loads it: main tree, two weapon-set trees, the live-set flag and tree version (NP1-6b)', async () => {
+    // The main code allocates no weapon-set nodes and states no live set: both stay absent, never invented.
+    expect(converted.passiveSelection).toHaveLength(123)
+    expect(converted.passiveSelectionSet1).toBeUndefined()
+    expect(converted.passiveSelectionSet2).toBeUndefined()
+    expect(converted.useSecondWeaponSet).toBeUndefined()
     expect(converted.passiveTreeName).toBe(ninjaModel.passiveTreeName)
+    // PoB's `nodes` lists every allocated node; <WeaponSet1/2> name the ones that belong to one set only.
+    const ws = mainWithWeaponSets(8)
+    const split = await pobToCharModel(ws.code)
+    expect(split.passiveSelection).toHaveLength(ws.all.length - 16)
+    expect(split.passiveSelectionSet1).toEqual(ws.set1)
+    expect(split.passiveSelectionSet2).toEqual(ws.set2)
+    for (const n of [...ws.set1, ...ws.set2]) expect(split.passiveSelection).not.toContain(n)
+    expect(split.useSecondWeaponSet).toBe(false)
   })
 })
 
@@ -67,13 +75,14 @@ describe('analysing a converted code', () => {
   })
 
   it('agrees with poe.ninja on the survivability headline and pools', () => {
-    expect(fromCode.defense.lowestMaximumHit).toBe(3808)
-    expect(fromCode.defense.lowestMaximumHitType).toBe('chaos')
+    // PoB's own PlayerStats for the main code: physical is the lowest maximum hit.
+    expect(fromCode.defense.lowestMaximumHit).toBe(5004)
+    expect(fromCode.defense.lowestMaximumHitType).toBe('physical')
     expect(fromCode.defense.life).toBe(ninja.defense.life)
     expect(fromCode.defense.energyShield).toBe(ninja.defense.energyShield)
     expect(fromCode.defense.armour).toBe(ninja.defense.armour)
     expect(fromCode.defense.evasion).toBe(ninja.defense.evasion)
-    expect(Math.round(fromCode.defense.effectiveHealthPool!)).toBe(ninja.defense.effectiveHealthPool)
+    expect(Math.round(fromCode.defense.effectiveHealthPool!)).toBe(Math.round(ninja.defense.effectiveHealthPool!))
     for (const m of fromCode.defense.maxHits) {
       expect(m.value).toBe(ninja.defense.maxHits.find((n) => n.type === m.type)!.value)
     }
@@ -89,7 +98,7 @@ describe('analysing a converted code', () => {
 
   it('reads the main skill and its damage as PoB computed it', () => {
     expect(fromCode.dps.primary?.name).toBe(ninja.dps.primary?.name)
-    expect(Math.round(fromCode.dps.primary!.dps)).toBe(ninja.dps.primary!.dps)
+    expect(Math.round(fromCode.dps.primary!.dps)).toBe(Math.round(ninja.dps.primary!.dps))
     expect(fromCode.dps.primary?.critChance).toBeCloseTo(ninja.dps.primary!.critChance!, 0)
     // Same unit as poe.ninja (a multiplier, 2.48 means 248%), or the crit findings would misfire.
     expect(fromCode.dps.primary?.critMultiplier).toBeCloseTo(ninja.dps.primary!.critMultiplier!, 1)
@@ -107,13 +116,11 @@ describe('analysing a converted code', () => {
 
   it('runs the tree check and keystones from the code’s tree, as the poe.ninja path does', () => {
     expect(fromCode.treeCheck.status).toBe(ninja.treeCheck.status)
-    // The split matches poe.ninja's three arrays exactly, plus the class start node (50459, Ranger) in the
-    // main tree, which PoB lists and poe.ninja leaves out.
-    expect(fromCode.passives.main).toEqual([...ninja.passives.main, 50459].sort((a, b) => a - b))
+    expect(fromCode.passives.main).toEqual(ninja.passives.main)
     expect(fromCode.passives.set1).toEqual(ninja.passives.set1)
     expect(fromCode.passives.set2).toEqual(ninja.passives.set2)
     expect(fromCode.passives.activeSet).toBe(ninja.passives.activeSet)
-    expect(fromCode.passives.live).toEqual([...ninja.passives.live, 50459].sort((a, b) => a - b))
+    expect(fromCode.passives.live).toEqual(ninja.passives.live)
     expect(fromCode.sourceGaps.map((g) => g.what)).not.toContain('Weapon-set passives')
   })
 

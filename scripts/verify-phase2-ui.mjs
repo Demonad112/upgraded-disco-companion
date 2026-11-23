@@ -14,6 +14,7 @@
  * Usage: node scripts/verify-phase2-ui.mjs [baseUrl] [outDir]
  */
 
+import { mainPayloadJson } from './lib/main-payload.mjs'
 import { readFileSync, mkdirSync, existsSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -23,7 +24,7 @@ import { watchConsole } from './console-errors.mjs'
 const here = dirname(fileURLToPath(import.meta.url))
 const baseUrl = process.argv[2] ?? 'http://127.0.0.1:3210'
 const outDir = process.argv[3] ?? join(here, '..', 'screenshots')
-const fixture = readFileSync(join(here, '..', 'packages', 'core', 'test', 'fixtures', 'athrynas-v43.json'), 'utf8')
+const fixture = await mainPayloadJson()
 
 const failures = []
 mkdirSync(outDir, { recursive: true })
@@ -44,7 +45,7 @@ try {
   await page.getByRole('tab', { name: 'Paste data' }).click()
   await page.getByLabel('Character model JSON or Path of Building code').fill(fixture)
   await page.getByRole('button', { name: 'Analyse pasted data' }).click()
-  await page.getByRole('heading', { name: 'Athrynas', level: 2 }).waitFor({ timeout: 20_000 })
+  await page.getByRole('heading', { name: 'Main', level: 2 }).waitFor({ timeout: 20_000 })
 
   // --- assessment -----------------------------------------------------------
   const assessment = panel(page, 'Assessment')

@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import type { Recommendation, RecommendationReport } from '@poe2/core'
 import { URL_MAX_LENGTH } from '@poe2/core'
 import { readFileSync } from 'node:fs'
-import { analyzeCharacter } from '@poe2/core'
+import { analyzeCharacter, pobToCharModel } from '@poe2/core'
 import { fixAnchor, fixLines, splitAction, topFixes, tradeLinkFor, tradeStatFor } from '@/components/character/topFixesData'
 
 const rec = (over: Partial<Recommendation>): Recommendation =>
@@ -59,8 +59,10 @@ describe('top fixes', () => {
   })
 
   it('default rows carry a lead and one gain line; the detail sentence is whole and Pro-only', async () => {
-    for (const name of ['yykiuy-v51', 'athrynas-v43']) {
-      const payload = JSON.parse(readFileSync(new URL(`../../../packages/core/test/fixtures/${name}.json`, import.meta.url), 'utf8'))
+    for (const name of ['main']) {
+      // The owner's main build: its PoB code read through core (PB-5 replaced the poe.ninja captures).
+      const code = readFileSync(new URL('../../../packages/core/test/pob2/forbidden-rites/main.code.txt', import.meta.url), 'utf8').trim()
+      const payload = { type: 'character', charModel: await pobToCharModel(code) }
       const fixes = topFixes((await analyzeCharacter(payload)).recommendations)
       expect(fixes.length, name).toBeGreaterThan(0)
       for (const f of fixes) {

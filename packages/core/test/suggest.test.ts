@@ -10,6 +10,7 @@ import { PassiveTree, type PassiveTreeData } from '../src/tree/index.js'
 import { affectsCharacter, suggestNodesForStat, supportedStats } from '../src/tree/suggest.js'
 import { normalizePassives } from '../src/model/passives.js'
 import { unwrapCharModel } from '../src/analyze.js'
+import { mainWithReferenceDefence } from './helpers/main-build.js'
 
 const tree = new PassiveTree(
   JSON.parse(
@@ -17,7 +18,7 @@ const tree = new PassiveTree(
   ) as PassiveTreeData,
 )
 const model = unwrapCharModel(
-  JSON.parse(readFileSync(fileURLToPath(new URL('./fixtures/athrynas-v43.json', import.meta.url)), 'utf8')),
+  mainWithReferenceDefence(),
 )
 const allocation = normalizePassives(model)
 

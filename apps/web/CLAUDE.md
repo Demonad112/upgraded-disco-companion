@@ -14,4 +14,4 @@ Dark palette; headings in uppercase EB Garamond, metric labels in uppercase Geis
 - Build `npm run build`, output `apps/web/out`, Node 22. No Functions or wrangler config; headers live in `apps/web/public/_headers`.
 - `npm run build` ends with `apps/web/scripts/csp-hashes.mjs`, which writes the inline-script hashes into `out/_headers` (`script-src` has no `'unsafe-inline'`). A new inline `<script>` needs no edit, but a page served without that step has no scripts.
 - Local parity check: `npm run preview -w @poe2/web` (`wrangler@4 pages dev out`). There is no `next start`: the app is a static export.
-- Open work: `docs/remaining/REMAINING-WORK.md`.
+- Open work (read only when asked): `docs/remaining/REMAINING-WORK.md`.
