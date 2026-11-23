@@ -9,6 +9,8 @@
  *   - an affix must be able to spawn on the item's base (`ModTiers.canSpawn`); implicits and a unique's
  *     lines are matched against the non-affix mod text only, never against craftable affixes, so a unique's
  *     fixed roll is not given a tier it does not have;
+ *   - a plain line is not given an id when a hybrid mod that can spawn on the base could print the same line
+ *     as its second stat (PoB shows each stat of a hybrid as its own line, and the text cannot say which);
  *   - more than one remaining mod (overlapping tiers, a prefix and a suffix with the same text) is
  *     ambiguous: the line is not given an id.
  * A line that is not resolved stays text, listed in `itemData.textOnlyMods` so the item still shows it and
@@ -69,16 +71,52 @@ function indexOf(tiers: ModTiers): Map<string, Entry[]> {
   return index
 }
 
-/** The rolled stats of a matched line, keyed by stat id; empty when the numbers cannot be paired to stats. */
+/** stat id -> affixes that carry it as a later (not first) stat: their line 2 reads like a plain mod's line. */
+const laterStats = new WeakMap<ModTiers, Map<string, { id: string; min: number; max: number }[]>>()
+
+function laterStatsOf(tiers: ModTiers): Map<string, { id: string; min: number; max: number }[]> {
+  const cached = laterStats.get(tiers)
+  if (cached) return cached
+  const out = new Map<string, { id: string; min: number; max: number }[]>()
+  for (const [id, raw] of tiers.allMods()) {
+    raw.stats.slice(1).forEach(([stat, min, max]) => {
+      const list = out.get(stat)
+      if (list) list.push({ id, min, max })
+      else out.set(stat, [{ id, min, max }])
+    })
+  }
+  laterStats.set(tiers, out)
+  return out
+}
+
+/**
+ * The factor from a displayed number to its stat (1 when they agree; 100 for a permyriad stat shown as a
+ * percent; negative for a "reduced" line stored negated), or null when the ranges do not line up by one factor.
+ */
+function scaleFor(t: { lo: number; hi: number }, min: number, max: number): number | null {
+  if (t.lo === min && t.hi === max) return 1
+  if (t.lo === 0) return null
+  const near = (x: number, y: number): boolean => Math.abs(x - y) <= EPS * Math.max(1, Math.abs(y))
+  const up = min / t.lo
+  if (near(t.hi * up, max)) return up
+  const down = max / t.lo
+  return near(t.hi * down, min) ? down : null
+}
+
+/** The rolled stats of a matched line, keyed by stat id; a stat whose units cannot be proven is left out. */
 function rolledStats(entry: Entry, values: number[]): Record<string, number> {
   const out: Record<string, number> = {}
+  const put = (stat: [string, number, number], tokenIndex: number): void => {
+    const factor = scaleFor(entry.tokens[tokenIndex]!, stat[1], stat[2])
+    if (factor !== null) out[stat[0]] = Number((values[tokenIndex]! * factor).toFixed(6))
+  }
   if (entry.tokens.length === entry.stats.length) {
-    entry.stats.forEach(([id], i) => (out[id] = values[i]!))
+    entry.stats.forEach((stat, i) => put(stat, i))
     return out
   }
   const ranged = entry.stats.filter(([, min, max]) => min !== max)
   const slots = entry.tokens.map((t, i) => (t.lo !== t.hi ? i : -1)).filter((i) => i >= 0)
-  if (ranged.length === slots.length) ranged.forEach(([id], i) => (out[id] = values[slots[i]!]!))
+  if (ranged.length === slots.length) ranged.forEach((stat, i) => put(stat, slots[i]!))
   return out
 }
 
@@ -115,7 +153,16 @@ export function matchModLine(
   if (groups.size !== 1) return null
   // One group: the tiers must not overlap on this roll, or the tier is a guess.
   const exact = pool.length === 1 ? pool[0]! : null
-  return exact ? { id: exact.id, stats: rolledStats(exact, values) } : null
+  if (!exact) return null
+  if (!exact.display && exact.stats.length === 1 && context.baseTags) {
+    const [stat] = exact.stats[0]!
+    const roll = values[0]!
+    const hybrid = (laterStatsOf(tiers).get(stat) ?? []).some(
+      (h) => h.id !== exact.id && roll >= h.min - EPS && roll <= h.max + EPS && tiers.canSpawn(h.id, context.baseTags!),
+    )
+    if (hybrid) return null
+  }
+  return { id: exact.id, stats: rolledStats(exact, values) }
 }
 
 const KINDS: readonly (readonly [keyof NinjaItemData, LineKind, string])[] = [
