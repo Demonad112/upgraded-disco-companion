@@ -26,6 +26,9 @@ Answers of 2026-11-17 (HG1-1, -2, -4, -5, -6) are applied. Answers of 2026-11-15
 | PB-10 | Apply poe.ninja's PoB config baseline (`docs/POB-NINJA-CONFIG.md`: Arbiter of Ash, flasks and charms on, charges and buffs by what the build has, enemy debuffs, Been Hit Recently second pass) in the headless runner and the calc service defaults, then regenerate the oracle and goldens. Conditional on the build's own skills and items | M | owner (2026-11-22) | Needs-owner: it changes every oracle number and golden. Recommended: yes, as its own batch after PB-3a, so one golden diff has one cause; keep the code's saved config selectable as the alternative | open |
 | PB-11 | `resolveAllocation` components on the main code: the 116-node group (main tree joined to the Martial Artist wheel) is labelled `ascendancy`, never `main-tree`, and 7 single nodes the code lists are `detached`; the class start node is not in the code's list | S | PB-5 | Recommended: label a group `main-tree` when it holds the class start or most nodes, and say why the singles are unlinked. Core change: red test (`tree.test.ts` pins today's output) plus golden diff | open |
 | PB-12 | Text-matched mod ids from a code are not always legal for the item: 4 of 9 rares carry an id from a wrong class (e.g. the amulet's `IncreasedCastSpeed1`, a ring's `ColdDamagePercent5`); the weapon's local crit chance reads 3.19 against a 311-380 ladder (gain 496.81); the amulet's `+1 Prefix / -1 Suffix Modifier allowed` implicit is not resolved, so its capacity reads 3/3 not 4/2 | M | PB-5 | Recommended: in `gear/text-mods.ts` prefer ids whose class matches the base, scale stats stored in hundredths, and resolve the two-stat implicit from its display entry. Red tests: `cf-yykiuy.test.ts` states the ids today; `mods.test.ts` uses the one legal item | open |
+| NJ-7 | Restore the three poe.ninja captures (athrynas-v43, yykiuy-v51, yykiuy-v80, from `4964edf`) under `packages/core/test/ninja-legacy/fixtures/` with their regression suite. Reverses the 2026-11-22 answer "fixtures are removed" | Yes: tests only, 0 B bundle, no pack growth (blobs are in history), and it is the only real-breakdown regression net for the `source: 'poe.ninja'` path. If no, NJ-2 (code half only) | NJ (`docs/plans/ninja-source-restore.md`) |
+| NJ-8 | Core data shape for PoB per-stat sources: `AnalyzeOptions.pobSources` (`PobStatSources`) turned into the existing `BreakdownIndex` by `indexPobSources()` | Yes, rather than faking `NinjaBreakdowns` numeric ids; `attributeToItems` and `holdingUp` stay unchanged | NJ |
+| NJ-9 | CI: the `pob2-oracle` job's `pob2:oracle -- --check` also covers `*.sources.json` | Yes, in the same job (no new job); a re-run must be byte-equal like the oracle | NJ |
 
 Superseded NP1 rows and answered GF1-1..3 are in `archive/REGISTER-CLOSED.md`. NP1-3 was never used (gap left as is).
 
@@ -63,6 +66,18 @@ Owner answers (2026-11-22, applied; do not re-ask):
 | PB-7 | B7: one-command `pob2:bump`, league-rollover runbook | S | pob2-alignment | Haiku, wave 6; merges first of B7/B8 | open |
 | PB-8 | B8: gap audit → `docs/plans/next-analysis.md` | S | pob2-alignment | Sonnet, wave 6; docs only; includes GF1-8 | open |
 | PB-9 | B9 (optional): live calc service and `pob-sim` Δ | L | pob2-alignment | Opus, wave 7; needs a hosting choice (owner) | parked (needs hosting) |
+
+## poe.ninja source restore (NJ-1..NJ-9)
+Plan: `docs/plans/ninja-source-restore.md`. Run order: NJ-1 → { NJ-3 ‖ NJ-4 } → NJ-5 → NJ-6. Baseline `4964edf` (not `6abf552^`: the legacy goldens had already moved by then). Owner rows NJ-7..NJ-9 are in § Owner queue.
+
+| ID | Item | Size | Origin | Notes | Status |
+|---|---|---|---|---|---|
+| NJ-1 | Legacy suite under `packages/core/test/ninja-legacy/` (captures, goldens, breakdown tests from `4964edf`) + poe.ninja-origin code characterization (`main-ninja.code.txt`, committed) | M | NJ plan | Sonnet, wave 1; tests only; parallel with PB-3a | open (waits NJ-7) |
+| NJ-2 | Fold-back if NJ-7 is no: captures stay deleted, NJ-1 keeps only the `main-ninja` half | S | NJ plan | | open |
+| NJ-3 | Web: per-source state map, source switch, compare view (reuses `reconcile`) | M | NJ plan | Sonnet, wave 2; `/character` budget about 218,000 (measured, cause in the PR) | open (waits PB-6, NJ-1) |
+| NJ-4 | PoB per-stat sources exporter (`tools/pob2/sources.lua`) + `*.sources.json` | L | NJ plan | Opus, wave 2; `Tabulate` over CalcSections lists | open (waits PB-3a) |
+| NJ-5 | Core `indexPobSources`, `AnalyzeOptions.pobSources`, attribution gap text | M | NJ plan | Sonnet, wave 3; golden diff `pob-code-main*` | open (waits NJ-4, NJ-8, NJ-9) |
+| NJ-6 | Web: attribution for codes with sources; gap copy for a live paste | S | NJ plan | Sonnet, wave 4 | open (waits NJ-5) |
 
 ## Standing rules (no work)
 - Route, lazy and per-chunk budgets live in `scripts/route-weight.mjs` (source of truth; brotli, first load). It exits 1 when one is over and runs in CI (`ci.yml`). Raise one only on purpose, with the reason in the PR. Any change to home JS reports before and after.
