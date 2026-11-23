@@ -258,3 +258,9 @@ One line each; reopen only when the trigger happens.
 | ID | Item | Status |
 |---|---|---|
 | DATA-1 | `passive-tree.json` refreshed for 0.5.5: now built from PoB's latest tree (`build:tree:pob`); the tree check on the fixture reads current. Soul Cores continue as DATA-2 | done (B4, 2026-11-22) |
+
+## Closed in B5 (2026-11-23)
+| ID | Item | Size | Origin | Notes | Status |
+|---|---|---|---|---|---|
+| NP1-6b | A pasted PoB code gets the full analysis (NP1-6) but without gear: no "Worth replacing", trade links or per-slot findings. The weapon-set half is done (PB-3): `snapshotToCharModel` splits `<WeaponSet1/2>` off the main tree, matching poe.ninja's three arrays on athrynas-v43, so keystones from a code follow the same trust rule | M | NP1-6 | Items half is PB-5: parse `PobSnapshot.items` (raw text + `modRanges`) into `CharModel.items`; red test first on athrynas-v43 against poe.ninja's items | done (PB-5): items read from the code; see HISTORY |
+| PB-5 | B5: items from the code → gear analysis; then delete athrynas-v43, yykiuy-v51, yykiuy-v80 and their goldens, moving the core tests, web unit tests, e2e (`e2e/fixtures.ts`, mock proxy, screenshot script) onto `main` | L | pob2-alignment | Sonnet, wave 4; closes NP1-6b's items half. Deletion deferred from B3 by owner answer (PB-3) | done for the items half (PB-5); the capture deletion moved to PB-5b |
