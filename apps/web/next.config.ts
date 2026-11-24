@@ -47,6 +47,13 @@ const dataVersion = (() => {
   }
   // trade2-stats.json sits beside generated/ (recorded by hand) and feeds trade2-stats.json and trade-map.json.
   hash.update(readFileSync(join(__dirname, '..', '..', 'packages', 'data', 'trade2-stats.json')))
+  // B9 E2: public/pob2/ (calc archive + patched glue.wasm) is built from vendor/pob2 (PIN.json pins every file's
+  // hash), the packaging scripts and the installed wasmoon, so a PoB bump or a packaging change is a new version.
+  const root = join(__dirname, '..', '..')
+  for (const file of ['vendor/pob2/PIN.json', 'tools/pob2/wasm/pack.mjs', 'tools/pob2/wasm/transform.mjs', 'tools/pob2/wasm/compat.lua', 'tools/pob2/wasm/patch-wasm.mjs']) {
+    hash.update(readFileSync(join(root, file)))
+  }
+  hash.update(readFileSync(join(root, 'node_modules', 'wasmoon', 'package.json'))) // hoisted by npm workspaces
   return hash.digest('hex').slice(0, 12)
 })()
 

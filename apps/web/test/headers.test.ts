@@ -32,6 +32,13 @@ describe('Cloudflare _headers', () => {
   })
 
   // WQA1-1: inline scripts are allowed by hash only; scripts/csp-hashes.mjs appends the hashes to out/_headers at build.
+  // B9 E2: the PoB2 engine compiles wasmoon's glue.wasm; 'wasm-unsafe-eval' allows WebAssembly compilation only, not JS eval.
+  it("allows WebAssembly but not JS eval", () => {
+    const scriptSrc = /script-src ([^;]+)/.exec(csp ?? '')?.[1].split(/\s+/) ?? []
+    expect(scriptSrc).toContain("'wasm-unsafe-eval'")
+    expect(scriptSrc).not.toContain("'unsafe-eval'")
+  })
+
   it("does not allow 'unsafe-inline' scripts", () => {
     const scriptSrc = /script-src ([^;]+)/.exec(csp ?? '')?.[1].split(/\s+/) ?? []
     expect(scriptSrc).toContain("'self'")
@@ -58,6 +65,11 @@ describe('Cloudflare _headers', () => {
     // Data is fetched as <file>.json?v=<data fingerprint> (lib/basePath dataUrl), so a new deploy is a new URL.
     it('caches data JSON forever, as the fetch URL carries the data version', () => {
       expect(rules.get('/*.json')).toContain('Cache-Control: public, max-age=31536000, immutable')
+    })
+
+    // lib/pob2/engine fetches pob2/<file>?v=<data fingerprint>, which also covers the PoB2 pin (next.config.ts).
+    it('caches the PoB2 engine files forever, as their URL carries the data version', () => {
+      expect(rules.get('/pob2/*')).toContain('Cache-Control: public, max-age=31536000, immutable')
     })
   })
 })

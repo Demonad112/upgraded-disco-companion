@@ -46,6 +46,9 @@ const DATA_FILES = [
   '/trade2-stats.json',
   '/trade-map.json',
   '/atlas-tree.json',
+  // B9 E2: PoB2's calc archive (~2.3 MB brotli) and the patched wasmoon glue.wasm, for the browser engine.
+  '/pob2/calc.pack.txt',
+  '/pob2/glue.wasm',
 ]
 
 /** Content-hashed build output: the URL changes whenever the bytes do, so a hit is always right. Cache-first. */

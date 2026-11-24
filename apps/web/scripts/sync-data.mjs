@@ -11,7 +11,9 @@
 import { copyFileSync, mkdirSync, readFileSync, statSync, writeFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { createRequire } from 'node:module'
 import { resolveTradeStatMapFromSnapshot } from '@poe2/core'
+import { buildPack, patchedGlue } from '../../../tools/pob2/wasm/pack.mjs'
 
 const here = dirname(fileURLToPath(import.meta.url))
 const from = join(here, '..', '..', '..', 'packages', 'data', 'generated')
@@ -45,3 +47,12 @@ for (const file of FILES) {
   copyFileSync(source, join(to, file))
   process.stdout.write(`  ${file} (${(statSync(source).size / 1024 / 1024).toFixed(2)} MB)\n`)
 }
+
+// B9 E2: PoB2's calc files for the browser engine (tools/pob2/wasm/pack.mjs) and the patched wasmoon glue.wasm.
+// Nothing on a route fetches them yet (E3's worker does); the service worker caches them with the data.
+const pob2 = join(to, 'pob2')
+mkdirSync(pob2, { recursive: true })
+const pack = buildPack()
+writeFileSync(join(pob2, 'calc.pack.txt'), pack)
+writeFileSync(join(pob2, 'glue.wasm'), patchedGlue(dirname(createRequire(import.meta.url).resolve('wasmoon/package.json'))))
+process.stdout.write(`  pob2/calc.pack.txt (${(pack.length / 1024 / 1024).toFixed(2)} MB) + pob2/glue.wasm\n`)

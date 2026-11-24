@@ -63,4 +63,18 @@ for (const { name, marker, cap } of CHUNK_CAPS) {
   const br = brotliCompressSync(readFileSync(`${CHUNKS}/${hits[0]}`)).length
   console.log(`${name} chunk`.padEnd(24), '  1 file ', ' '.repeat(18), String(br).padStart(8), 'br', br > cap ? (over++, 'OVER ' + cap) : '')
 }
+// B9 E2: the PoB2 browser engine's files (public/pob2, built by sync-data from vendor/pob2). Fetched by E3's worker
+// on demand, never by a route: data, not JS, so they sit outside the route and lazy JS budgets. Same rule as above
+// (brotli at Node's default quality 11, measured size rounded up to the next 2,000 B).
+const POB2_BUDGET = {
+  'pob2/calc.pack.txt': 2_416_000, // 2,415,322 B br (31.95 MB raw): every src/ + runtime/lua file, current tree only
+  'pob2/glue.wasm': 96_000, // 94,810 B br: wasmoon 1.16.0, one byte patched
+}
+for (const [file, cap] of Object.entries(POB2_BUDGET)) {
+  if (!existsSync(`${out}/${file}`)) continue
+  const br = brotliCompressSync(readFileSync(`${out}/${file}`)).length
+  console.log(file.padEnd(24), '  1 file ', ' '.repeat(18), String(br).padStart(8), 'br', br > cap ? (over++, 'OVER ' + cap) : '')
+}
+// Until E3 adds the opt-in button, no route may load the engine on its own.
+for (const p of ROUTES) if (existsSync(`${out}/${p}`) && readFileSync(`${out}/${p}`, 'utf8').includes('pob2/')) { over++; console.log(`${p}: references pob2/ (the engine must stay lazy)`) }
 if (over) process.exit(1)
