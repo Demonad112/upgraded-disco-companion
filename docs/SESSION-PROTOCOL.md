@@ -18,7 +18,7 @@ branches. Any other `packages/*` change needs no owner OK when the PR shows a re
 kinds they name.
 
 ### Finish
-1. `git fetch origin`, merge `origin/main`, then `npm run gate` once (see the `ship` skill). It picks the checks from
+1. `git fetch origin`, merge `origin/main`, then `npm run gate` once. It picks the checks from
    the changed paths, so an unchanged area is never re-tested. Docs-only batches run nothing. e2e and Lighthouse stay
    with CI. Run long suites with `run_in_background` so an interruption never lands mid-build.
    The gate counts only if it tested something: no `writing actual` outside `e2e/visual.spec.ts`, and the skipped

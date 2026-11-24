@@ -9,10 +9,10 @@ Copied: `src/*.lua`, `src/Modules/**`, `src/Classes/**`, `src/Data/**/*.lua`, `s
 1. On GitHub, open the fork and press **Sync fork** (upstream → `dev`). This is manual by owner decision.
 2. `npm run pob2:sync` (head of the fork's `dev`), or `npm run pob2:sync -- --commit <sha>` for a specific commit.
 3. `npm run pob2:verify` must print `ok` (CI runs it too, and it is part of `check:all`).
-4. Review the diff: `git diff --stat vendor/pob2/PIN.json`, `changelog.txt`, then anything under `src/Modules` and `src/Classes` that touches calcs. Search `src/Data` and `src/TreeData` with Grep, never Read them (large; denied in settings).
+4. Review the diff: `git diff --stat vendor/pob2/PIN.json`, `changelog.txt`, then anything under `src/Modules` and `src/Classes` that touches calcs. Search `src/Data` and `src/TreeData` with Grep where possible (large files).
 5. Open a PR. Once B7 lands, `npm run pob2:bump` runs steps 2-3, rebuilds the generated data, regenerates the oracle files and prints a summary; until then, those later steps are manual.
 
-The git attributes keep the copy exact: `vendor/pob2/** -text linguist-vendored linguist-generated`. The `block-generated-edits` hook denies Edit/Write there, and `settings.json` denies Read of `vendor/pob2/src/Data/**` and `vendor/pob2/src/TreeData/**`.
+The git attributes keep the copy exact: `vendor/pob2/** -text linguist-vendored linguist-generated`. The `block-generated-edits` hook denies Edit/Write there.
 
 ## Headless runner and oracle (B2)
 
