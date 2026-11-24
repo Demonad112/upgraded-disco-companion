@@ -279,11 +279,13 @@ describe('CP-2: per-use vs continuous DPS', () => {
 
   it('labels Hollow Resonance (group 4) per use 33,332 and if used continuously 69,531', async () => {
     // A code carries PlayerStats for its own main group only, so the variant also carries PoB's engine figures for
-    // group 4 (`main-ninja.groups.oracle.json`, CP-7): CombinedDPS 33,332.2 and TotalDPS 69,531.0.
+    // group 4, read from the groups oracle (`main-ninja.groups.oracle.json`, CP-7).
+    const groups = JSON.parse(read('./main-ninja.groups.oracle.json')) as { rows: { group: number; activeSkill: number; TotalDPS: number; CombinedDPS: number }[] }
+    const g4 = groups.rows.find((r) => r.group === 4 && r.activeSkill === 1)!
     const xml = (await decodePobExport(code))
       .replace('mainSocketGroup="15"', 'mainSocketGroup="4"')
-      .replace(/<PlayerStat stat="TotalDPS" value="[^"]*"\/>/, '<PlayerStat stat="TotalDPS" value="69530.976701658"/>')
-      .replace(/<PlayerStat stat="CombinedDPS" value="[^"]*"\/>/, '<PlayerStat stat="CombinedDPS" value="33332.203596193"/>')
+      .replace(/<PlayerStat stat="TotalDPS" value="[^"]*"\/>/, `<PlayerStat stat="TotalDPS" value="${g4.TotalDPS}"/>`)
+      .replace(/<PlayerStat stat="CombinedDPS" value="[^"]*"\/>/, `<PlayerStat stat="CombinedDPS" value="${g4.CombinedDPS}"/>`)
     const primary = analyzeDps(snapshotToCharModel(readPobSnapshot(xml))).primary!
     expect(primary.name).toBe('Hollow Resonance')
     expect(Math.round(primary.useRates!.perUse)).toBe(33332)

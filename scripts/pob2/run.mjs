@@ -1,7 +1,9 @@
 // Runs real PoB2 headless (tools/pob2/snapshot.lua on vendor/pob2) and prints or writes JSON snapshots.
 //
 //   node scripts/pob2/run.mjs <code-file | ->     snapshot one PoB code (file or stdin) to stdout
-//   npm run pob2:oracle [-- --check]              regenerate every current-league *.oracle.json (--check: fail on diff)
+//   node scripts/pob2/run.mjs --groups <code-file | ->   every skill group's main output (tools/pob2/groups.lua) to stdout
+//   npm run pob2:oracle [-- --check]              regenerate every current-league *.oracle.json and *.groups.oracle.json,
+//                                                 plus GROUPS_EXTRA's groups oracles (--check: fail on a diff in any)
 //   npm run pob2:spec                             busted specs in tools/pob2/spec (fixtures decoded first)
 //   node scripts/pob2/run.mjs --export <mods|bases|skills|tree|constants>   dump PoB's own loaded data as JSON (tools/pob2/export/)
 //
@@ -45,6 +47,13 @@ export function currentLeagueCodes(dir = FIXTURES) {
 }
 
 export const oraclePath = (codeFile) => codeFile.replace(/\.code\.txt$/, '.oracle.json');
+export const groupsOraclePath = (codeFile) => codeFile.replace(/\.code\.txt$/, '.groups.oracle.json');
+
+/**
+ * Codes outside the current-league folders that also get a groups oracle (CP-7): the reference character
+ * (`ninja-legacy/main-ninja.code.txt`), whose numbers the core tests pin.
+ */
+export const GROUPS_EXTRA = [join(ROOT, 'packages', 'core', 'test', 'ninja-legacy', 'main-ninja.code.txt')];
 
 function localLuajitWorks() {
   const r = spawnSync('luajit', ['-e', 'local a = 1; a += 1; require("lua-utf8")'], { stdio: 'ignore' });
@@ -95,6 +104,21 @@ export async function snapshot(code, runner = pickRunner()) {
   return JSON.parse(r.stdout);
 }
 
+/**
+ * Every skill group's PoB output for one code (CP-7): one row per (group, active skill), computed by PoB's engine
+ * with that group selected. CI-only ground truth for tests; the site never shows or simulates it.
+ */
+export async function groups(code, runner = pickRunner()) {
+  const xml = await decode(code);
+  const { cmd, args, env } = luaCommand(runner, ['luajit', 'tools/pob2/groups.lua']);
+  const r = spawnSync(cmd, args, { cwd: ROOT, env, input: xml, maxBuffer: 1 << 26, encoding: 'utf8' });
+  if (r.error) throw new Error(`${cmd}: ${r.error.message}`);
+  if (r.status !== 0 && r.status !== 1) {
+    throw new Error(`groups.lua exited ${r.status}:\n${(r.stderr ?? '').split('\n').slice(-15).join('\n')}`);
+  }
+  return JSON.parse(r.stdout);
+}
+
 export const EXPORTS = ['mods', 'bases', 'skills', 'tree', 'constants'];
 
 /**
@@ -112,28 +136,43 @@ export function exportData(name, runner = pickRunner()) {
   return JSON.parse(r.stdout);
 }
 
+/** Write `text` to `out`, or compare it under --check; returns true when the file is stale. */
+function settle(out, text, check, stale) {
+  const before = existsSync(out) ? readFileSync(out, 'utf8') : null;
+  if (before === text) {
+    console.log(`ok       ${relative(ROOT, out)}`);
+  } else if (check) {
+    stale.push({ out, text });
+    console.log(`DIFFERS  ${relative(ROOT, out)}`);
+  } else {
+    writeFileSync(out, text);
+    console.log(`written  ${relative(ROOT, out)}`);
+  }
+}
+
+/** A groups oracle's rows must all have loaded. */
+function groupsText(file, data) {
+  const failed = (data.rows ?? []).filter((r) => r.loadError);
+  if (failed.length) throw new Error(`${relative(ROOT, file)}: PoB loadError in group ${failed[0].group}: ${failed[0].loadError}`);
+  return canonicalJson(data);
+}
+
 async function oracle(check) {
   const runner = pickRunner();
   const codes = currentLeagueCodes();
   if (!codes.length) throw new Error(`no *.code.txt under ${relative(ROOT, FIXTURES)}/<league>/`);
   const stale = [];
   for (const file of codes) {
-    const snap = await snapshot(readFileSync(file, 'utf8'), runner);
+    const code = readFileSync(file, 'utf8');
+    const snap = await snapshot(code, runner);
     if (snap.loadError) throw new Error(`${relative(ROOT, file)}: PoB loadError: ${snap.loadError}`);
-    const text = canonicalJson(snap);
-    const out = oraclePath(file);
-    const before = existsSync(out) ? readFileSync(out, 'utf8') : null;
-    if (before === text) {
-      console.log(`ok       ${relative(ROOT, out)}`);
-    } else if (check) {
-      stale.push({ out, text });
-      console.log(`DIFFERS  ${relative(ROOT, out)}`);
-    } else {
-      writeFileSync(out, text);
-      console.log(`written  ${relative(ROOT, out)}`);
-    }
+    settle(oraclePath(file), canonicalJson(snap), check, stale);
+    settle(groupsOraclePath(file), groupsText(file, await groups(code, runner)), check, stale);
   }
-  console.log(`pob2:oracle ${codes.length} fixture(s) via ${runner}`);
+  for (const file of GROUPS_EXTRA) {
+    settle(groupsOraclePath(file), groupsText(file, await groups(readFileSync(file, 'utf8'), runner)), check, stale);
+  }
+  console.log(`pob2:oracle ${codes.length} fixture(s) + ${GROUPS_EXTRA.length} groups-only via ${runner}`);
   if (stale.length) {
     console.error(
       `${stale.length} oracle file(s) differ from what PoB computes now. Run npm run pob2:oracle, review the diff ` +
@@ -142,7 +181,10 @@ async function oracle(check) {
     if (process.env.GITHUB_ACTIONS) {
       // CI checkout is throwaway: write the regenerated files and print the diff, so it can be reviewed without Lua.
       for (const { out, text } of stale) writeFileSync(out, text);
-      spawnSync('git', ['--no-pager', 'diff', '--no-color', '--', relative(ROOT, FIXTURES)], { cwd: ROOT, stdio: 'inherit' });
+      spawnSync('git', ['--no-pager', 'diff', '--no-color', '--', ...stale.map(({ out }) => relative(ROOT, out))], {
+        cwd: ROOT,
+        stdio: 'inherit',
+      });
     }
     process.exit(1);
   }
@@ -173,6 +215,12 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
   try {
     if (argv[0] === '--oracle') await oracle(argv.includes('--check'));
     else if (argv[0] === '--spec') await spec();
+    else if (argv[0] === '--groups') {
+      if (!argv[1]) throw new Error('--groups needs a code file or -');
+      const data = await groups(argv[1] === '-' ? readFileSync(0, 'utf8') : readFileSync(argv[1], 'utf8'));
+      process.stdout.write(canonicalJson(data));
+      process.exit((data.rows ?? []).some((r) => r.loadError) ? 1 : 0);
+    }
     else if (argv[0] === '--export') {
       process.stdout.write(JSON.stringify(exportData(argv[1] ?? '')) + '\n');
     } else if (argv[0]) {
@@ -181,7 +229,7 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
       process.stdout.write(canonicalJson(snap));
       process.exit(snap.loadError ? 1 : 0);
     } else {
-      console.error('usage: node scripts/pob2/run.mjs <code-file | -> | --oracle [--check] | --spec | --export <name>');
+      console.error('usage: node scripts/pob2/run.mjs <code-file | -> | --groups <code-file | -> | --oracle [--check] | --spec | --export <name>');
       process.exit(2);
     }
   } catch (e) {

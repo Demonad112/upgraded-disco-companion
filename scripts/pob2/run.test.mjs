@@ -5,7 +5,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { test } from 'node:test';
 import { isTestsImageRef } from './lib.mjs';
-import { FIXTURES, ROOT, canonicalJson, currentLeagueCodes, oraclePath, pickRunner } from './run.mjs';
+import { FIXTURES, GROUPS_EXTRA, ROOT, canonicalJson, currentLeagueCodes, groupsOraclePath, oraclePath, pickRunner } from './run.mjs';
 
 test('canonicalJson sorts keys at every level and keeps array order', () => {
   const text = canonicalJson({ b: 1, a: { d: [3, { z: 1, y: 2 }], c: null } });
@@ -53,4 +53,31 @@ test('every current-league code has a canonical oracle from the pinned PoB commi
     assert.equal(oracle.pobVersion, pin.manifestVersion, code);
     assert.equal(typeof oracle.stats.Life, 'number', code);
   }
+});
+
+test('every current-league code and GROUPS_EXTRA has a canonical groups oracle with a row per <Skill> group', () => {
+  assert.equal(groupsOraclePath('/f/l/a.code.txt'), '/f/l/a.groups.oracle.json');
+  const codes = [...currentLeagueCodes(FIXTURES), ...GROUPS_EXTRA];
+  assert.ok(GROUPS_EXTRA.some((f) => f.endsWith(join('ninja-legacy', 'main-ninja.code.txt'))), 'main-ninja is in GROUPS_EXTRA');
+  for (const code of codes) {
+    const text = readFileSync(groupsOraclePath(code), 'utf8');
+    const oracle = JSON.parse(text);
+    assert.equal(text, canonicalJson(oracle), `${groupsOraclePath(code)} is not canonical: run npm run pob2:oracle`);
+    assert.ok(oracle.groups > 0, code);
+    const groups = [...new Set(oracle.rows.map((r) => r.group))];
+    assert.deepEqual(groups, Array.from({ length: oracle.groups }, (_, i) => i + 1), `${code}: a row per group`);
+    for (const row of oracle.rows) {
+      assert.equal(row.loadError, undefined, `${code} group ${row.group}`);
+      assert.equal(typeof row.skill, 'string', `${code} group ${row.group}`);
+      assert.equal(typeof row.enabled, 'boolean', `${code} group ${row.group}`);
+    }
+  }
+});
+
+test('groups.lua reuses headless.lua and never writes vendor/pob2', () => {
+  // Code lines only: the header comment names vendor/pob2 to say it is left unmodified.
+  const lua = readFileSync(join(ROOT, 'tools', 'pob2', 'groups.lua'), 'utf8').split('\n').filter((l) => !/^\s*--/.test(l)).join('\n');
+  assert.match(lua, /dofile\(dir \.\. "\/headless\.lua"\)/);
+  assert.doesNotMatch(lua, /io\.open\([^)]*["']w/);
+  assert.doesNotMatch(lua, /vendor/);
 });
