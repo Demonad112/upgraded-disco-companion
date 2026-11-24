@@ -1,0 +1,94 @@
+# PoB2 browser engine (B9, Option A)
+
+Run PoB2's own Lua calc (`vendor/pob2`, unmodified) in the browser, in a WASM Lua VM ([wasmoon](https://github.com/ceifa/wasmoon)) inside a lazy-loaded Web Worker. It recalculates the way PoB's sidebar dropdown does (`tools/pob2/groups.lua`): load the build once, set `mainSocketGroup` / `mainActiveSkill`, set `buildFlag`, run one frame.
+
+Owner decision (2026-11-24): the site may simulate and estimate. Every number from this engine has provenance `pob-sim` and shows "≈ est.", so it can't be mistaken for the code's own PoB figures (`pob-export`).
+
+## Goal
+
+- Per-group DPS for every skill group, not only the code's main group.
+- Gear-swap ΔDPS / ΔEHP: swap an item in the loaded build, recalculate, diff.
+- All in the browser: no calc service, no hosting.
+
+## Spike result (2026-11-24)
+
+`node tools/pob2/wasm/spike.mjs [code] [--groups]` (needs `npm i --no-save wasmoon@1.16.0`; not run in CI).
+
+Accuracy against the CI groups oracle, wasmoon 1.16.0 (Lua 5.4.7) under Node 22:
+
+| Code | Main group (TotalDPS) | Group rows | Max relative error |
+|---|---|---|---|
+| `ninja-legacy/main-ninja` | Storm Wave 98,590.97 = oracle | 21 of 21 | 3.4e-14 |
+| `pob2/forbidden-rites/main` | Storm Wave 125,919.13 = oracle | 21 of 21 | 2.3e-14 |
+
+Every row matches to float rounding, including the folded groups (2/16/17/18 → PoB's merged group).
+
+Cost, measured in Node on the session container (a browser will differ; the worker batch measures it there):
+
+| Step | Time |
+|---|---|
+| Mount files into the WASM FS | 2.2 s |
+| PoB init (`HeadlessWrapper`, ModCache, tree) | 4.3–4.7 s |
+| Load the build + first calc | 1.9–2.1 s |
+| Recalculate one group (dropdown switch) | ~0.8 s |
+
+| Download (brotli q11) | Size |
+|---|---|
+| Files PoB opened for these codes (196 of 1,010; 23 MB raw) | 2,051 KB |
+| Every mounted file (`src/` + `runtime/lua`) | 3,458 KB |
+| `glue.wasm` (patched) | 93 KB |
+| wasmoon JS | 33 KB |
+
+WASM heap after load: 375 MB (Node RSS 450–600 MB). This is the main risk for phones.
+
+What it took to run PoB2 on stock Lua 5.4 (all outside `vendor/pob2`):
+
+1. **Syntax** (`tools/pob2/wasm/transform.mjs`, rewritten at packaging time). PoB's own LuaJIT build accepts four extensions: compound assignment (`x += 1`, `..=`), short lambdas (`|a, b| -> expr`), optional indexing (`a?.b`, `a?.[k]`) and `continue`. 29 statements in the vendored files. A lexer-aware rewrite handles `continue`; the rest are regexes, pinned by `scripts/pob2/wasm-transform.test.mjs`, which also fails if any vendored file keeps an extension after rewriting.
+2. **Libraries** (`tools/pob2/wasm/compat.lua`): `unpack`, `loadstring`, `math.pow`, `math.atan2`, `table.maxn`, a 32-bit `bit` library (incl. `rol`/`ror` for sha1), a `jit` stub, `lua-utf8`, and LuaJIT's lenient `string.format` (`%d` of a float truncates).
+3. **Number formatting** (`tools/pob2/wasm/patch-wasm.mjs`). Lua 5.4 prints `100.0` where LuaJIT prints `100`, and PoB builds strings and keys from numbers (`buffers.chance[string.len(entry.capped)]`). One byte in `glue.wasm`'s data segment empties the `"-0123456789"` set that `tostringbuff` checks before appending `.0`; the patch refuses to apply unless that literal is unique.
+
+## Batches
+
+| # | Batch | Model | Depends on | Status |
+|---|---|---|---|---|
+| E1 | Spike: vendor/pob2 in wasmoon under Node, reproduce main-ninja's main-group TotalDPS | Opus | — | done (this PR) |
+| E2 | Data packaging and size: transform + bundle the calc file set into a lazy chunk, brotli, service-worker cache keyed by `NEXT_PUBLIC_DATA_VERSION`; self-host `glue.wasm` | Opus | E1, owner: wasmoon dependency | open |
+| E3 | Worker API: `load(code)`, `groups()` → per-group DPS, `swap(slot, itemText)` → ΔDPS/ΔEHP; one engine per tab, recalc off the main thread | Opus | E2 | open |
+| E4 | Web UI: per-group DPS and swap Δ with "≈ est." labels and provenance `pob-sim`; "Calculating…" state; opt-in on phones | Sonnet | E3 | open |
+| E5 | Accuracy tests: run the worker's engine in Node in CI against every `*.groups.oracle.json` (relative error ≤ 1e-9), plus a swap oracle from `tools/pob2` | Opus | E3 | open |
+
+### E2 notes
+
+- **File set.** Ship what PoB opens for any loaded build: the 196 files above plus every `Data/Uniques`, `Data/Bases`, `Data/Skills` file and the current tree only (old `TreeData/*` versions are for old codes; fetch them on demand). Drop UI-only modules if PoB never opens them. Budget target: ≤ 2.5 MB brotli.
+- **Packing.** One archive (concatenated, length-prefixed) per data version, fetched by the worker, unpacked into the WASM FS. Not a JS module: it must not count toward any route's JS budget or be parsed as JS.
+- **Cache.** Same key as the other data (`NEXT_PUBLIC_DATA_VERSION`), so a PoB bump invalidates it.
+- **wasm location.** wasmoon defaults to `unpkg.com` in a browser; pass the self-hosted, patched `glue.wasm` URL (CSP `connect-src` stays `'self'`).
+- **Init time.** Try caching PoB's post-init state if init stays > 3 s in the browser (e.g. skip `UpdateCheck`, pre-parse `tree.lua`); measure before optimising.
+- **Route budgets.** Only the button that starts the worker lands on a route. Never `import('@poe2/core')` lazily on a page that imports core statically (CLAUDE.md). If the route still grows, raise its budget in `scripts/route-weight.mjs` to the measured size rounded up to the next 2,000 B, cause in a comment and the PR.
+
+### E3 notes
+
+- Copy `tools/pob2/groups.lua`'s `select(pi, ai)` and its export-group → PoB-group map (`pobGroup`, folded groups).
+- Swap: replace the slot's item through PoB's `itemsTab` the way its UI does, recalc, read `mainOutput` (TotalDPS, CombinedDPS, Life, EnergyShield, TotalEHP), restore.
+- Memory: one engine per tab; terminate the worker when the character view closes.
+
+## Risks
+
+- **Phone memory** (375 MB WASM heap). Mitigation: opt-in on narrow screens, terminate when idle, measure in E2 on a mid-range phone profile.
+- **PoB syntax drift.** A PoB bump can add another extension use. The transform test fails on any un-rewritten compound assignment or lambda; `continue` outside a loop throws.
+- **Lua 5.4 semantics** beyond the fixes above (integer vs float in `//`, `%`, overflow). The E5 oracle comparison catches numeric drift on every bump.
+- **Patched wasm.** The one-byte patch ties us to wasmoon's build; a wasmoon bump re-runs the patch's uniqueness check. Alternative: build our own Lua 5.4 WASM with `lobject.c` patched (needs emscripten in CI).
+
+## Owner rows
+
+- **BE-1** Add `wasmoon@1.16.0` as an `apps/web` dependency (E2). Recommended: yes; MIT, no transitive deps, 126 KB brotli with the wasm.
+- **BE-2** Keep the one-byte `glue.wasm` patch rather than building our own Lua WASM. Recommended: yes until a wasmoon bump breaks it.
+
+## Batch log
+
+### E1 (2026-11-24): spike
+
+- Decisions: Lua 5.4 + rewrite + shims instead of a LuaJIT port (LuaJIT's interpreter is hand-written assembly with no WASM target); rewrite at packaging time so `vendor/pob2` stays byte-identical (`npm run pob2:verify`); patch the float format in the wasm instead of shimming `tostring` (implicit number→string coercion in `..` and `string.len` never calls Lua).
+- Result: exact match on 42 group rows across both reference codes (table above).
+- Not done: browser run, packaging, worker. The spike script needs wasmoon installed by hand, so CI runs only the transform test.
+- Suggestions for next batch: E2 starts by listing the files PoB opens across every fixture (`SPIKE_USED=<file>` writes the list), then builds the archive and measures a browser init in Playwright's Chromium.
