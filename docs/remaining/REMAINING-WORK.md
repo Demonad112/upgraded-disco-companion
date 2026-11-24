@@ -87,7 +87,7 @@ Plan: `docs/plans/code-source-parity.md`. Run order: CP-1 → CP-2 → CP-3. Ref
 
 | ID | Item | Size | Origin | Notes | Status |
 |---|---|---|---|---|---|
-| CP-1 | Core: breakdowns read from the code (items, tree, quests, base), verified with `verifyTotal`; reconcile for codes; attribution gap dropped for verified stats | L | CP plan | Opus, wave 1; golden `main-ninja` | open |
+| CP-1 | Core: breakdowns read from the code (items, tree, quests, base), verified with `verifyTotal`; reconcile for codes; attribution gap dropped for verified stats | L | CP plan | Opus, wave 1; golden `main-ninja` | done (PR pending): Life, ES, Mana, Spirit, Armour, Evasion verify on main-ninja (and on `forbidden-rites/main`); the 4 resistances don't (Mageblood legacies unread), flagged and kept out of attribution |
 | CP-2 | Core: `allGems` from `<Skill>` groups; PB-12 mod-id fixes | M | CP plan | Sonnet, wave 2 | open (waits CP-1) |
 | CP-3 | Web: paste box for the poe.ninja code, optional character name, e2e on main-ninja | M | CP plan | Sonnet, wave 3; budget measured | open (waits CP-2) |
 

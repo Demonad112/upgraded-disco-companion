@@ -104,8 +104,10 @@ describe('analysing a converted code', () => {
     expect(fromCode.dps.primary?.critMultiplier).toBeCloseTo(ninja.dps.primary!.critMultiplier!, 1)
   })
 
-  it('never reconciles a code against itself', () => {
-    expect(fromCode.reconciliation).toBeNull()
+  it('never reconciles a code against itself, only against its own lines (CP-1)', () => {
+    const checks = fromCode.reconciliation?.checks ?? []
+    expect(checks.length).toBeGreaterThan(0)
+    expect(checks.every((c) => c.otherSource === 'breakdown-arithmetic')).toBe(true)
     expect(fromCode.warnings.join(' ')).not.toMatch(/disagree/)
   })
 

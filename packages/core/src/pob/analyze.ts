@@ -153,19 +153,41 @@ function gearGap(gear: GearReadState | undefined): PobGap | null {
   return parts.length ? { what, why: `${parts.join('; ')}.` } : null
 }
 
-export function pobCodeGaps(stats: Record<string, number>, gear?: GearReadState): PobGap[] {
+/**
+ * The stat-attribution gap. Without breakdowns read from the code (no tree data): the whole gap. With them
+ * (`pob/code-breakdowns.ts`): only the stats whose lines do not reproduce PoB's total, or nothing when all do.
+ */
+function attributionGap(unreproduced: readonly string[] | undefined): PobGap | null {
+  if (!unreproduced) {
+    return {
+      what: 'Stat attribution — which item or passive grants each point',
+      why:
+        'That needs poe.ninja’s per-stat breakdowns, which a code does not carry. ' +
+        'Gear tiers and resistance rebalancing depend on it.',
+    }
+  }
+  if (!unreproduced.length) return null
+  const names =
+    unreproduced.length === 1 ? unreproduced[0]! : `${unreproduced.slice(0, -1).join(', ')} and ${unreproduced[unreproduced.length - 1]!}`
+  return {
+    what: `Stat attribution for ${names}`,
+    why: `The code’s item, passive, quest and base lines don’t add up to Path of Building’s total for ${unreproduced.length === 1 ? 'it' : 'these'}, so no item is credited with a share. The other stats are attributed.`,
+  }
+}
+
+/**
+ * `unreproduced`: the labels of the stats a code's breakdown does not reproduce, when the breakdown was read
+ * (`pob/code-breakdowns.ts`); omitted when it was not.
+ */
+export function pobCodeGaps(stats: Record<string, number>, gear?: GearReadState, unreproduced?: readonly string[]): PobGap[] {
   const gaps: PobGap[] = [
     {
       what: 'Per-skill damage',
       why: 'A code carries the damage of the skill it had selected, not of every skill.',
     },
-    {
-      what: 'Stat attribution — which item or passive grants each point',
-      why:
-        'That needs poe.ninja’s per-stat breakdowns, which a code does not carry. ' +
-        'Gear tiers and resistance rebalancing depend on it.',
-    },
   ]
+  const attribution = attributionGap(unreproduced)
+  if (attribution) gaps.push(attribution)
   const gearGapRow = gearGap(gear)
   if (gearGapRow) gaps.splice(1, 0, gearGapRow)
   if (num(stats, 'Ward') === null) {

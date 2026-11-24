@@ -21,8 +21,9 @@
  *   - `items`, `flasks`, `jewels` from the active item set (`pob/items.ts`): item text, never mod ids
  *     (those are resolved against the affix data in `gear/text-mods.ts`).
  *
- * Left absent: name, account and league (a code has none) and `breakdowns` (poe.ninja's per-stat
- * attribution, which a code does not carry).
+ * Left absent: name, account and league (a code has none) and `breakdowns`: a code does not carry
+ * poe.ninja's per-stat attribution. `analyzeCharacter` reads it from the code's own lines when it has the
+ * tree data (`pob/code-breakdowns.ts`, CP-1).
  */
 
 import { RES_CAP_DEFAULT } from '../defense/constants.js'

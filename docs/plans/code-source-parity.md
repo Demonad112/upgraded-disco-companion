@@ -146,3 +146,35 @@ Rows this plan supersedes:
 ## Batch log
 
 One entry per batch: decisions (Q → A (why)), then "Suggestions for next batch".
+
+### CP-1 (2026-11-24)
+
+Result on main-ninja (read lines vs PoB's PlayerStat):
+
+| Stat | PoB | Lines | |
+|---|---|---|---|
+| Life | 1494 | 1423 flat × 1.05 = 1494 | verifies |
+| Energy Shield | 2827 | 839 × 3.37 = 2827 | verifies |
+| Mana | 790 | 752 × 1.05 = 790 | verifies |
+| Spirit | 147 | 100 (three default quests) + 47 | verifies |
+| Armour | 75 | 42 × 1.78 = 75 | verifies |
+| Evasion | 7407 | 2279 × 3.25 = 7407 | verifies |
+| Fire / Cold / Lightning / Chaos (before cap) | 87 / 139 / 130 / 53 | 42 / 34 / 85 / 8 | don't: Mageblood's "Legacy of …" lines grant resistances that depend on the copied flasks and charms; they are not stat lines in the code |
+
+The owner's PoB2-app export of the same build (`pob2/forbidden-rites/main.code.txt`, a different config) also verifies the same six with different numbers (ES 2673, Evasion 6837, Armour 73), so the grammar is not fitted to one code.
+
+Decisions:
+- Where do the base constants ship? → In `passive-tree.json` as `characterBase` (exporter `tools/pob2/export/constants.lua`, run by `build-tree-pob.mjs`). Why: a code breakdown needs the tree and the base at once, and the web already passes the tree to the full pass, so no web wiring. Literals in PoB's calc source (`base = 16`, `or -60`, 2 Life per Strength) are read from the vendored text by pattern and fail the build if they stop matching.
+- How is a failing stat kept out of attribution when `base` is the sum of the lines? → `BreakdownIndex.unreproduced` (code only), read by `attributeToItems` beside `partsReproduceBase`. Why: one optional field; poe.ninja's path and goldens are unchanged.
+- Strictness → a resistance must match PoB's uncapped value (`Resist + OverCap`), not only the capped one, because attribution's "without" and overcap figures use the uncapped sum. Reconcile for codes uses the same checks (`codeChecks`), and skips the sheet-vs-PlayerStat checks (that would compare the code with itself).
+- Item defences → the armour piece's header (`Evasion: 1264`) is PoB's local total; local lines on it are not re-added. `Has +N … per player level` is scaled by local increases and quality as `Item.lua` does.
+- Attributes → Str/Int as PoB states them (PlayerStat), not recomputed from "+5 to any Attribute" choices.
+- Not read, named per stat when they touch it: `Bonded:` rune lines (PoB applies them only with a flag), conditions other than Been Hit Recently, `more` multipliers.
+- Cross-validation panel subtitle now says what a code is checked against (copy only).
+- Other goldens: none changed.
+
+Suggestions for next batch (CP-2):
+- `allGems` from `<Skill>` groups in `pob/to-model.ts`; red test in `code-analysis.test.ts`.
+- PB-12 in `gear/text-mods.ts`: base-class-legal ids first, hundredths, the two-stat amulet implicit (capacity 4/2).
+- If a later code shows a common unread condition on Life/ES/Evasion, add it to `KNOWN_CONDITIONS` in `code-breakdowns.ts` with the config input it reads; never widen without a code that verifies.
+- Mageblood: reading its legacies needs the flask/charm lines it copies; worth a row only if more than this character carries it.

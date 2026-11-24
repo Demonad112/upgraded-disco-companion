@@ -125,6 +125,21 @@ export interface ReconcileOptions {
    * hit-DPS skill as before.
    */
   pobMainSkill?: string | null
+  /**
+   * Set for a Path of Building code (`source: 'pob-export'`): the checks of its breakdown read from its own lines
+   * (`pob/code-breakdowns.ts`). The code is then the only source, and comparing its sheet with its own PlayerStats
+   * would compare it with itself, so these are the only checks. `ninja` in each is PoB's total in the code, `other`
+   * what the code's item, passive, quest and base lines give; a resistance is compared before its cap.
+   */
+  codeChecks?: ReadonlyArray<CodeCheckInput>
+}
+
+/** One code-breakdown check, as `pob/code-breakdowns.ts` reports it. */
+export interface CodeCheckInput {
+  stat: string
+  pob: number | null
+  read: number | null
+  uncapped: { pob: number; read: number } | null
 }
 
 export function reconcile(
@@ -140,64 +155,69 @@ export function reconcile(
   const pob = (key: string): number | null =>
     typeof pobStats[key] === 'number' && Number.isFinite(pobStats[key]) ? pobStats[key] : null
 
+  const code = options.codeChecks ?? null
+
   // --- poe.ninja vs Path of Building's own engine -------------------------
   // PoB's TotalDPS belongs to the skill the export had selected, so that is the
   // skill poe.ninja's figure must be taken from. Pairing it with another skill
   // would report a disagreement that is only two different skills.
-  if ('pobMainSkill' in options) {
-    const wanted = options.pobMainSkill
-    if (!wanted) {
-      if (dps.primary) {
-        checks.push({
-          ...check(`dps:${dps.primary.name}`, dps.primary.dps, null, 'pob-export'),
-          note: 'The export does not say which skill it computed TotalDPS for, so no skill was compared.',
-        })
+  // A code is the only source: it is compared with its own lines only (below), never with itself.
+  if (!code) {
+    if ('pobMainSkill' in options) {
+      const wanted = options.pobMainSkill
+      if (!wanted) {
+        if (dps.primary) {
+          checks.push({
+            ...check(`dps:${dps.primary.name}`, dps.primary.dps, null, 'pob-export'),
+            note: 'The export does not say which skill it computed TotalDPS for, so no skill was compared.',
+          })
+        }
+      } else {
+        const norm = (s: string) => s.trim().toLowerCase()
+        const skill = dps.skills.find((s) => norm(s.name) === norm(wanted) && s.dps > 0)
+        checks.push(
+          skill
+            ? check(
+                `dps:${skill.name}`,
+                skill.dps,
+                pob('TotalDPS'),
+                'pob-export',
+                `poe.ninja’s DPS for ${skill.name} vs the TotalDPS PoB computed for it (the skill the export marks as main).`,
+              )
+            : {
+                ...check(`dps:${wanted}`, null, pob('TotalDPS'), 'pob-export'),
+                note: `The export marks ${wanted} as main, but poe.ninja reports no hit damage for a skill of that name, so nothing was compared.`,
+              },
+        )
       }
-    } else {
-      const norm = (s: string) => s.trim().toLowerCase()
-      const skill = dps.skills.find((s) => norm(s.name) === norm(wanted) && s.dps > 0)
+    } else if (dps.primary) {
       checks.push(
-        skill
-          ? check(
-              `dps:${skill.name}`,
-              skill.dps,
-              pob('TotalDPS'),
-              'pob-export',
-              `poe.ninja’s DPS for ${skill.name} vs the TotalDPS PoB computed for it (the skill the export marks as main).`,
-            )
-          : {
-              ...check(`dps:${wanted}`, null, pob('TotalDPS'), 'pob-export'),
-              note: `The export marks ${wanted} as main, but poe.ninja reports no hit damage for a skill of that name, so nothing was compared.`,
-            },
+        check(
+          `dps:${dps.primary.name}`,
+          dps.primary.dps,
+          pob('TotalDPS'),
+          'pob-export',
+          'poe.ninja per-skill DPS vs the TotalDPS PoB computed for the same build.',
+        ),
       )
     }
-  } else if (dps.primary) {
-    checks.push(
-      check(
-        `dps:${dps.primary.name}`,
-        dps.primary.dps,
-        pob('TotalDPS'),
-        'pob-export',
-        'poe.ninja per-skill DPS vs the TotalDPS PoB computed for the same build.',
-      ),
-    )
-  }
-  checks.push(check('life', defense.life, pob('Life'), 'pob-export'))
-  checks.push(check('energyShield', defense.energyShield, pob('EnergyShield'), 'pob-export'))
-  checks.push(check('armour', defense.armour, pob('Armour'), 'pob-export'))
-  checks.push(check('evasion', defense.evasion, pob('Evasion'), 'pob-export'))
-  checks.push(check('evadeChance', defense.evadeChance, pob('EvadeChance'), 'pob-export'))
+    checks.push(check('life', defense.life, pob('Life'), 'pob-export'))
+    checks.push(check('energyShield', defense.energyShield, pob('EnergyShield'), 'pob-export'))
+    checks.push(check('armour', defense.armour, pob('Armour'), 'pob-export'))
+    checks.push(check('evasion', defense.evasion, pob('Evasion'), 'pob-export'))
+    checks.push(check('evadeChance', defense.evadeChance, pob('EvadeChance'), 'pob-export'))
 
-  for (const [statKey, pobKey] of [
-    ['physicalMaximumHit', 'PhysicalMaximumHitTaken'],
-    ['fireMaximumHit', 'FireMaximumHitTaken'],
-    ['coldMaximumHit', 'ColdMaximumHitTaken'],
-    ['lightningMaximumHit', 'LightningMaximumHitTaken'],
-    ['chaosMaximumHit', 'ChaosMaximumHitTaken'],
-  ] as const) {
-    const type = statKey.replace('MaximumHit', '')
-    const ninjaValue = defense.maxHits.find((m) => m.type === type)?.value ?? null
-    checks.push(check(statKey, ninjaValue, pob(pobKey), 'pob-export'))
+    for (const [statKey, pobKey] of [
+      ['physicalMaximumHit', 'PhysicalMaximumHitTaken'],
+      ['fireMaximumHit', 'FireMaximumHitTaken'],
+      ['coldMaximumHit', 'ColdMaximumHitTaken'],
+      ['lightningMaximumHit', 'LightningMaximumHitTaken'],
+      ['chaosMaximumHit', 'ChaosMaximumHitTaken'],
+    ] as const) {
+      const type = statKey.replace('MaximumHit', '')
+      const ninjaValue = defense.maxHits.find((m) => m.type === type)?.value ?? null
+      checks.push(check(statKey, ninjaValue, pob(pobKey), 'pob-export'))
+    }
   }
 
   // --- poe.ninja's own totals vs its own breakdown parts ------------------
@@ -205,7 +225,14 @@ export function reconcile(
   // drifted, which is worth knowing loudly. `verifyTotal` accounts for capped
   // resistances and for stats poe.ninja derives without listing modifiers, so
   // an unverifiable stat reports `unresolved` rather than a false alarm.
-  for (const stat of breakdowns.all) {
+  for (const c of code ?? []) {
+    checks.push(
+      c.uncapped
+        ? check(`breakdown:${c.stat}`, c.uncapped.pob, c.uncapped.read, 'breakdown-arithmetic', 'Path of Building’s total in the code before the cap vs the code’s item, passive, quest and base lines.')
+        : check(`breakdown:${c.stat}`, c.pob, c.read, 'breakdown-arithmetic', 'Path of Building’s total in the code vs the code’s item, passive, quest and base lines.'),
+    )
+  }
+  for (const stat of code ? [] : breakdowns.all) {
     if (stat.derivation === 'empty') continue
     const verification = verifyTotal(stat)
     if (stat.confidence === null) {

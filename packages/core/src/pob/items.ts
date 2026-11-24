@@ -223,6 +223,39 @@ export interface SnapshotItems {
   unmapped: string[]
 }
 
+/** One equipped item or socketed jewel of the active set, with its PoB item and parsed text. */
+export interface SnapshotEquipment {
+  /** poe.ninja slot id; 12 for a jewel. */
+  itemSlot: number
+  item: PobItem
+  data: ParsedPobItem
+}
+
+/**
+ * The active item set's equipment (slots with a poe.ninja id, both weapon sets) and the jewels in the active tree's
+ * allocated sockets, with the PoB item kept so its header (Armour, Evasion, Quality) can be read. Flasks, charms and
+ * unmapped slots are left out: `snapshotItems` reports those.
+ */
+export function snapshotEquipment(snap: PobSnapshot): SnapshotEquipment[] {
+  const byId = new Map(snap.items.items.map((it) => [it.id, it]))
+  const out: SnapshotEquipment[] = []
+  const push = (id: number, itemSlot: number) => {
+    const item = byId.get(id)
+    const data = item ? parsePobItemText(item.raw, item.modRanges) : null
+    if (item && data) out.push({ itemSlot, item, data })
+  }
+  for (const slot of activeItemSet(snap)?.slots ?? []) {
+    const id = SLOT_ID[slot.name]
+    if (slot.itemId > 0 && id !== undefined) push(slot.itemId, id)
+  }
+  const spec = activeSpec(snap)
+  const allocated = new Set(splitTree(snap, spec).live)
+  for (const socket of spec?.sockets ?? []) {
+    if (socket.itemId > 0 && allocated.has(socket.nodeId)) push(socket.itemId, 12)
+  }
+  return out
+}
+
 function toItem(
   byId: ReadonlyMap<number, PobItem>,
   id: number,

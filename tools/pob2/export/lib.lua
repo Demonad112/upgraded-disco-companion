@@ -1,8 +1,8 @@
--- Shared by tools/pob2/export/{mods,bases,skills,tree}.lua. Loads PoB2 headless (vendor/pob2, unmodified) once and
+-- Shared by tools/pob2/export/{mods,bases,skills,tree,constants}.lua. Loads PoB2 headless (vendor/pob2, unmodified) once and
 -- gives the exporters small helpers. Exporters build plain tables from PoB's loaded data (never encode PoB's own tables:
 -- tree nodes and groups point at each other) and write one JSON document to stdout; PoB's console output goes to stderr.
 --
--- Run through scripts/pob2/run.mjs (`node scripts/pob2/run.mjs --export <mods|bases|skills|tree>`), which picks local
+-- Run through scripts/pob2/run.mjs (`node scripts/pob2/run.mjs --export <mods|bases|skills|tree|constants>`), which picks local
 -- LuaJIT or PoB's tests image, exactly like the snapshot runner.
 local dir = debug.getinfo(1, "S").source:sub(2):match("^(.*)[/\\]") or "."
 -- headless.lua finds the repo root from its own path, so give it a normalised one (tools/pob2/headless.lua).

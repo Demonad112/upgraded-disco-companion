@@ -24,6 +24,10 @@
  *   fails the build instead of going unlabelled). Two classes share a start node in PoE2, so PoB lists both names
  *   there; the label is the one the site already uses.
  *
+ * - **`characterBase`** (CP-5): PoB's character base values and quest rewards, from tools/pob2/export/constants.lua.
+ *   They ride with the tree because a code's per-stat breakdown (core `pob/code-breakdowns.ts`) needs both at once:
+ *   the tree's node lines and the base every character starts from. Read from the vendored PoB, never typed in.
+ *
  * Usage: npm run build:tree:pob -w @poe2/data
  */
 
@@ -52,6 +56,7 @@ const CLASS_STARTS = {
 }
 
 const tree = pobExport('tree')
+const constants = pobExport('constants')
 
 // --- class starts: PoB's set must equal ours ---------------------------------
 const pobStarts = new Map(tree.nodes.filter((n) => n.type === 'ClassStart').map((n) => [n.id, n]))
@@ -154,6 +159,15 @@ const artifact = {
   /** Flat pairs: [a0, b0, a1, b1, ...]. Undirected, de-duplicated. */
   edges,
   nodes,
+  /** PoB's character base values and quest rewards (tools/pob2/export/constants.lua). */
+  characterBase: {
+    life: constants.life,
+    mana: constants.mana,
+    spirit: constants.spirit,
+    evasion: constants.evasion,
+    resistance: constants.resistance,
+    questRewards: constants.questRewards,
+  },
 }
 
 mkdirSync(outDir, { recursive: true })
@@ -170,6 +184,7 @@ console.log(`ascendancy   ${Object.values(nodes).filter((n) => n.a).length} node
 console.log(`notables     ${kinds(KIND.notable)}`)
 console.log(`keystones    ${kinds(KIND.keystone)}`)
 console.log(`jewels       ${kinds(KIND.jewel)}`)
+console.log(`base         ${artifact.characterBase.questRewards.length} quest rewards; life ${constants.life.perLevel}/level + ${constants.life.base}`)
 console.log(`extent       x ${minX}..${maxX}  y ${minY}..${maxY}`)
 console.log(`size         ${(json.length / 1024).toFixed(0)} KB raw · ${(gzipSync(json, { level: 9 }).length / 1024).toFixed(0)} KB gzipped`)
 console.log(`written      ${outPath}`)

@@ -56,6 +56,30 @@ export interface PassiveTreeData {
   /** Flat undirected pairs: [a0, b0, a1, b1, ...]. */
   edges: number[]
   nodes: Record<string, TreeNodeRaw>
+  /** PoB's character base values and quest rewards (CP-5). Absent from older tree data. */
+  characterBase?: CharacterBase
+}
+
+/** One quest reward as PoB's Config tab offers it: a `stat` defaults on, `options` default to nothing. */
+export interface QuestReward {
+  /** PoB's config input name (`quest` + description + area + info). */
+  key: string
+  /** "Act 4: Halls Of The Dead", as PoB names the source. */
+  label: string
+  stat?: string
+  options?: string[]
+}
+
+/** What every character starts from in PoB, before any item, passive or quest (`tools/pob2/export/constants.lua`). */
+export interface CharacterBase {
+  /** Life = perLevel x level + base, plus perStrength x Strength. */
+  life: { perLevel: number; base: number; perStrength: number }
+  mana: { perLevel: number; base: number; perIntelligence: number }
+  spirit: { base: number }
+  evasion: { base: number }
+  /** Elemental resistances start at the config's penalty (`resistancePenalty`, else `penaltyDefault`); chaos at `chaosBase`. */
+  resistance: { penaltyDefault: number; chaosBase: number; max: number }
+  questRewards: QuestReward[]
 }
 
 export interface Extent {
@@ -101,6 +125,8 @@ export class PassiveTree {
   readonly treeName: string
   readonly ascendancies: string[]
   readonly classStarts: Map<number, string>
+  /** Null for tree data built before CP-5. */
+  readonly characterBase: CharacterBase | null
 
   constructor(data: PassiveTreeData) {
     for (const [key, raw] of Object.entries(data.nodes ?? {})) {
@@ -125,6 +151,7 @@ export class PassiveTree {
     this.treeName = data.treeName
     this.ascendancies = data.ascendancies ?? []
     this.classStarts = new Map(Object.entries(data.classStarts ?? {}).map(([k, v]) => [Number(k), v]))
+    this.characterBase = data.characterBase ?? null
   }
 
   get size(): number {

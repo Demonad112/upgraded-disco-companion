@@ -28,6 +28,7 @@ import { readPlayerStats, readPobSnapshotFromCode } from './pob/export.js'
 import { describeStaleExport, staleExport, type PobRecomputed, type StaleExport } from './pob/stale.js'
 import { readPobConfig, type PobConfig } from './pob/config.js'
 import { pobCodeGaps, type PobGap } from './pob/analyze.js'
+import { codeBreakdowns, type CodeBreakdowns } from './pob/code-breakdowns.js'
 import { snapshotItems } from './pob/items.js'
 import { readPobMainSkill } from './pob/main-skill.js'
 import { inactiveSetFromPob, readPobSkillGroups, type PobSkillGroup } from './pob/skill-groups.js'
@@ -55,7 +56,7 @@ export type AnalysisSource = 'poe.ninja' | 'pob-export'
 
 export interface Analysis {
   identity: CharacterIdentity
-  /** Which source the figures were read from. A code has no name, account, league, items or breakdowns. */
+  /** Which source the figures were read from. A code has no name, account or league; its breakdowns are read from its lines (CP-1). */
   source: AnalysisSource
   /** What this source cannot answer, stated rather than filled in. Empty for poe.ninja. */
   sourceGaps: PobGap[]
@@ -210,7 +211,8 @@ export interface AnalyzeOptions {
   ladder?: LadderSummary | null
   /**
    * `pob-export` when the model came from `pobToCharModel`. Its attached export is then the
-   * source itself, so it is read for config and skill groups but never reconciled against.
+   * source itself, so it is read for config and skill groups, and with `tree` for per-stat breakdowns read from its
+   * lines (`pob/code-breakdowns.ts`). It is reconciled only against those lines, never against itself.
    */
   source?: AnalysisSource
   /** The shipped game data version (`readDataVersion` of `version.json`), echoed in `Analysis.stamp`. */
@@ -327,7 +329,7 @@ export async function analyzeCharacter(
   const fromCode = source === 'pob-export'
   const unwrapped = unwrapCharModel(input)
   // A code's items are text; the affix data proves which mods they are (`gear/text-mods.ts`).
-  const model: CharModel = fromCode && options.tiers ? withResolvedMods(unwrapped, options.tiers) : unwrapped
+  let model: CharModel = fromCode && options.tiers ? withResolvedMods(unwrapped, options.tiers) : unwrapped
   const warnings: string[] = []
 
   let pobStats: Record<string, number> | null = null
@@ -337,9 +339,12 @@ export async function analyzeCharacter(
   let pobMinionStats: Record<string, number> | null = null
   let stale: StaleExport | null = null
   let unmappedSlots: string[] = []
+  let fromCodeLines: CodeBreakdowns | null = null
   if (model.pathOfBuildingExport) {
     try {
       const snapshot = await readPobSnapshotFromCode(model.pathOfBuildingExport)
+      // CP-1: a code's per-stat breakdowns, read from its own lines and checked against its PlayerStats.
+      if (fromCode && options.tree) fromCodeLines = codeBreakdowns(snapshot, model, options.tree)
       pobStats = readPlayerStats(snapshot)
       exportMain = readPobMainSkill(snapshot)?.name ?? null
       pobConfig = readPobConfig(snapshot)
@@ -355,6 +360,10 @@ export async function analyzeCharacter(
     }
   }
 
+  // A copy: the caller's model is never written to.
+  if (fromCodeLines) model = { ...model, breakdowns: fromCodeLines.breakdowns }
+  const unreproduced = fromCodeLines ? fromCodeLines.checks.filter((c) => !c.agrees) : null
+
   const defense = analyzeDefense(model)
   const ninjaDps = analyzeDps(model, { preferredSkill: exportMain })
   const baseDps = fromCode ? asPobDps(ninjaDps) : ninjaDps
@@ -362,7 +371,10 @@ export async function analyzeCharacter(
   const dps: DpsSummary = mainSkill ? { ...baseDps, mainSkill } : baseDps
   const passives = normalizePassives(model)
   const items = normalizeItems(model)
-  const breakdowns = indexBreakdowns(model)
+  const indexed = indexBreakdowns(model)
+  const breakdowns: BreakdownIndex = unreproduced
+    ? { ...indexed, unreproduced: new Map(unreproduced.map((c) => [c.stat, c.reason ?? ''])) }
+    : indexed
 
   // Keystone names live in the tree data, so without it nothing can be
   // resolved. Report the neutral result rather than a guess: an uncorrected
@@ -386,8 +398,14 @@ export async function analyzeCharacter(
     )
   }
 
-  // A converted code would only be compared with itself.
-  const reconciliation = pobStats && !fromCode ? reconcile(model, pobStats, { pobMainSkill: exportMain }) : null
+  // A code is compared with its own lines (its breakdown, when read), never with itself.
+  const reconciliation = !pobStats
+    ? null
+    : !fromCode
+      ? reconcile(model, pobStats, { pobMainSkill: exportMain })
+      : fromCodeLines
+        ? reconcile(model, pobStats, { codeChecks: fromCodeLines.checks })
+        : null
   const dpsAgrees = pobDpsAgreement(reconciliation)
 
   const analysis: Analysis = {
@@ -400,7 +418,7 @@ export async function analyzeCharacter(
             (n, it) => n + (it.itemData.textOnlyMods?.length ?? 0),
             0,
           ),
-        })
+        }, unreproduced?.map((c) => c.label))
       : [],
     identity: {
       name: model.name ?? '',
@@ -470,7 +488,9 @@ export async function analyzeCharacter(
     }
     if (vsOwn > 0) {
       warnings.push(
-        `${vsOwn} stat total${vsOwn === 1 ? '' : 's'} do${vsOwn === 1 ? 'es' : ''} not match poe.ninja’s own breakdown arithmetic. See the reconciliation report.`,
+        fromCode
+          ? `${vsOwn} stat total${vsOwn === 1 ? '' : 's'} in the code ${vsOwn === 1 ? 'isn’t' : 'aren’t'} reproduced by its own item, passive, quest and base lines, so no item is credited with a share. See the reconciliation report.`
+          : `${vsOwn} stat total${vsOwn === 1 ? '' : 's'} do${vsOwn === 1 ? 'es' : ''} not match poe.ninja’s own breakdown arithmetic. See the reconciliation report.`,
       )
     }
   }
