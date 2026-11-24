@@ -9,6 +9,12 @@ test('core test change runs core checks once, no web build', () => {
   assert.ok(!c.includes('npm run test -w @poe2/core'));
   assert.ok(!c.includes('npm run build -w @poe2/web'));
 });
+test('core lint runs with --if-present: core has no lint script', () => {
+  const c = plan(['packages/core/test/a.test.ts']);
+  assert.ok(c.includes('npm run lint -w @poe2/core --if-present'));
+  assert.ok(!c.includes('npm run lint -w @poe2/core'));
+});
+
 test('core src change adds web tests, build and route weight', () => {
   const c = plan(['packages/core/src/x.ts']);
   assert.ok(c.includes('npm run test -w @poe2/web') && c.includes('node scripts/route-weight.mjs'));
