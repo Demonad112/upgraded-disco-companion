@@ -2,7 +2,7 @@
 
 ## Layout
 
-npm workspaces (`packages/*`, `apps/*`), Node >=22, TypeScript strict. `packages/core` is pure (no I/O; `fetch` is injected); `packages/data/generated/` is generated (rebuild with `npm run build:<name> -w @poe2/data`, see `packages/data/PROVENANCE.md`); `services/ninja-proxy` is **not a workspace** (own `package.json`, tested separately). `vendor/pob2/` is a byte-identical copy of the PoB2 fork's calc files (written only by `npm run pob2:sync`, verified by `npm run pob2:verify`; never edit it, never Read its `src/Data` or `src/TreeData`, use Grep; see `docs/POB2-SYNC.md`). `tools/pob2/` holds our own Lua (headless snapshot runner, busted specs, data exporters in `tools/pob2/export/`; `npm run build:pob -w @poe2/data` rebuilds the generated data from them, no `POB2_DIR`).
+npm workspaces (`packages/*`, `apps/*`), Node >=22, TypeScript strict. `packages/core` is pure (no I/O; `fetch` is injected); `packages/data/generated/` is generated (rebuild with `npm run build:<name> -w @poe2/data`, see `packages/data/PROVENANCE.md`); `services/ninja-proxy` is **not a workspace** (own `package.json`, tested separately). `vendor/pob2/` is a byte-identical copy of the PoB2 fork's calc files (written only by `npm run pob2:sync`, verified by `npm run pob2:verify`; never edit it, prefer Grep for its `src/Data` and `src/TreeData`; see `docs/POB2-SYNC.md`). `tools/pob2/` holds our own Lua (headless snapshot runner, busted specs, data exporters in `tools/pob2/export/`; `npm run build:pob -w @poe2/data` rebuilds the generated data from them, no `POB2_DIR`).
 
 ## Commands
 
@@ -58,8 +58,8 @@ PreToolUse hook: `block-generated-edits.mjs` denies Edit/Write on generated data
   needs a core subpath export (`packages/*` policy, owner). If the growth is the feature itself, raise the budget in
   `scripts/route-weight.mjs` to the measured size rounded up to the next 2,000 B, cause in a comment and the PR.
 - **Context.** Keep it for what matters: batch independent tool calls; grep before reading and read whole files only
-  when editing them; don't read `packages/data/generated/**` or the large fixtures (denied in settings; query them
-  with `node -e` instead); cap listings, never errors or failing tests. Hand off at a task boundary.
+  when editing them; query `packages/data/generated/**` and the large fixtures with `node -e` when you
+  need only part of them; cap listings, never errors or failing tests. Hand off at a task boundary.
 - Don't sit watching PRs or CI: use a scheduled check-in or PR Auto-fix and come back later, but every session ends with its PR ready and a scheduled check-in that confirms the required checks are green.
 - Visual work: before opening the PR, ask whether to run a screenshot check; if yes, post the 390 px and 1440 px
   Playwright screenshots in chat (images stay out of git).
