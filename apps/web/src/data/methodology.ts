@@ -47,6 +47,12 @@ export const METHODOLOGY_SECTIONS: MethodologySection[] = [
     summary: 'Which figures are poe.ninja’s own and which are arithmetic done in this app.',
   },
   {
+    id: 'pob-config',
+    label: 'PoB config',
+    title: 'Match poe.ninja’s PoB config',
+    summary: 'The Config poe.ninja applies before it computes a build, so a PoB2-app code reads like poe.ninja’s.',
+  },
+  {
     id: 'farm-planner',
     label: 'Farm planner',
     title: 'How the farm planner scores a map',

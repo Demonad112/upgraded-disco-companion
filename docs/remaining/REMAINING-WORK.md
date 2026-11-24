@@ -69,7 +69,7 @@ Owner answers (2026-11-22, applied; do not re-ask):
 | PB-3 | B3: `PobSnapshot` reader, oracle test, fixture swap to the owner's main code | L | pob2-alignment | Opus, wave 3; closes NP1-6b's weapon-set half. Owner answer (this session): the three poe.ninja captures stay until B5 (51 of 103 core test files and the e2e suite load them; gear tests need items) | in review (this PR). Rec 1 done: a code is inflated and parsed once (`readPobSnapshotFromCode`, 2-entry cache). `perf-import` local (mobile, 4x CPU, fixture proxy, 5 runs, median): main 3,208 ms, branch before 3,122, after 2,945; the parse is 1-2 ms in core, and CI's 5,010 ms was not reproduced locally. Rec 5 is PB-3a |
 | PB-3b | `scripts/core-weight.mjs`: esbuild-bundle what the character page imports from core, brotli it, compare to a baseline in seconds instead of a full Next build | S | PB-3 rec 2 | Recommended: build it only if budget overruns recur | parked |
 | PB-3d | Process: batches of about one PR of change, or run the gate in a cheap subagent that reports only pass/fail and failures, to avoid mid-batch context compaction | S | PB-3 rec 4 | Recommended: yes | open |
-| PB-6 | B6: analysis on `PobSnapshot`, PoB-only import UX | M | pob2-alignment | Sonnet, wave 5; import-UX half moved to CP-3 | open (core half only) |
+| PB-6 | B6: analysis on `PobSnapshot`, PoB-only import UX | M | pob2-alignment | Sonnet, wave 5; import-UX half done in CP-3 | open (core half only) |
 | PB-7 | B7: one-command `pob2:bump`, league-rollover runbook | S | pob2-alignment | Haiku, wave 6; merges first of B7/B8 | open |
 | PB-8 | B8: gap audit → `docs/plans/next-analysis.md` | S | pob2-alignment | Sonnet, wave 6; docs only; includes GF1-8 | open |
 | PB-9 | B9: browser engine (PoB2 Lua in WASM) and `pob-sim` Δ | L | pob2-browser-engine | Opus; owner chose Option A 2026-11-24, no hosting | open |
@@ -94,7 +94,7 @@ Plan: `docs/plans/code-source-parity.md`. Run order: CP-1 → CP-2 → CP-3. Ref
 | CP-1 | Core: breakdowns read from the code (items, tree, quests, base), verified with `verifyTotal`; reconcile for codes; attribution gap dropped for verified stats | L | CP plan | Opus, wave 1; golden `main-ninja` | done (PR #240): Life, ES, Mana, Spirit, Armour, Evasion verify on main-ninja (and on `forbidden-rites/main`); the 4 resistances don't (Mageblood legacies unread), flagged and kept out of attribution |
 | CP-2 | Core: `allGems` from `<Skill>` groups; PB-12 mod-id fixes; empty-rune finding; per-use / continuous DPS labels; decode-completeness test | M | CP plan | Sonnet, wave 2 | done: 18 groups / 79 gems on main-ninja; amulet capacity 4/2; Blight Weaver's 2 empty runes a finding with no ΔDPS |
 | CP-7 | CI-only all-groups oracle from PoB's engine: `groups.lua`, `run.mjs --groups`, `*.groups.oracle.json` | M | CP plan | Opus | done: main-ninja equals the reference (18 groups, 21 rows); the site never shows it (B9) |
-| CP-3 | Web: paste box for the poe.ninja code, optional character name, e2e on main-ninja | M | CP plan | Sonnet, wave 3; budget measured | open (waits CP-2) |
+| CP-3 | Web: paste box for the poe.ninja code, optional character name, e2e on main-ninja | M | CP plan | Sonnet, wave 3; budget measured | done (CP-3 PR) |
 
 ## PoB2 browser engine (E1..E5)
 Plan: `docs/plans/pob2-browser-engine.md` (batch log inside); this is B9 (PB-9). Owner rows BE-1, BE-2 are in § Owner queue.

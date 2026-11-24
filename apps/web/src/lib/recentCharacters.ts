@@ -10,9 +10,12 @@ export interface TopFix {
   tab: string
 }
 
-/** A character imported from a poe.ninja URL, so it can be re-imported in one tap. */
+/** A character imported from a poe.ninja URL or a named PoB code, so it can be re-opened in one tap. */
 export interface RecentCharacter {
+  /** The poe.ninja profile URL; empty for a pasted code. */
   url: string
+  /** The pasted PoB code, kept so it re-opens without pasting again (CP-3); absent for a URL import. */
+  code?: string
   /** `snapshotKey(identity)`, to find this character's history snapshots. */
   key: string
   name: string
@@ -37,6 +40,14 @@ const MAX_RECENT = 5
  */
 export function importPath(url: string): string {
   return `/character/?import=${encodeURIComponent(url)}`
+}
+
+/** The account a named, pasted PoB code is saved under (a code carries none), so history keys it like an import. */
+export const CODE_ACCOUNT = 'pob-code'
+
+/** The in-app path that re-opens a recent character: the `?import=` URL, or `?recent=<key>` for a saved code. */
+export function recentPath(r: Pick<RecentCharacter, 'url' | 'key' | 'code'>): string {
+  return r.code ? `/character/?recent=${encodeURIComponent(r.key)}` : importPath(r.url)
 }
 
 /** The absolute, shareable form of `importPath`, base path included. */
@@ -67,7 +78,8 @@ export function recordRecent(entry: RecentCharacter): void {
     if (same && same.url === entry.url && same.key === entry.key && same.level === entry.level && same.grade === entry.grade &&
       same.topFix?.title === entry.topFix?.title)
       return prev
-    return [entry, ...prev.filter((r) => r.url !== entry.url && r.key !== entry.key)].slice(0, MAX_RECENT)
+    // A code row has no URL, so only a real URL (or the key) makes two rows the same character.
+    return [entry, ...prev.filter((r) => !(entry.url && r.url === entry.url) && r.key !== entry.key)].slice(0, MAX_RECENT)
   })
 }
 

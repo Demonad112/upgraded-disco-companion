@@ -1,10 +1,11 @@
 'use client'
 
 import { useRef, useState } from 'react'
+import Link from 'next/link'
 import { NinjaClient, NinjaError, looksLikePobCode, parseProfileUrl } from '@poe2/core'
 import { NINJA_IMPORT_BLOCKED, PROXY_BASE } from '@/lib/proxy'
 import { useLocalStore } from '@/lib/localStore'
-import { recentCharacters } from '@/lib/recentCharacters'
+import { recentCharacters, type RecentCharacter } from '@/lib/recentCharacters'
 import { isOffline } from '@/lib/online'
 import { Button, Input, Segmented, Textarea, tabPanelProps } from './shared/controls'
 
@@ -17,8 +18,11 @@ const IMPORT_METHODS = [
 export type ImportResult =
   /** `url` is set when it came from a poe.ninja profile URL, so it can be re-imported. */
   | { ok: true; kind: 'ninja'; data: unknown; url?: string }
-  /** A Path of Building export code. Fewer stats, all of them real. */
-  | { ok: true; kind: 'pob'; code: string }
+  /**
+   * A Path of Building export code. Fewer stats, all of them real. `name` is the optional character name typed with it:
+   * named, the code is saved to history and recents like an imported character.
+   */
+  | { ok: true; kind: 'pob'; code: string; name?: string }
   | { ok: false; error: string; canPaste: boolean; cancelled?: boolean }
 
 /** Shown while the proxy reports poe.ninja as busy (429/503): `seconds` left before retry `step` of `of`. */
@@ -161,6 +165,11 @@ export async function importProfile(
   }
 }
 
+/** The recents a tab offers: re-importable URLs on the URL tab, saved PoB codes on the paste tab. */
+function recentsFor(recents: RecentCharacter[], mode: 'url' | 'paste'): RecentCharacter[] {
+  return recents.filter((r) => (mode === 'paste' ? Boolean(r.code) : Boolean(r.url) && !r.code))
+}
+
 export function ImportBar({
   onResult,
   busy,
@@ -173,6 +182,7 @@ export function ImportBar({
   const [mode, setMode] = useState<'url' | 'paste'>(NINJA_IMPORT_BLOCKED ? 'paste' : 'url')
   const [url, setUrl] = useState('')
   const [paste, setPaste] = useState('')
+  const [name, setName] = useState('')
   const [error, setError] = useState<string | null>(null)
   // A failed URL import that a pasted code can stand in for (blocked, busy, offline): offer the paste box in one click.
   const [canPaste, setCanPaste] = useState(false)
@@ -232,14 +242,15 @@ export function ImportBar({
     setError(null)
     const text = paste.trim()
     if (!text) {
-      setError('Paste a character model JSON or a Path of Building export code.')
+      setError("Paste the PoB code from poe.ninja's character page, or a Path of Building export code.")
       return
     }
     // A Path of Building code is a second real source, not a lesser one: it
     // carries 106 computed PlayerStat values including every maximum-hit-taken
     // figure. This used to be rejected on the false claim that it carried none.
     if (looksLikePobCode(text)) {
-      onResult({ ok: true, kind: 'pob', code: text })
+      const named = name.trim()
+      onResult({ ok: true, kind: 'pob', code: text, ...(named ? { name: named } : {}) })
       return
     }
 
@@ -289,18 +300,37 @@ export function ImportBar({
           </form>
         ) : (
           <form onSubmit={importPaste} className="flex flex-col gap-2">
+            <label htmlFor="import-paste" className="text-sm text-ink">
+              Paste the PoB code from poe.ninja&apos;s character page
+            </label>
             <Textarea
               value={paste}
               onChange={(e) => setPaste(e.target.value)}
               id="import-paste"
               rows={4}
-              placeholder="Paste a Path of Building export code, or a character model JSON"
+              placeholder="Path of Building code, or a character model JSON"
               aria-label="Character model JSON or Path of Building code"
               aria-describedby="import-paste-hint"
               className="font-mono"
             />
             <p id="import-paste-hint" className="text-xs leading-relaxed text-ink-dim">
-              In Path of Building, open Import/Export Build, press Generate, then Copy.
+              From the PoB2 app? Set Config to{' '}
+              <Link href="/methodology#pob-config" className="text-accent underline underline-offset-2">
+                poe.ninja&apos;s rules
+              </Link>{' '}
+              before Generate.
+            </p>
+            <Input
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Character name (optional)"
+              aria-label="Character name (optional)"
+              aria-describedby="import-name-hint"
+              autoComplete="off"
+              maxLength={40}
+            />
+            <p id="import-name-hint" className="text-xs leading-relaxed text-ink-dim">
+              {name.trim() ? 'Saved to your history under this name.' : "Add a name to save it to history; without one it won't be saved."}
             </p>
             <Button type="submit" variant="primary" disabled={busy} className="self-start">
               Analyse pasted data
@@ -314,16 +344,18 @@ export function ImportBar({
           </p>
         ) : null}
 
-        {mode === 'url' && recents.length > 0 ? (
+        {recentsFor(recents, mode).length > 0 ? (
           <div className="mt-2 flex flex-wrap items-center gap-1.5 text-xs">
             <span className="text-ink-mute">Recent:</span>
-            {recents.map((r) => (
+            {recentsFor(recents, mode).map((r) => (
               <Button
-                key={r.url}
+                key={r.key}
                 size="sm"
                 disabled={busy}
-                onClick={() => void runImport(r.url)}
-                title={r.url}
+                onClick={() =>
+                  r.code ? onResult({ ok: true, kind: 'pob', code: r.code, name: r.name }) : void runImport(r.url)
+                }
+                title={r.code ? `${r.name} (PoB code)` : r.url}
                 className="font-medium text-ink-dim"
               >
                 {r.name}

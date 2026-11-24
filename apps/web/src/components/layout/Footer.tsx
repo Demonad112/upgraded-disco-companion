@@ -84,11 +84,11 @@ export function Footer() {
               </div>
             </dl>
             <p className="mt-2">
-              Character numbers come from{" "}
+              Character numbers come from your Path of Building code, as{" "}
               <a href="https://poe.ninja/poe2" className="footer-link inline" target="_blank" rel="noopener noreferrer">
                 poe.ninja
-              </a>
-              .
+              </a>{" "}
+              exports it.
             </p>
           </section>
 

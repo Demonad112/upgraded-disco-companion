@@ -4,7 +4,7 @@ import Link from "next/link";
 import type { CSSProperties, ReactNode } from "react";
 import type { CharacterSnapshot } from "@poe2/core";
 import { usePersistedState } from "@/hooks/usePersistedState";
-import { importPath, recentCharacters } from "@/lib/recentCharacters";
+import { recentCharacters, recentPath } from "@/lib/recentCharacters";
 import { useLocalStore } from "@/lib/localStore";
 import { ResName } from "@/components/shared/ResName";
 
@@ -73,7 +73,7 @@ export function LastCharacterCard() {
   );
   const recent = recents.find((r) => r.key === latest.key);
   const name = recent?.name ?? latest.key.split("/").pop() ?? latest.key;
-  const href = recent ? importPath(recent.url) : "/character";
+  const href = recent ? recentPath(recent) : "/character";
 
   // A figure the import did not report is null and is not shown (never as 0).
   // Rows saved before null existed hold 0 for "unknown", so 0 is hidden too.
@@ -98,7 +98,7 @@ export function LastCharacterCard() {
       actions={
         <>
           <Link href={href} className="btn btn-secondary btn-sm text-accent">
-            {recent ? "Re-import and analyse" : "Open character page"} →
+            {recent?.code ? "Open and analyse" : recent ? "Re-import and analyse" : "Open character page"} →
           </Link>
           {previous ? (
             <span className="text-xs text-ink-mute">▲▼ change since the import before, {ago(previous.at)}</span>
