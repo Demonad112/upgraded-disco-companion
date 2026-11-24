@@ -38,10 +38,10 @@ export const NINJA_IMPORT_BLOCKED = true
 
 /** The character page's one-line prompt, which names the import that works today. */
 export const IMPORT_PROMPT = NINJA_IMPORT_BLOCKED
-  ? 'Paste your Path of Building code and see the top things to fix first.'
+  ? "Paste the PoB code from poe.ninja's character page and see the top things to fix first."
   : 'Paste your poe.ninja character and see the top things to fix first.'
 
 /** The empty state under the import box. */
 export const EMPTY_PROMPT = NINJA_IMPORT_BLOCKED
-  ? 'Paste a Path of Building code above and press Analyse pasted data.'
+  ? 'Paste a PoB code above and press Analyse pasted data.'
   : 'Paste a poe.ninja URL above and press Analyse.'

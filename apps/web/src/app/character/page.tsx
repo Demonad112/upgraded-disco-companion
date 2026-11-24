@@ -13,10 +13,10 @@ import {
 import { ImportBar, importProfile, sharedProfileUrl, type ImportResult } from '@/components/ImportBar'
 import { Skeleton } from '@/components/Skeleton'
 import { useCharacterHistory } from '@/lib/useCharacterHistory'
-import { recordRecent, topFixOf } from '@/lib/recentCharacters'
+import { CODE_ACCOUNT, recentCharacters, recordRecent, topFixOf } from '@/lib/recentCharacters'
 import { gradeText } from '@/lib/grade'
 import { useLadder } from '@/lib/useLadder'
-import { EMPTY_PROMPT, IMPORT_PROMPT, PROXY_BASE } from '@/lib/proxy'
+import { EMPTY_PROMPT, IMPORT_PROMPT, NINJA_IMPORT_BLOCKED, PROXY_BASE } from '@/lib/proxy'
 import { PageHeader } from '@/components/layout/PageHeader'
 import { analysisNeedsDisplay, useModTiers } from '@/lib/useModTiers'
 import { useSupportCatalog } from '@/lib/useSupportCatalog'
@@ -53,6 +53,8 @@ export default function Home() {
   const [error, setError] = useState<string | null>(null)
   // The profile URL of the current import, when it came from one.
   const [sourceUrl, setSourceUrl] = useState<string | null>(null)
+  // The pasted code behind a named code import, kept for its recents row so it re-opens without pasting again.
+  const [sourceCode, setSourceCode] = useState<string | null>(null)
   // Whether "Load another character" is open while the import box is collapsed.
   const [boxOpen, setBoxOpen] = useState(false)
   // An import starting closes the box, so the skeleton sits where the panels will land (no shift when they do).
@@ -182,11 +184,12 @@ export default function Home() {
   // visitor who left in that gap got a recents chip (and a Compare candidate)
   // with no snapshot behind it, and no "Last character" card on the home page.
   useEffect(() => {
-    if (!sourceUrl || !settled) return
+    if ((!sourceUrl && !sourceCode) || !settled) return
     const { identity } = settled
     if (!identity.account || !identity.name) return
     recordRecent({
-      url: sourceUrl,
+      url: sourceUrl ?? '',
+      ...(sourceCode ? { code: sourceCode } : {}),
       key: snapshotKey(identity),
       name: identity.name,
       className: identity.className ?? null,
@@ -195,7 +198,7 @@ export default function Home() {
       topFix: topFixOf(settled.recommendations.recommendations),
       at: new Date().toISOString(),
     })
-  }, [sourceUrl, settled])
+  }, [sourceUrl, sourceCode, settled])
 
   const handleResult = useCallback(async (r: ImportResult) => {
     if (!r.ok) {
@@ -207,9 +210,13 @@ export default function Home() {
     setError(null)
     setImportBusy(true)
     setSourceUrl(r.kind === 'ninja' ? (r.url ?? null) : null)
+    // A named code is saved like an imported character (CP-3); unnamed, it stays out of history and recents.
+    const named = r.kind === 'pob' && r.name ? r.name : null
+    setSourceCode(named && r.kind === 'pob' ? r.code : null)
     try {
       // A code decodes here (it throws only when it will not decode); everything after is the same for both sources.
-      const next = r.kind === 'pob' ? await pobToCharModel(r.code) : r.data
+      const decoded = r.kind === 'pob' ? await pobToCharModel(r.code) : r.data
+      const next = named ? { ...(decoded as object), name: named, account: CODE_ACCOUNT } : decoded
       setAnalysis(null)
       setStage('card')
       setGrace(false)
@@ -226,6 +233,16 @@ export default function Home() {
   // `?import=<poe.ninja URL>` — from the home page's "Re-import" link, a
   // reload, or a shared link. Read here, once per visit to the page.
   useEffect(() => {
+    // `?recent=<key>`: a saved, named PoB code from the home page or the companion (CP-3).
+    const recentKey = new URLSearchParams(window.location.search).get('recent')
+    const saved = recentKey ? recentCharacters.get().find((r) => r.key === recentKey && r.code) : undefined
+    if (saved?.code) {
+      const code = saved.code
+      void loadResults()
+      // After this effect, like the `?import=` fetch below: handleResult sets state.
+      void Promise.resolve().then(() => handleResult({ ok: true, kind: 'pob', code, name: saved.name }))
+      return
+    }
     // `?url=` / `?text=` come from the PWA share target (Android, Samsung); iOS has none.
     const target = new URLSearchParams(window.location.search).get('import') ?? sharedProfileUrl(window.location.search)
     if (!target) return
@@ -259,7 +276,7 @@ export default function Home() {
           eyebrow="Character import"
           title="Character"
           accent="Analysis"
-          source="poe.ninja"
+          source={NINJA_IMPORT_BLOCKED ? 'PoB code' : 'poe.ninja'}
           description={IMPORT_PROMPT}
         />
       )}
@@ -333,7 +350,7 @@ export default function Home() {
       </div>
 
       <footer className="mt-12 border-t border-line pt-5 text-[length:var(--fs-11)] leading-relaxed text-ink-mute">
-        Character data from poe.ninja or your Path of Building code. Path of Exile 2 is a trademark of Grinding Gear Games; this is an unofficial
+        Character data from your Path of Building code (poe.ninja&apos;s character page exports one; its URL import is paused). Path of Exile 2 is a trademark of Grinding Gear Games; this is an unofficial
         fan-made tool.
       </footer>
     </>

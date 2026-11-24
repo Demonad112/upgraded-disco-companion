@@ -11,7 +11,7 @@ import { BASE_PATH } from '@/lib/basePath'
 import { hopKind, next, nodeFor, sameRoute, type Choice, type NodeContext, type NodeId } from '@/lib/companionTree'
 import { CURRENT_PATCH } from '@/lib/constants'
 import { isIdle, subscribeIdle } from '@/lib/idle'
-import { importPath, recentCharacters } from '@/lib/recentCharacters'
+import { recentCharacters, recentPath } from '@/lib/recentCharacters'
 
 /** Set once the visitor has opened the tip, so the hop stops for this session. Keep it module-private: it is the
  * companion chunk's marker in `scripts/route-weight.mjs` (CHUNK_CAPS). */
@@ -130,7 +130,7 @@ export default function Companion() {
       ...ctx,
       recent: {
         name: recent.name,
-        href: importPath(recent.url),
+        href: recentPath(recent),
         topFix: recent.topFix ?? null,
         stalePatch: stale && was ? { was, now: CURRENT_PATCH } : null,
       },

@@ -11,7 +11,14 @@ export const mainPayloadJson: string = execFileSync(process.execPath, [resolve('
   maxBuffer: 64 * 1024 * 1024,
 })
 
+/** The same character with Hollow Resonance (group 4) as main skill, so the DPS row has a per-use line (CP-2). */
+export const useRatesPayloadJson = (): string =>
+  execFileSync(process.execPath, [resolve('../../scripts/lib/main-payload.mjs'), '--use-rates'], {
+    encoding: 'utf8',
+    maxBuffer: 64 * 1024 * 1024,
+  })
+
 export const mainPayload = JSON.parse(mainPayloadJson) as { type: string; charModel: Record<string, unknown> & { pathOfBuildingExport: string } }
 
-/** The main build's PoB code, as pasted into the paste box. */
-export const mainCode: string = readFileSync(resolve('../../packages/core/test/pob2/forbidden-rites/main.code.txt'), 'utf8').trim()
+/** The reference character's PoB code (main-ninja, poe.ninja's export; CP-6), as pasted into the paste box. */
+export const mainCode: string = readFileSync(resolve('../../packages/core/test/ninja-legacy/main-ninja.code.txt'), 'utf8').trim()

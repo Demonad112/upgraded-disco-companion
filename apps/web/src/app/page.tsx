@@ -65,7 +65,7 @@ function toolCards(): { href: string; title: string; purpose: string; icon: Reac
     {
       href: "/character",
       title: "Character Import",
-      purpose: "Your character's top fixes, from your poe.ninja profile.",
+      purpose: "Your character's top fixes, from its PoB code on poe.ninja.",
       icon: ICONS.character,
       status: { tool: "character" },
     },

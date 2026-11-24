@@ -1,4 +1,4 @@
-import { mainCode } from './main-payload'
+import { mainCode, useRatesPayloadJson } from './main-payload'
 import { PROFILE_URL, expect, openTab, test } from './fixtures'
 
 const importUrl = `character/?import=${encodeURIComponent(PROFILE_URL)}`
@@ -78,6 +78,52 @@ test('a blocked import offers the paste box in one click, and a PoB code pasted 
   await page.getByRole('button', { name: 'Analyse pasted data' }).click()
   await expect(page.getByRole('heading', { name: 'Path of Building build' })).toBeVisible({ timeout: 30_000 })
   await expect(page.locator('.bc-top')).toContainText('From a Path of Building code')
+})
+
+test('the poe.ninja PoB code pasted with a name: six tabs, holding-up rows, named resist fix, gear tiers, empty runes', async ({ page }) => {
+  await page.goto('character/')
+  await expect(page.getByText("Paste the PoB code from poe.ninja's character page", { exact: true })).toBeVisible()
+  await page.getByLabel('Character model JSON or Path of Building code').fill(mainCode)
+  await page.getByLabel('Character name (optional)').fill('Main')
+  await page.getByRole('button', { name: 'Analyse pasted data' }).click()
+  await expect(page.getByRole('heading', { name: /Main/ }).first()).toBeVisible({ timeout: 30_000 })
+
+  // A resistance fix names the item to change (main-ninja is 22% short on chaos).
+  const fixes = page.locator('[data-top-fixes]:not([data-pending])')
+  await expect(fixes.locator('li').filter({ hasText: 'Chaos resistance' }).first()).toContainText(/ on (Morbid Mantle|[A-Z]\w+ \w+)/, { timeout: 30_000 })
+  // The empty-rune finding (CP-2): Blight Weaver has 2 sockets with no rune.
+  await fixes.getByRole('button', { name: /^Show all/ }).click()
+  await expect(fixes.getByText('Fill the 2 empty rune sockets in Blight Weaver.').first()).toBeVisible()
+
+  for (const id of PANEL_IDS) await openTab(page, id)
+
+  await openTab(page, 'gear')
+  await expect(page.locator('section#gear .gline-tier[data-t]').first()).toBeVisible({ timeout: 30_000 })
+
+  await openTab(page, 'advanced')
+  const holding = page.locator('#attribution')
+  await expect(holding).toContainText(/[1-9]\d* items? attributed/, { timeout: 30_000 })
+  await holding.locator('summary').first().click()
+  await expect(holding.locator('ul > li').first()).toBeVisible()
+
+  // Named, it is saved like an imported character: a recents chip on the paste tab re-opens it.
+  await page.getByText('Load another character').click()
+  await expect(page.getByRole('button', { name: /^Main/ })).toBeVisible({ timeout: 30_000 })
+})
+
+test('the per-use DPS line fits a 390 px screen when a skill has use rates (CP-2)', async ({ page }) => {
+  const body = useRatesPayloadJson()
+  await page.route('**/api/character**', (route) => route.fulfill({ status: 200, contentType: 'application/json', body }))
+  await page.setViewportSize({ width: 390, height: 844 })
+  await page.goto(importUrl)
+  await expect(page.getByRole('heading', { name: /Main/ }).first()).toBeVisible({ timeout: 30_000 })
+  await openTab(page, 'damage')
+  const line = page.getByText(/^33,332 per use · 69,531 if used continuously$/)
+  await expect(line).toBeVisible({ timeout: 15_000 })
+  const box = (await line.boundingBox())!
+  expect(box.x).toBeGreaterThanOrEqual(0)
+  expect(box.x + box.width).toBeLessThanOrEqual(390)
+  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(390)
 })
 
 test('gear lists only what can be improved, each with a weighted-sum trade search', async ({ page }) => {
@@ -214,7 +260,7 @@ test('phone first screen: the Top fixes heading sits above the fold after import
 
 test('the example button has a verb in its name and fills the URL box', async ({ page }) => {
   await page.goto('character/')
-  await expect(page.getByText('Paste a Path of Building code above and press Analyse pasted data.')).toBeVisible()
+  await expect(page.getByText('Paste a PoB code above and press Analyse pasted data.')).toBeVisible()
   await page.getByRole('tab', { name: 'poe.ninja URL' }).click()
   await page.getByRole('button', { name: /^Use this example: https:\/\/poe\.ninja\// }).click()
   await expect(page.getByRole('textbox').first()).toHaveValue(/^https:\/\/poe\.ninja\/poe2\/profile\//)

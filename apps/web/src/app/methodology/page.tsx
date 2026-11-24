@@ -186,6 +186,27 @@ export default function MethodologyPage() {
           </p>
         </Section>
 
+        <Section id="pob-config">
+          {/* docs/POB-NINJA-CONFIG.md (owner, 2026-11-22); components/ImportBar.tsx links here */}
+          <p>
+            <strong className="text-ink">Best source:</strong> the PoB code on poe.ninja’s character page. poe.ninja has already applied the Config below, so its numbers match what poe.ninja showed.
+          </p>
+          <p>
+            <strong className="text-ink">From the PoB2 app:</strong> set these in Config before Generate, or damage and survival will differ from poe.ninja’s.
+          </p>
+          <Rows
+            rows={[
+              ['Boss', 'Arbiter of Ash. One nearby enemy and one nearby rare or unique. Enemy is bleeding, chilled and ignited.'],
+              ['Flasks', 'Flasks and charms on. “Disable EHP gain on block/suppress” checked.'],
+              ['Charges', 'Power, Frenzy and Endurance at maximum when a skill or item on the build grants them.'],
+              ['Buffs', 'Crit Recently on (unless Resolute Technique), Rage at maximum with a Rage source, and each other buff only when its source is on the build.'],
+              ['Enemy', 'Impaled, Dazed, Blinded and Withered (10). Exposure, Intimidate and weaknesses only with their source.'],
+              ['Been hit', 'Been Hit Recently on, unless your evade chance against the Arbiter is 50% or more.'],
+            ]}
+          />
+          <p>The site reads the code’s own saved Config; it doesn’t change it for you yet.</p>
+        </Section>
+
         <Section id="farm-planner">
           {/* data/farm/tablets-0.5.5.json (rules, weights, sources), lib/farm/* (totals, score, swaps, danger) */}
           <p>

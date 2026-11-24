@@ -25,7 +25,11 @@ export default function AdvancedTab({ analysis: a, tiersState, treeState }: Pane
         <Accordion id="character-notes" title="Ailments and inactive weapon set" summary="Immunities, main-skill note, idle gear">
           <CharacterNotes analysis={a} />
         </Accordion>
-        <Accordion id="passive-tree" title="Passive tree" summary={`${a.passives.counts.passives} points allocated`} lazy>
+        <Accordion id="passive-tree" title="Passive tree" summary={
+            a.passives.counts.passives != null
+              ? `${a.passives.counts.passives} points allocated`
+              : `${a.passives.mainSelectionLength} nodes in the code`
+          } lazy>
           <TreePanel allocation={a.passives} state={treeState} bare />
         </Accordion>
         {a.reconciliation ? (
