@@ -24,6 +24,7 @@
         "TotalMax": 18042.004081991,
         "TotalMin": 6645.7746260368
       },
+      "pobGroup": 1,
       "skill": "Quarterstaff Strike"
     },
     {
@@ -49,6 +50,7 @@
         "TotalMax": 7423.9307947534,
         "TotalMin": 1947.8846655498
       },
+      "pobGroup": 4,
       "skill": "Spear Throw"
     },
     {
@@ -65,6 +67,7 @@
       "activeSkill": 1,
       "enabled": true,
       "group": 3,
+      "pobGroup": 2,
       "skill": "Hollow Focus"
     },
     {
@@ -92,6 +95,7 @@
         "TotalMax": 16990.367338501,
         "TotalMin": 6081.0755584266
       },
+      "pobGroup": 3,
       "skill": "Hollow Resonance"
     },
     {
@@ -117,6 +121,7 @@
         "TotalMax": 7423.9307947534,
         "TotalMin": 1947.8846655498
       },
+      "pobGroup": 4,
       "skill": "Spear Throw"
     },
     {
@@ -143,6 +148,7 @@
         "TotalMax": 6690.2719476093,
         "TotalMin": 2370.0876326809
       },
+      "pobGroup": 5,
       "skill": "Tempest Bell"
     },
     {
@@ -158,6 +164,7 @@
       "activeSkill": 1,
       "enabled": true,
       "group": 7,
+      "pobGroup": 6,
       "skill": "Cast on Critical"
     },
     {
@@ -174,6 +181,7 @@
       "activeSkill": 2,
       "enabled": true,
       "group": 7,
+      "pobGroup": 6,
       "skill": "Profane Ritual"
     },
     {
@@ -189,6 +197,7 @@
       "activeSkill": 1,
       "enabled": true,
       "group": 8,
+      "pobGroup": 7,
       "skill": "Herald of Thunder"
     },
     {
@@ -215,6 +224,7 @@
         "TotalMax": 21285.753833246,
         "TotalMin": 7692.7525788246
       },
+      "pobGroup": 8,
       "skill": "Falling Thunder"
     },
     {
@@ -240,6 +250,7 @@
         "TotalMax": 9419.3563617677,
         "TotalMin": 3351.4728769073
       },
+      "pobGroup": 9,
       "skill": "Whirling Assault"
     },
     {
@@ -255,6 +266,7 @@
       "activeSkill": 1,
       "enabled": true,
       "group": 11,
+      "pobGroup": 10,
       "skill": "Frozen Locus"
     },
     {
@@ -280,6 +292,7 @@
         "TotalMax": 14760.142067086,
         "TotalMin": 5275.0053967472
       },
+      "pobGroup": 11,
       "skill": "Staggering Palm"
     },
     {
@@ -305,6 +318,7 @@
         "TotalMax": 10759.58324683,
         "TotalMin": 3822.044666765
       },
+      "pobGroup": 11,
       "skill": "Projectile"
     },
     {
@@ -320,6 +334,7 @@
       "activeSkill": 1,
       "enabled": true,
       "group": 13,
+      "pobGroup": 12,
       "skill": "Mantra of Destruction"
     },
     {
@@ -344,6 +359,7 @@
         "TotalMax": 0,
         "TotalMin": 0
       },
+      "pobGroup": 13,
       "skill": "Charged Staff"
     },
     {
@@ -369,6 +385,7 @@
         "TotalMax": 6159.7800161773,
         "TotalMin": 2234.6583207959
       },
+      "pobGroup": 13,
       "skill": "Charged Shockwave"
     },
     {
@@ -395,6 +412,7 @@
         "TotalMax": 25781.140839614,
         "TotalMin": 9396.7587900283
       },
+      "pobGroup": 14,
       "skill": "Storm Wave"
     },
     {
@@ -411,6 +429,7 @@
       "activeSkill": 1,
       "enabled": true,
       "group": 16,
+      "pobGroup": 2,
       "skill": "Hollow Focus"
     },
     {
@@ -438,32 +457,34 @@
         "TotalMax": 16990.367338501,
         "TotalMin": 6081.0755584266
       },
+      "pobGroup": 3,
       "skill": "Hollow Resonance"
     },
     {
-      "AverageDamage": 7637.72386071,
-      "CombinedDPS": 18351.811098018,
+      "AverageDamage": 9300.6422021255,
+      "CombinedDPS": 15643.698799368,
       "CritChance": 23.9382,
       "CritMultiplier": 4.8,
       "HitChance": 99,
-      "IgniteDPS": 2.9432950488808,
+      "IgniteDPS": 2.9948208972668,
       "ManaCost": 0,
-      "Speed": 2.4024,
-      "TotalDPS": 18348.86780297,
-      "TotalDotDPS": 2.9432950488808,
+      "Speed": 1.68168,
+      "TotalDPS": 15640.70397847,
+      "TotalDotDPS": 2.9948208972668,
       "activeSkill": 1,
       "enabled": true,
       "group": 18,
       "mainHand": {
         "ChaosHitAverage": 0,
-        "ColdHitAverage": 1027,
-        "FireHitAverage": 186,
-        "LightningHitAverage": 1727.545,
-        "PhysicalHitAverage": 882.30300550175,
-        "TotalMax": 6059.7386636657,
-        "TotalMin": 1585.9573473378
+        "ColdHitAverage": 1245.04,
+        "FireHitAverage": 224.25,
+        "LightningHitAverage": 2116.27,
+        "PhysicalHitAverage": 1100.3477301516,
+        "TotalMax": 7423.9307947534,
+        "TotalMin": 1947.8846655498
       },
-      "skill": "Spear Stab"
+      "pobGroup": 4,
+      "skill": "Spear Throw"
     }
   ]
 }

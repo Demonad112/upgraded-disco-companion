@@ -1,5 +1,5 @@
 -- luajit tools/pob2/groups.lua < build.xml > groups.json
--- Runs real PoB2 headless (vendor/pob2, unmodified) once per skill group and active skill of a decoded PoB export
+-- Loads a decoded PoB export in real PoB2 headless (vendor/pob2, unmodified) once, then recalculates per skill group and active skill
 -- XML from stdin, and prints a JSON array: one row per (group, activeSkill) with PoB's own main output for it.
 -- A code stores PlayerStats for its mainSocketGroup only; every other group's numbers exist only when PoB's engine
 -- computes them (provenance pob-sim). Decode the code first (scripts/pob2/run.mjs does this).
@@ -24,17 +24,6 @@ local HAND = { "PhysicalHitAverage", "LightningHitAverage", "ColdHitAverage", "F
 	"TotalMin", "TotalMax" }
 local MAX_ACTIVE = 4 -- a group's active skills (e.g. Charged Staff + Charged Shockwave); stop at the first repeat
 
--- Set mainSocketGroup to gi and that group's mainActiveSkill to ai, leaving every other byte as exported.
-local function variant(gi, ai)
-	local x = xml:gsub('mainSocketGroup="%d+"', 'mainSocketGroup="' .. gi .. '"', 1)
-	local n = 0
-	x = x:gsub('(<Skill [^>]*mainActiveSkill=")([^"]*)(")', function(a, _, c)
-		n = n + 1
-		if n == gi then return a .. ai .. c end
-	end)
-	return x
-end
-
 local groups = 0
 local enabled = {} -- each group's own <Skill enabled="..."> as exported (PoB treats anything but "false" as on)
 for tag in xml:gmatch("<Skill [^>]*>") do
@@ -42,12 +31,69 @@ for tag in xml:gmatch("<Skill [^>]*>") do
 	enabled[groups] = tag:match('enabled="([^"]*)"') ~= "false"
 end
 
+-- Load the export once, then switch the main skill the way PoB's own sidebar dropdowns do (Modules/Build.lua:
+-- mainSocketGroup / mainSkill: set the index, modFlag and buildFlag, and let the next frame recalculate). Reloading
+-- the XML per row allocated a whole build each time (~65 MB) and could run the CI runner out of memory (exit 137).
+--
+-- Rows stay keyed by the export's <Skill> order (core's `group`). PoB's first calc folds granted-skill groups into
+-- the user's own copy of the same skill (CalcSetup.lua, mergedGroups) and drops granted groups whose source is not
+-- live, so its socketGroupList can be shorter. Each row's `pobGroup` is the group PoB computed it from: the same
+-- group, or for a folded one the surviving group whose first gem is the same skill.
+pob.init()
+local skillsTab = common.classes.SkillsTab
+local loadSkills = skillsTab.Load
+local exported -- socket group objects in <Skill> order, captured as SkillsTab:Load builds them
+skillsTab.Load = function(self, ...)
+	local r = loadSkills(self, ...)
+	exported = {}
+	for i, sg in ipairs(self.socketGroupList) do exported[i] = sg end
+	return r
+end
+
 local rows = {}
 local firstError
+local loadErr = pob.load(xml)
+skillsTab.Load = loadSkills
+if loadErr then
+	rows[1] = pob.object({ group = 1, activeSkill = 1, loadError = loadErr })
+	firstError = loadErr
+	groups = 0
+end
+
+local list = build.skillsTab.socketGroupList
+-- PoB's index for export group gi (see above), or nil when PoB kept no group for that skill.
+local function pobIndex(gi)
+	local sg = exported and exported[gi]
+	if not sg then return nil end
+	for j, s in ipairs(list) do
+		if s == sg then return j end
+	end
+	local id = sg.gemList[1] and sg.gemList[1].skillId
+	for j, s in ipairs(list) do
+		if id and s.gemList[1] and s.gemList[1].skillId == id then return j end
+	end
+	return nil
+end
+
+-- Make (pi, ai) the main skill and recalculate. Returns an error string or nil.
+local function select(pi, ai)
+	build.mainSocketGroup = pi
+	list[pi].mainActiveSkill = ai
+	build.modFlag = true
+	build.buildFlag = true
+	local ok, err = pcall(runCallback, "OnFrame")
+	if not ok then return pob.strip(tostring(err)) end
+	if __mainObject__.promptMsg then return pob.strip(__mainObject__.promptMsg) end
+	return nil
+end
+
 for gi = 1, groups do
 	local seen = {}
+	local pi = pobIndex(gi)
+	local sg = pi and list[pi]
+	local keep = sg and sg.mainActiveSkill
 	for ai = 1, MAX_ACTIVE do
-		local err = pob.load(variant(gi, ai))
+		local err = not pi and "PoB kept no group for this skill" or select(pi, ai)
 		if err then
 			rows[#rows + 1] = pob.object({ group = gi, activeSkill = ai, loadError = err })
 			firstError = firstError or err
@@ -59,7 +105,7 @@ for gi = 1, groups do
 		if seen[name] then break end
 		seen[name] = true
 		local o = build.calcsTab.mainOutput
-		local r = { group = gi, activeSkill = ai, skill = name, enabled = enabled[gi] }
+		local r = { group = gi, pobGroup = pi, activeSkill = ai, skill = name, enabled = enabled[gi] }
 		for _, k in ipairs(KEYS) do
 			if type(o[k]) == "number" then r[k] = o[k] end
 		end
@@ -72,6 +118,8 @@ for gi = 1, groups do
 		end
 		rows[#rows + 1] = pob.object(r)
 	end
+	-- Leave this group as exported before moving on, so later rows see the same build a fresh load would.
+	if sg then sg.mainActiveSkill = keep end
 end
 
 out:write(pob.encode(pob.object({ groups = groups, rows = pob.array(rows) })), "\n")

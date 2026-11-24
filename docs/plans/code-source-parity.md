@@ -198,12 +198,22 @@ Suggestions for next batch (CP-7, then CP-3):
 - CP-7: the group-4 per-use test should read its figures from `main-ninja.groups.oracle.json` instead of literals.
 - CP-3: the DPS row's per-use line is the first web text from CP-2; check it at 390 px.
 
+### CP-7b (2026-11-24): groups oracle in one PoB load
+
+Cause: `pob2-oracle` on the #242 merge head exited 137 in `groups.lua` on main-ninja (run 45354507354). Reloading the export per (group, active skill) built 39 whole builds; one local run of five ran away to 13.9 GB and was OOM-killed, the others peaked at ~850 MB.
+
+Result: `groups.lua` loads once and switches the main skill the way PoB's sidebar dropdowns do (`mainSocketGroup`, `mainActiveSkill`, `buildFlag`, one frame). main-ninja: 14 s instead of 31 s locally, peak ~720 MB, no reloads; `pob2:oracle -- --check` passed 3 runs in a row. 20 of 21 rows unchanged on both codes.
+
+Decisions:
+- Rows stay keyed by the export's `<Skill>` order (core's `group`); each row now carries `pobGroup`, PoB's own index. PoB folds granted-skill groups on its first calc, so export groups 2, 16, 17, 18 are computed from the group PoB kept for the same skill (`FOLDED` in the test pins the map).
+- Group 18 → now Spear Throw (the kept swap-weapon Spear Throw) instead of Spear Stab. The old Spear Stab was PoB clamping an index that no longer existed, not a PoB fallback; `ENGINE_FALLBACK` is gone.
+
 ### CP-7 (2026-11-24)
 
 Result: `tools/pob2/groups.lua` (the attached driver plus an `enabled` flag per row) runs headless PoB once per (group, active skill); `npm run pob2:oracle` writes `<name>.groups.oracle.json` for every current-league code and for `ninja-legacy/main-ninja.code.txt`, `-- --check` fails on a diff, `node scripts/pob2/run.mjs --groups <file|->` prints one. main-ninja matches the reference byte for byte (18 groups, 21 rows, Storm Wave 98,591, Hollow Resonance 33,332 per use / 69,531). Tests: `pob2-groups-oracle.test.ts`, `scripts/pob2/run.test.mjs`; the CP-2 group-4 test now reads the oracle.
 
 Decisions:
-- Group 18 (Spear Throw granted by Daevata's Wind on the swap weapon) → PoB fails to process it and computes Spear Stab; named in `ENGINE_FALLBACK` so a PoB change shows up.
+- Group 18 (Spear Throw granted by Daevata's Wind on the swap weapon) → PoB fails to process it and computes Spear Stab; named in `ENGINE_FALLBACK` so a PoB change shows up. (Superseded by CP-7b: that was index clamping.)
 - `forbidden-rites/main` TotalDPS → 0.21 % off current PoB (stale PoB2-app export, PB-3a); pinned in `STALE_TOTAL_DPS`, every other code within 0.1 %.
 - CI path filter → `pob2-oracle` doesn't run on `packages/core/test/ninja-legacy/`; queued as owner row CP-7a (CI).
 
