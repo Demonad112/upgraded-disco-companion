@@ -15,4 +15,6 @@ Oracle shape (keys sorted, 2-space indent):
 
 `../pob2-oracle.test.ts` (vitest, no Lua) holds `readPobSnapshot` to these files: every embedded stat PoB still computes the same must match exactly, and the rest is the analysis finding "Stale export: re-export from current Path of Building" (`Analysis.staleExport`, given `AnalyzeOptions.pobRecomputed`). The golden `../golden/pob-code-main.expected.json` pins that finding.
 
+`<name>.groups.oracle.json` (CP-7) is written by `tools/pob2/groups.lua` for each code here and for `../ninja-legacy/main-ninja.code.txt`: `groups` is the code's `<Skill>` group count, `rows` one per (group, active skill) with PoB's main output when that group is selected (`skill`, `enabled`, TotalDPS, CombinedDPS, AverageDamage, Speed, crit, DoT keys, cost, cooldown, `mainHand` hit averages). It is CI-only ground truth: a code stores PlayerStats for its main group only, and the site never shows or simulates the other rows (B9). `../pob2-groups-oracle.test.ts` checks the main group's row against the code, a row per group, and each group's skill against `allGems`.
+
 Regenerate after a PoB bump or a fixture change: `npm run pob2:oracle`. Review the diff and commit it with the cause. CI's `pob2-oracle` job runs `npm run pob2:oracle -- --check` and fails on any byte difference. Archived leagues (`archive/<league>/`) are not regenerated (B7).

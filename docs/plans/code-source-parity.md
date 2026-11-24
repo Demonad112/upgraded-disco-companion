@@ -74,6 +74,7 @@ The "Old input" column is what the poe.ninja model supplied. The "From the code"
 |---|---|---|---|---|
 | 1 | CP-1 Core: breakdowns read from the code, verified; reconcile for codes; attribution gap dropped | Opus | CP-4, CP-5 (answered) | none |
 | 2 | CP-2 Core: `allGems` from `<Skill>` groups; PB-12 mod-id fixes (**done**) | Sonnet | CP-1 merged | none |
+| 2b | CP-7 CI-only all-groups oracle from PoB's engine (`tools/pob2/groups.lua`, `run.mjs --groups`, `*.groups.oracle.json`) (**done**) | Opus | CP-2 | none |
 | 3 | CP-3 Web: paste box for the poe.ninja code, optional name, e2e on main-ninja | Sonnet | CP-2 merged, CP-6 (answered) | none |
 
 **CP-1** (Opus, about 15–25 files)
@@ -114,6 +115,7 @@ The "Old input" column is what the poe.ninja model supplied. The "From the code"
 |---|---|---|
 | CP-4 | Do code-read breakdowns (item, tree, quest and base lines, verified against the code's own PlayerStat totals) count as PoB's figures (`pob-export`), not a simulation? | Yes. Unverified stats are flagged, never adjusted |
 | CP-5 | Export PoB's level and attribute base constants (Life, Mana, ES, Evasion) via `tools/pob2/export/` into generated data | Yes, rebuilt with `npm run build:pob -w @poe2/data`, like B4 |
+| CP-7 | Per-skill DPS for the non-main groups: the code has none, and the site never simulates | A CI-only oracle from PoB's engine now (pob2-alignment decision 3): `*.groups.oracle.json`, tests only; the site shows these numbers in B9 with provenance `pob-sim` (answered 2026-11-24) |
 | CP-6 | Should e2e, the mock proxy and the screenshot payload use main-ninja as the one reference character? | Yes. Numbers change; no assertion is removed |
 
 Rows this plan supersedes:
@@ -195,3 +197,15 @@ Decisions:
 Suggestions for next batch (CP-7, then CP-3):
 - CP-7: the group-4 per-use test should read its figures from `main-ninja.groups.oracle.json` instead of literals.
 - CP-3: the DPS row's per-use line is the first web text from CP-2; check it at 390 px.
+
+### CP-7 (2026-11-24)
+
+Result: `tools/pob2/groups.lua` (the attached driver plus an `enabled` flag per row) runs headless PoB once per (group, active skill); `npm run pob2:oracle` writes `<name>.groups.oracle.json` for every current-league code and for `ninja-legacy/main-ninja.code.txt`, `-- --check` fails on a diff, `node scripts/pob2/run.mjs --groups <file|->` prints one. main-ninja matches the reference byte for byte (18 groups, 21 rows, Storm Wave 98,591, Hollow Resonance 33,332 per use / 69,531). Tests: `pob2-groups-oracle.test.ts`, `scripts/pob2/run.test.mjs`; the CP-2 group-4 test now reads the oracle.
+
+Decisions:
+- Group 18 (Spear Throw granted by Daevata's Wind on the swap weapon) → PoB fails to process it and computes Spear Stab; named in `ENGINE_FALLBACK` so a PoB change shows up.
+- `forbidden-rites/main` TotalDPS → 0.21 % off current PoB (stale PoB2-app export, PB-3a); pinned in `STALE_TOTAL_DPS`, every other code within 0.1 %.
+- CI path filter → `pob2-oracle` doesn't run on `packages/core/test/ninja-legacy/`; queued as owner row CP-7a (CI).
+
+Suggestions for next batch (CP-3):
+- The DPS row's per-use line is the first web text from CP-2; check it at 390 px.
