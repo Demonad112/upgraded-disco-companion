@@ -9,9 +9,10 @@ import { isOffline } from '@/lib/online'
 import { Button, Input, Segmented, Textarea, tabPanelProps } from './shared/controls'
 
 const EXAMPLE = 'https://poe.ninja/poe2/profile/Demonad112-2589/forbiddenrites/character/Yykiuy'
+// A Path of Building code is the primary source, so Paste leads. While poe.ninja blocks URL import the URL tab goes last.
 const IMPORT_METHODS = [
-  { value: 'url', label: 'poe.ninja URL' },
   { value: 'paste', label: 'Paste data' },
+  { value: 'url', label: 'poe.ninja URL' },
 ] as const
 
 export type ImportResult =
@@ -300,7 +301,7 @@ export function ImportBar({
               className="font-mono"
             />
             <p id="import-paste-hint" className="text-xs leading-relaxed text-ink-dim">
-              In Path of Building, open Import/Export Build, press Generate, then Copy.
+              In Path of Building: Import/Export Build, Generate, Copy. A code has your totals, not which item grants each point.
             </p>
             <Button type="submit" variant="primary" disabled={busy} className="self-start">
               Analyse pasted data
