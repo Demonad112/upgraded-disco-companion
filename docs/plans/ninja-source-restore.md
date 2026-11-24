@@ -128,3 +128,14 @@ Rules: PoB output is ground truth; no TypeScript arithmetic over item or tree mo
 ## Batch log
 
 One entry per batch: decisions (Q → A (why)), then "Suggestions for next batch".
+
+### NJ-1 (Sonnet, tests only)
+
+- Q: base branch? → A: the plan and `main-ninja.code.txt` were only on `origin/claude/compassionate-goodall-mgl7rf` (one commit past `origin/main`), so this branch fast-forwarded onto it (its `.claude/settings.json` and REMAINING-WORK rows come with it).
+- Q: golden diff vs `4964edf`? → A: `recorded-athrynas-v43` loses only the `cacheKey` field (cause `0b0b009`); `pob-code-athrynas-v43` and both gear-ranking goldens are byte-equal. `test/golden/` and `test/pob2/` untouched.
+- Q: which breakdown tests were skipped? → A: only `ladder.test.ts` (byte-identical to the current file, reads no capture). The others read `athrynas-v43` breakdowns / mod ids; the current ports run on the main build or inline inputs, not capture-equivalent ones, so all eight (`attribution`, `holding-up`, `reconcile`, `implied-resistance`, `honest-grade`, `offence`, `mods`, `cf-yykiuy`) were restored, plus `fixture.test.ts`. `yykiuy-v51.json` is restored per NJ-7 but no test reads it.
+- Q: TotalEHP compare? → A: `reconcile` has no TotalEHP check, so that delta (poe.ninja code 20451.92 vs main 18872.81 embedded, +1579.12) is read from the two `readPlayerStats`. Reconcile deltas (`ninja` side = main, `other` = poe.ninja code): ES 2673 → 2827 (+154), DPS 125658.18 → 98589.73 (−27068.45), Life equal.
+- Fixed in its own commit: `gate` ran `npm run lint -w @poe2/core`, which core lacks; now `--if-present`, with a `gate.test.mjs` case.
+
+Suggestions for next batch: NJ-3 can reuse the `main-ninja` compare as its expected e2e numbers (ES 2,673 vs 2,827).
+
