@@ -32,10 +32,17 @@ export async function useRatesPayload() {
   const core = await import(pathToFileURL(join(root, 'packages/core/dist/index.js')).href)
   const oracle = JSON.parse(readFileSync(MAIN_CODE_PATH.replace(/\.code\.txt$/, '.groups.oracle.json'), 'utf8'))
   const g4 = oracle.rows.find((r) => r.group === 4 && r.activeSkill === 1)
-  const xml = (await core.decodePobExport(mainCode()))
-    .replace(/mainSocketGroup="\d+"/, 'mainSocketGroup="4"')
-    .replace(/<PlayerStat stat="TotalDPS" value="[^"]*"\/>/, `<PlayerStat stat="TotalDPS" value="${g4.TotalDPS}"/>`)
-    .replace(/<PlayerStat stat="CombinedDPS" value="[^"]*"\/>/, `<PlayerStat stat="CombinedDPS" value="${g4.CombinedDPS}"/>`)
+  if (!g4 || typeof g4.TotalDPS !== 'number' || typeof g4.CombinedDPS !== 'number')
+    throw new Error('main-payload --use-rates: no group 4 TotalDPS/CombinedDPS row in main-ninja.groups.oracle.json')
+  // Each edit must land: a silent miss would keep the main group's figures and fail the e2e on the wrong number.
+  const edit = (text, re, to, what) => {
+    if (!re.test(text)) throw new Error(`main-payload --use-rates: ${what} not found in the decoded export`)
+    return text.replace(re, to)
+  }
+  let xml = await core.decodePobExport(mainCode())
+  xml = edit(xml, /mainSocketGroup="\d+"/, 'mainSocketGroup="4"', 'mainSocketGroup')
+  xml = edit(xml, /<PlayerStat stat="TotalDPS" value="[^"]*"\s*\/>/, `<PlayerStat stat="TotalDPS" value="${g4.TotalDPS}"/>`, 'TotalDPS')
+  xml = edit(xml, /<PlayerStat stat="CombinedDPS" value="[^"]*"\s*\/>/, `<PlayerStat stat="CombinedDPS" value="${g4.CombinedDPS}"/>`, 'CombinedDPS')
   const model = core.snapshotToCharModel(core.readPobSnapshot(xml))
   return { type: 'character', charModel: { ...model, name: 'Main', account: 'Demonad112#2589', league: 'Runes of Aldur' } }
 }

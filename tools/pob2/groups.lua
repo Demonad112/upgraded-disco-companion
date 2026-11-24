@@ -38,7 +38,7 @@ end
 -- Rows stay keyed by the export's <Skill> order (core's `group`). PoB's first calc folds granted-skill groups into
 -- the user's own copy of the same skill (CalcSetup.lua, mergedGroups) and drops granted groups whose source is not
 -- live, so its socketGroupList can be shorter. Each row's `pobGroup` is the group PoB computed it from: the same
--- group, or for a folded one the surviving group whose first gem is the same skill.
+-- group, or for a folded one the only surviving group whose first gem is the same skill (none or several: no row).
 pob.init()
 local skillsTab = common.classes.SkillsTab
 local loadSkills = skillsTab.Load
@@ -69,14 +69,20 @@ local function pobIndex(gi)
 		if s == sg then return j end
 	end
 	local id = sg.gemList[1] and sg.gemList[1].skillId
+	local match
 	for j, s in ipairs(list) do
-		if id and s.gemList[1] and s.gemList[1].skillId == id then return j end
+		if id and s.gemList[1] and s.gemList[1].skillId == id then
+			if match then return nil, "PoB kept several groups for this skill" end
+			match = j
+		end
 	end
-	return nil
+	return match
 end
 
 -- Make (pi, ai) the main skill and recalculate. Returns an error string or nil.
 local function select(pi, ai)
+	-- An earlier row's prompt stays set until cleared, and would be reported for every row after it.
+	__mainObject__.promptMsg = nil
 	build.mainSocketGroup = pi
 	list[pi].mainActiveSkill = ai
 	build.modFlag = true
@@ -89,11 +95,11 @@ end
 
 for gi = 1, groups do
 	local seen = {}
-	local pi = pobIndex(gi)
+	local pi, why = pobIndex(gi)
 	local sg = pi and list[pi]
 	local keep = sg and sg.mainActiveSkill
 	for ai = 1, MAX_ACTIVE do
-		local err = not pi and "PoB kept no group for this skill" or select(pi, ai)
+		local err = not pi and (why or "PoB kept no group for this skill") or select(pi, ai)
 		if err then
 			rows[#rows + 1] = pob.object({ group = gi, activeSkill = ai, loadError = err })
 			firstError = firstError or err

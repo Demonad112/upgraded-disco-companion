@@ -113,12 +113,13 @@ describe('PoB2 groups oracle (CP-7)', () => {
       })
 
       it('computes each group from PoB’s own group, folded groups from the one PoB kept', () => {
+        // Observed from the rows alone: a kept group is the next PoB index; any other pobGroup is a fold.
         const folded: Record<number, number> = {}
-        let shift = 0
+        let kept = 0
         for (let g = 1; g <= groups.length; g++) {
           const pobGroup = first(g)!.pobGroup!
-          if (pobGroup !== g - shift) folded[g] = pobGroup
-          if (FOLDED[g] !== undefined) shift++
+          if (pobGroup === kept + 1) kept++
+          else folded[g] = pobGroup
         }
         expect(folded).toEqual(FOLDED)
       })

@@ -209,14 +209,19 @@ export default function Home() {
     }
     setError(null)
     setImportBusy(true)
-    setSourceUrl(r.kind === 'ninja' ? (r.url ?? null) : null)
-    // A named code is saved like an imported character (CP-3); unnamed, it stays out of history and recents.
-    const named = r.kind === 'pob' && r.name ? r.name : null
-    setSourceCode(named && r.kind === 'pob' ? r.code : null)
+    // A named code is saved like an imported character (CP-3); unnamed, it stays out of history and recents. A '/'
+    // would split its history key.
+    const named = r.kind === 'pob' && r.name ? r.name.replaceAll('/', ' ').trim() || null : null
     try {
       // A code decodes here (it throws only when it will not decode); everything after is the same for both sources.
       const decoded = r.kind === 'pob' ? await pobToCharModel(r.code) : r.data
-      const next = named ? { ...(decoded as object), name: named, account: CODE_ACCOUNT } : decoded
+      // The class keys it too, so two builds given the same name keep separate history and recents rows.
+      const cls = (decoded as { class?: string }).class
+      const next = named ? { ...(decoded as object), name: named, account: cls ? `${CODE_ACCOUNT}:${cls}` : CODE_ACCOUNT } : decoded
+      // Set with the cleared analysis, after the await: set before it, the recents effect saw the new source with the
+      // previous character still settled and saved this code onto that character's row.
+      setSourceUrl(r.kind === 'ninja' ? (r.url ?? null) : null)
+      setSourceCode(named && r.kind === 'pob' ? r.code : null)
       setAnalysis(null)
       setStage('card')
       setGrace(false)
@@ -238,10 +243,15 @@ export default function Home() {
     const saved = recentKey ? recentCharacters.get().find((r) => r.key === recentKey && r.code) : undefined
     if (saved?.code) {
       const code = saved.code
+      let cancelled = false
       void loadResults()
       // After this effect, like the `?import=` fetch below: handleResult sets state.
-      void Promise.resolve().then(() => handleResult({ ok: true, kind: 'pob', code, name: saved.name }))
-      return
+      void Promise.resolve().then(() => {
+        if (!cancelled) void handleResult({ ok: true, kind: 'pob', code, name: saved.name })
+      })
+      return () => {
+        cancelled = true
+      }
     }
     // `?url=` / `?text=` come from the PWA share target (Android, Samsung); iOS has none.
     const target = new URLSearchParams(window.location.search).get('import') ?? sharedProfileUrl(window.location.search)

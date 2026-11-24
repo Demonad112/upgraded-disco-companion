@@ -42,7 +42,7 @@ export function importPath(url: string): string {
   return `/character/?import=${encodeURIComponent(url)}`
 }
 
-/** The account a named, pasted PoB code is saved under (a code carries none), so history keys it like an import. */
+/** The account a named, pasted PoB code is saved under (a code carries none), so history keys it like an import; the page appends `:<class>` when the code has one. */
 export const CODE_ACCOUNT = 'pob-code'
 
 /** The in-app path that re-opens a recent character: the `?import=` URL, or `?recent=<key>` for a saved code. */
@@ -76,7 +76,7 @@ export function recordRecent(entry: RecentCharacter): void {
   recentCharacters.set((prev) => {
     const same = prev[0]
     if (same && same.url === entry.url && same.key === entry.key && same.level === entry.level && same.grade === entry.grade &&
-      same.topFix?.title === entry.topFix?.title)
+      same.topFix?.title === entry.topFix?.title && same.code === entry.code && same.name === entry.name)
       return prev
     // A code row has no URL, so only a real URL (or the key) makes two rows the same character.
     return [entry, ...prev.filter((r) => !(entry.url && r.url === entry.url) && r.key !== entry.key)].slice(0, MAX_RECENT)
