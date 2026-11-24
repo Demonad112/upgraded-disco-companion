@@ -34,6 +34,8 @@ Answers of 2026-11-17 (HG1-1, -2, -4, -5, -6) are applied. Answers of 2026-11-15
 | CP-4 | Code-read breakdowns (item, tree, quest and base lines, verified by `verifyTotal` against the code's own PlayerStat totals) count as PoB's figures (`pob-export`), not a simulation | Yes; unverified stats are flagged, never adjusted | CP (`docs/plans/code-source-parity.md`); **answered yes (owner 2026-11-24: recommended answers are the answers)** |
 | CP-5 | Export PoB's level and attribute base constants into generated data (`tools/pob2/export/`, `build:pob`) | Yes, like B4 | CP; **answered yes (owner 2026-11-24)** |
 | CP-6 | e2e, mock proxy and screenshot payload use `main-ninja.code.txt` as the one reference character | Yes; numbers change, no assertion is removed | CP; **answered yes (owner 2026-11-24)** |
+| BE-1 | Add `wasmoon@1.16.0` as an `apps/web` dependency for the browser engine (E2) | Yes: MIT, no transitive deps, 126 KB brotli with its wasm, lazy-loaded in a worker | `docs/plans/pob2-browser-engine.md` |
+| BE-2 | Keep the one-byte `glue.wasm` float-format patch (`tools/pob2/wasm/patch-wasm.mjs`) instead of building our own Lua WASM | Yes, until a wasmoon bump breaks its uniqueness check; then build Lua 5.4 with `lobject.c` patched | `docs/plans/pob2-browser-engine.md` |
 
 Superseded NP1 rows and answered GF1-1..3 are in `archive/REGISTER-CLOSED.md`. NP1-3 was never used (gap left as is).
 
@@ -93,6 +95,17 @@ Plan: `docs/plans/code-source-parity.md`. Run order: CP-1 → CP-2 → CP-3. Ref
 | CP-2 | Core: `allGems` from `<Skill>` groups; PB-12 mod-id fixes; empty-rune finding; per-use / continuous DPS labels; decode-completeness test | M | CP plan | Sonnet, wave 2 | done: 18 groups / 79 gems on main-ninja; amulet capacity 4/2; Blight Weaver's 2 empty runes a finding with no ΔDPS |
 | CP-7 | CI-only all-groups oracle from PoB's engine: `groups.lua`, `run.mjs --groups`, `*.groups.oracle.json` | M | CP plan | Opus | done: main-ninja equals the reference (18 groups, 21 rows); the site never shows it (B9) |
 | CP-3 | Web: paste box for the poe.ninja code, optional character name, e2e on main-ninja | M | CP plan | Sonnet, wave 3; budget measured | open (waits CP-2) |
+
+## PoB2 browser engine (E1..E5)
+Plan: `docs/plans/pob2-browser-engine.md` (batch log inside); this is B9 (PB-9). Owner rows BE-1, BE-2 are in § Owner queue.
+
+| ID | Item | Size | Origin | Notes | Status |
+|---|---|---|---|---|---|
+| E1 | Spike: vendor/pob2 in wasmoon under Node | M | BE plan | Exact on 42 group rows (main-ninja, forbidden-rites); init 4.5 s, load 2 s, group switch 0.8 s; 2.1 MB brotli opened set; 375 MB WASM heap | done |
+| E2 | Data packaging: lazy archive, brotli, SW cache by `NEXT_PUBLIC_DATA_VERSION`, self-hosted patched `glue.wasm` | M | BE plan | Needs BE-1 | open |
+| E3 | Worker API: per-group DPS, gear-swap ΔDPS/ΔEHP | M | BE plan | After E2 | open |
+| E4 | Web UI with "≈ est." labels, provenance `pob-sim` | M | BE plan | After E3; ask for the screenshot check | open |
+| E5 | CI accuracy test: worker engine vs every `*.groups.oracle.json` | S | BE plan | After E3 | open |
 
 ## Standing rules (no work)
 - Route, lazy and per-chunk budgets live in `scripts/route-weight.mjs` (source of truth; brotli, first load). It exits 1 when one is over and runs in CI (`ci.yml`). Raise one only on purpose, with the reason in the PR. Any change to home JS reports before and after.
