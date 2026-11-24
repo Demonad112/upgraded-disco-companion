@@ -2,7 +2,7 @@
  * PB-3 oracle test: our `PobSnapshot` reader against what real PoB2 computes for the same code.
  *
  * `test/pob2/<league>/<name>.oracle.json` is written by headless PoB (`npm run pob2:oracle`, CI job
- * `pob2-oracle`); no Lua runs here. PoB is ground truth, so any difference is our bug, with one exception
+ * `pob2-oracle`); no Lua runs here. Figures read from a code must match PoB, with one exception
  * that is the code's, not ours: an export written by an older PoB embeds older figures. Those are exactly
  * the `staleExport` stats, and every other stat must match PoB's recomputed export exactly.
  */

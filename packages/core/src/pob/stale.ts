@@ -3,9 +3,8 @@
  *
  * A code embeds the `<PlayerStat>` values of the PoB version that wrote it. When PoB's engine has since
  * changed (a weekly PoB release, a league patch), the embedded figures are out of date while the build
- * itself is not. The site never recomputes; this only compares against figures PoB's own engine produced
- * for the same code (the headless oracle in CI today, `pob-sim` provenance once a calc service exists,
- * B9). Any difference is reported, never corrected: the fix is to re-export from current PoB.
+ * itself is not. This compares against figures PoB's own engine produced
+ * for the same code (the headless oracle in CI today, `pob-sim` from the browser engine, B9). Any difference is reported, never corrected: the fix is to re-export from current PoB.
  */
 
 import type { PobSnapshot } from './snapshot.js'

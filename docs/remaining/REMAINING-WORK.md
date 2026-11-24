@@ -16,6 +16,7 @@ Class codes:
 
 ## Owner queue
 One row per Needs-owner item, with the recommended answer. Answer by ID in a prompt's `Owner notes`.
+Answers of 2026-11-24 are applied: the site may simulate and estimate, labelled "≈ est." (CLAUDE.md, COPY.md, pob2-alignment decisions 3 and 9); the engine is Option A, PoB2's Lua in a lazy WASM chunk (PB-9, `docs/plans/pob2-browser-engine.md`). The methodology page's "No DPS thresholds" copy and the chat prompt's "NEVER estimate" stay until the engine UI batch, since nothing on the site simulates yet.
 Answers of 2026-11-17 (HG1-1, -2, -4, -5, -6) are applied. Answers of 2026-11-15 are applied and the rows cleared: PRO1-3, WQA3-9b, WQA1-1 (do in Batch 3), UXS-1 (variant branch, Batch 3), R60 (Yykiuy only), PXA-7 accept, PXA-8 keep, CF1-1 keep the deny, WQA1-5 (`lang: "en"` only), WQA1-6 skip. PRO1-1, PRO1-2, PRO1-4 and PRO1-5 are closed by the same plan.
 
 | ID | Question | Recommended answer | Source |
@@ -53,12 +54,12 @@ Plan: `docs/plans/pob2-alignment.md` (batch log inside). Run order: B1 → B2 �
 Owner answers (2026-11-22, applied; do not re-ask):
 - `vendor/pob2` is a committed byte-identical copy, pinned to fork Demonad112/PathOfBuilding-PoE2 `dev`.
 - Fork sync is the manual GitHub "Sync fork" button; bumps are manual.
-- The engine is CI-only for now; a live calc service is B9 (optional).
+- The engine runs in the browser (B9, `docs/plans/pob2-browser-engine.md`); CI keeps the oracle.
 - poe.ninja UI is hidden and its code dormant (`NINJA_IMPORT_BLOCKED`).
 - The core model is `PobSnapshot`, with a temporary adapter to `CharModel`.
 - Athrynas and Yykiuy fixtures are removed; fixtures are archived per league; the owner pastes the main build code.
 - Site labels and formats are unchanged; only values come from PoB.
-- ΔDPS/ΔEHP only from PoB's engine (provenance `pob-sim`).
+- The site may simulate and estimate (2026-11-24); every such number is labelled ("≈ est.", provenance `pob-sim` or `estimate`).
 - Local Lua: CI's PoB Docker image is the source of truth; sessions install LuaJIT ad hoc with no environment change.
 
 | ID | Item | Size | Origin | Notes | Status |
@@ -69,7 +70,7 @@ Owner answers (2026-11-22, applied; do not re-ask):
 | PB-6 | B6: analysis on `PobSnapshot`, PoB-only import UX | M | pob2-alignment | Sonnet, wave 5; import-UX half moved to CP-3 | open (core half only) |
 | PB-7 | B7: one-command `pob2:bump`, league-rollover runbook | S | pob2-alignment | Haiku, wave 6; merges first of B7/B8 | open |
 | PB-8 | B8: gap audit → `docs/plans/next-analysis.md` | S | pob2-alignment | Sonnet, wave 6; docs only; includes GF1-8 | open |
-| PB-9 | B9 (optional): live calc service and `pob-sim` Δ | L | pob2-alignment | Opus, wave 7; needs a hosting choice (owner) | parked (needs hosting) |
+| PB-9 | B9: browser engine (PoB2 Lua in WASM) and `pob-sim` Δ | L | pob2-browser-engine | Opus; owner chose Option A 2026-11-24, no hosting | open |
 
 ## poe.ninja source restore (NJ-1..NJ-9)
 Plan: `docs/plans/ninja-source-restore.md`. Superseded for codes by `docs/plans/code-source-parity.md` (2026-11-24): NJ-3 dropped, NJ-4..NJ-6 parked. Baseline `4964edf` (not `6abf552^`: the legacy goldens had already moved by then). Owner rows NJ-7..NJ-9 are in § Owner queue.

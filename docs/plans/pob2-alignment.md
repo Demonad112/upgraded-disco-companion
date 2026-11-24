@@ -34,7 +34,7 @@ The poe.ninja character import is dead (NP1-1: Cloudflare 403). The site has to 
 
 1. Vendoring: **committed byte-identical subset** in `vendor/pob2/`, with a CI hash guard.
 2. Pin source: **your fork `Demonad112/PathOfBuilding-PoE2` dev**, synced from upstream with the **manual "Sync fork" button**.
-3. Engine: **CI only now**. A live calc service is a later optional batch; hosting is decided then.
+3. Engine: **CI only now**. A live calc service is a later optional batch; hosting is decided then. *Superseded 2026-11-24 (owner): the engine runs in the browser (PoB2's Lua in WASM, `docs/plans/pob2-browser-engine.md`); no hosting needed.*
 4. poe.ninja: **hide the UI, keep the code dormant** (`NINJA_IMPORT_BLOCKED`).
 5. Bump cadence: **manual** (`npm run pob2:bump`).
 6. Core model: a **PoB-native `PobSnapshot`**, with a temporary adapter to `CharModel`.
@@ -46,7 +46,7 @@ The poe.ninja character import is dead (NP1-1: Cloudflare 403). The site has to 
    - CI's PoB Docker image is the source of truth;
    - sessions install LuaJIT ad hoc with an idempotent script and **no environment change**;
    - if that install fails, they rely on CI.
-9. ΔDPS/ΔEHP: **allowed only when PoB's engine computed it** (provenance `pob-sim`), applied in the service batch.
+9. ΔDPS/ΔEHP: *superseded 2026-11-24 (owner):* the site may simulate and estimate; simulated figures carry provenance `pob-sim`, estimates `estimate`, and both show a "≈ est." label.
 10. Labels: **keep the current site labels and formats**. Only the values come from PoB.
 
 ## Architecture (target)
@@ -63,7 +63,7 @@ packages/data/scripts/       build-*-pob.mjs call tools/pob2/export/*.lua instea
 
 **Sync rule.** PoB files are never modified. Everything that adapts PoB lives outside `vendor/pob2/`. A bump means: sync the fork on GitHub, run `npm run pob2:bump`, review three diffs (vendor, generated data, oracle goldens), and open a PR. If PoB changes its schema, only `snapshot.ts` or `tools/pob2/*.lua` change.
 
-**Truth rule.** PoB output is ground truth. Any difference between our reader and the oracle is our bug.
+**Truth rule.** Figures our reader takes from a code must match the oracle exactly. Simulated or estimated figures are labelled on the site and held to accuracy tests against the oracle.
 
 **Oracle test (vitest, no Lua at test time).**
 - Current-league codes: our `readPobSnapshot(code)` must equal the committed oracle JSON. The oracle JSON holds PoB's recomputed `mainOutput` subset and the PlayerStats PoB would write now.
@@ -82,7 +82,7 @@ packages/data/scripts/       build-*-pob.mjs call tools/pob2/export/*.lua instea
 | 5 | B6 Analysis on PobSnapshot + PoB-only import UX | Sonnet | B5 merged | none |
 | 6 | B7 One-command bump + league-rollover runbook | Haiku | B6 merged | B8 (B7 PR merges first) |
 | 6 | B8 Gap audit → ranked next-analysis plan | Sonnet | B6 merged | B7 |
-| 7 | B9 (optional) Live calc service + `pob-sim` Δ | Opus | B7 merged + hosting chosen | none |
+| 7 | B9 Browser engine + `pob-sim` Δ (`docs/plans/pob2-browser-engine.md`; no hosting) | Opus | spike merged | none |
 
 Critical files per batch are listed in the prompts appendix. Reuse:
 - `decodePobExport` (`pob/export.ts`), `readPobConfig` (`pob/config.ts`), `readPobSkillGroups` (`pob/skill-groups.ts`) and `readPobMainSkill` (`pob/main-skill.ts`): re-based onto the snapshot, not rewritten;
