@@ -2,8 +2,9 @@
  * CP-7: every skill group of a code against PoB's own engine output for it.
  *
  * `<name>.groups.oracle.json` is written by headless PoB (`tools/pob2/groups.lua` via `npm run pob2:oracle`, CI job
- * `pob2-oracle`): one row per (group, active skill), with that group selected in a single loaded build. No Lua runs here. It is CI-only ground
- * truth: a code stores PlayerStats for its main group only, and the site never shows or simulates the others (B9).
+ * `pob2-oracle`): one row per (group, active skill), with that group selected in a single loaded build. No Lua runs here. It is the
+ * accuracy reference: a code stores PlayerStats for its main group only, so the site's figures for the others are
+ * simulated (B9, browser engine, labelled "≈ est.") and checked against these rows.
  *
  * Checked per code: the code's own TotalDPS equals the oracle row for its main group (0.1 %), every `<Skill>` group has
  * a row (decode completeness), and the oracle's skill per group is the active gem our `allGems` lists for it.

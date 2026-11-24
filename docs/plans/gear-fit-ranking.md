@@ -42,9 +42,8 @@ Goal: learn how six reference projects rank gear and builds, work out why they c
 
 Our constraints (CLAUDE.md, `docs/SESSION-PROTOCOL.md`):
 - poe.ninja numbers are used as given.
-- Missing input produces "missing", never a guess.
-- No DPS threshold constants.
-- `measured.dps` stays null and the site never simulates a swap.
+- Missing input produces "missing" unless a labelled simulation or estimate exists.
+- Simulated or estimated figures (incl. `measured.dps`) are allowed since 2026-11-24 and are labelled "≈ est." (provenance `pob-sim` or `estimate`).
 - Gear rankings are "ordered, not blended" (`recommend/gear/priority.ts`).
 - The score rubric weights, `packages/*` policy and data changes are Needs-owner.
 
