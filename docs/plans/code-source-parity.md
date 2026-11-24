@@ -73,7 +73,7 @@ The "Old input" column is what the poe.ninja model supplied. The "From the code"
 | Wave | Batch | Model | Depends on | Parallel with |
 |---|---|---|---|---|
 | 1 | CP-1 Core: breakdowns read from the code, verified; reconcile for codes; attribution gap dropped | Opus | CP-4, CP-5 (answered) | none |
-| 2 | CP-2 Core: `allGems` from `<Skill>` groups; PB-12 mod-id fixes | Sonnet | CP-1 merged | none |
+| 2 | CP-2 Core: `allGems` from `<Skill>` groups; PB-12 mod-id fixes (**done**) | Sonnet | CP-1 merged | none |
 | 3 | CP-3 Web: paste box for the poe.ninja code, optional name, e2e on main-ninja | Sonnet | CP-2 merged, CP-6 (answered) | none |
 
 **CP-1** (Opus, about 15–25 files)
@@ -86,7 +86,7 @@ The "Old input" column is what the poe.ninja model supplied. The "From the code"
 - **Route:** `/character` has about 435 B headroom, so expect a raise to the measured size rounded up to the next 2,000 B, with the cause in `scripts/route-weight.mjs`.
 - **e2e:** none.
 
-**CP-2** (Sonnet, about 10–15 files)
+**CP-2** (Sonnet, about 10–15 files) — done 2026-11-24, see the batch log
 - **Files:** `pob/to-model.ts` (`allGems` per `<Skill>` group); `gear/text-mods.ts` (PB-12: prefer ids legal for the base's class, scale stats stored in hundredths, resolve the two-stat implicit).
 - **Red tests, in the same test file:**
   - damage review lists the supports of the 18 groups;
@@ -178,3 +178,20 @@ Suggestions for next batch (CP-2):
 - PB-12 in `gear/text-mods.ts`: base-class-legal ids first, hundredths, the two-stat amulet implicit (capacity 4/2).
 - If a later code shows a common unread condition on Life/ES/Evasion, add it to `KNOWN_CONDITIONS` in `code-breakdowns.ts` with the config input it reads; never widen without a code that verifies.
 - Mageblood: reading its legacies needs the flask/charm lines it copies; worth a row only if more than this character carries it.
+
+### CP-2 (2026-11-24)
+
+Result on main-ninja: 18 `<Skill>` groups, 79 gems, all in `skills[].allGems` with supports flagged; Pinpoint Critical on groups 10, 12 and 15; Storm Wave's review lists its own five supports (before: none, only the skill name). Amulet capacity 4/2. Blight Weaver's `Rune: None` ×2 is a finding. Tests: `ninja-legacy/code-analysis.test.ts` (CP-2 blocks), `ninja-legacy/decode-completeness.test.ts`.
+
+Decisions:
+- Order of `skills` → the main group first (poe.ninja's convention, which `dps.primary` and many tests rely on), then PoB's order; each entry carries `group` (1-based, code only). Why: the CP-7 oracle joins on the group number, not on position.
+- Supports in `allGems` → `itemData.support: true` and no level/quality, as poe.ninja reports them. Why: `auditGemQuality` would otherwise flag every support at quality 0.
+- A `<FullDPSSkill>` figure → placed on the group whose active gem it names; its own entry only when no group does.
+- PB-12 → wrong-class affix ids and the hundredths scale were already fixed (spawn rules, `scaleFor`); both are now pinned by tests on main-ninja. The open part was the implicit: a multi-stat display mod printed one line per stat is matched as one mod (`matchJoined`, up to 3 lines, only when every line is one of its stats), and implicits with the same text on two classes are told apart by the id's class name (`AmuletImplicit…` on an amulet). Side effect: two more implicits resolve on main-ninja (Morbid Mantle movement speed, Behemoth Band chaos resistance), which moves Ring 1 from rank 4 to 7 in `gear-ranking-main-reference-defence` (a replacement no longer "closes" its implicit chaos).
+- Empty runes → `Rune: None` is a socket, not a rune (`pob/items.ts`), so the existing audit section sees it; a new rule `empty-rune-sockets-<slot>` makes it a finding with `impact: null`, so `measured.dps` stays null.
+- Per-use label → `SkillDamage.useRates` is set only when the code's CombinedDPS is below TotalDPS; the DPS row shows "N per use · M if used continuously". Storm Wave doesn't fire. The group-4 test variant carries PoB's engine figures for that group, because a code holds PlayerStats for its main group only. Note: Whirling Assault's CombinedDPS (20,186) is above its TotalDPS (14,085), so the rule does not fire for it.
+- Decode completeness → every element path and attribute of the main-ninja XML and every item-header key is listed as read (where) or not read (why); `Bonded:` lines and Mageblood's four legacies are listed as not read, per CP-1.
+
+Suggestions for next batch (CP-7, then CP-3):
+- CP-7: the group-4 per-use test should read its figures from `main-ninja.groups.oracle.json` instead of literals.
+- CP-3: the DPS row's per-use line is the first web text from CP-2; check it at 390 px.

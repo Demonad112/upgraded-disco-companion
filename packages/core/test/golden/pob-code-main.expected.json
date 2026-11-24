@@ -217,7 +217,7 @@
   "warnings": [
     "Stale export: re-export from current Path of Building. 22 stats differ from what Path of Building 0.23.1 computes for this build now, including TotalDPS (125,658 in the code, 125,919 now)."
   ],
-  "importHash": "51538e29b46de88e",
+  "importHash": "4faed7a8eb9d09db",
   "holdingUp": {
     "resistances": [
       {

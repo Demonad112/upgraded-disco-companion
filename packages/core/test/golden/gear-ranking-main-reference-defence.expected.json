@@ -43,19 +43,6 @@
   },
   {
     "rank": 4,
-    "slot": "Ring 1",
-    "base": "Amethyst Ring",
-    "closes": {
-      "cold": 1,
-      "chaos": 27
-    },
-    "reasons": [
-      "a replacement can close 1% cold and 27% chaos of your resistance shortfall",
-      "5 tiers below the top, across its lines"
-    ]
-  },
-  {
-    "rank": 5,
     "slot": "Helmet",
     "base": "Runeforged Brigand Mask",
     "closes": {
@@ -70,7 +57,7 @@
     ]
   },
   {
-    "rank": 6,
+    "rank": 5,
     "slot": "Body Armour",
     "base": "Runeforged Falconer's Jacket",
     "closes": {
@@ -84,7 +71,7 @@
     ]
   },
   {
-    "rank": 7,
+    "rank": 6,
     "slot": "Gloves",
     "base": "Runeforged Fists of Stone",
     "closes": {
@@ -94,6 +81,19 @@
     "reasons": [
       "a replacement can close 1% cold and 27% chaos of your resistance shortfall",
       "1 tier below the top, across its lines"
+    ]
+  },
+  {
+    "rank": 7,
+    "slot": "Ring 1",
+    "base": "Amethyst Ring",
+    "closes": {
+      "cold": 1,
+      "chaos": 19
+    },
+    "reasons": [
+      "a replacement can close 1% cold and 19% chaos of your resistance shortfall",
+      "5 tiers below the top, across its lines"
     ]
   },
   {

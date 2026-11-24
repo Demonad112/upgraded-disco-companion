@@ -151,7 +151,9 @@ export function parsePobItemText(raw: string, modRanges: PobItem['modRanges']): 
   const levelReq = Number(specs.get('LevelReq'))
   if (specs.has('LevelReq') && Number.isFinite(levelReq) && levelReq > 0) data.requirements = [{ name: 'Level', values: [[String(levelReq), 0]] }]
   if (sockets > 0) data.sockets = Array.from({ length: sockets }, (_, group) => ({ group, type: 'rune' }))
-  if (runes.length) data.socketedItems = runes.map((typeLine, socket) => ({ socket, typeLine }))
+  // PoB writes `Rune: None` for an empty socket: a socket, not a rune in it.
+  const filled = runes.map((typeLine, socket) => ({ socket, typeLine })).filter((r) => r.typeLine !== 'None')
+  if (filled.length) data.socketedItems = filled
 
   const implicit: string[] = []
   const enchant: string[] = []

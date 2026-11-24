@@ -76,6 +76,11 @@ export interface NinjaSkillDps {
   projectiles?: number
   forks?: number
   aoeRadius?: number
+  /**
+   * PoB's CombinedDPS, only on a pasted code's main skill (CP-2). Below `dps` it is the damage of one use of a
+   * combo or cooldown skill, while `dps` assumes the skill is used without pause.
+   */
+  combinedDps?: number
 }
 
 export interface NinjaGem {
@@ -93,6 +98,8 @@ export interface NinjaSkill {
    * only when present; never inferred.
    */
   weaponSet?: number
+  /** The 1-based PoB `<Skill>` group this setup was read from. Only on a pasted code (CP-2); poe.ninja has none. */
+  group?: number
 }
 
 /**

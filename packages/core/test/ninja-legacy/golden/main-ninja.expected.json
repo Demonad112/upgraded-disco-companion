@@ -120,8 +120,34 @@
   ],
   "primarySkill": {
     "name": "Storm Wave",
-    "totalDps": 98661.22971592662
+    "totalDps": 98661.22971592662,
+    "useRates": null
   },
+  "skillGroups": [
+    "15: Storm Wave + Branching Fissures II, Elemental Armament II, Pinpoint Critical, Rapid Attacks II, Deliberation",
+    "1: Quarterstaff Strike + Heavy Swing",
+    "2: Spear Throw + Close Combat I",
+    "3: Hollow Focus + Overabundance II, Cooldown Recovery II, Supercritical, Elemental Armament II, Close Combat II",
+    "4: Hollow Resonance + Magnified Area II, Concentrated Area, Cooldown Recovery II, Elemental Armament II, Close Combat II",
+    "5: Spear Throw",
+    "6: Tempest Bell + Rageforged II, Magnified Area II, Elemental Armament II, Overabundance II, Close Combat II",
+    "7: Cast on Critical + Boundless Energy II, Energy Retention, Charge Profusion II, Magnified Area II",
+    "8: Herald of Thunder + Elemental Focus, Concentrated Area, Elemental Armament II, Longshot II, Deadly Herald",
+    "9: Falling Thunder + Elemental Armament II, Nova Projectiles II, Concentrated Area, Elemental Focus",
+    "10: Whirling Assault + Pinpoint Critical, Rage III, Elemental Armament II, Magnified Area II, Ancestral Call II",
+    "11: Frozen Locus + Freeze, Elemental Armament II, Ice Bite II, Embitter, Rapid Attacks II",
+    "12: Staggering Palm + Longshot II, Elemental Armament II, Pinpoint Critical, Blazing Critical, Thrill of the Kill II",
+    "13: Mantra of Destruction + Delayed Gratification, Ailith's Chimes, Charge Profusion II, Mobility",
+    "14: Charged Staff + Elemental Armament II, Innervate, Elemental Focus, Longshot II, Concentrated Area",
+    "16: Hollow Focus",
+    "17: Hollow Resonance",
+    "18: Spear Throw"
+  ],
+  "recommendations": [
+    "res-chaos-under-cap (dps null)",
+    "one-shot-physical (dps null)",
+    "empty-rune-sockets-7 (dps null)"
+  ],
   "assessment": {
     "score": null,
     "scoreRange": {

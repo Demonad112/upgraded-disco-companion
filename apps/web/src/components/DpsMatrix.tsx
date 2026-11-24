@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { describePobConfig, type DpsSummary, type PobConfig, type SkillDamage } from '@poe2/core'
+import { USE_RATE_LABELS, describePobConfig, type DpsSummary, type PobConfig, type SkillDamage } from '@poe2/core'
 import { Empty, Tag, fmt, fmtCompact } from './ui'
 import { Diamond, TYPE_ORDER, cap } from './character/dmg'
 import { useFirstView } from '@/hooks/useFirstView'
@@ -101,6 +101,11 @@ function SkillRow({ s, isPrimary, top, total }: { s: SkillDamage; isPrimary: boo
         </span>
         {share !== null ? (
           <span className="tabular mt-1 block font-mono text-[length:var(--fs-11)] text-ink-mute">{pct(share)} of listed damage</span>
+        ) : null}
+        {s.useRates ? (
+          <span className="tabular mt-1 block font-mono text-[length:var(--fs-11)] text-ink-mute">
+            {fmt(s.useRates.perUse)} {USE_RATE_LABELS.perUse} · {fmt(s.useRates.continuous)} {USE_RATE_LABELS.continuous}
+          </span>
         ) : null}
       </summary>
       <div className="pb-4">

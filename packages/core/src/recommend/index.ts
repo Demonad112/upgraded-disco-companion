@@ -17,6 +17,7 @@ import { NO_KEYSTONE_EFFECTS, type KeystoneEffects } from '../keystones/index.js
 import { indexBreakdowns, projectStat, statSources, type BreakdownIndex } from '../model/breakdowns.js'
 import { normalizePassives, inactiveSetNodes, type PassiveAllocation } from '../model/passives.js'
 import { normalizeItems, type EquippedItem } from '../model/slots.js'
+import { findEmptySockets } from '../gear/audit.js'
 import { OFFENCE_RULES } from './offence.js'
 import { compareRecommendations, costScore, measureRecommendations } from './rank.js'
 import {
@@ -601,6 +602,35 @@ function idleWeaponSetRule(ctx: Context): Recommendation[] {
 }
 
 // ---------------------------------------------------------------------------
+// Rule: empty rune sockets on equipped gear. Free stats, but what they are
+// worth is not measured: that would be a simulated swap, so no ΔDPS (CP-2).
+// ---------------------------------------------------------------------------
+function emptyRuneRule(ctx: Context): Recommendation[] {
+  return findEmptySockets(ctx.items).map((s) =>
+    make({
+      id: `empty-rune-sockets-${s.slotId}`,
+      category: 'efficiency',
+      action: `Fill ${s.empty === 1 ? 'the empty rune socket' : `the ${s.empty} empty rune sockets`} in ${s.itemName}.`,
+      rationale: 'An empty socket is a free stat left on the table.',
+      detail: `${s.itemName} (${s.slotLabel}) has ${s.sockets} rune socket${s.sockets === 1 ? '' : 's'} and ${s.empty} ${s.empty === 1 ? 'is' : 'are'} empty. What a rune adds depends on the rune, so the gain is not measured here.`,
+      impact: null,
+      cost: { kind: 'currency', amount: s.empty, currencyTier: 'low', detail: `${s.empty} rune${s.empty === 1 ? '' : 's'} or soul core${s.empty === 1 ? '' : 's'}.` },
+      tradeoff: null,
+      evidence: [
+        {
+          kind: 'item',
+          slotId: s.slotId,
+          slotLabel: s.slotLabel,
+          itemName: s.itemName,
+          note: `${s.empty} of ${s.sockets} rune socket${s.sockets === 1 ? '' : 's'} empty.`,
+        },
+      ],
+      provenance: ctx.model.pathOfBuildingExport ? 'pob-export' : 'ninja',
+    }),
+  )
+}
+
+// ---------------------------------------------------------------------------
 // Unresolved: things worth knowing that this payload cannot answer.
 // ---------------------------------------------------------------------------
 function collectUnresolved(ctx: Context): Unresolved[] {
@@ -650,6 +680,7 @@ const RULES: readonly ((ctx: Context) => Recommendation[])[] = [
   anointRule,
   weaponTierRule,
   idleWeaponSetRule,
+  emptyRuneRule,
   ...OFFENCE_RULES,
 ]
 
