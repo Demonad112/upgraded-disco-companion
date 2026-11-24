@@ -115,7 +115,7 @@ The "Old input" column is what the poe.ninja model supplied. The "From the code"
 |---|---|---|
 | CP-4 | Do code-read breakdowns (item, tree, quest and base lines, verified against the code's own PlayerStat totals) count as PoB's figures (`pob-export`), not a simulation? | Yes. Unverified stats are flagged, never adjusted |
 | CP-5 | Export PoB's level and attribute base constants (Life, Mana, ES, Evasion) via `tools/pob2/export/` into generated data | Yes, rebuilt with `npm run build:pob -w @poe2/data`, like B4 |
-| CP-7 | Per-skill DPS for the non-main groups: the code has none, and the site never simulates | A CI-only oracle from PoB's engine now (pob2-alignment decision 3): `*.groups.oracle.json`, tests only; the site shows these numbers in B9 with provenance `pob-sim` (answered 2026-11-24) |
+| CP-7 | Per-skill DPS for the non-main groups: the code has none | A CI-only oracle from PoB's engine now: `*.groups.oracle.json`, tests only (answered 2026-11-24). Later the same day the owner allowed the site to simulate: the browser engine (`docs/plans/pob2-browser-engine.md`) shows them labelled "≈ est.", provenance `pob-sim`, checked against this oracle |
 | CP-6 | Should e2e, the mock proxy and the screenshot payload use main-ninja as the one reference character? | Yes. Numbers change; no assertion is removed |
 
 Rows this plan supersedes:
