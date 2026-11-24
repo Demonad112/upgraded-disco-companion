@@ -2,7 +2,7 @@
  * CP-7: every skill group of a code against PoB's own engine output for it.
  *
  * `<name>.groups.oracle.json` is written by headless PoB (`tools/pob2/groups.lua` via `npm run pob2:oracle`, CI job
- * `pob2-oracle`): one row per (group, active skill), with that group selected. No Lua runs here. It is CI-only ground
+ * `pob2-oracle`): one row per (group, active skill), with that group selected in a single loaded build. No Lua runs here. It is CI-only ground
  * truth: a code stores PlayerStats for its main group only, and the site never shows or simulates the others (B9).
  *
  * Checked per code: the code's own TotalDPS equals the oracle row for its main group (0.1 %), every `<Skill>` group has
@@ -18,6 +18,8 @@ import { pobToCharModel } from '../src/pob/to-model.js'
 
 interface GroupRow {
   group: number
+  /** PoB's own socketGroupList index the row was computed from (groups.lua). */
+  pobGroup?: number
   activeSkill: number
   skill?: string
   enabled?: boolean
@@ -42,13 +44,12 @@ const codes = [
 ]
 
 /**
- * Groups whose oracle row is not the group's own skill, and why. Group 18 on both builds is the Spear Throw that
- * Daevata's Wind grants on the swap weapon ("Weapon 1 Swap", not the live set): PoB logs "Failed to process skill:
- * Spear Throw" and computes its fallback attack (Spear Stab) instead. A change here means PoB's engine changed.
+ * Groups PoB folds into another group on its first calc (CalcSetup.lua mergedGroups / granted-skill cleanup), as
+ * export index → PoB index of the group it computes them from. Both builds: 2 (Default Attack Spear Throw, swap) and
+ * 18 (Daevata's Wind's Spear Throw, swap) into the kept Spear Throw; 16 and 17 (tree-granted Hollow Focus/Resonance)
+ * into the user's own copies. A change here means PoB's merge rules changed.
  */
-const ENGINE_FALLBACK: Record<number, { code: string; engine: string }> = {
-  18: { code: 'Spear Throw', engine: 'Spear Stab' },
-}
+const FOLDED: Record<number, number> = { 2: 4, 16: 2, 17: 3, 18: 4 }
 
 /**
  * Codes whose embedded TotalDPS is stale against current PoB by more than 0.1 % (PB-3a): the owner's PoB2-app export
@@ -104,15 +105,21 @@ describe('PoB2 groups oracle (CP-7)', () => {
       })
 
       it('names, per group, the active gem allGems lists first', () => {
-        const fallbacks: number[] = []
         for (const skill of model.skills!.filter((s) => s.group !== undefined)) {
           const gem = skill.allGems!.find((g) => (g.itemData as { support?: boolean } | undefined)?.support !== true)!.name
-          const engine = first(skill.group!)!.skill
-          if (engine === gem) continue
-          expect(ENGINE_FALLBACK[skill.group!], `group ${skill.group}: allGems ${gem}, PoB ${engine}`).toEqual({ code: gem, engine })
-          fallbacks.push(skill.group!)
+          expect(first(skill.group!)!.skill, `group ${skill.group}`).toBe(gem)
         }
-        expect(fallbacks).toEqual(Object.keys(ENGINE_FALLBACK).map(Number))
+      })
+
+      it('computes each group from PoB’s own group, folded groups from the one PoB kept', () => {
+        const folded: Record<number, number> = {}
+        let shift = 0
+        for (let g = 1; g <= groups.length; g++) {
+          const pobGroup = first(g)!.pobGroup!
+          if (pobGroup !== g - shift) folded[g] = pobGroup
+          if (FOLDED[g] !== undefined) shift++
+        }
+        expect(folded).toEqual(FOLDED)
       })
     })
   }
