@@ -2,17 +2,19 @@
 
 import { useState } from 'react'
 import { importUrl } from '@/lib/recentCharacters'
+import { pobShareUrl } from '@/lib/pobLink'
 import { Button } from '@/components/shared/controls'
 
 /**
- * Shares the page's `?import=` link: the share sheet on phones, the clipboard
- * elsewhere. Opening the link re-imports the character from poe.ninja.
+ * Shares a link that opens this character again: the share sheet on phones, the clipboard elsewhere. A poe.ninja
+ * import gives its `?import=` link; a PoB code gives `#pob=<code>`, which carries the code itself (lib/pobLink.ts).
  */
-export function CopyLink({ url, name }: { url: string; name: string }) {
+export function CopyLink({ url, code, name }: { url: string | null; code?: string | null; name: string }) {
   const [status, setStatus] = useState<string | null>(null)
 
   const share = async () => {
-    const link = importUrl(url, window.location.origin)
+    const link = url ? importUrl(url, window.location.origin) : code ? pobShareUrl(window.location.href, code) : null
+    if (!link) return
     try {
       if (navigator.share && window.matchMedia('(pointer: coarse)').matches) {
         await navigator.share({ title: `${name} — PoE2 Endgame Companion`, url: link })

@@ -4,7 +4,8 @@
 
 | League | Fixture | Notes |
 |---|---|---|
-| `forbidden-rites` | `main` | The owner's main build (Monk / Martial Artist, level 90; the same code B2 seeded as `seed-monk`). Its export is stale against PoB 0.23.1: 22 stats differ, e.g. TotalDPS 186,706 embedded vs 203,790 recomputed and every maximum hit about 8% lower now (physical 5,004 → 4,597); Life, ES and resistances match. |
+| `forbidden-rites` | `main` | The owner's main build (Monk / Martial Artist, level 90; the same code B2 seeded as `seed-monk`). Its export is stale against PoB 0.23.1: 17 stats differ, e.g. TotalDPS 125,658 embedded vs 125,919 recomputed and every maximum hit about 8% lower now (physical 5,004 → 4,597); Life, ES and resistances match. |
+| `forbidden-rites` | `current` | The same character after the owner's 2026-11-24 changes, exported from the PoB2 app; the end-to-end fixture for the per-skill table (B9). Also stale: 17 stats differ, TotalDPS 186,706 embedded vs 203,790 recomputed, physical maximum hit 5,182 → 4,751; Life, ES and resistances match. |
 
 Oracle shape (keys sorted, 2-space indent):
 

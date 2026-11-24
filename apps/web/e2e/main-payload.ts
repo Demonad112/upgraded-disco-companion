@@ -22,3 +22,6 @@ export const mainPayload = JSON.parse(mainPayloadJson) as { type: string; charMo
 
 /** The reference character's PoB code (main-ninja, poe.ninja's export; CP-6), as pasted into the paste box. */
 export const mainCode: string = readFileSync(resolve('../../packages/core/test/ninja-legacy/main-ninja.code.txt'), 'utf8').trim()
+
+/** The owner's updated character (forbidden-rites/current, 2026-11-24), for the `#pob=` share link (B9 E0). */
+export const currentCode: string = readFileSync(resolve('../../packages/core/test/pob2/forbidden-rites/current.code.txt'), 'utf8').trim()

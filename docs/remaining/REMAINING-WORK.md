@@ -47,7 +47,7 @@ Superseded NP1 rows and answered GF1-1..3 are in `archive/REGISTER-CLOSED.md`. N
 | AL1-1 | `routeLegs` counts a leg for a step whose target nodes are already reached, so "leg L" can step on a no-op | S | #212 check | `apps/web/src/lib/atlasLegs.ts:63`: skip the leg (keep L) when the BFS frontier already holds every target. Plan: `docs/plans/pob-character-analysis.md` W3 | open |
 | NP1-7 | The proxy answers 404 for both "character not found" and "poe.ninja moved the endpoint", so the app can't tell a typo from a route change | S | #214 check | Only matters once URL import returns (NP1-1); split the message by upstream body then | open (waits on NP1-1) |
 | GF1-4 | Show Gear fit per item in the UI (labelled readout, `GEAR_FIT_BASIS` copy) and the veto notes | M | GF1 | Built: `GearFitReadout.tsx` in each Gear card (score, best on base, not-rolled/wasted/unscored under Pro detail; "If you swap this item" notes from `planReplacement`). Rows keep their replace-first order. Decision: `paretoView` and `compareTarget` get no UI. `compareTarget` needs a candidate item and the site has no trade-search or paste-an-item flow to supply one. `paretoView` would show a second ordering beside the ranked list and most findings have unknown cost or unmeasured gain, so it would mostly list `unplaced` rows. Revisit only if an item-paste flow is built. Verify the built readout on a real character in GF1-6 | built, verify in GF1-6 |
-| PB-3a | Embedded max hits in the main code are stale, not only DPS: PoB 0.23.1 computes every maximum hit about 8% lower (physical 5,004 → 4,597, chaos 7,788 → 6,922) and TotalEHP 19,698 → 17,975, so the site's defence figures read high until the owner re-exports | S | PB-3 oracle | Owner: re-export `main` from PoB 0.23.1 and paste it (fixture + oracle regen in one PR). The site already says so when PoB's recomputed figures are supplied (`Analysis.staleExport`); live detection needs B9 | open |
+| PB-3a | Embedded max hits in the main code are stale, not only DPS: PoB 0.23.1 computes every maximum hit about 8% lower (physical 5,004 → 4,597, chaos 7,788 → 6,922) and TotalEHP 19,698 → 17,975, so the site's defence figures read high until the owner re-exports | S | PB-3 oracle | The owner's 2026-11-24 code (`current`) is stale the same way (TotalDPS 186,706 → 203,790, physical max hit 5,182 → 4,751). Owner: re-export `main` from PoB 0.23.1 and paste it (fixture + oracle regen in one PR). The site already says so when PoB's recomputed figures are supplied (`Analysis.staleExport`); live detection needs B9 | open |
 | GF1-8 | User-set targets (Life ≥ 5000, resistances ≥ max, …) checked against the analysed numbers from a PoB code, not poe.ninja (owner 2026-11-21) | S | GF1 item 8 | `docs/plans/pob-character-analysis.md` W2: `checkTargets` in core, seeded from `benchmarks.ts`, editable in Progress; a stat the code lacks is `missing` | open |
 
 ## PoB2 alignment (PB-1..PB-9)
@@ -96,16 +96,19 @@ Plan: `docs/plans/code-source-parity.md`. Run order: CP-1 → CP-2 → CP-3. Ref
 | CP-7 | CI-only all-groups oracle from PoB's engine: `groups.lua`, `run.mjs --groups`, `*.groups.oracle.json` | M | CP plan | Opus | done: main-ninja equals the reference (18 groups, 21 rows); the site never shows it (B9) |
 | CP-3 | Web: paste box for the poe.ninja code, optional character name, e2e on main-ninja | M | CP plan | Sonnet, wave 3; budget measured | done (CP-3 PR) |
 
-## PoB2 browser engine (E1..E5)
+## PoB2 browser engine (E0..E7)
 Plan: `docs/plans/pob2-browser-engine.md` (batch log inside); this is B9 (PB-9). Owner rows BE-1, BE-2 are in § Owner queue.
 
 | ID | Item | Size | Origin | Notes | Status |
 |---|---|---|---|---|---|
+| E0 | `#pob=<code>` share link (no server) + `forbidden-rites/current` fixture and oracles, the end-to-end code for E3..E5 | S | BE plan | `apps/web/src/lib/pobLink.ts` | done |
 | E1 | Spike: vendor/pob2 in wasmoon under Node | M | BE plan | Exact on 42 group rows (main-ninja, forbidden-rites); init 4.5 s, load 2 s, group switch 0.8 s; 2.1 MB brotli opened set; 375 MB WASM heap | done |
 | E2 | Data packaging: lazy archive, brotli, SW cache by `NEXT_PUBLIC_DATA_VERSION`, self-hosted patched `glue.wasm` | M | BE plan | Needs BE-1 | open |
-| E3 | Worker API: per-group DPS, gear-swap ΔDPS/ΔEHP | M | BE plan | After E2 | open |
-| E4 | Web UI with "≈ est." labels, provenance `pob-sim` | M | BE plan | After E3; ask for the screenshot check | open |
+| E3 | Worker API: per-group DPS, gear-swap ΔDPS/ΔEHP | M | BE plan | After E2; rows keyed `(group, activeSkill)` in `<Skill>` order, plus live defences | open |
+| E4 | Web UI with "≈ est." labels, provenance `pob-sim` | M | BE plan | After E3; per-skill table with "Sustained" (TotalDPS) and "Per use / combined" (CombinedDPS) columns; ask for the screenshot check | open |
 | E5 | CI accuracy test: worker engine vs every `*.groups.oracle.json` | S | BE plan | After E3 | open |
+| E6 | Upgrade ranking: worker swaps the top N candidates per slot, ranks by ΔDPS/ΔEHP (≈ sim), no job queue | M | BE plan | After E3 | open |
+| E7 | `scripts/pob2/analyze.mjs`: the worker's engine in Node, full JSON report (groups, sub-skills, defences, gear, tree), no LuaJIT | S | BE plan | After E3 | open |
 
 ## Standing rules (no work)
 - Route, lazy and per-chunk budgets live in `scripts/route-weight.mjs` (source of truth; brotli, first load). It exits 1 when one is over and runs in CI (`ci.yml`). Raise one only on purpose, with the reason in the PR. Any change to home JS reports before and after.

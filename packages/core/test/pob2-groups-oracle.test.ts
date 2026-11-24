@@ -58,6 +58,8 @@ const FOLDED: Record<number, number> = { 2: 4, 16: 2, 17: 3, 18: 4 }
  */
 const STALE_TOTAL_DPS: Record<string, { gap: number; why: string }> = {
   'pob2/forbidden-rites/main.code.txt': { gap: 0.002077, why: 'PoB2-app export written by an older PoB (PB-3a)' },
+  // The owner's updated character (2026-11-24): 186,706 embedded vs 203,790 now.
+  'pob2/forbidden-rites/current.code.txt': { gap: 0.091498, why: 'PoB2-app export written by an older PoB (PB-3a)' },
 }
 
 const label = (file: string) => file.replace(/^.*\/test\//, '')
