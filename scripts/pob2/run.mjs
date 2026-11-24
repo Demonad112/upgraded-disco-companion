@@ -106,7 +106,7 @@ export async function snapshot(code, runner = pickRunner()) {
 
 /**
  * Every skill group's PoB output for one code (CP-7): one row per (group, active skill), computed by PoB's engine
- * with that group selected. CI-only ground truth for tests; the site never shows or simulates it.
+ * with that group selected. The accuracy reference for the site's simulated per-group figures (B9).
  */
 export async function groups(code, runner = pickRunner()) {
   const xml = await decode(code);
