@@ -13,6 +13,9 @@
  *     as its second stat (PoB shows each stat of a hybrid as its own line, and the text cannot say which);
  *   - more than one remaining mod (overlapping tiers, a prefix and a suffix with the same text) is
  *     ambiguous: the line is not given an id.
+ *   - a non-affix mod with several stats (the amulet's "+1 Prefix / -1 Suffix Modifier allowed" implicit) prints
+ *     one line per stat; consecutive lines are matched as that one mod when a display entry has exactly those
+ *     stats (`matchJoined`), longest run first.
  * A line that is not resolved stays text, listed in `itemData.textOnlyMods` so the item still shows it and
  * says why it has no tier. Rune and enchant lines never carry ids (as on poe.ninja).
  *
@@ -122,6 +125,13 @@ function rolledStats(entry: Entry, values: number[]): Record<string, number> {
 
 export type LineKind = 'implicit' | 'explicit' | 'crafted' | 'desecrated' | 'fractured'
 
+/** What a line is matched against: the item's rarity, its base's spawn tags and its class (null when unknown). */
+export interface MatchContext {
+  rarity: string
+  baseTags: readonly string[] | null
+  baseClass?: string | null
+}
+
 export interface LineMatch {
   id: string
   stats: Record<string, number>
@@ -134,7 +144,7 @@ export interface LineMatch {
 export function matchModLine(
   line: string,
   kind: LineKind,
-  context: { rarity: string; baseTags: readonly string[] | null },
+  context: MatchContext,
   tiers: ModTiers,
 ): LineMatch | null {
   const values = [...strip(line).matchAll(TOKEN)].map((m) => Number(m[0]))
@@ -145,10 +155,18 @@ export function matchModLine(
   // craftable affixes, which must be able to spawn on the item's base. Never the other way round: a unique's
   // fixed roll must not be given a craftable tier, and a rare's line must not match a unique's mod.
   const displayOnly = context.rarity === 'Unique' || kind === 'implicit'
-  const pool = candidates.filter((e) =>
+  let pool = candidates.filter((e) =>
     displayOnly ? e.display : !e.display && context.baseTags !== null && tiers.canSpawn(e.id, context.baseTags),
   )
   if (!pool.length) return null
+  // Implicits carry no spawn rules, but the game names each after the class it sits on (`AmuletImplicit…`,
+  // `RingImplicit…`). Two classes printing the same text are told apart by the item's own class; anything
+  // still ambiguous stays text.
+  if (pool.length > 1 && kind === 'implicit' && context.baseClass) {
+    const own = `${context.baseClass.replace(/\s+/g, '')}Implicit`
+    const narrowed = pool.filter((e) => e.id.startsWith(own))
+    if (narrowed.length) pool = narrowed
+  }
   const groups = new Set(pool.map((e) => (e.raw ? `${e.raw.t}:${e.raw.g}` : `display:${e.id}`)))
   if (groups.size !== 1) return null
   // One group: the tiers must not overlap on this roll, or the tier is a guess.
@@ -163,6 +181,30 @@ export function matchModLine(
     if (hybrid) return null
   }
   return { id: exact.id, stats: rolledStats(exact, values) }
+}
+
+/** The most lines one non-affix mod prints (PoB writes each of its stats as its own line). */
+const MAX_JOINED = 3
+
+/**
+ * A non-affix mod that prints over several consecutive lines (the amulet's "+1 Prefix Modifier allowed" /
+ * "-1 Suffix Modifier allowed" implicit is one mod with two stats), matched as one, longest first. Only a
+ * display entry with one stat per line counts, so a run of plain lines is never merged into a guess.
+ */
+function matchJoined(
+  lines: readonly unknown[],
+  start: number,
+  kind: LineKind,
+  context: MatchContext,
+  tiers: ModTiers,
+): { hit: LineMatch; span: number } | null {
+  for (let span = Math.min(MAX_JOINED, lines.length - start); span >= 2; span--) {
+    const window = lines.slice(start, start + span)
+    if (!window.every((l): l is string => typeof l === 'string')) continue
+    const hit = matchModLine(window.join('\n'), kind, context, tiers)
+    if (hit && Object.keys(hit.stats).length === span) return { hit, span }
+  }
+  return null
 }
 
 const KINDS: readonly (readonly [keyof NinjaItemData, LineKind, string])[] = [
@@ -181,14 +223,26 @@ export function resolveItemMods(items: readonly NinjaItem[], tiers: ModTiers): N
   return items.map((item) => {
     const data = item.itemData
     const typeLine = data.typeLine ?? data.baseType ?? ''
-    const context = { rarity: data.rarity ?? 'Normal', baseTags: tiers.tagsForBase(typeLine) }
+    const context: MatchContext = {
+      rarity: data.rarity ?? 'Normal',
+      baseTags: tiers.tagsForBase(typeLine),
+      baseClass: tiers.classForBase(typeLine),
+    }
     const mods: Record<string, { id: string; stats: Record<string, number> }[]> = {}
     const textOnly: string[] = []
     for (const [key, kind, bucket] of KINDS) {
       const lines = data[key]
       if (!Array.isArray(lines)) continue
-      for (const line of lines) {
+      const displayOnly = context.rarity === 'Unique' || kind === 'implicit'
+      for (let i = 0; i < lines.length; i++) {
+        const line = lines[i]
         if (typeof line !== 'string') continue
+        const joined = displayOnly ? matchJoined(lines, i, kind, context, tiers) : null
+        if (joined) {
+          ;(mods[bucket] ??= []).push(joined.hit)
+          i += joined.span - 1
+          continue
+        }
         const hit = matchModLine(line, kind, context, tiers)
         if (hit) (mods[bucket] ??= []).push(hit)
         else if (kind !== 'implicit') textOnly.push(line)

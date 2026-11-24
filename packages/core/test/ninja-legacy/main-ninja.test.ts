@@ -12,6 +12,7 @@ import { readFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 
 import { analyzeCharacter } from '../../src/analyze.js'
+import { parseSkillSetup } from '../../src/gems/index.js'
 import { decodePobExport, readPlayerStats } from '../../src/pob/export.js'
 import { pobToCharModel } from '../../src/pob/to-model.js'
 import { reconcile } from '../../src/reconcile/index.js'
@@ -43,7 +44,8 @@ describe('the poe.ninja code as recorded', () => {
 
   it('runs as a pob-export analysis with the stated source gaps and a stable projection', async () => {
     // With the tree: the per-stat breakdowns are read from the code's lines (CP-1).
-    const a = await analyzeCharacter((await pobToCharModel(ninjaCode)) as unknown as Record<string, unknown>, { source: 'pob-export', tree })
+    const model = await pobToCharModel(ninjaCode)
+    const a = await analyzeCharacter(model as unknown as Record<string, unknown>, { source: 'pob-export', tree })
     expect(a.source).toBe('pob-export')
     expect(a.sourceGaps.map((g) => g.what)).toEqual([
       'Per-skill damage',
@@ -70,7 +72,15 @@ describe('the poe.ninja code as recorded', () => {
         unmatchedSources: a.attribution.unmatchedSources,
       },
       reconciliation: a.reconciliation?.checks.map((c) => `${c.stat}: PoB ${c.ninja}, lines ${c.other}, ${c.severity}`) ?? null,
-      primarySkill: a.dps.primary ? { name: a.dps.primary.name, totalDps: a.dps.primary.totalDps } : null,
+      primarySkill: a.dps.primary
+        ? { name: a.dps.primary.name, totalDps: a.dps.primary.totalDps, useRates: a.dps.primary.useRates }
+        : null,
+      // CP-2: every <Skill> group's gems, as `group: active + supports`.
+      skillGroups: model.skills!.map((s) => {
+        const setup = parseSkillSetup(s)
+        return `${s.group}: ${setup.skill}${setup.supports.length ? ` + ${setup.supports.map((g) => g.name).join(', ')}` : ''}`
+      }),
+      recommendations: a.recommendations.recommendations.map((r) => `${r.id} (dps ${r.measured?.dps ?? 'null'})`),
       assessment: {
         score: a.assessment.score,
         scoreRange: a.assessment.scoreRange,

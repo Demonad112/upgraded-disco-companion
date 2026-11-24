@@ -250,7 +250,8 @@ describe('splitTree and snapshotToCharModel', () => {
       '2x Fireball',
       '2x Ball Lightning',
     )
-    const names = snapshotToCharModel(readPobSnapshot(doc)).skills!.map((s) => s.dps?.[0]?.name)
+    // Every group is listed (CP-2); only those with a figure carry a damage entry.
+    const names = snapshotToCharModel(readPobSnapshot(doc)).skills!.flatMap((s) => s.dps?.[0]?.name ?? [])
     expect(names).toEqual(['Ball Lightning', 'Summon Raging Spirit'])
   })
 

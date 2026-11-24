@@ -14,6 +14,19 @@ import { codeBreakdowns, CODE_BREAKDOWN_STATS, type CodeBreakdownStat } from '..
 import { readPobSnapshotFromCode } from '../../src/pob/export.js'
 import { pobToCharModel } from '../../src/pob/to-model.js'
 import { PassiveTree, type PassiveTreeData } from '../../src/tree/index.js'
+import { analyzeDps, USE_RATE_LABELS } from '../../src/dps/index.js'
+import { analyzeItem } from '../../src/gear/analyze.js'
+import { auditGemQuality, findEmptySockets } from '../../src/gear/audit.js'
+import { resolveItemMods } from '../../src/gear/text-mods.js'
+import { ModTiers, type ModTierData } from '../../src/gear/tiers.js'
+import { SupportCatalog, type PobSkillData } from '../../src/gems/catalog.js'
+import { parseAllSetups, parseSkillSetup } from '../../src/gems/index.js'
+import { normalizeItems } from '../../src/model/slots.js'
+import { ModDatabase, type ModData } from '../../src/mods/index.js'
+import { decodePobExport } from '../../src/pob/export.js'
+import { readPobSnapshot } from '../../src/pob/snapshot.js'
+import { snapshotToCharModel } from '../../src/pob/to-model.js'
+import { highestSocketedTier, reviewDamage } from '../../src/recommend/damage.js'
 
 const read = (p: string) => readFileSync(fileURLToPath(new URL(p, import.meta.url)), 'utf8')
 const code = read('./main-ninja.code.txt').trim()
@@ -140,5 +153,141 @@ describe('code breakdowns on main-ninja', () => {
     expect(a.attribution.items).toHaveLength(0)
     expect(a.reconciliation).toBeNull()
     expect(a.sourceGaps.map((g) => g.what)).toContain('Stat attribution — which item or passive grants each point')
+  })
+})
+
+// ---------------------------------------------------------------------------
+// CP-2: gems from every `<Skill>` group, legal mod ids, empty runes, per-use DPS.
+// ---------------------------------------------------------------------------
+
+const dataDir = '../../../data/generated/'
+const tiers = new ModTiers(JSON.parse(read(`${dataDir}mod-tiers.json`)) as ModTierData)
+const catalog = new SupportCatalog(JSON.parse(read(`${dataDir}pob-skills.json`)) as PobSkillData)
+const modDb = new ModDatabase(JSON.parse(read(`${dataDir}mods.json`)) as ModData, JSON.parse(read(`${dataDir}mod-bases.json`)))
+
+describe('CP-2: every skill group’s gems on main-ninja', () => {
+  it('reads all 18 groups, the main group (15, Storm Wave) first with PoB’s damage', async () => {
+    const model = await pobToCharModel(code)
+    expect(model.skills).toHaveLength(18)
+    expect(model.skills!.map((s) => s.group).sort((a, b) => a! - b!)).toEqual(Array.from({ length: 18 }, (_, i) => i + 1))
+    expect(model.skills![0]).toMatchObject({ group: 15, dps: [{ name: 'Storm Wave' }] })
+    expect(model.skills!.filter((s) => s.dps)).toHaveLength(1)
+    // 79 gems in the code, all enabled.
+    expect(model.skills!.reduce((n, s) => n + (s.allGems?.length ?? 0), 0)).toBe(79)
+  })
+
+  it('shows Pinpoint Critical on groups 10, 12 and 15, and nowhere else', async () => {
+    const model = await pobToCharModel(code)
+    const withPinpoint = model.skills!.filter((s) => parseSkillSetup(s).supports.some((g) => g.name === 'Pinpoint Critical'))
+    expect(withPinpoint.map((s) => s.group).sort((a, b) => a! - b!)).toEqual([10, 12, 15])
+    expect(withPinpoint.map((s) => parseSkillSetup(s).skill).sort()).toEqual(['Staggering Palm', 'Storm Wave', 'Whirling Assault'])
+  })
+
+  it('reviews Storm Wave with its own five supports, and sees every group’s supports', async () => {
+    const model = await pobToCharModel(code)
+    const setups = parseAllSetups(model.skills)
+    expect(setups).toHaveLength(18)
+    const review = reviewDamage({ dps: analyzeDps(model), setups, items: [], rawItems: [], tiers: null, catalog })!
+    expect(review.skill).toBe('Storm Wave')
+    expect(review.supports.map((s) => s.name)).toEqual([
+      'Branching Fissures II',
+      'Elemental Armament II',
+      'Pinpoint Critical',
+      'Rapid Attacks II',
+      'Deliberation',
+    ])
+    // The highest socketed tier is read across all 18 groups, not only the main one.
+    const storm = highestSocketedTier([setups.find((s) => s.skill === 'Storm Wave')!], catalog)
+    expect(highestSocketedTier(setups, catalog)).toBeGreaterThanOrEqual(storm ?? 0)
+    expect(setups.flatMap((s) => s.supports).length).toBeGreaterThan(review.supports.length)
+  })
+
+  it('audits gem quality across every group: active gems only, supports never', async () => {
+    const report = auditGemQuality(await pobToCharModel(code))
+    const skills = new Set(report.map((r) => r.gem))
+    expect(skills.has('Storm Wave')).toBe(false) // quality 20
+    expect(report.length).toBeGreaterThan(0)
+    expect(report.every((r) => !r.gem.includes('Pinpoint'))).toBe(true)
+  })
+})
+
+describe('CP-2 (PB-12): mod ids matched from main-ninja’s item text', () => {
+  const resolved = async () => resolveItemMods((await pobToCharModel(code)).items ?? [], tiers)
+
+  it('gives every matched id only where it is legal for the item’s base', async () => {
+    let checked = 0
+    for (const item of await resolved()) {
+      const base = item.itemData.typeLine ?? ''
+      const tags = tiers.tagsForBase(base)
+      const cls = tiers.classForBase(base)
+      for (const [bucket, list] of Object.entries(item.itemData.mods ?? {})) {
+        for (const { id } of list as { id: string }[]) {
+          checked++
+          if (tiers.raw(id)) {
+            // An affix: PoB's spawn rules allow it on this base, and the class pool lists it where both are known.
+            expect(tags && tiers.canSpawn(id, tags), `${id} on ${base}`).toBe(true)
+            const pool = modDb.classesForMod(id)
+            const poolClass = modDb.classForBase(base)
+            if (pool && poolClass) expect(pool, `${id} on ${base}`).toContain(poolClass)
+          } else if (bucket === 'implicit' && /^[A-Z][A-Za-z]+Implicit/.test(id) && cls) {
+            // An implicit is named after the class it sits on.
+            expect(id.startsWith(`${cls.replace(/\s+/g, '')}Implicit`), `${id} on ${base}`).toBe(true)
+          }
+        }
+      }
+    }
+    expect(checked).toBeGreaterThan(20)
+  })
+
+  it('reads the amulet’s two-line implicit as one mod: capacity 4 prefixes / 2 suffixes', async () => {
+    const amulet = (await resolved()).find((i) => i.itemSlot === 4)!
+    expect(amulet.itemData.mods?.implicit).toEqual([
+      { id: 'AmuletImplicitPrefixSuffixAllowed1', stats: { 'local_maximum_prefixes_allowed_+': 1, 'local_maximum_suffixes_allowed_+': -1 } },
+    ])
+    const item = normalizeItems({ items: [amulet] }).find((i) => i.slotId === 4)!
+    expect(analyzeItem(item, tiers, null).affixCapacity).toEqual({ prefix: 4, suffix: 2 })
+  })
+
+  it('keeps a stat stored in hundredths in its own units (8.43% leech is 843 permyriad)', async () => {
+    const weapon = (await resolved()).find((i) => i.itemSlot === 7)!
+    const leech = (weapon.itemData.mods?.explicit as { id: string; stats: Record<string, number> }[]).find((m) => m.id.startsWith('LifeLeechLocal'))!
+    expect(leech.stats).toEqual({ local_life_leech_from_physical_damage_permyriad: 843 })
+  })
+})
+
+describe('CP-2: empty rune sockets', () => {
+  it('counts `Rune: None` as an empty socket: Blight Weaver has 2 of 2 empty', async () => {
+    const model = await pobToCharModel(code)
+    const empty = findEmptySockets(normalizeItems(model))
+    expect(empty).toEqual([{ slotId: 7, slotLabel: expect.any(String), itemName: 'Blight Weaver', sockets: 2, filled: 0, empty: 2 }])
+  })
+
+  it('makes it a finding with no measured gain: a rune’s worth would be a simulated swap', async () => {
+    const a = await analysis()
+    const rec = a.recommendations.recommendations.find((r) => r.id === 'empty-rune-sockets-7')!
+    expect(rec).toMatchObject({ category: 'efficiency', impact: null, provenance: 'pob-export' })
+    expect(rec.measured?.dps).toBeNull()
+    expect(rec.action).toBe('Fill the 2 empty rune sockets in Blight Weaver.')
+    expect(rec.evidence[0]).toMatchObject({ kind: 'item', slotId: 7, itemName: 'Blight Weaver' })
+  })
+})
+
+describe('CP-2: per-use vs continuous DPS', () => {
+  it('does not split Storm Wave: its CombinedDPS is not below its TotalDPS', async () => {
+    expect(analyzeDps(await pobToCharModel(code)).primary).toMatchObject({ name: 'Storm Wave', useRates: null })
+  })
+
+  it('labels Hollow Resonance (group 4) per use 33,332 and if used continuously 69,531', async () => {
+    // A code carries PlayerStats for its own main group only, so the variant also carries PoB's engine figures for
+    // group 4 (`main-ninja.groups.oracle.json`, CP-7): CombinedDPS 33,332.2 and TotalDPS 69,531.0.
+    const xml = (await decodePobExport(code))
+      .replace('mainSocketGroup="15"', 'mainSocketGroup="4"')
+      .replace(/<PlayerStat stat="TotalDPS" value="[^"]*"\/>/, '<PlayerStat stat="TotalDPS" value="69530.976701658"/>')
+      .replace(/<PlayerStat stat="CombinedDPS" value="[^"]*"\/>/, '<PlayerStat stat="CombinedDPS" value="33332.203596193"/>')
+    const primary = analyzeDps(snapshotToCharModel(readPobSnapshot(xml))).primary!
+    expect(primary.name).toBe('Hollow Resonance')
+    expect(Math.round(primary.useRates!.perUse)).toBe(33332)
+    expect(Math.round(primary.useRates!.continuous)).toBe(69531)
+    expect(USE_RATE_LABELS).toEqual({ perUse: 'per use', continuous: 'if used continuously' })
   })
 })

@@ -55,7 +55,15 @@ export interface SkillDamage {
   provenance: Provenance
   /** Support/meta gems socketed alongside, when the payload lists them. */
   gems: string[]
+  /**
+   * A combo or cooldown skill's two figures, both PoB's: `perUse` (CombinedDPS) and `continuous` (TotalDPS, which
+   * assumes no pause between uses). Null unless the code's CombinedDPS is below its TotalDPS (CP-2).
+   */
+  useRates: { perUse: number; continuous: number } | null
 }
+
+/** The labels the two figures of `SkillDamage.useRates` are shown with. */
+export const USE_RATE_LABELS = { perUse: 'per use', continuous: 'if used continuously' } as const
 
 export interface DpsSummary {
   skills: SkillDamage[]
@@ -102,6 +110,11 @@ function gemNames(skill: NinjaSkill): string[] {
     .filter((n): n is string => typeof n === 'string' && n.length > 0)
 }
 
+function useRatesOf(entry: NinjaSkillDps, dps: number): SkillDamage['useRates'] {
+  const combined = readNumber(entry.combinedDps)
+  return combined !== null && combined > 0 && combined < dps ? { perUse: combined, continuous: dps } : null
+}
+
 function toSkillDamage(entry: NinjaSkillDps, skill: NinjaSkill): SkillDamage | null {
   // Meta/trigger setups (Mirage Archer, Freezing Mark) carry a dps block with
   // no name. They are gem containers, not castable skills — skip rather than
@@ -136,6 +149,7 @@ function toSkillDamage(entry: NinjaSkillDps, skill: NinjaSkill): SkillDamage | n
     dominantType: damageSplit[0]?.type ?? dotSplit[0]?.type ?? null,
     provenance: 'ninja',
     gems: gemNames(skill),
+    useRates: useRatesOf(entry, dps),
   }
 }
 
