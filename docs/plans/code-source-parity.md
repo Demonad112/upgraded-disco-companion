@@ -75,7 +75,7 @@ The "Old input" column is what the poe.ninja model supplied. The "From the code"
 | 1 | CP-1 Core: breakdowns read from the code, verified; reconcile for codes; attribution gap dropped | Opus | CP-4, CP-5 (answered) | none |
 | 2 | CP-2 Core: `allGems` from `<Skill>` groups; PB-12 mod-id fixes (**done**) | Sonnet | CP-1 merged | none |
 | 2b | CP-7 CI-only all-groups oracle from PoB's engine (`tools/pob2/groups.lua`, `run.mjs --groups`, `*.groups.oracle.json`) (**done**) | Opus | CP-2 | none |
-| 3 | CP-3 Web: paste box for the poe.ninja code, optional name, e2e on main-ninja | Sonnet | CP-2 merged, CP-6 (answered) | none |
+| 3 | CP-3 Web: paste box for the poe.ninja code, optional name, e2e on main-ninja | Sonnet | CP-2 merged, CP-6 (answered) | none — done |
 
 **CP-1** (Opus, about 15–25 files)
 - **Files:**
@@ -219,3 +219,15 @@ Decisions:
 
 Suggestions for next batch (CP-3):
 - The DPS row's per-use line is the first web text from CP-2; check it at 390 px.
+
+### CP-3 (2026-11-24)
+
+- The paste box leads with "Paste the PoB code from poe.ninja's character page"; a hint line sends PoB2-app users to `/methodology#pob-config` (built from `docs/POB-NINJA-CONFIG.md`).
+- Optional character name: it becomes `identity.name` with account `pob-code`, so history, recents and changed-since key on `pob-code/<name>`. Without a name nothing is saved, and the box says so in one line.
+- Recents store the code itself (`code`, empty `url`); a chip or `/character/?recent=<key>` re-analyses it. Decision: store the code locally rather than a hash, because the browser can't recover it otherwise.
+- Header and footer say "PoB code" first; the poe.ninja import is described as paused.
+- e2e payloads read `main-ninja`; `main-payload.mjs --use-rates` builds the useRates payload. The new 390 px test checks the DPS row's per-use line fits the screen.
+- The Advanced tab no longer prints "undefined points allocated" for codes.
+- Route weight: within budget, no raise. The red-first e2e was written after the UI, so it was not seen failing (it would fail on main: label and name field don't exist).
+
+Suggestions for next batch: E1 of `docs/plans/pob2-browser-engine.md` (after BE-1), and the apps/web unit tests still use forbidden-rites.
