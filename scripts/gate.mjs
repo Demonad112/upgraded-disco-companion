@@ -25,7 +25,7 @@ export function plan(files) {
   const webTestOnly = web && !webSrc && !any('apps/web/public/', 'apps/web/next.config', 'apps/web/scripts/');
   if (core || any('packages/data/')) add('npm run typecheck'); // builds core, then typechecks every workspace
   else if (web) add('npm run typecheck -w @poe2/web');
-  if (core) add('npm run lint -w @poe2/core');
+  if (core) add('npm run lint -w @poe2/core --if-present'); // core has no lint script
   if (web || coreSrc) add('npm run lint -w @poe2/web');
   if (core) add('npm run test:coverage -w @poe2/core'); // runs the core tests once, with the 90/75 floors
   if (web || coreSrc) add('npm run test -w @poe2/web');

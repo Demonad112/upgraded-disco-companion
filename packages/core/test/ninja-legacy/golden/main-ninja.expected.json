@@ -1,0 +1,104 @@
+{
+  "source": "pob-export",
+  "sourceGaps": [
+    {
+      "what": "Per-skill damage",
+      "why": "A code carries the damage of the skill it had selected, not of every skill."
+    },
+    {
+      "what": "Stat attribution — which item or passive grants each point",
+      "why": "That needs poe.ninja’s per-stat breakdowns, which a code does not carry. Gear tiers and resistance rebalancing depend on it."
+    },
+    {
+      "what": "Ward",
+      "why": "Not among the exported PlayerStat values, so it is reported as absent rather than as zero."
+    },
+    {
+      "what": "Block chance",
+      "why": "Not among the exported PlayerStat values."
+    }
+  ],
+  "identity": {
+    "name": "",
+    "account": "",
+    "league": "",
+    "level": 90,
+    "className": "Martial Artist",
+    "updatedUtc": null
+  },
+  "defence": {
+    "life": 1494,
+    "energyShield": 2827,
+    "lowestMaximumHit": 5182,
+    "lowestMaximumHitType": "physical",
+    "maxHits": [
+      {
+        "type": "physical",
+        "value": 5182
+      },
+      {
+        "type": "chaos",
+        "value": 8003
+      },
+      {
+        "type": "fire",
+        "value": 18482
+      },
+      {
+        "type": "lightning",
+        "value": 19167
+      },
+      {
+        "type": "cold",
+        "value": 22500
+      }
+    ],
+    "resistances": [
+      {
+        "type": "fire",
+        "value": 75,
+        "max": 75,
+        "overCap": 12,
+        "underCap": 0
+      },
+      {
+        "type": "cold",
+        "value": 80,
+        "max": 80,
+        "overCap": 59,
+        "underCap": 0
+      },
+      {
+        "type": "lightning",
+        "value": 76,
+        "max": 76,
+        "overCap": 54,
+        "underCap": 0
+      },
+      {
+        "type": "chaos",
+        "value": 53,
+        "max": 75,
+        "overCap": 0,
+        "underCap": 22
+      }
+    ]
+  },
+  "primarySkill": {
+    "name": "Storm Wave",
+    "totalDps": 98661.22971592662
+  },
+  "assessment": {
+    "score": null,
+    "scoreRange": {
+      "min": 0.42,
+      "max": 0.92
+    },
+    "tier": null,
+    "weaknesses": [
+      "critical: Chaos resistance below its cap (Chaos 53% of 75%, 88% more chaos damage taken)",
+      "warning: 2 weak damage types — Physical 5,182, Chaos 8,003, against 22,500 at best"
+    ]
+  },
+  "warnings": []
+}
