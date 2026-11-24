@@ -10,7 +10,8 @@ math.atan2 = math.atan2 or math.atan
 table.maxn = table.maxn or function(t) local n = 0 for k in pairs(t) do if type(k) == "number" and k > n then n = k end end return n end
 
 local function i32(x)
-	x = math.tointeger(x) or math.tointeger(x >= 0 and math.floor(x) or math.ceil(x)) or 0
+	-- LuaJIT wraps modulo 2^32 (NaN and infinities give 0); take the remainder before converting so large floats wrap too.
+	x = math.tointeger(x) or math.tointeger(math.fmod(x >= 0 and math.floor(x) or math.ceil(x), 4294967296.0)) or 0
 	x = x & 0xFFFFFFFF
 	if x >= 0x80000000 then x = x - 0x100000000 end
 	return x
@@ -85,8 +86,11 @@ string.format = function(fmt, ...)
 			i = i + 1
 			local v = args[i]
 			if (spec == "d" or spec == "i" or spec == "x" or spec == "X" or spec == "o" or spec == "c") and type(v) == "number" and not math.tointeger(v) then
-				args[i] = v >= 0 and math.floor(v) or math.ceil(v)
-				if args[i] ~= args[i] or args[i] == math.huge or args[i] == -math.huge then args[i] = 0 end
+				local t = v >= 0 and math.floor(v) or math.ceil(v)
+				-- NaN is 0; a float outside the integer range clamps (5.4 raises "no integer representation" for it).
+				if t ~= t then t = 0
+				elseif not math.tointeger(t) then t = t > 0 and math.maxinteger or math.mininteger end
+				args[i] = t
 			end
 		end
 	end
