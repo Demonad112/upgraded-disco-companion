@@ -1,4 +1,5 @@
 import { PROFILE_URL, expect, openTab, test } from './fixtures'
+import { currentCode } from './main-payload'
 
 const importUrl = `character/?import=${encodeURIComponent(PROFILE_URL)}`
 
@@ -21,6 +22,28 @@ test('"Copy link" copies a link that re-imports this character', async ({ page }
   await expect(page.getByText('Link copied')).toBeVisible()
   const copied = await page.evaluate(() => (window as unknown as { copied: string }).copied)
   expect(new URL(copied).searchParams.get('import')).toBe(PROFILE_URL)
+})
+
+test('a #pob= link opens the character with no server, then hands back the same link', async ({ page }) => {
+  await page.addInitScript(() => {
+    Object.defineProperty(navigator, 'share', { value: undefined, configurable: true })
+    Object.defineProperty(navigator, 'clipboard', {
+      value: { writeText: async (t: string) => void ((window as unknown as { copied: string }).copied = t) },
+      configurable: true,
+    })
+  })
+  // No poe.ninja call: the code is the whole payload.
+  let proxied = false
+  await page.route('**/api/character**', (route) => ((proxied = true), route.abort()))
+  await page.goto(`character/#pob=${currentCode}`)
+  await expect(page.getByRole('button', { name: 'Copy link' })).toBeVisible({ timeout: 30_000 })
+  // Read once, then the hash goes back to naming the open tab.
+  expect(new URL(page.url()).hash).not.toContain('pob=')
+  await page.getByRole('button', { name: 'Copy link' }).click()
+  await expect(page.getByText('Link copied')).toBeVisible()
+  const copied = await page.evaluate(() => (window as unknown as { copied: string }).copied)
+  expect(new URL(copied).hash).toBe(`#pob=${currentCode}`)
+  expect(proxied).toBe(false)
 })
 
 test('two imported characters can be compared', async ({ page }) => {

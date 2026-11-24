@@ -9,7 +9,7 @@ const out = 'apps/web/out'
 const BUDGET = {
   'index.html': 160_000, // CMP2: +1,140 B br on every route (companion host shell and CSS)
   'checklist/index.html': 167_000,
-  'character/index.html': 220_000, // CP-1: 218,611 B br. Growth is the feature: analyzeCharacter statically imports pob/code-breakdowns (a leaf module over model/breakdowns, model/passives, pob/items and pob/snapshot, all already on the route). Raised per the plan's CP-1 route note. Was 216,000 (PB-5).
+  'character/index.html': 222_000, // B9 E0: 220,142 B br (219,891 before). Growth is the feature: the page reads a `#pob=<code>` share link on load (lib/pobLink.ts); the Copy link side lives in the lazy results chunk. Was 220,000. CP-1: 218,611 B br. Growth is the feature: analyzeCharacter statically imports pob/code-breakdowns (a leaf module over model/breakdowns, model/passives, pob/items and pob/snapshot, all already on the route). Raised per the plan's CP-1 route note. Was 216,000 (PB-5).
   'atlas/index.html': 179_000, // CMP2 (as index)
   'dashboard/index.html': 188_000,
   'trade/index.html': 162_000,

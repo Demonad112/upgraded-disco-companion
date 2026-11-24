@@ -52,7 +52,8 @@ export function tabForHash(hash: string): TabId {
 /** The id to scroll to once the tab is open: the alias or element id, never the tab's own id. */
 export function targetForHash(hash: string): string | null {
   const id = hashId(hash)
-  if (!id || (TAB_IDS as readonly string[]).includes(id)) return null
+  // A `#pob=<code>` link (lib/pobLink.ts) carries a character, not an element id.
+  if (!id || id.startsWith('pob=') || (TAB_IDS as readonly string[]).includes(id)) return null
   return id
 }
 

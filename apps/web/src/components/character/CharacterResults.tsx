@@ -59,15 +59,16 @@ function OverviewPanel({
   history,
   tiersState,
   sourceUrl,
+  pobCode,
   expandFindings,
   fixesReady,
-}: PanelProps & { sourceUrl: string | null; expandFindings: boolean; fixesReady: boolean }) {
+}: PanelProps & { sourceUrl: string | null; pobCode: string | null; expandFindings: boolean; fixesReady: boolean }) {
   const returning = changedFor(a, history.snapshots).available
   const { proDetail } = usePrefs()
   return (
     <Panel id="overview" title="Overview">
       <Showcase analysis={a}>
-        {sourceUrl ? <CopyLink url={sourceUrl} name={a.identity.name} /> : null}
+        {sourceUrl || pobCode ? <CopyLink url={sourceUrl} code={pobCode} name={a.identity.name} /> : null}
         <ShareCard analysis={a} sourceUrl={sourceUrl} diff={history.diff} />
       </Showcase>
       {returning ? <ChangedSincePanel analysis={a} snapshots={history.snapshots} /> : null}
@@ -99,6 +100,7 @@ function OverviewPanel({
 export function CharacterResults({
   analysis: a,
   sourceUrl,
+  pobCode,
   history,
   tiersState,
   treeState,
@@ -111,6 +113,8 @@ export function CharacterResults({
 }: {
   analysis: Analysis
   sourceUrl: string | null
+  /** The PoB code behind the character, when it came from one: "Copy link" then gives its `#pob=` link. */
+  pobCode: string | null
   history: CharacterHistory
   tiersState: ModTiersState
   treeState: PassiveTreeState
@@ -152,7 +156,7 @@ export function CharacterResults({
 
   return (
     <CharacterTabs tabs={TABS} active={tab} onSelect={onTab}>
-      {tab === 'overview' ? <OverviewPanel {...props} sourceUrl={sourceUrl} expandFindings={target === 'findings'} fixesReady={fixesReady} /> : null}
+      {tab === 'overview' ? <OverviewPanel {...props} sourceUrl={sourceUrl} pobCode={pobCode} expandFindings={target === 'findings'} fixesReady={fixesReady} /> : null}
       {tab === 'defences' ? <DefenceTab {...props} /> : null}
       {tab === 'damage' ? <DamageTab {...props} /> : null}
       {tab === 'gear' ? <GearTab {...props} /> : null}

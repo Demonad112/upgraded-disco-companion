@@ -12,6 +12,7 @@ import {
 } from '@poe2/core'
 import { ImportBar, importProfile, sharedProfileUrl, type ImportResult } from '@/components/ImportBar'
 import { Skeleton } from '@/components/Skeleton'
+import { pobCodeFromHash } from '@/lib/pobLink'
 import { useCharacterHistory } from '@/lib/useCharacterHistory'
 import { CODE_ACCOUNT, recentCharacters, recordRecent, topFixOf } from '@/lib/recentCharacters'
 import { gradeText } from '@/lib/grade'
@@ -55,6 +56,8 @@ export default function Home() {
   const [sourceUrl, setSourceUrl] = useState<string | null>(null)
   // The pasted code behind a named code import, kept for its recents row so it re-opens without pasting again.
   const [sourceCode, setSourceCode] = useState<string | null>(null)
+  // The code behind the loaded character, named or not, for its `#pob=` share link.
+  const [pobCode, setPobCode] = useState<string | null>(null)
   // Whether "Load another character" is open while the import box is collapsed.
   const [boxOpen, setBoxOpen] = useState(false)
   // An import starting closes the box, so the skeleton sits where the panels will land (no shift when they do).
@@ -222,6 +225,7 @@ export default function Home() {
       // previous character still settled and saved this code onto that character's row.
       setSourceUrl(r.kind === 'ninja' ? (r.url ?? null) : null)
       setSourceCode(named && r.kind === 'pob' ? r.code : null)
+      setPobCode(r.kind === 'pob' ? r.code : null)
       setAnalysis(null)
       setStage('card')
       setGrace(false)
@@ -238,6 +242,23 @@ export default function Home() {
   // `?import=<poe.ninja URL>` — from the home page's "Re-import" link, a
   // reload, or a shared link. Read here, once per visit to the page.
   useEffect(() => {
+    // `#pob=<code>`: a shared link (lib/pobLink.ts). Cleared once read, so the hash names the open tab again.
+    const linked = pobCodeFromHash(window.location.hash)
+    if (linked) {
+      let cancelled = false
+      void loadResults()
+      try {
+        window.history.replaceState(window.history.state, '', window.location.pathname + window.location.search)
+      } catch {
+        // Cosmetic only.
+      }
+      void Promise.resolve().then(() => {
+        if (!cancelled) void handleResult({ ok: true, kind: 'pob', code: linked })
+      })
+      return () => {
+        cancelled = true
+      }
+    }
     // `?recent=<key>`: a saved, named PoB code from the home page or the companion (CP-3).
     const recentKey = new URLSearchParams(window.location.search).get('recent')
     const saved = recentKey ? recentCharacters.get().find((r) => r.key === recentKey && r.code) : undefined
@@ -346,6 +367,7 @@ export default function Home() {
           <CharacterResults
             analysis={a}
             sourceUrl={sourceUrl}
+            pobCode={pobCode}
             history={history}
             tiersState={tiersState}
             treeState={treeState}
