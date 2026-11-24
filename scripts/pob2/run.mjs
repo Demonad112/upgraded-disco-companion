@@ -3,7 +3,7 @@
 //   node scripts/pob2/run.mjs <code-file | ->     snapshot one PoB code (file or stdin) to stdout
 //   npm run pob2:oracle [-- --check]              regenerate every current-league *.oracle.json (--check: fail on diff)
 //   npm run pob2:spec                             busted specs in tools/pob2/spec (fixtures decoded first)
-//   node scripts/pob2/run.mjs --export <mods|bases|skills|tree>   dump PoB's own loaded data as JSON (tools/pob2/export/)
+//   node scripts/pob2/run.mjs --export <mods|bases|skills|tree|constants>   dump PoB's own loaded data as JSON (tools/pob2/export/)
 //
 // Runner: local `luajit` when it parses PoB2 (compound assignment) and loads lua-utf8 (scripts/pob2/install-luajit.sh),
 // else `docker run` of PoB's tests image pinned by digest in vendor/pob2/PIN.json. POB2_RUNNER=luajit|docker forces one.
@@ -95,7 +95,7 @@ export async function snapshot(code, runner = pickRunner()) {
   return JSON.parse(r.stdout);
 }
 
-export const EXPORTS = ['mods', 'bases', 'skills', 'tree'];
+export const EXPORTS = ['mods', 'bases', 'skills', 'tree', 'constants'];
 
 /**
  * Run one data exporter (tools/pob2/export/<name>.lua) against vendor/pob2 and return its parsed JSON.

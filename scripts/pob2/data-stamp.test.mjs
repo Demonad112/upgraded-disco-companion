@@ -13,7 +13,7 @@ const generated = (name) => join(ROOT, 'packages', 'data', 'generated', name);
 const read = (name) => JSON.parse(readFileSync(generated(name), 'utf8'));
 
 test('exportData rejects a name that has no exporter', () => {
-  assert.deepEqual(EXPORTS, ['mods', 'bases', 'skills', 'tree']);
+  assert.deepEqual(EXPORTS, ['mods', 'bases', 'skills', 'tree', 'constants']);
   assert.throws(() => exportData('nope', 'luajit'), /unknown export "nope"/);
 });
 

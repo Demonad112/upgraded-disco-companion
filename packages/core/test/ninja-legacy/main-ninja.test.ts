@@ -15,11 +15,13 @@ import { analyzeCharacter } from '../../src/analyze.js'
 import { decodePobExport, readPlayerStats } from '../../src/pob/export.js'
 import { pobToCharModel } from '../../src/pob/to-model.js'
 import { reconcile } from '../../src/reconcile/index.js'
+import { PassiveTree, type PassiveTreeData } from '../../src/tree/index.js'
 import type { CharModel } from '../../src/model/types.js'
 
 const read = (p: string) => readFileSync(fileURLToPath(new URL(p, import.meta.url)), 'utf8').trim()
 const ninjaCode = read('./main-ninja.code.txt')
 const mainCode = read('../pob2/forbidden-rites/main.code.txt')
+const tree = new PassiveTree(JSON.parse(read('../../../data/generated/passive-tree.json')) as PassiveTreeData)
 
 describe('the poe.ninja code as recorded', () => {
   it('reads the embedded PlayerStats', async () => {
@@ -40,11 +42,12 @@ describe('the poe.ninja code as recorded', () => {
   })
 
   it('runs as a pob-export analysis with the stated source gaps and a stable projection', async () => {
-    const a = await analyzeCharacter((await pobToCharModel(ninjaCode)) as unknown as Record<string, unknown>, { source: 'pob-export' })
+    // With the tree: the per-stat breakdowns are read from the code's lines (CP-1).
+    const a = await analyzeCharacter((await pobToCharModel(ninjaCode)) as unknown as Record<string, unknown>, { source: 'pob-export', tree })
     expect(a.source).toBe('pob-export')
     expect(a.sourceGaps.map((g) => g.what)).toEqual([
       'Per-skill damage',
-      'Stat attribution — which item or passive grants each point',
+      'Stat attribution for Fire Resistance, Cold Resistance, Lightning Resistance and Chaos Resistance',
       'Ward',
       'Block chance',
     ])
@@ -60,6 +63,13 @@ describe('the poe.ninja code as recorded', () => {
         maxHits: a.defense.maxHits.map((m) => ({ type: m.type, value: m.value })),
         resistances: a.defense.resistances.map((r) => ({ type: r.type, value: r.value, max: r.max, overCap: r.overCap, underCap: r.underCap })),
       },
+      attribution: {
+        trusted: a.attribution.stats.filter((s) => s.trustworthy).map((s) => `${s.stat}: ${s.base} flat, ${s.increasedPercent}% increased = ${s.total}`),
+        excluded: a.attribution.excluded.map((e) => e.stat),
+        items: a.attribution.items.map((i) => `${i.slotLabel}: ${i.contributions.map((c) => `${c.stat} ${c.flat}/${c.increased}% (−${c.loss})`).join(', ')}`),
+        unmatchedSources: a.attribution.unmatchedSources,
+      },
+      reconciliation: a.reconciliation?.checks.map((c) => `${c.stat}: PoB ${c.ninja}, lines ${c.other}, ${c.severity}`) ?? null,
       primarySkill: a.dps.primary ? { name: a.dps.primary.name, totalDps: a.dps.primary.totalDps } : null,
       assessment: {
         score: a.assessment.score,

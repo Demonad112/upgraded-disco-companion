@@ -327,6 +327,12 @@ export interface BreakdownIndex {
   sources: StatSource[]
   /** Ids present in the payload with no entry in STAT_IDS. Surfaced, not hidden. */
   unmappedIds: number[]
+  /**
+   * Stats whose parts are known not to reproduce the stated total, by key, with the reason. Set only for a code's
+   * breakdowns (`pob/code-breakdowns.ts`), whose `base` is the sum of the lines read, so the parts-vs-base check
+   * cannot catch it; attribution leaves these stats out. Absent for poe.ninja's breakdowns.
+   */
+  unreproduced?: ReadonlyMap<string, string>
 }
 
 export function indexBreakdowns(model: Pick<CharModel, 'breakdowns'>): BreakdownIndex {

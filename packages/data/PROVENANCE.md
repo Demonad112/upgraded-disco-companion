@@ -196,7 +196,8 @@ npm run build:tree:pob -w @poe2/data
 | Edges | 5,187 undirected |
 | Notables / keystones / jewel sockets | 1,193 / 33 / 18 |
 | Ascendancy nodes | 431 across 22 ascendancies |
-| Size | 643 KB raw · 159 KB gzipped (was 147 KB; 22 ascendancies and complete stat lines) |
+| Size | 646 KB raw · 160 KB gzipped (was 147 KB; 22 ascendancies and complete stat lines; +3 KB `characterBase`, CP-1) |
+| `characterBase` | PoB's character base values (Life/Mana per level and per attribute, Spirit, Evasion, resistance penalty and cap) and its 17 configurable quest rewards, from `tools/pob2/export/constants.lua` (CP-5). Literals in PoB's calc source are read from the vendored text by pattern; a pattern that stops matching fails the build |
 
 The web build copies this to `apps/web/public/passive-tree.json`
 (`prebuild` → `sync-data`); that copy is generated and gitignored.

@@ -18,11 +18,17 @@ export function Reconciliation({ report, bare = false }: { report: Reconciliatio
   const unverifiable = report.checks.filter((c) => c.severity === 'unresolved' && c.other === null)
   // Stat ids with no known name: shown with their values, never judged.
   const unmapped = report.checks.filter((c) => c.severity === 'unmapped')
+  // A code is checked only against its own lines (CP-1), so every check is breakdown arithmetic.
+  const fromCode = report.checks.length > 0 && report.checks.every((c) => c.otherSource === 'breakdown-arithmetic')
 
   return (
     <Panel
       title="Cross-validation"
-      subtitle="poe.ninja’s numbers checked against Path of Building and against poe.ninja’s own totals."
+      subtitle={
+        fromCode
+          ? 'Path of Building’s totals in the code, checked against the code’s own item, passive, quest and base lines.'
+          : 'poe.ninja’s numbers checked against Path of Building and against poe.ninja’s own totals.'
+      }
       action={
         <div className="flex flex-wrap gap-1.5">
           <Tag tone="good">{report.matches} agree</Tag>

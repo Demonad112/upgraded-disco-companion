@@ -6,8 +6,8 @@
       "why": "A code carries the damage of the skill it had selected, not of every skill."
     },
     {
-      "what": "Stat attribution — which item or passive grants each point",
-      "why": "That needs poe.ninja’s per-stat breakdowns, which a code does not carry. Gear tiers and resistance rebalancing depend on it."
+      "what": "Stat attribution for Fire Resistance, Cold Resistance, Lightning Resistance and Chaos Resistance",
+      "why": "The code’s item, passive, quest and base lines don’t add up to Path of Building’s total for these, so no item is credited with a share. The other stats are attributed."
     },
     {
       "what": "Ward",
@@ -84,6 +84,40 @@
       }
     ]
   },
+  "attribution": {
+    "trusted": [
+      "life: 1423 flat, 5% increased = 1494",
+      "energyShield: 839 flat, 237% increased = 2827",
+      "armour: 42 flat, 78% increased = 75",
+      "evasionRating: 2279 flat, 225% increased = 7407"
+    ],
+    "excluded": [
+      "fireResistance",
+      "coldResistance",
+      "lightningResistance",
+      "chaosResistance"
+    ],
+    "items": [
+      "Helmet: evasionRating 341/0% (−1108), energyShield 110/0% (−370), life 123/0% (−129)",
+      "Gloves: evasionRating 216/0% (−702), energyShield 108/0% (−364)",
+      "Body Armour: evasionRating 1264/0% (−4108), energyShield 395/0% (−1331), armour 42/0% (−75)",
+      "Amulet: energyShield 85/85% (−927), evasionRating 0/33% (−752), armour 0/33% (−14)",
+      "Boots: evasionRating 451/0% (−1466), energyShield 141/0% (−475)"
+    ],
+    "unmatchedSources": []
+  },
+  "reconciliation": [
+    "breakdown:life: PoB 1494, lines 1494, match",
+    "breakdown:energyShield: PoB 2827, lines 2827, match",
+    "breakdown:mana: PoB 790, lines 790, match",
+    "breakdown:spirit: PoB 147, lines 147, match",
+    "breakdown:armour: PoB 75, lines 75, match",
+    "breakdown:evasionRating: PoB 7407, lines 7407, match",
+    "breakdown:fireResistance: PoB 87, lines 42, major",
+    "breakdown:coldResistance: PoB 139, lines 34, major",
+    "breakdown:lightningResistance: PoB 130, lines 85, major",
+    "breakdown:chaosResistance: PoB 53, lines 8, major"
+  ],
   "primarySkill": {
     "name": "Storm Wave",
     "totalDps": 98661.22971592662
@@ -100,5 +134,7 @@
       "warning: 2 weak damage types — Physical 5,182, Chaos 8,003, against 22,500 at best"
     ]
   },
-  "warnings": []
+  "warnings": [
+    "4 stat totals in the code aren’t reproduced by its own item, passive, quest and base lines, so no item is credited with a share. See the reconciliation report."
+  ]
 }

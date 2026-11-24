@@ -204,8 +204,11 @@ function describeStat(
 ): StatAttribution {
   const { flat, increased } = sumParts(stat)
   // Tolerate a point of rounding on each side; anything larger means a
-  // modifier kind this decoder does not read is load-bearing.
-  const partsReproduceBase = Math.abs(flat - stat.base) <= 1 && Math.abs(increased - stat.inc) <= 1
+  // modifier kind this decoder does not read is load-bearing. A code's
+  // breakdown states its base as the sum of its lines, so a code stat that
+  // misses PoB's total is flagged through `unreproduced` instead.
+  const partsReproduceBase =
+    Math.abs(flat - stat.base) <= 1 && Math.abs(increased - stat.inc) <= 1 && !index.unreproduced?.has(key)
 
   const capKey = CAPPED_STATS[key]
   const cap = capKey ? (index.byKey.get(capKey)?.total ?? null) : null
@@ -296,7 +299,9 @@ export function attributeToItems(
       excluded.push({
         stat: key,
         label: STAT_LABEL[key],
-        reason: !described.partsReproduceBase
+        reason: index.unreproduced?.has(key)
+          ? `${index.unreproduced.get(key)} No item is credited with a share of it.`
+          : !described.partsReproduceBase
           ? `poe.ninja's listed modifiers for ${STAT_LABEL[key]} sum to ${parts.flat} flat and ${parts.increased}% increased, against a stated base of ${stat.base} and ${stat.inc}% increased. Something is contributing that this breakdown does not expose, so no item can be credited with a share of it.`
           : `poe.ninja's breakdown puts ${STAT_LABEL[key]} at ${stat.total}, but the character sheet reads ${sheetValue(defense, key)}. Something downstream overrides the breakdown, so attributing it to items would be guesswork.`,
       })
