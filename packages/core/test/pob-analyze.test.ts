@@ -11,6 +11,7 @@ import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
 import { analyzeCharacter } from '../src/analyze.js'
 import { analyzeFromPob, looksLikePobCode } from '../src/pob/analyze.js'
+import { pobSiteLink } from '../src/pob/export.js'
 import type { CharModel } from '../src/model/types.js'
 import { mainPayload } from './helpers/main-build.js'
 
@@ -88,5 +89,23 @@ describe('recognising a pasted code', () => {
     expect(looksLikePobCode('hello')).toBe(false)
     expect(looksLikePobCode('')).toBe(false)
     expect(looksLikePobCode('a'.repeat(150) + ' has spaces')).toBe(false)
+  })
+})
+
+describe('looksLikePobCode and pobSiteLink', () => {
+  const code = 'eNr' + 'A'.repeat(120)
+  it('accepts a code wrapped across lines or with stray "?"', () => {
+    expect(looksLikePobCode(`${code.slice(0, 60)}\n${code.slice(60)}`)).toBe(true)
+    expect(looksLikePobCode(`?${code}?`)).toBe(true)
+  })
+  it('names a build-site link and rejects it as a code', () => {
+    expect(pobSiteLink('https://pobb.in/AbCdEf123')).toBe('pobb.in')
+    expect(pobSiteLink('https://poe.ninja/poe2/pob/1a2b')).toBe('poe.ninja')
+    expect(pobSiteLink('maxroll.gg/poe2/pob/xyz')).toBe('maxroll.gg')
+    expect(pobSiteLink('https://poe2db.tw/pob/xyz')).toBe('poe2db.tw')
+    expect(pobSiteLink('https://pastebin.com/abc')).toBe('pastebin.com')
+    expect(pobSiteLink('https://rentry.co/abc')).toBe('rentry.co')
+    expect(pobSiteLink(code)).toBeNull()
+    expect(looksLikePobCode('https://pobb.in/' + 'A'.repeat(120))).toBe(false)
   })
 })

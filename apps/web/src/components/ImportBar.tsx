@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
-import { NinjaClient, NinjaError, looksLikePobCode, parseProfileUrl, type OutlineBox, type OutlineConfigMode } from '@poe2/core'
+import { NinjaClient, NinjaError, looksLikePobCode, parseProfileUrl, pobSiteLink, type OutlineBox, type OutlineConfigMode } from '@poe2/core'
 import { NINJA_IMPORT_BLOCKED, PROXY_BASE } from '@/lib/proxy'
 import { useLocalStore } from '@/lib/localStore'
 import { recentCharacters, type RecentCharacter } from '@/lib/recentCharacters'
@@ -47,6 +47,12 @@ export type ImportResult =
 type BusyInfo = { seconds: number; step: number; of: number }
 
 /** Waits between retries when the proxy sends no `Retry-After`. Three steps, then the error shows. */
+/** A build-site link (pobb.in, poe.ninja…) can't be fetched from a static site; say what to paste instead. Null for a code. */
+export function siteLinkError(text: string): string | null {
+  const site = pobSiteLink(text)
+  return site ? `Open the ${site} link, copy its PoB code, and paste the code here. Links can't be opened from this site.` : null
+}
+
 export const BACKOFF_SECONDS = [3, 6, 12] as const
 /** Wait before the single retry after a request that got no response. */
 const NETWORK_RETRY_S = 2
@@ -270,6 +276,11 @@ export function ImportBar({
       setError("Paste the PoB code from poe.ninja's character page, or a Path of Building export code.")
       return
     }
+    const linkError = siteLinkError(text)
+    if (linkError) {
+      setError(linkError)
+      return
+    }
     // A Path of Building code is a second real source, not a lesser one: it
     // carries 106 computed PlayerStat values including every maximum-hit-taken
     // figure. This used to be rejected on the false claim that it carried none.
@@ -293,6 +304,11 @@ export function ImportBar({
     e.preventDefault()
     setError(null)
     const text = pobPaste.trim()
+    const linkError = siteLinkError(text)
+    if (linkError) {
+      setError(linkError)
+      return
+    }
     if (!looksLikePobCode(text)) {
       setError('Paste a Path of Building 2 code here: in PoB2, Import/Export, then Generate and Copy.')
       return

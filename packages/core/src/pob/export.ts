@@ -31,9 +31,35 @@ export class PobDecodeError extends Error {
   override name = 'PobDecodeError'
 }
 
-/** base64url -> standard base64, padded. */
+/**
+ * Build sites whose links PoB2 resolves to a raw code (`Modules/BuildSiteTools.lua`). The site is static and
+ * these hosts send no CORS headers, so a link is named back to the player instead of fetched.
+ */
+const BUILD_SITES: readonly (readonly [site: string, pattern: RegExp])[] = [
+  ['pobb.in', /(^|\/\/|\.)pobb\.in\//i],
+  ['poe.ninja', /(^|\/\/|\.)poe\.ninja\/.*pob/i],
+  ['maxroll.gg', /(^|\/\/|\.)maxroll\.gg\//i],
+  ['poe2db.tw', /(^|\/\/|\.)poe2db\.tw\//i],
+  ['pastebin.com', /(^|\/\/|\.)pastebin\.com\//i],
+  ['rentry.co', /(^|\/\/|\.)rentry\.(co|org)\//i],
+]
+
+/** The build site a pasted link points at (`pobb.in`, `poe.ninja`…), or null when the text is not such a link. */
+export function pobSiteLink(text: string): string | null {
+  const t = text.trim()
+  return BUILD_SITES.find(([, re]) => re.test(t))?.[0] ?? null
+}
+
+/**
+ * The code as PoB2's ImportTab reads it: trim whitespace and `?` (ImportTab.lua:219), map base64url back
+ * (:260), then drop every character outside the alphabet, as `base64.decode` does. Padding is restored.
+ */
 function toStandardBase64(code: string): string {
-  const compact = code.replace(/\s+/g, '').replace(/-/g, '+').replace(/_/g, '/')
+  const compact = code
+    .replace(/^[\s?]+|[\s?]+$/g, '')
+    .replace(/-/g, '+')
+    .replace(/_/g, '/')
+    .replace(/[^A-Za-z0-9+/]/g, '')
   return compact + '='.repeat((4 - (compact.length % 4)) % 4)
 }
 
@@ -48,13 +74,15 @@ function base64ToBytes(b64: string): Uint8Array {
   return new Uint8Array(Buffer.from(b64, 'base64'))
 }
 
+/** zlib (PoB's own output) or gzip, picked from the header the way PoB's `Inflate` auto-detects it. */
 async function inflate(bytes: Uint8Array): Promise<Uint8Array> {
+  const gzip = bytes[0] === 0x1f && bytes[1] === 0x8b
   if (typeof DecompressionStream === 'function') {
-    const stream = new Blob([bytes as BlobPart]).stream().pipeThrough(new DecompressionStream('deflate'))
+    const stream = new Blob([bytes as BlobPart]).stream().pipeThrough(new DecompressionStream(gzip ? 'gzip' : 'deflate'))
     return new Uint8Array(await new Response(stream).arrayBuffer())
   }
-  const { inflateSync } = await import('node:zlib')
-  return new Uint8Array(inflateSync(bytes))
+  const { inflateSync, gunzipSync } = await import('node:zlib')
+  return new Uint8Array(gzip ? gunzipSync(bytes) : inflateSync(bytes))
 }
 
 /** Decode a PoB export code to its raw XML. */
@@ -62,6 +90,8 @@ export async function decodePobExport(code: string): Promise<string> {
   if (typeof code !== 'string' || !code.trim()) {
     throw new PobDecodeError('Empty Path of Building export code.')
   }
+  const site = pobSiteLink(code)
+  if (site) throw new PobDecodeError(`That is a ${site} link, not a code. Open it, copy the PoB code, and paste the code.`)
   let bytes: Uint8Array
   try {
     bytes = base64ToBytes(toStandardBase64(code))

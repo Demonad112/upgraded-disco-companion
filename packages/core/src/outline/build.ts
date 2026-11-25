@@ -343,6 +343,12 @@ export function buildCharacterOutline(snap: PobSnapshot, opts: OutlineOptions): 
       if (n !== undefined) settings.push(track(read(`configEffect:${id}`, label, `${n}%`)) as OutlineField<string>)
     }
     for (const m of cfg.multipliers) settings.push(track(read(`configMultiplier:${m.name}`, multiplierLabel(m.name), String(m.value))) as OutlineField<string>)
+    // ConfigOptions.lua `customMods`: free-text mod lines PoB parsed and added to the numbers, one per line,
+    // trimmed of whitespace and `?` as PoB does. They change the read stats, so each one is named.
+    for (const line of String(inputs.get('customMods') ?? '').split('\n')) {
+      const text = line.replace(/^[\s?]+|[\s?]+$/g, '')
+      if (text) settings.push(track(read(`configCustom:${text}`, 'Custom modifier', text)) as OutlineField<string>)
+    }
     for (const [name, value] of inputs) {
       if (!name.startsWith('quest')) continue
       for (const line of String(value).split('\n')) {
