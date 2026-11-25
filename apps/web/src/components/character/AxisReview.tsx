@@ -6,7 +6,7 @@
  * reason); the method and the long reasons sit behind Pro detail.
  */
 
-import type { DamageAxis, DefenceAxis, GearReview, SlotScore, StatSwap } from '@poe2/core'
+import type { DamageAxis, DefenceAxis, GearReview, NextStep, SlotScore, StatSwap } from '@poe2/core'
 import { ProOnly } from '@/components/shared/ProToggle'
 import { Tag } from '@/components/ui'
 
@@ -62,6 +62,31 @@ export function AxisSummary({ defence, gear, gearState, damage = null }: { defen
         </div>
       </li>
     </ul>
+  )
+}
+
+/** Batch 3.5: what the build is in one sentence, and up to three next steps from the advice already computed. */
+export function BuildNarrative({ summary, steps }: { summary: string | null; steps: NextStep[] }) {
+  if (!summary && !steps.length) return null
+  return (
+    <div className="mt-4 space-y-3" data-build-narrative>
+      {summary ? (
+        <section aria-labelledby="what-build-title" data-what-build>
+          <h4 id="what-build-title" className="label-metric">What your build is</h4>
+          <p className="text-sm text-ink">{summary}</p>
+        </section>
+      ) : null}
+      {steps.length ? (
+        <section aria-labelledby="next-steps-title" data-next-steps>
+          <h4 id="next-steps-title" className="label-metric">Next {steps.length === 1 ? 'step' : `${steps.length} steps`}</h4>
+          <ol className="mt-1 space-y-1">
+            {steps.map((s, i) => (
+              <li key={i} className="text-sm text-ink" data-step-area={s.area}>{s.text}</li>
+            ))}
+          </ol>
+        </section>
+      ) : null}
+    </div>
   )
 }
 
