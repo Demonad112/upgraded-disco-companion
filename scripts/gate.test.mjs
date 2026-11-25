@@ -22,3 +22,8 @@ test('core src change adds web tests, build and route weight', () => {
 test('pob paths add the oracle check', () => assert.ok(plan(['tools/pob2/a.lua']).includes('npm run pob2:oracle -- --check')));
 test('web e2e only runs no build', () => assert.ok(!plan(['apps/web/e2e/a.spec.ts']).includes('npm run build -w @poe2/web')));
 test('dependency change runs check:all', () => assert.deepEqual(plan(['apps/web/package.json']), ['npm run check:all']));
+test('core src and reference changes run the decoded-reference drift check', () => {
+  assert.ok(plan(['packages/core/src/x.ts']).includes('npm run decode:reference -- --check'));
+  assert.ok(plan(['packages/core/test/reference/pob2-own/code.txt']).includes('npm run decode:reference -- --check'));
+  assert.ok(!plan(['apps/web/e2e/a.spec.ts']).includes('npm run decode:reference -- --check'));
+});
