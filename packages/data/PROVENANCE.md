@@ -5,7 +5,7 @@ hand-written endgame guide content lives in `apps/web/src/data`.
 
 ## Freshness
 
-`mod-tiers.json`, `bases.json`, `pob-skills.json` and `passive-tree.json` are
+`mod-tiers.json`, `bases.json`, `pob-skills.json`, `skill-levels.json` and `passive-tree.json` are
 built from the **vendored Path of Building 2** (`vendor/pob2`, the owner's fork
 pinned in `vendor/pob2/PIN.json`): commit `601768b` (2026-11-10), PoB `0.23.1`,
 tree `0_5`, game patch **0.5.5**. They are not parsed out of PoB's Lua text.
@@ -431,3 +431,16 @@ maximum resistances stay poe.ninja's values.
 - **Build:** `npm run build:monk-gloves -w @poe2/data [url-or-path]`.
 - **Shape:** `{ modId, source, transformed[] }[]`, `modId` being the source mod id.
 - **Not synced to the web yet.**
+
+## `generated/skill-levels.json`
+
+Per-level data of the attack skills (first stat set flagged `attack`), for the damage mini-calc (Batch 3): castTime,
+base flags, constant stats (for example the physical-to-lightning conversion) and `levels[gemLevel - 1] =
+[baseMultiplier, attackSpeedMultiplier]`. An attack's hit is the weapon's damage times `baseMultiplier`, so nothing
+else is needed. Spells (base damage from a per-level table) are not exported; the calc reports them "not estimated".
+Supports come from `pob-skills.json`. Source: PoB2's loaded `data.skills` through
+`tools/pob2/export/skill-levels.lua`, MIT licensed, Path of Building Community.
+
+```
+npm run build:skill-levels -w @poe2/data
+```

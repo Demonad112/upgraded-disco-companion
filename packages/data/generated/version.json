@@ -11,6 +11,7 @@
     "mod-tiers.json",
     "bases.json",
     "pob-skills.json",
+    "skill-levels.json",
     "passive-tree.json"
   ]
 }
