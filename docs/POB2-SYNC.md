@@ -42,6 +42,7 @@ The generated game data is dumped from PoB's own loaded tables, not parsed out o
 | `mods.lua` | `data.itemMods.Item` and `.Jewel` (the jewel file is re-read before `Data.lua` rewrites its radius text) | `build-mod-tiers-pob.mjs` |
 | `bases.lua` | `data.itemBases` | `build-mod-tiers-pob.mjs` |
 | `skills.lua` | `data.skills` and `data.gems` for the `sup_*` and `act_*` files, with `ModFlag`, `KeywordFlag` and `SkillType` bitfields decoded to names | `build-pob-skills.mjs` |
+| `skill-levels.lua` | per-level `baseMultiplier` / `attackSpeedMultiplier`, constant stats and flags of the `act_*` skills | `build-skill-levels.mjs` (attack skills only) |
 | `tree.lua` | `main.tree[latestTreeVersion]`: classes, ascendancies, nodes, connections | `build-tree-pob.mjs` |
 
 Run one with `node scripts/pob2/run.mjs --export <mods|bases|skills|tree>` (same runner choice as the oracle; `exportData(name)` is the importable form). Exporters build plain tables and never encode PoB's own tables, because tree nodes and groups point at each other. Keys are sorted, so two runs are byte-identical (`tools/pob2/spec/export_spec.lua` checks it).

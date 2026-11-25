@@ -15,12 +15,27 @@ test('the reference code shows the defence, gear and over-cap review', async ({ 
   // Overview: the stamp is the defence grade, no longer the combined C–A range.
   await expect(page.locator('[data-grade-stamp]')).toHaveText('A', { timeout: 30_000 })
   await expect(page.locator('[data-axis="defence"] [data-axis-letter]')).toHaveText('A')
-  await expect(page.locator('[data-axis="damage"]')).toContainText('Not graded yet')
+  // Damage: time to kill a base rare from the code's own TotalDPS (186,706 on this code), labelled project judgement.
+  await expect(page.locator('[data-axis="damage"] [data-axis-letter]')).toHaveText('B')
+  await expect(page.locator('[data-axis="damage"]')).toContainText('A base rare at tier 16 dies in 0.5 s')
+  await expect(page.locator('[data-axis="damage"]')).toContainText('project judgement')
+
+  // Batch 3.5: the plain-words summary and at most three next steps, the first being the top defence tip.
+  await expect(page.locator('[data-what-build]')).toContainText('using')
+  const steps = page.locator('[data-next-steps] li')
+  expect(await steps.count()).toBeLessThanOrEqual(3)
+  await expect(steps.first()).toHaveText('Survive bigger physical hits: your largest is 5,182. Add life, energy shield or armour.')
 
   await openTab(page, 'defences')
   const tips = page.locator('[data-defence-tip]')
   await expect(tips).toHaveCount(3)
   await expect(tips.first()).toHaveText('Survive bigger physical hits: your largest is 5,182. Add life, energy shield or armour.')
+
+  await openTab(page, 'damage')
+  const main = page.locator('[data-skill-row][data-main]')
+  await expect(main).toBeVisible({ timeout: 30_000 })
+  await expect(main.locator('[data-provenance="pob-export"]')).toHaveText('186,706')
+  await expect(page.locator('[data-estimates]')).toHaveAttribute('data-estimates', 'calibrated')
 
   await openTab(page, 'gear')
   await expect(page.locator('[data-gear-review="ready"]')).toBeVisible({ timeout: 30_000 })
