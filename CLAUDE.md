@@ -25,6 +25,10 @@ npm workspaces (`packages/*`, `apps/*`), Node >=22, TypeScript strict. `packages
 - **PoB is the import.** Two boxes: a poe.ninja code (poe.ninja's config baseline, `docs/POB-NINJA-CONFIG.md`) and a PoB2 code (same baseline by default, toggle for own/no config). poe.ninja import stays dormant (`NINJA_IMPORT_BLOCKED`). `PobSnapshot` is the core model; `buildCharacterOutline` (`packages/core/src/outline/`) sorts it into poe.ninja's character-page sections. Intent: `docs/intent/simple-code-analysis.md`; plan: `docs/plans/simple-code-analysis.md`.
 - Web state is client-side only (`localStorage`); reference content lives in hand-edited files in `apps/web/src/data/`.
 
+## Reference build (read first)
+
+`packages/core/test/reference/{ninja-default,pob2-own}/decoded.md` is the decoded reference build (items, mods, skills, tree, config, gear score, swaps, what the code lacks). Read it instead of decoding a code; skill `reference-build`. Regenerate with `npm run build -w @poe2/core && npm run decode:reference` only when `npm run decode:reference -- --check` fails; never edit by hand.
+
 ## Design and Cloudflare Pages
 
 In `apps/web/CLAUDE.md` (design rules are decided; change only with the owner).

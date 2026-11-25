@@ -37,6 +37,8 @@ export function plan(files) {
   if (any('vendor/pob2/', 'tools/pob2/', 'scripts/pob2/', 'packages/core/test/reference/', 'packages/core/src/pob/')) {
     add('npm run pob2:oracle -- --check');
   }
+  // decoded.md next to each reference code must equal fresh decoder output (needs built core: typecheck above builds it).
+  if (coreSrc || any('packages/data/', 'packages/core/test/reference/', 'scripts/decode-reference.mjs')) add('npm run decode:reference -- --check');
   if (any('scripts/', '.claude/hooks/', 'packages/data/')) add('npm run test:scripts');
   if (any('services/ninja-proxy/')) add('npm --prefix services/ninja-proxy test');
   return cmds;
