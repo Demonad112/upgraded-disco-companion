@@ -20,6 +20,7 @@ import { CouldntCheck } from './CouldntCheck'
 import { ShareCard } from './ShareCard'
 import { Showcase } from './Showcase'
 import { TopFixes, TopFixesPlaceholder } from './TopFixes'
+import type { OutlineInput } from './CharacterSheet'
 import { Panel } from './tabs/Panel'
 import type { PanelProps } from './tabs/types'
 import type { CharacterHistory } from '@/lib/useCharacterHistory'
@@ -29,6 +30,7 @@ import type { SupportCatalogState } from '@/lib/useSupportCatalog'
 
 const lazyTab = (load: () => Promise<{ default: (p: PanelProps) => React.ReactNode }>) =>
   dynamic(load, { ssr: false, loading: () => <Skeleton /> })
+const SheetTab = dynamic(() => import('./tabs/SheetTab'), { ssr: false, loading: () => <Skeleton /> })
 const DefenceTab = lazyTab(() => import('./tabs/DefenceTab'))
 const DamageTab = lazyTab(() => import('./tabs/DamageTab'))
 const GearTab = lazyTab(() => import('./tabs/GearTab'))
@@ -37,6 +39,7 @@ const AdvancedTab = lazyTab(() => import('./tabs/AdvancedTab'))
 
 const TABS: TabDef[] = [
   { id: 'overview', label: 'Overview' },
+  { id: 'sheet', label: 'Sheet' },
   { id: 'defences', label: 'Defence' },
   { id: 'damage', label: 'Damage' },
   { id: 'gear', label: 'Gear' },
@@ -46,6 +49,7 @@ const TABS: TabDef[] = [
 
 /** Warms the other tabs' chunks once the page is idle, so a tab tap rarely waits on the network. */
 function prefetchTabs() {
+  void import('./tabs/SheetTab')
   void import('./tabs/DefenceTab')
   void import('./tabs/GearTab')
   void import('./tabs/DamageTab')
@@ -101,6 +105,7 @@ export function CharacterResults({
   analysis: a,
   sourceUrl,
   pobCode,
+  outlineInput,
   history,
   tiersState,
   treeState,
@@ -115,6 +120,8 @@ export function CharacterResults({
   sourceUrl: string | null
   /** The PoB code behind the character, when it came from one: "Copy link" then gives its `#pob=` link. */
   pobCode: string | null
+  /** The paste behind the character (code, box, config toggle), for the Sheet tab. Null for a poe.ninja JSON import. */
+  outlineInput: OutlineInput | null
   history: CharacterHistory
   tiersState: ModTiersState
   treeState: PassiveTreeState
@@ -157,6 +164,7 @@ export function CharacterResults({
   return (
     <CharacterTabs tabs={TABS} active={tab} onSelect={onTab}>
       {tab === 'overview' ? <OverviewPanel {...props} sourceUrl={sourceUrl} pobCode={pobCode} expandFindings={target === 'findings'} fixesReady={fixesReady} /> : null}
+      {tab === 'sheet' ? <SheetTab {...props} outlineInput={outlineInput} /> : null}
       {tab === 'defences' ? <DefenceTab {...props} /> : null}
       {tab === 'damage' ? <DamageTab {...props} /> : null}
       {tab === 'gear' ? <GearTab {...props} /> : null}

@@ -19,6 +19,7 @@ export const PROFILE_URL = 'https://poe.ninja/poe2/profile/Demonad112-2589/runes
 /** The character page's tabs, by hash id, and their visible labels (see CharacterResults). */
 export const CHARACTER_TABS = {
   overview: 'Overview',
+  sheet: 'Sheet',
   defences: 'Defence',
   damage: 'Damage',
   gear: 'Gear',

@@ -8,7 +8,7 @@
 
 import { startTransition, useCallback, useEffect, useState } from 'react'
 
-export const TAB_IDS = ['overview', 'defences', 'damage', 'gear', 'progress', 'advanced'] as const
+export const TAB_IDS = ['overview', 'sheet', 'defences', 'damage', 'gear', 'progress', 'advanced'] as const
 export type TabId = (typeof TAB_IDS)[number]
 
 const ALIASES: Record<string, TabId> = {

@@ -1,8 +1,8 @@
 'use client'
 
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
-import { NinjaClient, NinjaError, looksLikePobCode, parseProfileUrl } from '@poe2/core'
+import { NinjaClient, NinjaError, looksLikePobCode, parseProfileUrl, type OutlineBox, type OutlineConfigMode } from '@poe2/core'
 import { NINJA_IMPORT_BLOCKED, PROXY_BASE } from '@/lib/proxy'
 import { useLocalStore } from '@/lib/localStore'
 import { recentCharacters, type RecentCharacter } from '@/lib/recentCharacters'
@@ -10,6 +10,24 @@ import { isOffline } from '@/lib/online'
 import { Button, Input, Segmented, Textarea, tabPanelProps } from './shared/controls'
 
 const EXAMPLE = 'https://poe.ninja/poe2/profile/Demonad112-2589/forbiddenrites/character/Yykiuy'
+const CONFIG_OPTIONS = [
+  { value: 'ninja', label: 'poe.ninja config' },
+  { value: 'own', label: 'My own config' },
+  { value: 'none', label: 'No config' },
+] as const
+
+const CONFIG_KEY = 'poe2.import.configMode'
+
+/** The PoB2 box's config toggle is remembered between visits; storage can be blocked, so every access is guarded. */
+function savedConfigMode(): OutlineConfigMode {
+  try {
+    const v = window.localStorage.getItem(CONFIG_KEY)
+    return v === 'own' || v === 'none' ? v : 'ninja'
+  } catch {
+    return 'ninja'
+  }
+}
+
 const IMPORT_METHODS = [
   { value: 'url', label: 'poe.ninja URL' },
   { value: 'paste', label: 'Paste data' },
@@ -22,7 +40,7 @@ export type ImportResult =
    * A Path of Building export code. Fewer stats, all of them real. `name` is the optional character name typed with it:
    * named, the code is saved to history and recents like an imported character.
    */
-  | { ok: true; kind: 'pob'; code: string; name?: string }
+  | { ok: true; kind: 'pob'; code: string; name?: string; box?: OutlineBox; config?: OutlineConfigMode }
   | { ok: false; error: string; canPaste: boolean; cancelled?: boolean }
 
 /** Shown while the proxy reports poe.ninja as busy (429/503): `seconds` left before retry `step` of `of`. */
@@ -182,6 +200,13 @@ export function ImportBar({
   const [mode, setMode] = useState<'url' | 'paste'>(NINJA_IMPORT_BLOCKED ? 'paste' : 'url')
   const [url, setUrl] = useState('')
   const [paste, setPaste] = useState('')
+  const [pobPaste, setPobPaste] = useState('')
+  const [configMode, setConfigMode] = useState<OutlineConfigMode>('ninja')
+  useEffect(() => {
+    // Read after mount: the first render matches the server's.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setConfigMode(savedConfigMode())
+  }, [])
   const [name, setName] = useState('')
   const [error, setError] = useState<string | null>(null)
   // A failed URL import that a pasted code can stand in for (blocked, busy, offline): offer the paste box in one click.
@@ -250,7 +275,7 @@ export function ImportBar({
     // figure. This used to be rejected on the false claim that it carried none.
     if (looksLikePobCode(text)) {
       const named = name.trim()
-      onResult({ ok: true, kind: 'pob', code: text, ...(named ? { name: named } : {}) })
+      onResult({ ok: true, kind: 'pob', code: text, box: 'ninja', ...(named ? { name: named } : {}) })
       return
     }
 
@@ -262,6 +287,18 @@ export function ImportBar({
           'poe.ninja’s character model endpoint, or a Path of Building code copied with its Share button.',
       )
     }
+  }
+
+  function importPobBox(e: React.FormEvent) {
+    e.preventDefault()
+    setError(null)
+    const text = pobPaste.trim()
+    if (!looksLikePobCode(text)) {
+      setError('Paste a Path of Building 2 code here: in PoB2, Import/Export, then Generate and Copy.')
+      return
+    }
+    const named = name.trim()
+    onResult({ ok: true, kind: 'pob', code: text, box: 'pob', config: configMode, ...(named ? { name: named } : {}) })
   }
 
   return (
@@ -299,43 +336,87 @@ export function ImportBar({
             </Button>
           </form>
         ) : (
-          <form onSubmit={importPaste} className="flex flex-col gap-2">
-            <label htmlFor="import-paste" className="text-sm text-ink">
-              Paste the PoB code from poe.ninja&apos;s character page
-            </label>
-            <Textarea
-              value={paste}
-              onChange={(e) => setPaste(e.target.value)}
-              id="import-paste"
-              rows={4}
-              placeholder="Path of Building code, or a character model JSON"
-              aria-label="Character model JSON or Path of Building code"
-              aria-describedby="import-paste-hint"
-              className="font-mono"
-            />
-            <p id="import-paste-hint" className="text-xs leading-relaxed text-ink-dim">
-              From the PoB2 app? Set Config to{' '}
-              <Link href="/methodology#pob-config" className="text-accent underline underline-offset-2">
-                poe.ninja&apos;s rules
-              </Link>{' '}
-              before Generate.
-            </p>
-            <Input
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="Character name (optional)"
-              aria-label="Character name (optional)"
-              aria-describedby="import-name-hint"
-              autoComplete="off"
-              maxLength={40}
-            />
-            <p id="import-name-hint" className="text-xs leading-relaxed text-ink-dim">
-              {name.trim() ? 'Saved to your history under this name.' : "Add a name to save it to history; without one it won't be saved."}
-            </p>
-            <Button type="submit" variant="primary" disabled={busy} className="self-start">
-              Analyse pasted data
-            </Button>
-          </form>
+          <div className="flex flex-col gap-4">
+            <form onSubmit={importPaste} className="flex flex-col gap-2" aria-label="poe.ninja code">
+              <label htmlFor="import-paste" className="text-sm text-ink">
+                poe.ninja code: paste the PoB code from poe.ninja&apos;s character page
+              </label>
+              <Textarea
+                value={paste}
+                onChange={(e) => setPaste(e.target.value)}
+                id="import-paste"
+                rows={4}
+                placeholder="Path of Building code, or a character model JSON"
+                aria-label="Character model JSON or Path of Building code"
+                className="font-mono"
+              />
+              <Button type="submit" variant="primary" disabled={busy} className="self-start">
+                Analyse pasted data
+              </Button>
+            </form>
+            <form onSubmit={importPobBox} className="flex flex-col gap-2" aria-label="PoB2 code">
+              <label htmlFor="import-paste-pob" className="text-sm text-ink">
+                PoB2 code: paste a code from the Path of Building 2 app
+              </label>
+              <Textarea
+                value={pobPaste}
+                onChange={(e) => setPobPaste(e.target.value)}
+                id="import-paste-pob"
+                rows={4}
+                placeholder="Path of Building 2 code"
+                aria-label="Path of Building 2 code"
+                aria-describedby="import-pob-hint"
+                className="font-mono"
+              />
+              <Segmented
+                kind="toggle"
+                label="Config the numbers use"
+                options={CONFIG_OPTIONS}
+                value={configMode}
+                onChange={(m) => {
+                  setConfigMode(m)
+                  try {
+                    window.localStorage.setItem(CONFIG_KEY, m)
+                  } catch {
+                    // The toggle still works for this visit.
+                  }
+                }}
+                scroll
+              />
+              <p id="import-pob-hint" className="text-xs leading-relaxed text-ink-dim">
+                {configMode === 'ninja' ? (
+                  <>
+                    Export from PoB2 with Config set to{' '}
+                    <Link href="/methodology#pob-config" className="text-accent underline underline-offset-2">
+                      poe.ninja&apos;s rules
+                    </Link>
+                    . The numbers are the code&apos;s either way.
+                  </>
+                ) : configMode === 'own' ? (
+                  'The sheet lists the config saved in your code and adds no other conditions.'
+                ) : (
+                  'No config is assumed. The sheet shows the numbers as your code has them.'
+                )}
+              </p>
+              <Button type="submit" variant="primary" disabled={busy} className="self-start">
+                Analyse PoB2 code
+              </Button>
+            </form>
+            <div className="flex flex-col gap-2">
+              <Input
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="Character name (optional)"
+                aria-label="Character name (optional)"
+                aria-describedby="import-name-hint"
+                autoComplete="off"
+                maxLength={40}
+              />
+              <p id="import-name-hint" className="text-xs leading-relaxed text-ink-dim">
+                {name.trim() ? 'Saved to your history under this name.' : "Add a name to save it to history; without one it won't be saved."}
+              </p>
+            </div>
+          </div>
         )}
 
         {mode === 'url' && NINJA_IMPORT_BLOCKED ? (

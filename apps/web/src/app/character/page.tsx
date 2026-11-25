@@ -12,6 +12,7 @@ import {
 } from '@poe2/core'
 import { ImportBar, importProfile, sharedProfileUrl, type ImportResult } from '@/components/ImportBar'
 import { Skeleton } from '@/components/Skeleton'
+import type { OutlineInput } from '@/components/character/CharacterSheet'
 import { pobCodeFromHash } from '@/lib/pobLink'
 import { useCharacterHistory } from '@/lib/useCharacterHistory'
 import { CODE_ACCOUNT, recentCharacters, recordRecent, topFixOf } from '@/lib/recentCharacters'
@@ -58,6 +59,8 @@ export default function Home() {
   const [sourceCode, setSourceCode] = useState<string | null>(null)
   // The code behind the loaded character, named or not, for its `#pob=` share link.
   const [pobCode, setPobCode] = useState<string | null>(null)
+  // The paste behind the sheet: its box and config toggle. A recents or `#pob=` re-open uses the poe.ninja baseline.
+  const [outlineInput, setOutlineInput] = useState<OutlineInput | null>(null)
   // Whether "Load another character" is open while the import box is collapsed.
   const [boxOpen, setBoxOpen] = useState(false)
   // An import starting closes the box, so the skeleton sits where the panels will land (no shift when they do).
@@ -226,6 +229,7 @@ export default function Home() {
       setSourceUrl(r.kind === 'ninja' ? (r.url ?? null) : null)
       setSourceCode(named && r.kind === 'pob' ? r.code : null)
       setPobCode(r.kind === 'pob' ? r.code : null)
+      setOutlineInput(r.kind === 'pob' ? { code: r.code, box: r.box ?? 'ninja', config: r.config ?? 'ninja', name: named } : null)
       setAnalysis(null)
       setStage('card')
       setGrace(false)
@@ -368,6 +372,7 @@ export default function Home() {
             analysis={a}
             sourceUrl={sourceUrl}
             pobCode={pobCode}
+            outlineInput={outlineInput}
             history={history}
             tiersState={tiersState}
             treeState={treeState}
