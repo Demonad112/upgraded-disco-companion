@@ -17,7 +17,6 @@ import { fileURLToPath } from 'node:url'
 
 import { analyzeCharacter, type AnalyzeOptions } from '../src/analyze.js'
 import { pobToCharModel } from '../src/pob/to-model.js'
-import type { PobRecomputed } from '../src/pob/stale.js'
 import { analysisCacheKey } from '../src/cache/key.js'
 import { holdingUp } from '../src/constraints/holding-up.js'
 import { mainWithReferenceDefence } from './helpers/main-build.js'
@@ -64,7 +63,6 @@ async function view(doc: Record<string, unknown>, options: AnalyzeOptions = {}) 
           sourceGaps: a.sourceGaps.map((g) => g.what),
           passives: { main: a.passives.main.length, set1: a.passives.set1.length, set2: a.passives.set2.length, activeSet: a.passives.activeSet },
           skills: a.dps.skills.map((s) => ({ name: s.name, totalDps: s.totalDps })),
-          staleExport: a.staleExport,
         }),
     identity: a.identity,
     defence: {
@@ -123,17 +121,6 @@ describe('golden outputs', () => {
     // Leave out the cache key (a SHA-256 the secrets scan reads as an API key); the variants test covers key changes.
     const { cacheKey: _key, ...out } = await view(model, { source: 'pob-export' })
     await expect(`${JSON.stringify(out, null, 2)}\n`).toMatchFileSnapshot('./golden/pob-code-main-no-oracle.expected.json')
-  })
-
-  // PB-3: the owner's main build (current league), with PoB's recomputed export from the headless oracle, so a
-  // stale embedded figure surfaces as the "stale export" finding.
-  it('pob-code-main', async () => {
-    const dir = './pob2/forbidden-rites/'
-    const code = readFileSync(here(`${dir}main.code.txt`), 'utf8')
-    const oracle = JSON.parse(readFileSync(here(`${dir}main.oracle.json`), 'utf8')) as PobRecomputed
-    const model = (await pobToCharModel(code)) as unknown as Record<string, unknown>
-    const { cacheKey: _key, ...out } = await view(model, { source: 'pob-export', pobRecomputed: oracle })
-    await expect(`${JSON.stringify(out, null, 2)}\n`).toMatchFileSnapshot('./golden/pob-code-main.expected.json')
   })
 
   it('derived variants really differ from the base scenario', async () => {

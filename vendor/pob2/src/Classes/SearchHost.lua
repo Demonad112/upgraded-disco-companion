@@ -4,17 +4,12 @@
 -- Search host
 --
 
----@class SearchHost
-local SearchHostClass = newClass("SearchHost")
-
-function SearchHostClass:SearchHost(listAccessor, valueAccessor, ignoreOrder)
+local SearchHostClass = newClass("SearchHost", function(self, listAccessor, valueAccessor)
 	self.searchListAccessor = listAccessor
 	self.valueAccessor = valueAccessor
 	self.searchTerm = ""
 	self.searchInfos = {}
-	self.ignoreOrder = ignoreOrder or false
-	return self
-end
+end)
 
 local function splitWords(s)
 	local words = {}
@@ -39,7 +34,7 @@ local function wordsToCaselessPatterns(words)
 	return patterns
 end
 
-local function matchWords(searchWords, entry, valueAccessor, ignoreOrder)
+local function matchWords(searchWords, entry, valueAccessor)
 	local value = valueAccessor and valueAccessor(entry) or entry
 	local searchInfo = { ranges = {}, matches = true }
 	local lastMatchEnd = 0
@@ -48,37 +43,16 @@ local function matchWords(searchWords, entry, valueAccessor, ignoreOrder)
 		if (from) then
 			local range = { from = from, to = to }
 			table.insert(searchInfo.ranges, range)
-			if not ignoreOrder then
-				lastMatchEnd = to
-			end
+			lastMatchEnd = to
 		else
 			-- at least one search word did not match at least once (respecting order)
 			searchInfo.matches = false
 		end
 	end
-	if ignoreOrder then
-		-- sort to be in left to right order
-		table.sort(searchInfo.ranges, function(a, b)
-			return a.from < b.from
-		end)
-		-- merge overlapping ranges
-		local i = 1
-		while searchInfo.ranges[i] do
-			local this = searchInfo.ranges[i]
-			local next = searchInfo.ranges[i + 1]
-			if next and next.from <= this.to then
-				this.to = math.max(this.to, next.to)
-				table.remove(searchInfo.ranges, i + 1)
-				-- Check this range again because another range may overlap it.
-			else
-				i = i + 1
-			end
-		end
-	end
 	return searchInfo
 end
 
-local function matchTerm(searchTerm, list, valueAccessor, ignoreOrder)
+local function matchTerm(searchTerm, list, valueAccessor)
 	if not searchTerm or searchTerm == "" or not list then
 		return {}
 	end
@@ -86,7 +60,7 @@ local function matchTerm(searchTerm, list, valueAccessor, ignoreOrder)
 	local searchInfos = {}
 	local searchPatterns = wordsToCaselessPatterns(splitWords(searchTerm))
 	for idx, entry in ipairs(list) do
-		searchInfos[idx] = matchWords(searchPatterns, entry, valueAccessor, ignoreOrder)
+		searchInfos[idx] = matchWords(searchPatterns, entry, valueAccessor)
 	end
 	return searchInfos
 end
@@ -136,7 +110,7 @@ end
 
 function SearchHostClass:UpdateSearch()
 	if self.searchListAccessor then
-		self.searchInfos = matchTerm(self.searchTerm, self.searchListAccessor(), self.valueAccessor, self.ignoreOrder)
+		self.searchInfos = matchTerm(self.searchTerm, self.searchListAccessor(), self.valueAccessor)
 		self:UpdateMatchCount()
 	end
 end

@@ -26,13 +26,16 @@ const treePath = fileURLToPath(new URL('../../data/generated/passive-tree.json',
 const tree = new PassiveTree(JSON.parse(readFileSync(treePath, 'utf8')) as PassiveTreeData)
 
 describe('the main build’s real export', () => {
-  it('carries 11 saved inputs, not PoB defaults', () => {
-    expect(config.inputCount).toBe(11)
+  it('carries 22 saved inputs (poe.ninja’s default config), not PoB defaults', () => {
+    expect(config.inputCount).toBe(22)
   })
 
   it('was computed against a boss, and names the setting that said so', () => {
     expect(config.versusBoss).toBe(true)
     expect(config.bossSetting).toBe('enemyIsBoss')
+    // The code saves no enemyIsBoss: PoB's default Guardian/Pinnacle boss applies (screenshot 3).
+    expect(config.boss).toBe('Pinnacle')
+    expect(config.bossSaved).toBe(false)
     expect(isBossDps(config)).toBe(true)
   })
 
@@ -40,8 +43,10 @@ describe('the main build’s real export', () => {
     expect(config.buffMode).toBe('effective')
   })
 
-  it('assumes no damage-relevant condition holds: the code saved none', () => {
-    expect(config.conditionals).toEqual([])
+  it('names the six conditions poe.ninja’s config switches on', () => {
+    expect(config.conditionals).toEqual([
+      'enemy is bleeding', 'enemy is chilled', 'enemy is dazed', 'enemy is ignited', 'you have been hit recently', 'you have crit recently',
+    ])
     expect(config.unlabelledConditionals).toEqual([])
   })
 
@@ -90,18 +95,23 @@ describe('parsing', () => {
 })
 
 describe('boss detection', () => {
-  it('recognises any of PoB’s boss keys and names which one said so', () => {
-    for (const key of ['enemyIsBoss', 'conditionEnemyBoss', 'enemyIsBossType', 'bossSkillEffect']) {
-      const found = readPobConfig(`<Input name="${key}" boolean="true"/>`)
-      expect(found.versusBoss).toBe(true)
-      expect(found.bossSetting).toBe(key)
+  it('reads a saved enemyIsBoss value', () => {
+    for (const value of ['Boss', 'Pinnacle', 'Uber'] as const) {
+      const found = readPobConfig(`<Input name="enemyIsBoss" string="${value}"/>`)
+      expect(found).toMatchObject({ versusBoss: true, bossSetting: 'enemyIsBoss', boss: value, bossSaved: true })
     }
   })
 
-  it('treats PoB’s off values as off', () => {
-    for (const value of ['false', 'NONE', '']) {
-      expect(readPobConfig(`<Input name="enemyIsBossType" string="${value}"/>`).versusBoss).toBe(false)
-    }
+  it('uses PoB’s default Guardian/Pinnacle boss when the code saved no enemyIsBoss', () => {
+    const found = readPobConfig('<Input name="conditionMoving" boolean="true"/>')
+    expect(found).toMatchObject({ versusBoss: true, bossSetting: 'enemyIsBoss', boss: 'Pinnacle', bossSaved: false })
+    expect(describePobConfig(found)).toContain('against a boss (Guardian/Pinnacle boss)')
+  })
+
+  it('treats “No” as not a boss', () => {
+    const found = readPobConfig('<Input name="enemyIsBoss" string="None"/>')
+    expect(found).toMatchObject({ versusBoss: false, bossSetting: null, boss: 'None', bossSaved: true })
+    expect(describePobConfig(found)).toContain('not a boss')
   })
 })
 
@@ -142,7 +152,7 @@ describe('through the full analysis', () => {
   it('carries the config alongside the stats it qualifies', async () => {
     const analysis = await analyzeCharacter(raw, { tree })
     expect(analysis.pobConfig).toEqual(config)
-    expect(analysis.pobStats?.TotalDPS).toBeCloseTo(125658.18322457, 1)
+    expect(analysis.pobStats?.TotalDPS).toBeCloseTo(186706.45241768, 1)
   })
 
   it('caveats the damage figure only because poe.ninja and PoB agree on it', async () => {
@@ -157,9 +167,11 @@ describe('through the full analysis', () => {
   })
 
   it('caveats a figure that was not calculated against a boss, and says so only then', async () => {
-    // The main code with its boss input removed: the stored PlayerStats are unchanged, so the figures still agree.
+    // The main code with "Is the enemy a Boss?" set to No: the stored PlayerStats are unchanged, so the figures still agree.
     const noBoss = structuredClone(raw) as { charModel: { pathOfBuildingExport: string } }
-    noBoss.charModel.pathOfBuildingExport = encodePob(mainXml.replace(/<Input [^>]*name="enemyIsBoss"[^>]*\/>/, ''))
+    noBoss.charModel.pathOfBuildingExport = encodePob(
+      mainXml.replace('<ConfigSet id="1">', '<ConfigSet id="1">\n<Input name="enemyIsBoss" string="None"/>'),
+    )
     const analysis = await analyzeCharacter(noBoss, { tree })
     expect(analysis.pobConfig?.versusBoss).toBe(false)
     expect(analysis.assessment.caveats).toContain(

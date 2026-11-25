@@ -35,28 +35,7 @@ local function getFile(URL)
 	return #page > 0 and page
 end
 
----@class PassiveTreeGroup
----@field x number
----@field y number
----@field orbits integer[]
----@field nodes integer[]
----@field background any?
----@field isProxy boolean?
----@class PassiveTree
----@field classes any[] A list of classes on the tree
----@field alternate_ascendancies any[]?
----@field tree "Default"|"DefaultAltAscendancies"
----@field groups PassiveTreeGroup[]
----@field nodes table<"root"|integer, Node>
----@field jewelSlots integer[]
----@field min_x integer
----@field min_y integer
----@field max_x integer
----@field max_y integer
----@field constants table<string, any>
-local PassiveTreeClass = newClass("PassiveTree")
-
-function PassiveTreeClass:PassiveTree(treeVersion)
+local PassiveTreeClass = newClass("PassiveTree", function(self, treeVersion)
 	self.treeVersion = treeVersion
 	self.scaleImage = 1 -- 0.3835
 	local versionNum = treeVersions[treeVersion].num
@@ -152,12 +131,14 @@ function PassiveTreeClass:PassiveTree(treeVersion)
 	for file, fileInfo in pairs(self.ddsCoords) do
 		local data = { }
 		self:LoadImage(file, data, "CLAMP")
-		for name, positionData in pairs(fileInfo) do
-			local asset = {
+		for name, position in pairs(fileInfo) do
+			self.ddsMap[name] = {
 				found = data.width > 0,
 				handle = data.handle,
+				width = data.width,
+				height = data.height,
+				[1] = position
 			}
-			self.ddsMap[name] = applyDDSCoords(asset, positionData, data.width, data.height)
 		end
 	end
 
@@ -207,11 +188,8 @@ function PassiveTreeClass:PassiveTree(treeVersion)
 	self.sockets = { }
 	self.masteryEffects = { }
 	local nodeMap = { }
-	for _, n in pairs(self.nodes) do
-		---@class Node
-		local node = n
+	for _, node in pairs(self.nodes) do
 		node.id = node.skill
-		node.iname = node.stringId
 		node.g = node.group
 		node.o = node.orbit
 		node.oidx = node.orbitIndex
@@ -337,30 +315,9 @@ function PassiveTreeClass:PassiveTree(treeVersion)
 			if not connectors then
 				goto endConnection
 			end
-			-- precalculate some information for tree views:
-			for i = 1, #connectors do
-				-- culling
-				local connector = connectors[i]
-				local minX, minY = math.huge, math.huge
-				local maxX, maxY = -math.huge, -math.huge
-				for _, vert in pairs(connector.vert) do
-					for j = 1, 7, 2 do
-						local x, y = vert[j], vert[j + 1]
-						if x < minX then minX = x end
-						if x > maxX then maxX = x end
-						if y < minY then minY = y end
-						if y > maxY then maxY = y end
-					end
-				end
-				connector.minX, connector.minY = minX, minY
-				connector.maxX, connector.maxY = maxX, maxY
-
-				-- asset key names
-				connector.assetNames = {}
-				for state, _ in pairs(connector.vert) do
-					connector.assetNames[state] = string.format("%s%s%s", connector.connectionArt, connector.type, state)
-				end
-				t_insert(self.connectors, connector)
+			t_insert(self.connectors, connectors[1])
+			if connectors[2] then
+				t_insert(self.connectors, connectors[2])
 			end
 			:: endConnection ::
 		end
@@ -461,15 +418,14 @@ function PassiveTreeClass:PassiveTree(treeVersion)
 
 		self:ProcessStats(node)
 	end
-	return self
-end
+end)
 
 function PassiveTreeClass:ProcessStats(node, startIndex)
 	startIndex = startIndex or 1
 	if startIndex == 1 then
 		node.modKey = ""
 		node.mods = { }
-		node.modList = new("ModList"):ModList()
+		node.modList = new("ModList")
 	end
 
 	if not node.sd then
@@ -502,7 +458,7 @@ function PassiveTreeClass:ProcessStats(node, startIndex)
 				if list and not extra then
 					-- Success, add dummy mod lists to the other lines that were combined with this one
 					for ci = i + 1, endI do
-						node.mods[ci] = { list = {}, combined = true }
+						node.mods[ci] = { list = { } }
 					end
 					break
 				end

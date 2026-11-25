@@ -21,8 +21,8 @@ describe('evade chance', () => {
     const stats = await analyzePob(model)
     const evade = reconcile(model, stats).checks.find((c) => c.stat === 'evadeChance')!
     expect(evade.otherSource).toBe('pob-export')
-    expect(evade.ninja).toBe(40)
-    expect(evade.other).toBe(40)
+    expect(evade.ninja).toBe(44)
+    expect(evade.other).toBe(44)
     expect(evade.severity).toBe('match')
   })
 

@@ -4,8 +4,8 @@
 -- Spectre active skills
 -- Skill data (c) Grinding Gear Games
 --
-			return function(skills, mod, flag, skill)
----@cast mod SkillModFunction
+local skills, mod, flag, skill = ...
+
 --ABTT = Add Buff to Target Triggered
 --CGE = Monster Cast Ground Effect
 --DTT = Detach Dash to Target
@@ -5031,12 +5031,12 @@ skills["MPSChaosGodTriHeadLizardBasicProjectile"] = {
 	altQualityStats = {
 	},
 	levels = {
-		[1] = { critChance = 5, levelRequirement = 0, },
+		[1] = { levelRequirement = 0, },
 	},
 	statSets = {
 		[1] = {
 			label = "Projectile",
-			baseEffectiveness = 3,
+			baseEffectiveness = 2,
 			incrementalEffectiveness = 0.10000000149012,
 			damageIncrementalEffectiveness = 0.017500000074506,
 			statDescriptionScope = "skill_stat_descriptions",
@@ -5049,8 +5049,9 @@ skills["MPSChaosGodTriHeadLizardBasicProjectile"] = {
 			constantStats = {
 				{ "monster_projectile_variation", 1370 },
 				{ "spell_maximum_action_distance_+%", -30 },
-				{ "projectile_spread_radius", 3 },
-				{ "projectile_speed_variation_+%", 25 },
+				{ "number_of_additional_projectiles", 2 },
+				{ "projectile_spread_radius", 16 },
+				{ "projectile_speed_variation_+%", 10 },
 			},
 			stats = {
 				"spell_minimum_base_chaos_damage",
@@ -5059,7 +5060,8 @@ skills["MPSChaosGodTriHeadLizardBasicProjectile"] = {
 				"projectile_uses_contact_position",
 				"maintain_projectile_direction_when_using_contact_position",
 				"action_attack_or_cast_time_uses_animation_length",
-				"projectile_ballistic_angle_from_reference_event",
+				"projectile_ballistic_angle_from_target_distance",
+				"distribute_projectiles_over_contact_points",
 			},
 			notMinionStat = {
 				"spell_minimum_base_chaos_damage",
@@ -6368,7 +6370,7 @@ skills["SerpentClanCurse"] = {
 	name = "Vulnerability",
 	hidden = true,
 	icon = "Art/2DArt/SkillIcons/vulnerability.dds",
-	description = "Curse all targets in an area after a short delay, making Hits against them ignore a portion of their Armour.",
+	description = "Curse all targets in an area after a short delay. making Hits against them ignore a portion of their Armour.",
 	skillTypes = { [SkillType.Spell] = true, [SkillType.Area] = true, [SkillType.Duration] = true, [SkillType.Trappable] = true, [SkillType.Totemable] = true, [SkillType.Mineable] = true, [SkillType.Multicastable] = true, [SkillType.Triggerable] = true, [SkillType.Cascadable] = true, [SkillType.AppliesCurse] = true, [SkillType.Unleashable] = true, [SkillType.AreaSpell] = true, [SkillType.Physical] = true, [SkillType.UsableWhileMoving] = true, },
 	castTime = 1.5,
 	qualityStats = {
@@ -11074,4 +11076,4 @@ skills["BlackStriderWebProjectile"] = {
 			},
 		},
 	}
-}			end
+}

@@ -17,7 +17,7 @@ do
 	local againstMods = { }
 	for modName, mod in pairs(uniqueMods) do
 		local name = modName:match("^UniqueJewelRadius(.+)$")
-		if name and mod.nodeType then
+		if name then
 			table.insert(againstMods, { mod = mod, name = name:gsub("([a-z])([A-Z])", "%1 %2"):gsub("Strenth", "Strength") })
 		end
 	end
@@ -108,33 +108,32 @@ local treeData = LoadModule("TreeData/" .. latestTreeVersion .. "/tree.lua")
 local nodes = treeData.nodes
 
 do
-	local megalomaniac = {
-		"Megalomaniac",
-		"Diamond",
+    local megalomaniac = {
+        "Megalomaniac",
+        "Diamond",
 		"Source: Drops from unique{Kosis, The Revelation}",
-		"Limited to: 1",
-		"Has Alt Variant: true",
-		"Has Alt Variant Two: true",
-	}
-	local megalomaniacMods = {}
-	for _, node in pairs(nodes) do
-		if node.isNotable == true and node.recipe then
-			table.insert(megalomaniacMods, node)
-		end
-	end
-	table.sort(megalomaniacMods, function(a, b) return a.name < b.name end) -- Sort by name, if needed
-	for _, node in ipairs(megalomaniacMods) do
-		table.insert(megalomaniac, "Variant: " .. node.name)             -- Add the name of the node to megalomaniac
-	end
-	table.insert(megalomaniac, "Selected Variant: 1")
-	table.insert(megalomaniac, "Selected Alt Variant: 2")
-	table.insert(megalomaniac, "Selected Alt Variant: 3")
-	table.insert(megalomaniac, "Implicits: " .. #megalomaniacMods)
+        "Limited to: 1",
+        "Has Alt Variant: true",
+        "Has Alt Variant Two: true",
+    }
+    local megalomaniacMods = { }
+    for _, node in pairs(nodes) do
+        if node.isNotable == true and node.recipe then
+            table.insert(megalomaniacMods, node)
+        end
+    end
+    table.sort(megalomaniacMods, function(a, b) return a.name < b.name end)  -- Sort by name, if needed
+    for _, node in ipairs(megalomaniacMods) do
+        table.insert(megalomaniac, "Variant: " .. node.name)  -- Add the name of the node to megalomaniac
+    end
+    table.insert(megalomaniac, "Selected Variant: 1")
+    table.insert(megalomaniac, "Selected Alt Variant: 2")
+    table.insert(megalomaniac, "Selected Alt Variant: 3")
 	for index, node in ipairs(megalomaniacMods) do
-		table.insert(megalomaniac, "{variant:" .. index .. "}{enchant}Allocates " .. node.name)
+		table.insert(megalomaniac, "{variant:"..index.."}Allocates "..node.name)
 	end
 	table.insert(megalomaniac, "Corrupted")
-	table.insert(data.uniques.generated, table.concat(megalomaniac, "\n"))
+    table.insert(data.uniques.generated, table.concat(megalomaniac, "\n"))
 end
 
 do
@@ -202,9 +201,7 @@ do
 	table.insert(kulemak, "Implicits: 1")
 	table.insert(kulemak, "Inflict Abyssal Wasting on Hit")
 	for index, mod in ipairs(kulemakMods) do
-		for _, line in ipairs(mod.mod) do
-			table.insert(kulemak, "{variant:" .. index .. "}" .. line)
-		end
+		table.insert(kulemak, "{variant:" .. index .. "}" .. mod.mod[1])
 	end
 	table.insert(data.uniques.generated, table.concat(kulemak, "\n"))
 end

@@ -6,10 +6,7 @@
 --
 
 ---@class TradeQueryRateLimiter
----@class TradeQueryRateLimiter
-local TradeQueryRateLimiterClass = newClass("TradeQueryRateLimiter")
-
-function TradeQueryRateLimiterClass:TradeQueryRateLimiter()
+local TradeQueryRateLimiterClass = newClass("TradeQueryRateLimiter", function(self)
 	-- policies_sample = {
 	-- --	label: policy
 	-- 	["trade-search-request-limit"] = {
@@ -59,8 +56,7 @@ function TradeQueryRateLimiterClass:TradeQueryRateLimiter()
 		["character-list-request-limit-poe2"] = {},
 		["character-request-limit-poe2"] = {}
 	}
-	return self
-end
+end)
 
 function TradeQueryRateLimiterClass:GetPolicyName(key)
 	return self.policyNames[key]

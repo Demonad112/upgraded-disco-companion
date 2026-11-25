@@ -19,10 +19,11 @@ local function addDescriptionLine(tooltip, build, statSet, line, stat, index, co
 	if source then
 		if launch.devModeAlt then
 			local devText = stat
-			local sourceMod = source[1] and copyTable(source[1].name and source[1] or source[1][1])
-			if sourceMod then
-				sourceMod.value = sourceMod.value or stat
-				devText = modLib.formatMod(sourceMod)
+			if source[1] then
+				if not source[1].value then
+					source[1].value = stat
+				end
+				devText = modLib.formatMod(source[1])
 			end
 			line = line .. " ^2" .. devText
 		end
@@ -101,30 +102,11 @@ local function addGrantedEffectInfo(tooltip, build, gemInstance, grantedEffect, 
 			tooltip:AddLine(fontSizeBig, colorCodes.MAGIC .. "   +" .. totalLevel - gemInstance.level - corruptLevel .. " Levels from Supports", "FONTIN SC")
 		end
 	end
-	-- gem quality by type
-	local isSupport = displayInstance.gemData?.gemType == "Support"
-	if not levelRange and addReq and displayInstance.quality > 0 and not isSupport then
-		local totalGlobalQuality = 0
-		if displayInstance.gemPropertyInfo then
-			for i, prop in ipairs(displayInstance.gemPropertyInfo) do
-				if prop.value and prop.value.key == "quality" and prop.value.value then
-					totalGlobalQuality = totalGlobalQuality + prop.value.value
-				end
-			end
-		end
-		totalGlobalQuality = math.floor(totalGlobalQuality)
-		local gemQuality = gemInstance.quality
-		if gemQuality > 0
-		then
-			tooltip:AddLine(fontSizeBig, colorCodes.GEMINFO .. "   Quality: ^7" .. colorCodes.MAGIC .. "+".. gemQuality .. "%", "FONTIN SC")
-		end
-		if totalGlobalQuality > 0 then
-			tooltip:AddLine(fontSizeBig, colorCodes.MAGIC .. "   +" .. totalGlobalQuality .. "% Quality from Global Modifiers", "FONTIN SC")
-		end
-		local supportQuality = math.floor(displayInstance.quality) - totalGlobalQuality - gemQuality
-		if supportQuality > 0 then
-			tooltip:AddLine(fontSizeBig, colorCodes.MAGIC .. "   +" .. supportQuality .. "% Quality from Supports", "FONTIN SC")
-		end
+	if not levelRange and addReq and displayInstance.quality > 0 then
+		tooltip:AddLine(fontSizeBig, colorCodes.GEMINFO .. string.format("   Quality: " .. colorCodes.MAGIC .. "+%d%%^7%s",
+			gemInstance.quality,
+			(displayInstance.quality > gemInstance.quality) and " (" .. colorCodes.MAGIC .. "+" .. (displayInstance.quality - gemInstance.quality) .. "^7)" or ""
+		), "FONTIN SC")
 	end
 	if not levelRange and grantedEffect.support then
 		if levelStats.manaMultiplier and levelStats.reservationMultiplier and levelStats.manaMultiplier == levelStats.reservationMultiplier then
@@ -392,13 +374,6 @@ function GemTooltip.AddGemTooltip(tooltip, build, gemInstance, options)
 		tooltip:AddSeparator(10)
 		for _, line in ipairs(grantedEffect.flavourText) do
 			tooltip:AddLine(fontSizeBig, colorCodes.UNIQUE .. line, "FONTIN SC ITALIC")
-		end
-	end
-	if options.includeBuildPlannerNote then
-		tooltip:AddSeparator(10)
-		tooltip:AddLine(14, colorCodes.TIP .. "Shift + Right-Click to add a build note (PoE2 .build export)")
-		if gemInstance.note and gemInstance.note ~= "" then
-			tooltip:AddBuildPlannerNote(14, gemInstance.note, "^7Note: ")
 		end
 	end
 end

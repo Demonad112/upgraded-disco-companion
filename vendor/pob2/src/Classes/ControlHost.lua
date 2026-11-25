@@ -4,13 +4,9 @@
 -- Host for UI controls
 --
 
----@class ControlHost
-local ControlHostClass = newClass("ControlHost")
-
-function ControlHostClass:ControlHost()
+local ControlHostClass = newClass("ControlHost", function(self)
 	self.controls = { }
-	return self
-end
+end)
 
 function ControlHostClass:SelectControl(newSelControl)
 	if self.selControl == newSelControl then

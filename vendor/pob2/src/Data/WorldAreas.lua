@@ -2,7 +2,7 @@
 -- Path of Building
 -- World Area Data (c) Grinding Gear Games
 
-return function(worldAreas)
+local worldAreas, _ = ...
 
 worldAreas["CharacterSelect"] = {
 	name = "Character Select (Act 1)",
@@ -1000,54 +1000,6 @@ worldAreas["HideoutVampireManor"] = {
 	},
 }
 
-worldAreas["HideoutRemidusMonastery_"] = {
-	name = "Saints End Monastery Hideout (Act 1)",
-	baseName = "Saints End Monastery Hideout",
-	tags = {  },
-	act = 1,
-	level = 65,
-	isMap = false,
-	isHideout = true,
-	monsterVarieties = {
-	},
-}
-
-worldAreas["HideoutBlankIce"] = {
-	name = "Frozen Lake Hideout (Act 1)",
-	baseName = "Frozen Lake Hideout",
-	tags = {  },
-	act = 1,
-	level = 65,
-	isMap = false,
-	isHideout = true,
-	monsterVarieties = {
-	},
-}
-
-worldAreas["HideoutBlankFire"] = {
-	name = "Wildfire Clearing Hideout (Act 1)",
-	baseName = "Wildfire Clearing Hideout",
-	tags = {  },
-	act = 1,
-	level = 65,
-	isMap = false,
-	isHideout = true,
-	monsterVarieties = {
-	},
-}
-
-worldAreas["HideoutShip"] = {
-	name = "The Sovereign Hideout (Act 1)",
-	baseName = "The Sovereign Hideout",
-	tags = {  },
-	act = 1,
-	level = 65,
-	isMap = false,
-	isHideout = true,
-	monsterVarieties = {
-	},
-}
-
 worldAreas["MapHideoutFarmlands_Claimable"] = {
 	name = "Farmlands Hideout (Map)",
 	baseName = "Farmlands Hideout",
@@ -1143,6 +1095,18 @@ worldAreas["MapHideoutCanal_Claimable"] = {
 	act = 10,
 	level = 65,
 	isMap = true,
+	isHideout = false,
+	monsterVarieties = {
+	},
+}
+
+worldAreas["KaruiShowcase"] = {
+	name = "Heart of the Tribe (Act 4)",
+	baseName = "Heart of the Tribe",
+	tags = { "area_with_water" },
+	act = 4,
+	level = 30,
+	isMap = false,
 	isHideout = false,
 	monsterVarieties = {
 	},
@@ -6360,7 +6324,7 @@ worldAreas["ExpeditionSubArea_Kalguur"] = {
 	isMap = false,
 	isHideout = false,
 	monsterVarieties = {
-		"Black Scythe Arbalest",
+		"Black Scythe Arbalist",
 		"Black Scythe Mercenary",
 		"Druid of the Broken Circle",
 		"Knight of the Sun",
@@ -6414,7 +6378,7 @@ worldAreas["ExpeditionSubArea_Kalguur_Act2"] = {
 	isMap = false,
 	isHideout = false,
 	monsterVarieties = {
-		"Black Scythe Arbalest",
+		"Black Scythe Arbalist",
 		"Black Scythe Mercenary",
 		"Quake Golem",
 		"Skitter Golem",
@@ -6527,7 +6491,7 @@ worldAreas["ExpeditionSubArea_VoranaBoss"] = {
 	isMap = false,
 	isHideout = false,
 	monsterVarieties = {
-		"Black Scythe Arbalest",
+		"Black Scythe Arbalist",
 		"Black Scythe Mercenary",
 		"Gargantuan Wasp",
 		"Nymph Wasp",
@@ -7064,6 +7028,21 @@ worldAreas["Abyss_Pinnacle"] = {
 	},
 }
 
+worldAreas["KaruiBossShowcase"] = {
+	name = "Karui Boss Showcase (Act 4)",
+	baseName = "Karui Boss Showcase",
+	tags = { "area_with_water" },
+	act = 4,
+	level = 30,
+	isMap = false,
+	isHideout = false,
+	monsterVarieties = {
+	},
+	bossVarieties = {
+		"Tavakai, the Chieftain",
+	},
+}
+
 worldAreas["BossRush_Area1"] = {
 	name = "Boss Rush Area 1 (Map)",
 	baseName = "Boss Rush Area 1",
@@ -7394,4 +7373,3 @@ worldAreas["MapUniqueInitialTower"] = {
 }
 
 return worldAreas
-end

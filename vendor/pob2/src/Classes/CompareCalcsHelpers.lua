@@ -40,8 +40,6 @@ function M.FormatCalcModName(modName)
 end
 
 -- Resolve a modifier's source to a human-readable name
----@param mod Mod
----@param build Build
 function M.ResolveSourceName(mod, build)
 	if not mod.source then return "" end
 	local sourceType = mod.source:match("[^:]+") or ""
@@ -102,13 +100,7 @@ function M.TabulateMods(sectionData, actor)
 
 	local rowList
 	if type(sectionData.modName) == "table" then
-		rowList = { }
-		for index = 1, #sectionData.modName, 8 do
-			local rows = modStore:Tabulate(sectionData.modType, cfg, unpack(sectionData.modName, index, math.min(index + 7, #sectionData.modName)))
-			for _, row in ipairs(rows) do
-				t_insert(rowList, row)
-			end
-		end
+		rowList = modStore:Tabulate(sectionData.modType, cfg, unpack(sectionData.modName))
 	else
 		rowList = modStore:Tabulate(sectionData.modType, cfg, sectionData.modName)
 	end
@@ -146,8 +138,6 @@ function M.FormatModRow(row, sectionData, build)
 end
 
 -- Get breakdown text lines for a build's actor
----@param sectionData any
----@param build Build
 function M.GetBreakdownLines(sectionData, build)
 	if not sectionData.breakdown then return nil end
 	local calcsActor = build.calcsTab and build.calcsTab.calcsEnv and build.calcsTab.calcsEnv.player
@@ -174,8 +164,6 @@ end
 
 -- Draw the calcs hover tooltip showing breakdown for both builds with common/unique grouping
 -- tooltip, primaryBuild, primaryLabel passed as args instead of self
----@param tooltip Tooltip
----@param primaryBuild Build
 function M.DrawCalcsTooltip(tooltip, primaryBuild, primaryLabel, colData, rowLabel, rowX, rowY, rowW, rowH, vp, compareEntry)
 	if tooltip:CheckForUpdate(colData, rowLabel) then
 		-- Get calcsEnv actors (these have breakdown data populated)
@@ -330,8 +318,6 @@ function M.DrawCalcsTooltip(tooltip, primaryBuild, primaryLabel, colData, rowLab
 end
 
 -- Resolve a modifier's source name for breakdown panel display
----@param mod Mod
----@param build Build
 local function resolveModSource(mod, build)
 	local sourceType = mod.source and mod.source:match("[^:]+") or "?"
 	local sourceName = ""
@@ -366,7 +352,6 @@ local function resolveModSource(mod, build)
 end
 
 -- Draw a breakdown panel for a single build's SkillBuffs or SkillDebuffs,
----@param build Build
 function M.DrawSkillBreakdownPanel(build, breakdownKey, label, cellX, cellY, cellW, cellH, vp)
 	local player = build.calcsTab and build.calcsTab.calcsEnv
 		and build.calcsTab.calcsEnv.player

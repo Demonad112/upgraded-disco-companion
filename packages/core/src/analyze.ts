@@ -25,7 +25,6 @@ import type { MainSkillContext } from './recommend/gear.js'
 import { effectiveCritMultiplier } from './recommend/offence.js'
 import { CRIT_UNINVESTED, DAMAGE_TYPE_MIN_SHARE } from './thresholds.js'
 import { readPlayerStats, readPobSnapshotFromCode } from './pob/export.js'
-import { describeStaleExport, staleExport, type PobRecomputed, type StaleExport } from './pob/stale.js'
 import { readPobConfig, type PobConfig } from './pob/config.js'
 import { pobCodeGaps, type PobGap } from './pob/analyze.js'
 import { codeBreakdowns, type CodeBreakdowns } from './pob/code-breakdowns.js'
@@ -117,11 +116,6 @@ export interface Analysis {
   pobConfig: PobConfig | null
   /** PoB's `<MinionStat>` table from the attached export; empty when the build has no minion, null with no export. */
   pobMinionStats: Record<string, number> | null
-  /**
-   * Embedded stats that differ from what PoB's engine computes for the code now. Only set when
-   * `AnalyzeOptions.pobRecomputed` was given (never computed by the site); null otherwise or when all match.
-   */
-  staleExport: StaleExport | null
   /** Which data and which import produced this result (GF1 item 9). */
   stamp: AnalysisStamp
   /** Non-fatal problems worth telling the user about. */
@@ -217,12 +211,6 @@ export interface AnalyzeOptions {
   source?: AnalysisSource
   /** The shipped game data version (`readDataVersion` of `version.json`), echoed in `Analysis.stamp`. */
   dataVersion?: DataVersion | null
-  /**
-   * What PoB's own engine computes for the attached code now (`pob-sim`: the headless oracle today, a
-   * calc service later). With it, embedded stats that differ are reported as `staleExport`. Never
-   * computed by the site.
-   */
-  pobRecomputed?: PobRecomputed | null
 }
 
 /**
@@ -337,7 +325,6 @@ export async function analyzeCharacter(
   let exportMain: string | null = null
   let pobSkillGroups: PobSkillGroup[] | null = null
   let pobMinionStats: Record<string, number> | null = null
-  let stale: StaleExport | null = null
   let unmappedSlots: string[] = []
   let fromCodeLines: CodeBreakdowns | null = null
   if (model.pathOfBuildingExport) {
@@ -351,8 +338,6 @@ export async function analyzeCharacter(
       pobSkillGroups = readPobSkillGroups(snapshot)
       pobMinionStats = snapshot.minionStats
       unmappedSlots = snapshotItems(snapshot).unmapped
-      stale = options.pobRecomputed ? staleExport(snapshot, options.pobRecomputed) : null
-      if (stale) warnings.push(describeStaleExport(stale))
     } catch (err) {
       warnings.push(
         `The attached Path of Building export could not be decoded (${(err as Error).message}), so poe.ninja's numbers could not be cross-checked.`,
@@ -464,7 +449,6 @@ export async function analyzeCharacter(
     pobStats,
     pobConfig,
     pobMinionStats,
-    staleExport: stale,
     stamp: {
       dataRevision: options.dataVersion?.dataRevision ?? null,
       extractedAt: options.dataVersion?.extractedAt ?? null,

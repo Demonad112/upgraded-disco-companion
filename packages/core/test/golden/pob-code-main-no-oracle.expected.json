@@ -15,10 +15,9 @@
   "skills": [
     {
       "name": "Storm Wave",
-      "totalDps": 125666.43524555388
+      "totalDps": 186975.76477486314
     }
   ],
-  "staleExport": null,
   "identity": {
     "name": "",
     "account": "",
@@ -28,10 +27,10 @@
     "updatedUtc": null
   },
   "defence": {
-    "lowestMaximumHit": 5004,
+    "lowestMaximumHit": 5182,
     "lowestMaximumHitType": "physical",
     "life": 1494,
-    "energyShield": 2673,
+    "energyShield": 2827,
     "resistances": [
       {
         "type": "fire",
@@ -76,13 +75,13 @@
   ],
   "primarySkill": {
     "name": "Storm Wave",
-    "totalDps": 125666.43524555388
+    "totalDps": 186975.76477486314
   },
   "assessment": {
     "score": null,
     "scoreRange": {
-      "min": 0.4,
-      "max": 0.9
+      "min": 0.42,
+      "max": 0.92
     },
     "tier": null,
     "tierRange": {
@@ -92,16 +91,16 @@
     "offenceUnscoredReason": "No ladder sample was available for this league and ascendancy, and this codebase does not carry invented damage thresholds to fall back on.",
     "weaknesses": [
       "critical: Chaos resistance below its cap (Chaos 53% of 75%, 88% more chaos damage taken)",
-      "warning: 2 weak damage types — Physical 5,004, Chaos 7,788, against 24,985 at best"
+      "warning: 2 weak damage types — Physical 5,182, Chaos 8,003, against 22,500 at best"
     ]
   },
   "recommendations": [
     "res-chaos-under-cap",
     "one-shot-physical"
   ],
-  "pobConfigInputCount": 11,
+  "pobConfigInputCount": 22,
   "warnings": [],
-  "importHash": "4faed7a8eb9d09db",
+  "importHash": "1cbbe609839c2086",
   "holdingUp": {
     "resistances": [
       {

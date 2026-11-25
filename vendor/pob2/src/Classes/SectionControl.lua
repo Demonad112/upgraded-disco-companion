@@ -4,14 +4,10 @@
 -- Section box with label
 --
 
----@class SectionControl: Control
-local SectionClass = newClass("SectionControl", "Control")
-
-function SectionClass:SectionControl(anchor, rect, label)
-	self:Control(anchor, rect)
+local SectionClass = newClass("SectionControl", "Control", function(self, anchor, rect, label)
+	self.Control(anchor, rect)
 	self.label = label
-	return self
-end
+end)
 
 function SectionClass:Draw()
 	local x, y = self:GetPos()

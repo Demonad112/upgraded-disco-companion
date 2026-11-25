@@ -3,13 +3,9 @@
 -- Module: BuildSetService
 -- Build set service for managing loadouts.
 
----@class BuildSetService
-local BuildSetServiceClass = newClass("BuildSetService")
-
-function BuildSetServiceClass:BuildSetService(buildMode)
+local BuildSetServiceClass = newClass("BuildSetService", function(self, buildMode)
 	self.buildMode = buildMode
-	return self
-end
+end)
 
 function BuildSetServiceClass:NewLoadout(name)
 	self.buildMode:NewLoadout(name)

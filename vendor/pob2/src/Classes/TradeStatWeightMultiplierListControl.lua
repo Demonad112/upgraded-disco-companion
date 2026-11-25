@@ -4,16 +4,12 @@
 -- Specialized UI element for listing and modifying Trade Stat Weight Multipliers.
 --
 
----@class TradeStatWeightMultiplierListControl: ListControl
-local TradeStatWeightMultiplierListControlClass = newClass("TradeStatWeightMultiplierListControl", "ListControl")
-
-function TradeStatWeightMultiplierListControlClass:TradeStatWeightMultiplierListControl(anchor, rect, list, indexController)
+local TradeStatWeightMultiplierListControlClass = newClass("TradeStatWeightMultiplierListControl", "ListControl", function(self, anchor, rect, list, indexController)
 	self.list = list
 	self.indexController = indexController
-	self:ListControl(anchor, rect, 16, true, false, self.list)
+	self.ListControl(anchor, rect, 16, true, false, self.list)
 	self.selIndex = nil
-	return self
-end
+end)
 
 function TradeStatWeightMultiplierListControlClass:Draw(viewPort, noTooltip)
 	self.noTooltip = noTooltip

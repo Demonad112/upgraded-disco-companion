@@ -26,23 +26,17 @@ local slot_map = {
 	["Belt"] 			= { icon = NewImageHandle(), path = "Assets/icon_belt.png" },
 }
 
----@class SkillListControl: ListControl
-local SkillListClass = newClass("SkillListControl", "ListControl")
-
----@param anchor Anchor?
----@param rect Rect?
----@param skillsTab SkillsTab
-function SkillListClass:SkillListControl(anchor, rect, skillsTab)
-	self:ListControl(anchor, rect, 16, "VERTICAL", true, skillsTab.socketGroupList)
+local SkillListClass = newClass("SkillListControl", "ListControl", function(self, anchor, rect, skillsTab)
+	self.ListControl(anchor, rect, 16, "VERTICAL", true, skillsTab.socketGroupList)
 	self.skillsTab = skillsTab
 	self.label = "^7Socket Groups:"
-	self.controls.delete = new("ButtonControl"):ButtonControl({ "BOTTOMRIGHT", self, "TOPRIGHT" }, { 0, -2, 60, 18 }, "Delete", function()
+	self.controls.delete = new("ButtonControl", {"BOTTOMRIGHT",self,"TOPRIGHT"}, {0, -2, 60, 18}, "Delete", function()
 		self:OnSelDelete(self.selIndex, self.selValue)
 	end)
 	self.controls.delete.enabled = function()
 		return self.selValue ~= nil and self.selValue.source == nil
 	end
-	self.controls.deleteAll = new("ButtonControl"):ButtonControl({ "RIGHT", self.controls.delete, "LEFT" }, { -4, 0, 70, 18 }, "Delete All", function()
+	self.controls.deleteAll = new("ButtonControl", {"RIGHT",self.controls.delete,"LEFT"}, {-4, 0, 70, 18}, "Delete All", function()
 		main:OpenConfirmPopup("Delete All", "Are you sure you want to delete all socket groups in this build?", "Delete", function()
 			wipeTable(self.list)
 			skillsTab:SetDisplayGroup()
@@ -55,7 +49,7 @@ function SkillListClass:SkillListControl(anchor, rect, skillsTab)
 	self.controls.deleteAll.enabled = function()
 		return #self.list > 0 
 	end
-	self.controls.new = new("ButtonControl"):ButtonControl({ "RIGHT", self.controls.deleteAll, "LEFT" }, { -4, 0, 60, 18 }, "New", function()
+	self.controls.new = new("ButtonControl", {"RIGHT",self.controls.deleteAll,"LEFT"}, {-4, 0, 60, 18}, "New", function()
 		local newGroup = { 
 			label = "", 
 			enabled = true, 
@@ -72,14 +66,13 @@ function SkillListClass:SkillListControl(anchor, rect, skillsTab)
 	for k, x in pairs(slot_map) do
 		x.icon:Load(x.path)
 	end
-	return self
-end
+end)
 
 function SkillListClass:GetRowValue(column, index, socketGroup)
 	if column == 1 then
 		local label = socketGroup.displayLabel or "?"
 		local currentMainSkill = self.skillsTab.build.mainSocketGroup == index
-		local disabled = not socketGroup.enabled
+		local disabled = not socketGroup.enabled or not socketGroup.slotEnabled
 		if disabled then
 			local colour = currentMainSkill and "" or "^x7F7F7F"
 			label = colour .. label .. " (Disabled)"

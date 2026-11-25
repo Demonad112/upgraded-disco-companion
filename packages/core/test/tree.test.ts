@@ -163,15 +163,15 @@ describe('allocation coverage', () => {
   })
 
   it('has no unresolved ids in any committed PoB code beyond the known data gaps', async () => {
-    // Fails when a committed code (test/pob2/<league>/*.code.txt, the oracle's inputs) allocates more nodes than the
+    // Fails when a committed code (test/reference/<name>/code.txt, the oracle's inputs) allocates more nodes than the
     // shipped tree data knows; a new code needs no edit here. A character known to need newer tree data is listed
     // with the most unresolved ids it may have; that number only ever goes down.
     // DATA-1 closed: the tree is PoB's own, so the list is empty.
     const KNOWN_DATA_GAPS: Record<string, number> = {}
-    const root = fileURLToPath(new URL('./pob2/', import.meta.url))
+    const root = fileURLToPath(new URL('./reference/', import.meta.url))
     const codes = readdirSync(root, { withFileTypes: true })
       .filter((d) => d.isDirectory())
-      .flatMap((d) => readdirSync(root + d.name).filter((f) => f.endsWith('.code.txt')).map((f) => `${d.name}/${f}`))
+      .flatMap((d) => readdirSync(root + d.name).filter((f) => f === 'code.txt').map((f) => `${d.name}/${f}`))
     expect(codes.length).toBeGreaterThan(0)
     for (const file of codes) {
       const m = await pobToCharModel(readFileSync(root + file, 'utf8').trim())

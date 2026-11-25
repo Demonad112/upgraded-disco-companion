@@ -6,13 +6,9 @@
 
 local m_max = math.max
 
----@class SkillsSetService
-local SkillsSetServiceClass = newClass("SkillsSetService")
-
-function SkillsSetServiceClass:SkillsSetService(skillsTab)
+local SkillsSetServiceClass = newClass("SkillsSetService", function(self, skillsTab)
 	self.skillsTab = skillsTab
-	return self
-end
+end)
 
 function SkillsSetServiceClass:NewSkillSet(name)
 	local skillSet = self.skillsTab:NewSkillSet(nil, name)

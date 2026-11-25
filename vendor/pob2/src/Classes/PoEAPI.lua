@@ -11,20 +11,16 @@ local scopesOAuth = {
 
 local filename = "poe_api_response.json"
 
----@class PoEAPI
-local PoEAPIClass = newClass("PoEAPI")
-
-function PoEAPIClass:PoEAPI(authToken, refreshToken, tokenExpiry)
+local PoEAPIClass = newClass("PoEAPI", function(self, authToken, refreshToken, tokenExpiry)
 	self.retries = 0
 	self.authToken = authToken
 	self.refreshToken = refreshToken
 	self.tokenExpiry = tokenExpiry or 0
 	self.baseUrl = "https://api.pathofexile.com"
-	self.rateLimiter = new("TradeQueryRateLimiter"):TradeQueryRateLimiter()
+	self.rateLimiter = new("TradeQueryRateLimiter")
 
 	self.ERROR_NO_AUTH = "No auth token"
-	return self
-end
+end)
 
 
 --- @param callback fun(valid: bool, updateSettings: bool)
@@ -101,7 +97,7 @@ function PoEAPIClass:FetchAuthToken(callback)
 	)
 
 	local server = io.open("LaunchServer.lua", "r")
-	local id = LaunchSubScript(server:read("*a"), "", "ConPrintf,OpenURL,Copy", authUrl)
+	local id = LaunchSubScript(server:read("*a"), "", "ConPrintf,OpenURL", authUrl)
 	if id then
 		launch.subScripts[id] = {
 			type = "DOWNLOAD",

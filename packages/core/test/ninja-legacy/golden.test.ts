@@ -27,7 +27,6 @@ async function view(doc: Record<string, unknown>, options: AnalyzeOptions = {}) 
           sourceGaps: a.sourceGaps.map((g) => g.what),
           passives: { main: a.passives.main.length, set1: a.passives.set1.length, set2: a.passives.set2.length, activeSet: a.passives.activeSet },
           skills: a.dps.skills.map((s) => ({ name: s.name, totalDps: s.totalDps })),
-          staleExport: a.staleExport,
         }),
     identity: a.identity,
     defence: {

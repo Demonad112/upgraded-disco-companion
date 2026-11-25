@@ -2,7 +2,7 @@
  * CP-1: a pasted poe.ninja code gives the per-stat breakdowns the old poe.ninja URL gave, read from the code's own
  * item, passive, quest and base lines and checked against Path of Building's totals in the code.
  *
- * The code (`main-ninja.code.txt`) is untrusted data: decoded and read, never executed.
+ * The code (`ninja-default.code.txt`) is untrusted data: decoded and read, never executed.
  */
 import { describe, expect, it } from 'vitest'
 import { readFileSync } from 'node:fs'
@@ -27,9 +27,10 @@ import { decodePobExport } from '../../src/pob/export.js'
 import { readPobSnapshot } from '../../src/pob/snapshot.js'
 import { snapshotToCharModel } from '../../src/pob/to-model.js'
 import { highestSocketedTier, reviewDamage } from '../../src/recommend/damage.js'
+import { encodePob } from '../helpers/main-build.js'
 
 const read = (p: string) => readFileSync(fileURLToPath(new URL(p, import.meta.url)), 'utf8')
-const code = read('./main-ninja.code.txt').trim()
+const code = read('../reference/ninja-default/code.txt').trim()
 const treeData = JSON.parse(read('../../../data/generated/passive-tree.json')) as PassiveTreeData
 const tree = new PassiveTree(treeData)
 
@@ -68,7 +69,7 @@ async function analysis(): Promise<Analysis> {
   return cached
 }
 
-describe('code breakdowns on main-ninja', () => {
+describe('code breakdowns on ninja-default', () => {
   it('covers every stat, each either verified or listed as not reproducing', () => {
     expect([...VERIFIED, ...Object.keys(NOT_REPRODUCING)].sort()).toEqual([...CODE_BREAKDOWN_STATS].sort())
   })
@@ -165,7 +166,7 @@ const tiers = new ModTiers(JSON.parse(read(`${dataDir}mod-tiers.json`)) as ModTi
 const catalog = new SupportCatalog(JSON.parse(read(`${dataDir}pob-skills.json`)) as PobSkillData)
 const modDb = new ModDatabase(JSON.parse(read(`${dataDir}mods.json`)) as ModData, JSON.parse(read(`${dataDir}mod-bases.json`)))
 
-describe('CP-2: every skill group’s gems on main-ninja', () => {
+describe('CP-2: every skill group’s gems on ninja-default', () => {
   it('reads all 18 groups, the main group (15, Storm Wave) first with PoB’s damage', async () => {
     const model = await pobToCharModel(code)
     expect(model.skills).toHaveLength(18)
@@ -211,7 +212,7 @@ describe('CP-2: every skill group’s gems on main-ninja', () => {
   })
 })
 
-describe('CP-2 (PB-12): mod ids matched from main-ninja’s item text', () => {
+describe('CP-2 (PB-12): mod ids matched from ninja-default’s item text', () => {
   const resolved = async () => resolveItemMods((await pobToCharModel(code)).items ?? [], tiers)
 
   it('gives every matched id only where it is legal for the item’s base', async () => {
@@ -223,15 +224,17 @@ describe('CP-2 (PB-12): mod ids matched from main-ninja’s item text', () => {
       for (const [bucket, list] of Object.entries(item.itemData.mods ?? {})) {
         for (const { id } of list as { id: string }[]) {
           checked++
-          if (tiers.raw(id)) {
+          if (bucket !== 'implicit' && tiers.raw(id)) {
             // An affix: PoB's spawn rules allow it on this base, and the class pool lists it where both are known.
             expect(tags && tiers.canSpawn(id, tags), `${id} on ${base}`).toBe(true)
             const pool = modDb.classesForMod(id)
             const poolClass = modDb.classForBase(base)
             if (pool && poolClass) expect(pool, `${id} on ${base}`).toContain(poolClass)
           } else if (bucket === 'implicit' && /^[A-Z][A-Za-z]+Implicit/.test(id) && cls) {
-            // An implicit is named after the class it sits on.
-            expect(id.startsWith(`${cls.replace(/\s+/g, '')}Implicit`), `${id} on ${base}`).toBe(true)
+            // An implicit is named after the class it sits on, or after the base's own item type (PoB's Warstaff class
+            // holds the Quarterstaff bases: QuarterstaffImplicitDazeChance1 on Skullcrusher Quarterstaff).
+            const owner = id.slice(0, id.indexOf('Implicit'))
+            expect(cls.replace(/\s+/g, '') === owner || base.replace(/\s+/g, '').endsWith(owner), `${id} on ${base}`).toBe(true)
           }
         }
       }
@@ -249,26 +252,38 @@ describe('CP-2 (PB-12): mod ids matched from main-ninja’s item text', () => {
   })
 
   it('keeps a stat stored in hundredths in its own units (8.43% leech is 843 permyriad)', async () => {
-    const weapon = (await resolved()).find((i) => i.itemSlot === 7)!
+    // ninja-default's quarterstaff has no leech line; a variant adds one to its explicit text.
+    const xml = (await decodePobExport(code)).replace('Gain 26 Mana per enemy killed', 'Gain 26 Mana per enemy killed\nLeeches 8.43% of Physical Damage as Life')
+    const items = resolveItemMods(snapshotToCharModel(readPobSnapshot(xml)).items ?? [], tiers)
+    const weapon = items.find((i) => i.itemSlot === 7)!
     const leech = (weapon.itemData.mods?.explicit as { id: string; stats: Record<string, number> }[]).find((m) => m.id.startsWith('LifeLeechLocal'))!
     expect(leech.stats).toEqual({ local_life_leech_from_physical_damage_permyriad: 843 })
   })
 })
 
 describe('CP-2: empty rune sockets', () => {
-  it('counts `Rune: None` as an empty socket: Blight Weaver has 2 of 2 empty', async () => {
-    const model = await pobToCharModel(code)
-    const empty = findEmptySockets(normalizeItems(model))
-    expect(empty).toEqual([{ slotId: 7, slotLabel: expect.any(String), itemName: 'Blight Weaver', sockets: 2, filled: 0, empty: 2 }])
+  // ninja-default fills every socket; a variant empties the quarterstaff's two (`Rune: None`, as PoB writes it).
+  const emptied = async () => {
+    const xml = (await decodePobExport(code)).replace('Rune: Soul Core of Topotante\nRune: Saqawal&apos;s Rune of the Sky', 'Rune: None\nRune: None')
+    return pobToCharModel(encodePob(xml))
+  }
+
+  it('finds none on ninja-default', async () => {
+    expect(findEmptySockets(normalizeItems(await pobToCharModel(code)))).toEqual([])
+  })
+
+  it('counts `Rune: None` as an empty socket: Skull Song has 2 of 2 empty', async () => {
+    const empty = findEmptySockets(normalizeItems(await emptied()))
+    expect(empty).toEqual([{ slotId: 7, slotLabel: expect.any(String), itemName: 'Skull Song', sockets: 2, filled: 0, empty: 2 }])
   })
 
   it('makes it a finding with no measured gain: a rune’s worth would be a simulated swap', async () => {
-    const a = await analysis()
+    const a = await analyzeCharacter(await emptied(), { source: 'pob-export', tree })
     const rec = a.recommendations.recommendations.find((r) => r.id === 'empty-rune-sockets-7')!
     expect(rec).toMatchObject({ category: 'efficiency', impact: null, provenance: 'pob-export' })
     expect(rec.measured?.dps).toBeNull()
-    expect(rec.action).toBe('Fill the 2 empty rune sockets in Blight Weaver.')
-    expect(rec.evidence[0]).toMatchObject({ kind: 'item', slotId: 7, itemName: 'Blight Weaver' })
+    expect(rec.action).toBe('Fill the 2 empty rune sockets in Skull Song.')
+    expect(rec.evidence[0]).toMatchObject({ kind: 'item', slotId: 7, itemName: 'Skull Song' })
   })
 })
 
@@ -277,10 +292,10 @@ describe('CP-2: per-use vs continuous DPS', () => {
     expect(analyzeDps(await pobToCharModel(code)).primary).toMatchObject({ name: 'Storm Wave', useRates: null })
   })
 
-  it('labels Hollow Resonance (group 4) per use 33,332 and if used continuously 69,531', async () => {
+  it('labels Hollow Resonance (group 4) per use 66,832 and if used continuously 129,453', async () => {
     // A code carries PlayerStats for its own main group only, so the variant also carries PoB's engine figures for
-    // group 4, read from the groups oracle (`main-ninja.groups.oracle.json`, CP-7).
-    const groups = JSON.parse(read('./main-ninja.groups.oracle.json')) as { rows: { group: number; activeSkill: number; TotalDPS: number; CombinedDPS: number }[] }
+    // group 4, read from the groups oracle (`reference/ninja-default/groups.oracle.json`, CP-7).
+    const groups = JSON.parse(read('../reference/ninja-default/groups.oracle.json')) as { rows: { group: number; activeSkill: number; TotalDPS: number; CombinedDPS: number }[] }
     const g4 = groups.rows.find((r) => r.group === 4 && r.activeSkill === 1)!
     const xml = (await decodePobExport(code))
       .replace('mainSocketGroup="15"', 'mainSocketGroup="4"')
@@ -288,8 +303,8 @@ describe('CP-2: per-use vs continuous DPS', () => {
       .replace(/<PlayerStat stat="CombinedDPS" value="[^"]*"\/>/, `<PlayerStat stat="CombinedDPS" value="${g4.CombinedDPS}"/>`)
     const primary = analyzeDps(snapshotToCharModel(readPobSnapshot(xml))).primary!
     expect(primary.name).toBe('Hollow Resonance')
-    expect(Math.round(primary.useRates!.perUse)).toBe(33332)
-    expect(Math.round(primary.useRates!.continuous)).toBe(69531)
+    expect(Math.round(primary.useRates!.perUse)).toBe(66832)
+    expect(Math.round(primary.useRates!.continuous)).toBe(129453)
     expect(USE_RATE_LABELS).toEqual({ perUse: 'per use', continuous: 'if used continuously' })
   })
 })

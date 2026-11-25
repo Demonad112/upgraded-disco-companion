@@ -56,7 +56,7 @@
   ],
   "primarySkill": {
     "name": "Storm Wave",
-    "totalDps": 109867.25202098387
+    "totalDps": 110128.31235718314
   },
   "assessment": {
     "score": null,
@@ -75,11 +75,11 @@
     ]
   },
   "recommendations": [],
-  "pobConfigInputCount": 11,
+  "pobConfigInputCount": 22,
   "warnings": [
     "2 stats disagree between poe.ninja and the attached Path of Building export. See the reconciliation report before trusting those figures."
   ],
-  "importHash": "8357eb90258edf13",
+  "importHash": "951093153f8a0c1f",
   "holdingUp": {
     "resistances": [
       {

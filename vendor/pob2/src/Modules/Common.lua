@@ -1,4 +1,3 @@
----@diagnostic disable: lowercase-global
 -- Path of Building
 --
 -- Module: Common
@@ -69,17 +68,13 @@ end
 local function getClass(className)
 	local class = common.classes[className]
 	if not class then
-		LoadModule("Classes/" .. className)
+		LoadModule("Classes/"..className)
 		class = common.classes[className]
-		assert(class, "Class '" .. className .. "' not defined in class file")
+		assert(class, "Class '"..className.."' not defined in class file")
 	end
 	return class
 end
-
----@generic T
----@param className `T`
----@param ... string parent class names
----@return T
+-- newClass("<className>"[, "<parentClassName>"[, "<parentClassName>" ...]], constructorFunc)
 function newClass(className, ...)
 	local class = { }
 	common.classes[className] = class
@@ -92,138 +87,73 @@ function newClass(className, ...)
 	end
 	class._className = className
 	local numVarArg = select("#", ...)
-	if numVarArg > 0 then
+	class._constructor = select(numVarArg, ...)
+	if numVarArg > 1 then
 		-- Build list of parent classes
 		class._parents = { }
-		for i = 1, numVarArg do
+		for i = 1, numVarArg - 1 do
 			class._parents[i] = getClass(select(i, ...))
 		end
 		-- Build list of all classes directly or indirectly inherited by this class
 		class._superParents = { }
 		addSuperParents(class, class)
 		-- Set up inheritance
-		for _, parent in ipairs(class._parents) do
-			for k, v in pairs(parent) do
-				if class[k] == nil and k ~= "_unconstructedMeta" and k ~= "_constructorInitialised" then
-					class[k] = v
+		setmetatable(class, {
+			__index = function(self, key)
+				for _, parent in ipairs(class._parents) do
+					local val = parent[key]
+					if val ~= nil then
+						self[key] = val
+						return val
+					end
 				end
 			end
-		end
+		})
 	end
 	return class
 end
-
-local function parentCall(proxy, self, ...)
-	local parent = proxy._parent
-	local object = proxy._object
-	local className = proxy._className
-
-	if not parent[parent._className] then
-		error("Parent class '" .. parent._className .. "' of class '" .. className .. "' has no constructor")
-	end
-	if object._parentInit[parent] then
-		error("Parent class '" .. parent._className .. "' of class '" .. className .. "' has already been initialised")
-	end
-	if self ~= object then
-		error(s_format(
-			"Parent class %s constructor of class %s was not provided self. Are you perhaps calling it with self.%s instead of self:%s?",
-			parent._className, className, parent._className, parent._className))
-	end
-
-	parent[parent._className](self, ...)
-	object._parentInit[parent] = true
-end
-
-local function parentIndex(proxy, key)
-	local object = proxy._object
-	local value = rawget(object, key)
-	if value ~= nil then
-		return value
-	else
-		return proxy._parent[key]
-	end
-end
-
--- The functions are created here so that new() does not create closures, which aborts JIT traces
-local function makeUnconstructedMeta(class, className)
-	-- disabled for performance reasons for now
-	-- return {
-	-- __index = function(obj, key)
-	-- 	if key == className then
-	-- 		setmetatable(obj, class)
-	-- 		return class[className]
-	-- 	end
-	-- 	error(s_format(
-	-- 		"Object of class '%s' was used before it was constructed (accessed '%s'). Did you forget to call new(\"%s\"):%s()?",
-	-- 		className, tostring(key), className, className))
-	-- end,
-	-- }
-	--
-	return class
-end
-
-local function wrapConstructor(class, className)
-	local originalFunc = class[className]
-	class[className] = function(self, ...)
-		-- This will probably break JIT traces?
-		local ret = originalFunc(self, ...)
-		if class._parents then
-			-- Check that the constructors for all parent and superparent classes have been called
-			for parent in pairs(class._superParents) do
-				if parent[parent._className] and not self._parentInit[parent] then
-					error("Parent class '" ..
-						parent._className .. "' of class '" .. className .. "' must be initialised")
-				end
-			end
-		end
-		if not ret then
-			error(string.format("Class %s constructor did not return a value", className))
-		end
-		return ret
-	end
-end
----@generic T
----@param className `T`
----@param extraArg nil Never pass extra parameters. Defined purely to guard against old syntax.
----@return T
-function new(className, extraArg)
-	if extraArg then
-		local line = s_format(
-			"Extra argument passed to new() during creation of class %s. Extra arguments are not allowed.\nAre you perhaps trying to pass constructor arguments here?",
-			className)
-		error(line)
-	end
+function new(className, ...)
 	local class = getClass(className)
-	-- protect against calling new("Foo"):Foo() without calling :Foo()
-	local object
-	if class[className] then
-		if not rawget(class, "_unconstructedMeta") then
-			class._unconstructedMeta = makeUnconstructedMeta(class, className)
-		end
-		object = setmetatable({}, class._unconstructedMeta)
-	else
-		object = setmetatable({}, class)
-	end
+	local object = setmetatable({ }, class)
 	object.Object = object
 	if class._parents then
 		-- Add parent and superparent class proxies
 		object._parentInit = { }
 		for parent in pairs(class._superParents) do
 			local proxyMeta = {
-				_parent = parent,
-				_object = object,
-				_className = className,
-				__index = parentIndex,
+				__index = function(self, key)
+					local v = rawget(object, key)
+					if v ~= nil then
+						return v
+					else
+						return parent[key]
+					end
+				end,
 				__newindex = object,
-				__call = parentCall,
+				__call = function(...)
+					if not parent._constructor then
+						error("Parent class '"..parent._className.."' of class '"..class._className.."' has no constructor")
+					end
+					if object._parentInit[parent] then
+						error("Parent class '"..parent._className.."' of class '"..class._className.."' has already been initialised")
+					end
+					parent._constructor(...)
+					object._parentInit[parent] = true
+				end,
 			}
 			object[parent._className] = setmetatable(proxyMeta, proxyMeta)
 		end
 	end
-
-	if class[className] and not rawget(class, "_constructorInitialised") then
-		wrapConstructor(class, className)
-		class._constructorInitialised = true
+	if class._constructor then
+		class._constructor(object, ...)
+	end
+	if class._parents then
+		-- Check that the constructors for all parent and superparent classes have been called
+		for parent in pairs(class._superParents) do
+			if parent._constructor and not object._parentInit[parent] then
+				error("Parent class '"..parent._className.."' of class '"..className.."' must be initialised")
+			end
+		end
 	end
 	return object
 end
@@ -488,10 +418,6 @@ function writeLuaTable(out, t, indent)
 end
 
 -- Make a copy of a table and all subtables
----@generic T
----@param tbl T
----@param noRecurse boolean?
----@return T copy Note that this type can be misleading if noRecurse is set to true. Type hint explicitly if necessary.
 function copyTable(tbl, noRecurse)
 	local out = {}
 	for k, v in pairs(tbl) do
@@ -540,11 +466,11 @@ function mergeDB(srcDB, modDB)
 end
 
 function specCopy(env)
-	local modDB = new("ModDB"):ModDB()
+	local modDB = new("ModDB")
 	modDB:AddDB(env.modDB)
 	modDB.conditions = copyTable(env.modDB.conditions)
 	modDB.multipliers = copyTable(env.modDB.multipliers)
-	local enemyDB = new("ModDB"):ModDB()
+	local enemyDB = new("ModDB")
 	if env.enemyDB then
 		enemyDB:AddDB(env.enemyDB)
 		enemyDB.conditions = copyTable(env.enemyDB.conditions)
@@ -552,7 +478,7 @@ function specCopy(env)
 	end
 	local minionDB = nil
 	if env.minion then
-		minionDB = new("ModDB"):ModDB()
+		minionDB = new("ModDB")
 		minionDB:AddDB(env.minion.modDB)
 		minionDB.conditions = copyTable(env.minion.modDB.conditions)
 		minionDB.multipliers = copyTable(env.minion.modDB.multipliers)
@@ -805,32 +731,31 @@ function triangular(n)
 end
 
 -- Formats "1234.56" -> "1,234.5"
-local function formatNumSepInner(m)
-	local colour = m:match("(^x%x%x%x%x%x%x)") or m:match("(%^%d)") or ""
-	local str = m:gsub("(^x%x%x%x%x%x%x)", ""):gsub("(%^%d)", "")
-	if str == "" or (colour == "" and m:match("%^")) then -- return if we have an invalid color code or a completely stripped number.
-		return m
-	end
-	local x, y, minus, integer, fraction = str:find("(-?)(%d+)(%.?%d*)")
-	if main.showThousandsSeparators then
-		rev1kSep = utf8.reverse(main.thousandsSeparator)
-		integer = utf8.reverse((utf8.gsub(utf8.reverse(integer), "(%d%d%d)", "%1" .. rev1kSep)))
-		-- There will be leading separators if the number of digits are divisible by 3
-		-- This checks for their presence and removes them
-		-- Don't use patterns here because thousandsSeparator can be a pattern control character, and will crash if used
-		if main.thousandsSeparator ~= "" then
-			local thousandsSeparator = utf8.find(integer, rev1kSep, 1, 2)
-			if thousandsSeparator and thousandsSeparator == 1 then
-				integer = utf8.sub(integer, 2)
-			end
-		end
-	else
-		integer = utf8.reverse((utf8.gsub(utf8.reverse(integer), "(%d%d%d)", "%1")))
-	end
-	return colour .. minus .. integer .. utf8.gsub(fraction, "%.", main.decimalSeparator)
-end
 function formatNumSep(str)
-	return string.gsub(str, "(%^?x?%x?%x?%x?%x?%x?%x?-?%d+%.?%d+)", formatNumSepInner)
+	return string.gsub(str, "(%^?x?%x?%x?%x?%x?%x?%x?-?%d+%.?%d+)", function(m)
+		local colour = m:match("(^x%x%x%x%x%x%x)") or m:match("(%^%d)") or ""
+		local str = m:gsub("(^x%x%x%x%x%x%x)", ""):gsub("(%^%d)", "")
+		if str == "" or (colour == "" and m:match("%^")) then  -- return if we have an invalid color code or a completely stripped number.
+			return m
+		end
+		local x, y, minus, integer, fraction = str:find("(-?)(%d+)(%.?%d*)")
+		if main.showThousandsSeparators then
+			rev1kSep = utf8.reverse(main.thousandsSeparator)
+			integer = utf8.reverse(utf8.gsub(utf8.reverse(integer), "(%d%d%d)", "%1"..rev1kSep))
+			-- There will be leading separators if the number of digits are divisible by 3
+			-- This checks for their presence and removes them
+			-- Don't use patterns here because thousandsSeparator can be a pattern control character, and will crash if used
+			if main.thousandsSeparator ~= "" then
+				local thousandsSeparator = utf8.find(integer, rev1kSep, 1, 2)
+				if thousandsSeparator and thousandsSeparator == 1 then
+					integer = utf8.sub(integer, 2)
+				end
+			end
+		else
+			integer = utf8.reverse(utf8.gsub(utf8.reverse(integer), "(%d%d%d)", "%1"))
+		end
+		return colour..minus..integer..utf8.gsub(fraction, "%.", main.decimalSeparator)
+	end)
 end
 
 function getFormatNumSep(dec)
@@ -923,8 +848,7 @@ function cacheSkillUUID(skill, env)
 		end
 	end
 
-	local weaponSet = skill.socketGroup and skill.socketGroup.usingSkillSet or env.weaponSet
-	return strName.."_"..strSlotName.."_"..tostring(slotIndx).."_"..tostring(groupIdx).."_WS"..tostring(weaponSet or 0)
+	return strName.."_"..strSlotName.."_"..tostring(slotIndx) .. "_" .. tostring(groupIdx)
 end
 
 -- Global Cache related
@@ -1102,7 +1026,7 @@ local GGG_STAT_HASH32_SEED = 0xC58F1A7B
 -- used for calculating the trade hash from stat hash fields
 local GGG_TRADE_SEED = 0x02312233
 ---@param stats string[]
----@param extraStat string? extra stat for time-lost jewels
+---@param extraStat string extra stat for time-lost jewels
 ---@return integer
 function HashStats(stats, extraStat)
 	if extraStat then
@@ -1115,34 +1039,4 @@ function HashStats(stats, extraStat)
 		statHashes = statHashes .. newHash
 	end
 	return murmurHash2(statHashes, GGG_TRADE_SEED)
-end
-
----@class DDSPosition
----@field [1] number x
----@field [2] number y
----@field [3] number width
----@field [4] number height
----@field [5] number stack index
-local x -- avoids binding annotation to below function
-
--- Calculates DDS asset position information for input into DrawImage
----@param asset any
----@param coords number|DDSPosition
----@param sheetWidth number
----@param sheetHeight number
----@return any asset The asset, with either stack idx, or x, y, w, h, stackIdx added into it
-function applyDDSCoords(asset, coords, sheetWidth, sheetHeight)
-	asset.width, asset.height = sheetWidth, sheetHeight
-	if type(coords) == "number" then
-		asset[1] = coords
-	elseif sheetWidth > 0 and sheetHeight > 0 then
-		asset.width, asset.height = coords[3], coords[4]
-		-- Scale from pixel values to [0, 1]
-		asset[1] = coords[1] / sheetWidth
-		asset[2] = coords[2] / sheetHeight
-		asset[3] = (coords[1] + coords[3]) / sheetWidth
-		asset[4] = (coords[2] + coords[4]) / sheetHeight
-		asset[5] = coords[5]
-	end
-	return asset
 end

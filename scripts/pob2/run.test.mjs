@@ -4,27 +4,54 @@ import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'nod
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { test } from 'node:test';
+import { inflateSync } from 'node:zlib';
 import { isTestsImageRef } from './lib.mjs';
-import { FIXTURES, GROUPS_EXTRA, ROOT, canonicalJson, currentLeagueCodes, groupsOraclePath, oraclePath, pickRunner } from './run.mjs';
+import { FIXTURES, ROOT, canonicalJson, groupsOraclePath, oraclePath, pickRunner, referenceCodes } from './run.mjs';
 
 test('canonicalJson sorts keys at every level and keeps array order', () => {
   const text = canonicalJson({ b: 1, a: { d: [3, { z: 1, y: 2 }], c: null } });
   assert.equal(text, '{\n  "a": {\n    "c": null,\n    "d": [\n      3,\n      {\n        "y": 2,\n        "z": 1\n      }\n    ]\n  },\n  "b": 1\n}\n');
 });
 
-test('currentLeagueCodes lists <league>/*.code.txt and skips archive/', () => {
+test('referenceCodes lists <name>/code.txt only', () => {
   const dir = mkdtempSync(join(tmpdir(), 'pob2-fixtures-'));
   try {
-    for (const p of ['b-league/x.code.txt', 'a-league/y.code.txt', 'a-league/y.oracle.json', 'archive/old/z.code.txt']) {
+    for (const p of ['b/code.txt', 'a/code.txt', 'a/oracle.json', 'c/other.txt']) {
       mkdirSync(join(dir, p, '..'), { recursive: true });
       writeFileSync(join(dir, p), '');
     }
-    assert.deepEqual(currentLeagueCodes(dir), [join(dir, 'a-league/y.code.txt'), join(dir, 'b-league/x.code.txt')]);
-    assert.deepEqual(currentLeagueCodes(join(dir, 'missing')), []);
+    assert.deepEqual(referenceCodes(dir), [join(dir, 'a/code.txt'), join(dir, 'b/code.txt')]);
+    assert.deepEqual(referenceCodes(join(dir, 'missing')), []);
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }
-  assert.equal(oraclePath('/f/l/a.code.txt'), '/f/l/a.oracle.json');
+  assert.equal(oraclePath('/f/l/code.txt'), '/f/l/oracle.json');
+  assert.equal(groupsOraclePath('/f/l/code.txt'), '/f/l/groups.oracle.json');
+});
+
+/** A PoB code is url-safe base64 of zlib-deflated XML. */
+const decodeCode = (file) =>
+  inflateSync(Buffer.from(readFileSync(file, 'utf8').trim().replace(/-/g, '+').replace(/_/g, '/'), 'base64')).toString('utf8');
+
+test('the oracle reproduces every PlayerStat the reference code carries, and the main group equals TotalDPS', () => {
+  // The code is the source of truth: the headless run must give back its own numbers (relative 1e-9, i.e. exact
+  // up to float printing). A miss here means the engine pin or the runner differs from the PoB that wrote the code.
+  for (const code of referenceCodes(FIXTURES)) {
+    const xml = decodeCode(code);
+    const stats = [...xml.matchAll(/<PlayerStat stat="([^"]+)" value="([^"]+)"/g)];
+    assert.ok(stats.length > 0, code);
+    const oracle = JSON.parse(readFileSync(oraclePath(code), 'utf8')).export.PlayerStat;
+    for (const [, stat, value] of stats) {
+      const want = Number(value);
+      const got = Number(oracle[stat]);
+      assert.ok(Math.abs(got - want) <= Math.abs(want) * 1e-9 + 1e-9, `${code} ${stat}: code ${want}, oracle ${oracle[stat]}`);
+    }
+    const main = Number(/<Build [^>]*mainSocketGroup="(\d+)"/.exec(xml)[1]);
+    const groups = JSON.parse(readFileSync(groupsOraclePath(code), 'utf8'));
+    const row = groups.rows.find((r) => r.group === main && r.activeSkill === 1);
+    const total = Number(/<PlayerStat stat="TotalDPS" value="([^"]+)"/.exec(xml)[1]);
+    assert.ok(Math.abs(row.TotalDPS - total) <= total * 1e-9, `${code} main group ${main}: ${row.TotalDPS} vs code ${total}`);
+  }
 });
 
 test('pickRunner honours POB2_RUNNER and rejects other values', () => {
@@ -40,10 +67,10 @@ test('PIN.json pins PoB tests image by digest', () => {
   assert.equal(isTestsImageRef(`ghcr.io/x/y@sha256:${'a'.repeat(63)}`), false);
 });
 
-test('every current-league code has a canonical oracle from the pinned PoB commit', () => {
+test('every reference code has a canonical oracle from the pinned PoB commit', () => {
   const pin = JSON.parse(readFileSync(join(ROOT, 'vendor', 'pob2', 'PIN.json'), 'utf8'));
-  const codes = currentLeagueCodes(FIXTURES);
-  assert.ok(codes.length > 0, 'no fixtures under packages/core/test/pob2/<league>/');
+  const codes = referenceCodes(FIXTURES);
+  assert.ok(codes.length > 0, 'no fixtures under packages/core/test/reference/<name>/');
   for (const code of codes) {
     const text = readFileSync(oraclePath(code), 'utf8');
     const oracle = JSON.parse(text);
@@ -55,10 +82,8 @@ test('every current-league code has a canonical oracle from the pinned PoB commi
   }
 });
 
-test('every current-league code and GROUPS_EXTRA has a canonical groups oracle with a row per <Skill> group', () => {
-  assert.equal(groupsOraclePath('/f/l/a.code.txt'), '/f/l/a.groups.oracle.json');
-  const codes = [...currentLeagueCodes(FIXTURES), ...GROUPS_EXTRA];
-  assert.ok(GROUPS_EXTRA.some((f) => f.endsWith(join('ninja-legacy', 'main-ninja.code.txt'))), 'main-ninja is in GROUPS_EXTRA');
+test('every reference code has a canonical groups oracle with a row per <Skill> group', () => {
+  const codes = referenceCodes(FIXTURES);
   for (const code of codes) {
     const text = readFileSync(groupsOraclePath(code), 'utf8');
     const oracle = JSON.parse(text);

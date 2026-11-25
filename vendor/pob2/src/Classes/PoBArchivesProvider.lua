@@ -9,20 +9,17 @@ local dkjson = require "dkjson"
 
 local archivesUrl = 'https://pobarchives.com'
 
----@class PoBArchivesProvider: ExtBuildListProvider
-local PoBArchivesProviderClass = newClass("PoBArchivesProvider", "ExtBuildListProvider")
-
-function PoBArchivesProviderClass:PoBArchivesProvider(mode)
+local PoBArchivesProviderClass = newClass("PoBArchivesProvider", "ExtBuildListProvider",
+	function(self, mode)
 		if mode == "builds" then
-			self:ExtBuildListProvider({"Trending", "Latest"})
+			self.ExtBuildListProvider({"Trending", "Latest"})
 		else
-			self:ExtBuildListProvider({"Similar Builds"})
+			self.ExtBuildListProvider({"Similar Builds"})
 		end
 		self.buildList = {}
 		self.mode = mode
-
-	return self
-end
+	end
+)
 
 function PoBArchivesProviderClass:GetApiUrl()
 	if self.importCode then

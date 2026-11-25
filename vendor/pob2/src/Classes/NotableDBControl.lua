@@ -21,14 +21,10 @@ local function IsAnointableNode(node)
 end
 
 ---@class NotableDBControl : ListControl
----@class NotableDBControl: ListControl
-local NotableDBClass = newClass("NotableDBControl", "ListControl")
-
----@param itemsTab ItemsTab
-function NotableDBClass:NotableDBControl(anchor, rect, itemsTab, db, dbType)
+local NotableDBClass = newClass("NotableDBControl", "ListControl", function(self, anchor, rect, itemsTab, db, dbType)
 	local headerHeight = 96
 	local innerRect = {rect[1], rect[2]+headerHeight, rect[3], rect[4]-headerHeight}
-	self:ListControl(anchor, innerRect, 16, "VERTICAL", false)
+	self.ListControl(anchor, innerRect, 16, "VERTICAL", false)
 	self.itemsTab = itemsTab
 	self.db = db
 	self.dbType = dbType
@@ -40,13 +36,13 @@ function NotableDBClass:NotableDBControl(anchor, rect, itemsTab, db, dbType)
 	self.sortDropList = { }
 	self.sortOrder = { }
 	self.sortMode = "NAME"
-	self.controls.sort = new("DropDownControl"):DropDownControl({ "TOPLEFT", self, "TOPLEFT" }, { 0, -headerHeight, 360, 18 }, self.sortDropList, function(index, value)
+	self.controls.sort = new("DropDownControl", {"TOPLEFT",self,"TOPLEFT"}, {0, -headerHeight, 360, 18}, self.sortDropList, function(index, value)
 		self:SetSortMode(value.sortMode)
 	end)
-	self.controls.search = new("EditControl"):EditControl({ "TOPLEFT", self.controls.sort, "BOTTOMLEFT" }, { 0, 2, 258, 18 }, "", "Search", "%c", 100, function()
+	self.controls.search = new("EditControl", {"TOPLEFT",self.controls.sort,"BOTTOMLEFT"}, {0, 2, 258, 18}, "", "Search", "%c", 100, function()
 		self.listBuildFlag = true
 	end, nil, nil, true)
-	self.controls.searchMode = new("DropDownControl"):DropDownControl({ "LEFT", self.controls.search, "RIGHT" }, { 2, 0, 100, 18 }, { "Anywhere", "Names", "Modifiers" }, function(index, value)
+	self.controls.searchMode = new("DropDownControl", {"LEFT",self.controls.search,"RIGHT"}, {2, 0, 100, 18}, { "Anywhere", "Names", "Modifiers" }, function(index, value)
 		self.listBuildFlag = true
 	end)
 
@@ -62,7 +58,7 @@ function NotableDBClass:NotableDBControl(anchor, rect, itemsTab, db, dbType)
 	end
 	self.emotionImages = getEmotionImages()
 
-	self.controls.emotionLabel = new("LabelControl"):LabelControl({ "TOPLEFT", self.controls.search, "BOTTOMLEFT" }, { 0, 6, 100, 16 }, "Emotions: ")
+	self.controls.emotionLabel = new("LabelControl", {"TOPLEFT", self.controls.search, "BOTTOMLEFT"}, {0, 6, 100, 16}, "Emotions: ")
 	self.emotionsAvailable = { }
 	local function emoCheckOnChange(name)
 		self.emotionsAvailable[name] = true
@@ -74,7 +70,7 @@ function NotableDBClass:NotableDBControl(anchor, rect, itemsTab, db, dbType)
 	local function emoCheck(name, relTo)
 		local anchor = {"LEFT", relTo, "RIGHT"}
 		local rect = {2, 0, 26, 26}
-		local ctl = new("CheckBoxControl"):CheckBoxControl(anchor, rect, "", emoCheckOnChange(name), "Distilled " .. name, true)
+		local ctl = new("CheckBoxControl", anchor, rect, "", emoCheckOnChange(name), "Distilled "..name, true)
 		if self.emotionImages then ctl:SetCheckImage(self.emotionImages[name]) end
 		return ctl
 	end
@@ -83,7 +79,7 @@ function NotableDBClass:NotableDBControl(anchor, rect, itemsTab, db, dbType)
 	for i,emo in ipairs(emotionList) do
 		local emoCtl
 		if i == 11 then
-			local ctl = new("CheckBoxControl"):CheckBoxControl({ "TOPLEFT", emotionCheckBoxes[1], "BOTTOMLEFT" }, { 0, 2, 26, 26 }, "", emoCheckOnChange(emo), "Distilled " .. emo, true)
+			local ctl = new("CheckBoxControl", {"TOPLEFT", emotionCheckBoxes[1], "BOTTOMLEFT"}, {0, 2, 26, 26}, "", emoCheckOnChange(emo), "Distilled "..emo, true)
 			if self.emotionImages then ctl:SetCheckImage(self.emotionImages[emo]) end
 			emoCtl = ctl
 		else
@@ -95,8 +91,7 @@ function NotableDBClass:NotableDBControl(anchor, rect, itemsTab, db, dbType)
 
 	self:BuildSortOrder()
 	self.listBuildFlag = true
-	return self
-end
+end)
 
 ---@param node table @The notable node to check
 ---@return boolean @Whether the notable matches the type and search filters.

@@ -12,7 +12,7 @@ import { fileURLToPath } from 'node:url'
 import { decodePobExport } from '../../src/pob/export.js'
 import { parseXml, type XmlElement } from '../../src/pob/xml.js'
 
-const code = readFileSync(fileURLToPath(new URL('./main-ninja.code.txt', import.meta.url)), 'utf8').trim()
+const code = readFileSync(fileURLToPath(new URL('../reference/ninja-default/code.txt', import.meta.url)), 'utf8').trim()
 
 type Mark = { read: string } | { notRead: string }
 const read = (where: string): Mark => ({ read: where })

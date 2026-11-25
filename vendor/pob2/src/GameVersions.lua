@@ -1,4 +1,3 @@
----@diagnostic disable: lowercase-global
 -- Game versions
 ---Default target version for unknown builds and builds created before 3.0.0.
 legacyTargetVersion = "0_0"

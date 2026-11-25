@@ -82,14 +82,14 @@ end
 -- Make (pi, ai) the main skill and recalculate. Returns an error string or nil.
 local function select(pi, ai)
 	-- An earlier row's prompt stays set until cleared, and would be reported for every row after it.
-	__mainObject__.promptMsg = nil
+	launch.promptMsg = nil
 	build.mainSocketGroup = pi
 	list[pi].mainActiveSkill = ai
 	build.modFlag = true
 	build.buildFlag = true
 	local ok, err = pcall(runCallback, "OnFrame")
 	if not ok then return pob.strip(tostring(err)) end
-	if __mainObject__.promptMsg then return pob.strip(__mainObject__.promptMsg) end
+	if launch.promptMsg then return pob.strip(launch.promptMsg) end
 	return nil
 end
 

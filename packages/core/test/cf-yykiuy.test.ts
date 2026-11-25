@@ -57,8 +57,9 @@ describe('CF1 item 2: affix slot limits', () => {
 
   it('applies +1 prefix / -1 suffix allowed from the implicit', () => {
     expect(pendant.affixCapacity).toEqual({ prefix: 4, suffix: 2 })
-    // Its fourth prefix ("28% increased Global Armour, Evasion and Energy Shield") is text only, so three are counted.
-    expect(pendant.affixCounts).toEqual({ prefix: 3, suffix: 2 })
+    // The ninja-default pendant: its matched prefixes and suffixes as the mod data resolves them (a line with no
+    // matched mod id, e.g. "33% increased Global Armour, Evasion and Energy Shield", is text only and not counted).
+    expect(pendant.affixCounts).toEqual({ prefix: 2, suffix: 2 })
   })
 
   it('reports no open slot on Demon Pendant', () => {

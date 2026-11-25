@@ -10,7 +10,7 @@ import { pobToCharModel } from '../src/pob/to-model.js'
 import type { CharModel } from '../src/model/types.js'
 import { mainWithReferenceDefence } from './helpers/main-build.js'
 
-const mainCode = readFileSync(fileURLToPath(new URL('./pob2/forbidden-rites/main.code.txt', import.meta.url)), 'utf8').trim()
+const mainCode = readFileSync(fileURLToPath(new URL('./reference/ninja-default/code.txt', import.meta.url)), 'utf8').trim()
 const mainXml = inflateSync(Buffer.from(mainCode.replace(/-/g, '+').replace(/_/g, '/'), 'base64')).toString('utf8')
 /** The main build re-encoded with trailing spaces: a different code string for the cache, the same build. */
 const variant = (n: number): string => deflateSync(Buffer.from(mainXml + ' '.repeat(n))).toString('base64')

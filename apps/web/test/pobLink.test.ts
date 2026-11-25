@@ -6,7 +6,7 @@ import { tabForHash, targetForHash } from '@/lib/characterTab'
 
 // The owner's current character: the end-to-end fixture for code import (B9).
 const code = readFileSync(
-  fileURLToPath(new URL('../../../packages/core/test/pob2/forbidden-rites/current.code.txt', import.meta.url)),
+  fileURLToPath(new URL('../../../packages/core/test/reference/ninja-default/code.txt', import.meta.url)),
   'utf8',
 ).trim()
 
