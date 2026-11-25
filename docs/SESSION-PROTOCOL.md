@@ -28,7 +28,7 @@ kinds they name.
    `archive/REGISTER-CLOSED.md`; new rows get one line and an ID like `U1-3`). Check an ID is free with
    `git log --grep <prefix>` and a grep, not by reading whole files. When a plan is fully closed, add 1-2 sentences to
    `docs/HISTORY.md` and delete the plan file.
-3. Commit and push once, after the gate passes. Open a PR only when the owner asks, with the template sections and
+3. Commit and push once, after the gate passes. Open a PR with the template sections and
    the Pages preview URL at the top: copy it from the Cloudflare Pages check or bot comment, never build it from the
    branch name (Cloudflare truncates long names). Never force-push; never delete branches.
 4. Close out in chat: each item done, partial or not done, with evidence; gate result; CI status as passed, failed or

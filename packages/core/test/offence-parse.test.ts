@@ -14,6 +14,10 @@ const one = (line: string) => {
 }
 
 describe('parseModLine', () => {
+  it('marks projectile skill levels as projectile-only', () => {
+    expect(parseModLine('+1 to Level of all Projectile Skills')).toEqual([{ kind: 'skillLevel', value: 1, scope: 'attack', projectile: true, text: '+1 to Level of all Projectile Skills' }])
+  })
+
   it('reads increased and reduced damage with its scope', () => {
     expect(one('10% increased Attack Damage')).toMatchObject({ kind: 'inc', stat: 'damage', value: 10, scope: 'attack' })
     expect(one('10% increased Elemental Damage')).toMatchObject({ kind: 'inc', stat: 'damage', value: 10, dmg: 'elemental' })

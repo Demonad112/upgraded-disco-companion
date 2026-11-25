@@ -15,7 +15,7 @@ export interface NextStep {
 }
 
 export const NEXT_STEP_LIMIT = 3
-/** Damage joins the steps below this score (under a B on the S–D scale). */
+/** Damage joins the steps below this score (under an A on the S–D scale: B, C or D). */
 const DAMAGE_STEP_BELOW = 70
 
 export function buildSummary(i: { className: string | null; skill: Pick<SkillDamage, 'name' | 'dominantType' | 'damageSplit'> | null; life: number | null; energyShield: number | null }): string | null {

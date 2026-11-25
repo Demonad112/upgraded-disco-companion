@@ -15,7 +15,8 @@ export default function DamageTab({ analysis: a, tiersState, catalogState, outli
         pobConfig={a.pobConfig}
         configApplies={a.reconciliation?.checks.find((c) => c.stat.startsWith('dps:'))?.severity === 'match'}
       />
-      <DamageEstimates code={outlineInput?.code ?? null} />
+      {/* Keyed on the code: a new code starts from loading with "show anyway" off. */}
+      <DamageEstimates key={outlineInput?.code ?? ''} code={outlineInput?.code ?? null} />
       <Accordion
         id="damage-review"
         title="Supports and gear changes for this skill"

@@ -101,10 +101,18 @@ function quality(raw: string): number {
 }
 
 /** The weapon in `Weapon 1` with its own mods folded in (PoB's local modifiers). */
+/** The item's base row: an exact header line, else the longest base name inside one (a magic item's single name line). */
+function findBase(raw: string, bases: Record<string, BaseRow>): BaseRow | undefined {
+  const header = raw.split('\n').slice(0, 6).map((l) => l.trim()).filter((l) => l && !/^Rarity:/.test(l))
+  const exact = header.find((l) => bases[l])
+  if (exact) return bases[exact]
+  let best: string | undefined
+  for (const name of Object.keys(bases)) if ((!best || name.length > best.length) && header.some((l) => l.includes(name))) best = name
+  return best ? bases[best] : undefined
+}
+
 function readWeapon(raw: string, bases: Record<string, BaseRow>, unread: string[]): { weapon: Weapon | null; rest: Mod[]; reason?: string } {
-  const header = raw.split('\n').slice(0, 6)
-  const baseName = header.find((l) => bases[l.trim()])?.trim()
-  const base = baseName ? bases[baseName] : undefined
+  const base = findBase(raw, bases)
   if (!base?.weapon) return { weapon: null, rest: [], reason: 'the main hand is not a weapon this calc knows' }
 
   const min = zeroTypes()
@@ -152,7 +160,7 @@ const SUPPORT_DAMAGE: Record<string, Mod['dmg']> = {
 }
 
 /** A support's effects as mods. A conditional effect is not applied and is reported. */
-function supportMods(row: SupportRow, unread: string[], conditionOn: (v: string) => boolean): Mod[] {
+function supportMods(row: SupportRow, unread: string[], conditionOn: (v: string) => boolean, skipConditionalGain = false): Mod[] {
   const out: Mod[] = []
   for (const e of row.effects) {
     for (const m of e.mods) {
@@ -161,6 +169,8 @@ function supportMods(row: SupportRow, unread: string[], conditionOn: (v: string)
         unread.push(`${row.name}: ${e.stat} (conditional)`)
         continue
       }
+      // An active conditional gain buff is applied once, from the all-groups buff pass.
+      if (skipConditionalGain && m.conditional && /^DamageGainAs/.test(m.name)) continue
       const text = `${row.name}: ${e.stat}`
       const kind = m.type === 'MORE' ? 'more' : m.type === 'INC' ? 'inc' : null
       if (!kind && !(m.type === 'BASE' && m.name.startsWith('DamageGainAs'))) continue
@@ -207,6 +217,14 @@ export function buildSkillInputs(snap: PobSnapshot, data: OffenceData): SkillInp
   const w = mainHand ? readWeapon(mainHand.raw, data.bases, unreadShared) : { weapon: null, rest: [] as Mod[], reason: 'no weapon' }
 
   const lines: string[] = []
+  // The off-hand: a quiver or shield is read like any other item; a second weapon's lines are local to it, so they
+  // are reported, not applied.
+  const offHand = slotItem(snap.items.useSecondWeaponSet === true ? 'Weapon 2 Swap' : 'Weapon 2')
+  if (offHand) {
+    if (findBase(offHand.raw, data.bases)?.weapon) {
+      for (const line of itemLines(offHand.raw)) if (parseModLine(line)?.length !== 0) unreadShared.push(line)
+    } else lines.push(...itemLines(offHand.raw))
+  }
   for (const slot of itemSet?.slots ?? []) {
     if (!slot.itemId || slot.name === weaponSlot || /^Weapon|Flask|Charm/.test(slot.name)) continue
     const it = itemById.get(slot.itemId)
@@ -235,7 +253,9 @@ export function buildSkillInputs(snap: PobSnapshot, data: OffenceData): SkillInp
     if (mods === null) unread.push(line)
     else for (const m of mods) global.push(m.kind === 'add' && m.stat === 'added' ? { ...m, global: true } : m)
   }
-  const levelBonus = (melee: boolean) => global.filter((m) => m.kind === 'skillLevel' && (!m.melee || melee)).reduce((a, m) => a + m.value, 0)
+  // Only attacks are estimated, so spell-skill levels never apply.
+  const levelBonus = (melee: boolean, projectile: boolean) =>
+    global.filter((m) => m.kind === 'skillLevel' && m.scope !== 'spell' && (!m.melee || melee) && (!m.projectile || projectile)).reduce((a, m) => a + m.value, 0)
 
   const conds = configConditions(snap)
   const counters = configCounters(snap)
@@ -256,16 +276,21 @@ export function buildSkillInputs(snap: PobSnapshot, data: OffenceData): SkillInp
   // PoB applies a support's conditional "gain as extra damage" buff (Innervate, Blazing Critical, Ice Bite) from any
   // enabled socket group, not only the skill's own; the config's condition decides whether it is on.
   const buffUnread: string[] = []
-  const buffMods: Mod[] = []
+  // A named buff applies once: the same support in several groups keeps its strongest copy.
+  const buffBySupport = new Map<string, Mod[]>()
+  const total = (ms: Mod[]) => ms.reduce((a, m) => a + m.value, 0)
   groups.forEach((g, gi) => {
     if (!g.enabled) return
     for (const sup of g.gems.filter(isSupport)) {
       const sr = data.supports.find((x) => x.name === sup.nameSpec)
       if (!sr) continue
       const gainOnly: SupportRow = { ...sr, unmapped: [], effects: sr.effects.map((e) => ({ ...e, mods: e.mods.filter((m) => m.conditional && /^DamageGainAs/.test(m.name)) })) }
-      buffMods.push(...supportMods(gainOnly, buffUnread, conditionOn).map((m) => ({ ...m, text: `${m.text} (from group ${gi + 1})` })))
+      const mods = supportMods(gainOnly, buffUnread, conditionOn).map((m) => ({ ...m, text: `${m.text} (from group ${gi + 1})` }))
+      const prior = buffBySupport.get(sr.name)
+      if (mods.length && (!prior || total(mods) > total(prior))) buffBySupport.set(sr.name, mods)
     }
   })
+  const buffMods: Mod[] = [...buffBySupport.values()].flat()
   groups.forEach((g, i) => {
     if (!g.enabled) return
     const actives = g.gems.filter(isActive)
@@ -282,7 +307,8 @@ export function buildSkillInputs(snap: PobSnapshot, data: OffenceData): SkillInp
     const melee = types.includes('Melee')
     // A skill that consumes charges is paced by charge gain, not by attack speed.
     if (types.includes('ConsumesCharges')) return fail('Not estimated: this skill is paced by the charges it consumes')
-    const level = Math.min(row.levels.length, Math.max(1, (gem.level ?? 1) + levelBonus(melee)))
+    if (!row.levels.length) return fail('Not estimated: no level data for this skill')
+    const level = Math.min(row.levels.length, Math.max(1, (gem.level ?? 1) + levelBonus(melee, types.includes('Projectile'))))
     const [baseMultiplier, attackSpeedMultiplier] = row.levels[level - 1]!
     const skill: PassSkill = {
       isAttack: true, isSpell: false, melee, area: types.includes('Area'), projectile: types.includes('Projectile'), types,
@@ -293,7 +319,7 @@ export function buildSkillInputs(snap: PobSnapshot, data: OffenceData): SkillInp
     for (const s of sups) {
       const sr = data.supports.find((x) => x.name === s.nameSpec)
       // Its own conditional gain buffs are applied once, from the group pass above.
-      if (sr) supMods.push(...supportMods(sr, supUnread, conditionOn).filter((m) => m.kind !== 'gain'))
+      if (sr) supMods.push(...supportMods(sr, supUnread, conditionOn, true))
       else supUnread.push(`${s.nameSpec}: not in the data`)
     }
     out.push({
