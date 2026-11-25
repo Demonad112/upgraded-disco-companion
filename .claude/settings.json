@@ -139,7 +139,32 @@
             "timeout": 600
           }
         ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/handoff_watch.py"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/handoff_watch.py",
+            "timeout": 5
+          }
+        ]
       }
     ]
+  },
+  "env": {
+    "HANDOFF_INTERVAL_MIN": "30",
+    "HANDOFF_CONTEXT_PCT": "70",
+    "HANDOFF_CONTEXT_WINDOW": "200000"
   }
 }

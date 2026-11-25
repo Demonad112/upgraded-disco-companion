@@ -39,6 +39,7 @@ See `docs/DEPENDENCY-BUMPS.md` (per-workspace checks; never split CI per workspa
 
 ## Sessions
 Sessions follow docs/SESSION-PROTOCOL.md (no required reading). Run the gate with `npm run gate`; it tests only the changed areas, once.
+Per-repo overrides for the global `handoff` skill are in `.claude/handoff.md`; `.claude/hooks/handoff_watch.py` injects its time/context triggers.
 
 ## Cloud sessions
 
