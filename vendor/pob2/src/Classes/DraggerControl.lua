@@ -3,12 +3,9 @@
 -- Class: Dragger Button Control
 -- Dragger button control.
 --
----@class DraggerControl: Control, TooltipHost
-local DraggerClass = newClass("DraggerControl", "Control", "TooltipHost")
-
-function DraggerClass:DraggerControl(anchor, rect, label, onKeyDown, onKeyUp, onRightClick, onHover, forceTooltip)
-	self:Control(anchor, rect)
-	self:TooltipHost()
+local DraggerClass = newClass("DraggerControl", "Control", "TooltipHost", function(self, anchor, rect, label, onKeyDown, onKeyUp, onRightClick, onHover, forceTooltip)
+	self.Control(anchor, rect)
+	self.TooltipHost()
 	self.label = label
 	self.onKeyDown = onKeyDown
 	self.onKeyUp = onKeyUp
@@ -17,8 +14,7 @@ function DraggerClass:DraggerControl(anchor, rect, label, onKeyDown, onKeyUp, on
 	self.forceTooltip = forceTooltip
 	self.cursorX = 0
 	self.cursorY = 0
-	return self
-end
+end)
 
 function DraggerClass:SetImage(path)
 	if path then

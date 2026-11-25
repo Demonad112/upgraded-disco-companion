@@ -3,14 +3,10 @@
 -- Class: Tooltip Host
 -- Tooltip host
 --
----@class TooltipHost
-local TooltipHostClass = newClass("TooltipHost")
-
-function TooltipHostClass:TooltipHost(tooltipText)
-	self.tooltip = new("Tooltip"):Tooltip()
+local TooltipHostClass = newClass("TooltipHost", function(self, tooltipText)
+	self.tooltip = new("Tooltip")
 	self.tooltipText = tooltipText
-	return self
-end
+end)
 
 function TooltipHostClass:DrawTooltip(x, y, width, height, viewPort, ...)
 	if self.tooltipFunc then

@@ -58,7 +58,7 @@ describe('taking a snapshot', () => {
       cold: 74,
       lightning: 75,
       chaos: 18,
-      dps: 109867,
+      dps: 110128,
       weakestHit: 3808,
       passives: 123,
     })

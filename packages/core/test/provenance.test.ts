@@ -5,8 +5,7 @@ describe('labelOf', () => {
   it.each([
     ['ninja', 'observed'],
     ['pob-export', 'observed'],
-    ['pob-sim', 'pob-simulated'],
-    ['estimate', 'derived'],
+    ['estimate', 'estimate'],
     ['derived', 'derived'],
     ['nominal', 'nominal'],
   ] as [Provenance, string][])('maps %s to %s', (p, label) => {
@@ -18,8 +17,10 @@ describe('labelOf', () => {
     expect(labelOf(null).label).toBe('unknown')
   })
 
-  it('keeps PoB-simulated apart from observed', () => {
-    expect(labelOf('pob-sim').text).not.toBe(labelOf('ninja').text)
-    expect(valueLabelInfo('pob-simulated').text).toBe('PoB-simulated')
+  it('gives an estimate its own reader label, apart from observed and derived', () => {
+    expect(labelOf('estimate').text).toBe('≈ est.')
+    expect(labelOf('estimate').text).not.toBe(labelOf('pob-export').text)
+    expect(labelOf('estimate').text).not.toBe(labelOf('derived').text)
+    expect(valueLabelInfo('estimate').text).toBe('≈ est.')
   })
 })

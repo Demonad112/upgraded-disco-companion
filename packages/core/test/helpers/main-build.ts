@@ -1,6 +1,6 @@
 /**
  * The owner's main build (Forbidden Rites, PoB 0.23.1) as a character payload: the code in
- * `pob2/forbidden-rites/main.code.txt`, read through `pobToCharModel`, its items matched to mod ids with the
+ * `reference/ninja-default/code.txt`, read through `pobToCharModel`, its items matched to mod ids with the
  * affix data. This is the one realistic character the core tests share (PB-5 replaced the poe.ninja captures).
  * It has no poe.ninja breakdowns: those paths are tested on small inline models instead.
  */
@@ -15,7 +15,7 @@ import { pobToCharModel } from '../../src/pob/to-model.js'
 
 const here = (p: string): string => fileURLToPath(new URL(p, import.meta.url))
 
-export const mainCode = readFileSync(here('../pob2/forbidden-rites/main.code.txt'), 'utf8').trim()
+export const mainCode = readFileSync(here('../reference/ninja-default/code.txt'), 'utf8').trim()
 export const mainTiers = new ModTiers(
   JSON.parse(readFileSync(here('../../../data/generated/mod-tiers.json'), 'utf8')) as ModTierData,
 )

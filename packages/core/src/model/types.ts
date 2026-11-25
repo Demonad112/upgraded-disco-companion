@@ -15,8 +15,6 @@
 export type Provenance =
   /** Tier 1: read verbatim from poe.ninja's computed payload. Authoritative. */
   | 'ninja'
-  /** Tier 2: produced by driving a live Path of Building instance. */
-  | 'pob-sim'
   /** Tier 2: read from the PoB export blob poe.ninja embeds. */
   | 'pob-export'
   /** Tier 3: computed by this codebase. MUST be surfaced as an estimate. */

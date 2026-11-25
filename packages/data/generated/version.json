@@ -1,10 +1,10 @@
 {
   "version": 1,
-  "dataRevision": "0.5.5@601768b",
+  "dataRevision": "0.5.5@7d6f530",
   "gameVersion": "0.5.5",
-  "extractedAt": "2026-11-10",
-  "source": "PathOfBuilding-PoE2@601768b",
-  "pobCommit": "601768bd105869618c3d6581b883e5d7aeec91b2",
+  "extractedAt": "2026-07-28",
+  "source": "PathOfBuilding-PoE2@7d6f530",
+  "pobCommit": "7d6f530cbdab20389ff8bc6ba97a37ac27f74e41",
   "pobVersion": "0.23.1",
   "treeVersion": "0_5",
   "artifacts": [

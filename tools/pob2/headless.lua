@@ -73,7 +73,7 @@ function M.init()
 	arg = savedArg
 	os.getenv = getenv
 	if not build then
-		error("PoB failed to start: " .. M.strip(tostring(__mainObject__ and __mainObject__.promptMsg)))
+		error("PoB failed to start: " .. M.strip(tostring(launch and launch.promptMsg)))
 	end
 	loaded = true
 end
@@ -84,7 +84,7 @@ function M.strip(s)
 end
 
 local function pendingError()
-	local msg = __mainObject__.promptMsg
+	local msg = launch.promptMsg
 	if msg then
 		-- PoB's state is unreliable after an error (the failed build stays in BUILD mode): restart it on next use.
 		loaded = false

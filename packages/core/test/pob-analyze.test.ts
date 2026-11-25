@@ -27,8 +27,8 @@ describe('analysing from a Path of Building code', () => {
 
   it('agrees with poe.ninja on the survivability headline', () => {
     // The embedded model is read from the same code, so the two paths agree; the absolute figure is PoB's own
-    // PlayerStats for the main code (physical 5,004 lowest).
-    expect(pob.defense.lowestMaximumHit).toBe(5004)
+    // PlayerStats for the main code (physical 5,182 lowest).
+    expect(pob.defense.lowestMaximumHit).toBe(5182)
     expect(pob.defense.lowestMaximumHitType).toBe('physical')
     expect(pob.defense.lowestMaximumHit).toBe(ninja.defense.lowestMaximumHit)
     expect(pob.defense.lowestMaximumHitType).toBe(ninja.defense.lowestMaximumHitType)
@@ -47,7 +47,7 @@ describe('analysing from a Path of Building code', () => {
   })
 
   it('reports damage as PoB computed it', () => {
-    expect(pob.damage.totalDps).toBeCloseTo(125658.18322457, 1)
+    expect(pob.damage.totalDps).toBeCloseTo(186706.45241768, 1)
     // poe.ninja rounds; PoB does not. Same number.
     expect(Math.round(pob.damage.totalDps!)).toBe(Math.round(ninja.dps.primary!.dps))
   })
@@ -70,7 +70,7 @@ describe('analysing from a Path of Building code', () => {
 
   it('exposes every PlayerStat, so the curated view hides nothing', () => {
     expect(Object.keys(pob.playerStats).length).toBeGreaterThan(100)
-    expect(pob.playerStats.TotalDPS).toBeCloseTo(125658.18322457, 1)
+    expect(pob.playerStats.TotalDPS).toBeCloseTo(186706.45241768, 1)
   })
 })
 

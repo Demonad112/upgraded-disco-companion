@@ -286,7 +286,7 @@ describe('Path of Building export — the independent second opinion', () => {
 
     const stats = readPlayerStats(xml)
     // PoB computed this; the analysis reads the same number from the code's own stats.
-    expect(stats.TotalDPS).toBeCloseTo(125658.18, 1)
+    expect(stats.TotalDPS).toBeCloseTo(186706.45, 1)
     expect(Math.round(stats.TotalDPS!)).toBe(Math.round(analyzeDps(main).primary!.dps))
   })
 })

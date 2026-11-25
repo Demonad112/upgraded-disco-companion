@@ -7,7 +7,7 @@
  * is detectable and a hand-written summary is never quoted as game data.
  *
  * Not to be confused with `model/provenance.ts`, which labels a single stat
- * value (observed / pob-simulated / …) inside the character model.
+ * value (observed / estimate / …) inside the character model.
  *
  * Pure: the data version is passed in (parse `@poe2/data/generated/version.json`
  * with `readDataVersion`), and `now` is passed to `externalProvenance`.

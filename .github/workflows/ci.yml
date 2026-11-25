@@ -40,7 +40,7 @@ jobs:
           else
             echo "code=true" >> "$GITHUB_OUTPUT"
           fi
-          if git diff --name-only HEAD^1 HEAD | grep -qE '^(vendor/pob2|tools/pob2|packages/core/test/pob2|scripts/pob2)/'; then
+          if git diff --name-only HEAD^1 HEAD | grep -qE '^(vendor/pob2|tools/pob2|packages/core/test/reference|scripts/pob2)/'; then
             echo "pob2=true" >> "$GITHUB_OUTPUT"
           else
             echo "pob2=false" >> "$GITHUB_OUTPUT"
@@ -176,7 +176,7 @@ jobs:
       - name: Busted specs (tools/pob2/spec)
         run: npm run pob2:spec
       - name: Oracle files match PoB
-        # Regenerates every current-league packages/core/test/pob2/<league>/*.oracle.json and fails on any byte diff;
+        # Regenerates packages/core/test/reference/<name>/{oracle,groups.oracle}.json and fails on any byte diff;
         # the diff is printed in the log. Fix: npm run pob2:oracle, review, commit with the cause.
         run: npm run pob2:oracle -- --check
 

@@ -34,7 +34,7 @@ export function plan(files) {
     add('node scripts/route-weight.mjs');
   }
   if (any('vendor/pob2/')) add('npm run pob2:verify');
-  if (any('vendor/pob2/', 'tools/pob2/', 'scripts/pob2/', 'packages/core/test/pob2/', 'packages/core/src/pob/')) {
+  if (any('vendor/pob2/', 'tools/pob2/', 'scripts/pob2/', 'packages/core/test/reference/', 'packages/core/src/pob/')) {
     add('npm run pob2:oracle -- --check');
   }
   if (any('scripts/', '.claude/hooks/', 'packages/data/')) add('npm run test:scripts');

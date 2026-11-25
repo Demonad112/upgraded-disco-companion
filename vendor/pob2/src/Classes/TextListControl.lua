@@ -3,13 +3,10 @@
 -- Class: Text List
 -- Simple list control for displaying a block of text
 --
----@class TextListControl: Control, ControlHost
-local TextListClass = newClass("TextListControl", "Control", "ControlHost")
-
-function TextListClass:TextListControl(anchor, rect, columns, list, sectionHeights)
-	self:Control(anchor, rect)
-	self:ControlHost()
-	self.controls.scrollBar = new("ScrollBarControl"):ScrollBarControl({ "RIGHT", self, "RIGHT" }, { -1, 0, 18, 0 }, 40)
+local TextListClass = newClass("TextListControl", "Control", "ControlHost", function(self, anchor, rect, columns, list, sectionHeights)
+	self.Control(anchor, rect)
+	self.ControlHost()
+	self.controls.scrollBar = new("ScrollBarControl", {"RIGHT",self,"RIGHT"}, {-1, 0, 18, 0}, 40)
 	self.controls.scrollBar.height = function()
 		local width, height = self:GetSize()
 		return height - 2
@@ -17,8 +14,7 @@ function TextListClass:TextListControl(anchor, rect, columns, list, sectionHeigh
 	self.columns = columns or { { x = 0, align = "LEFT" } }
 	self.list = list or { }
 	self.sectionHeights = sectionHeights
-	return self
-end
+end)
 
 function TextListClass:IsMouseOver()
 	if not self:IsShown() then
@@ -46,35 +42,9 @@ function TextListClass:Draw(viewPort)
 		local lineY = -scrollBar.offset
 		for _, lineInfo in ipairs(self.list) do
 			if lineInfo[colIndex] then
-				local textX = lineInfo.x or colInfo.x
-				local align = lineInfo.align or colInfo.align
-				DrawString(textX, lineY, align, lineInfo.height, lineInfo.font or "VAR", lineInfo[colIndex])
-				if lineInfo.underline and lineInfo.underline[colIndex] then
-					local width = DrawStringWidth(lineInfo.height, "VAR", StripEscapes(lineInfo[colIndex]))
-					-- note: not fully handled. this is currently only used for
-					-- the side bar stats
-					if align == "RIGHT_X" then
-						textX = textX - width
-					end
-					SetDrawColor(0.5, 0.5, 0.5)
-					DrawImage(nil, textX, lineY + lineInfo.height, width, 1)
-				end
+				DrawString(lineInfo.x or colInfo.x, lineY, lineInfo.align or colInfo.align, lineInfo.height, lineInfo.font or "VAR", lineInfo[colIndex])
 			end
 			lineY = lineY + lineInfo.height
-		end
-	end
-	-- determine which line the user is hovering over
-	self.hoveredLine = nil
-	local cursorX, cursorY = GetCursorPos()
-	if cursorX >= x + 2 and cursorX < x + width - 18 and cursorY >= y + 2 and cursorY < y + height - 2 then
-		local rowY = y - scrollBar.offset + 2
-		-- suboptimal. should do binary search if this causes performance problems
-		for _, lineInfo in ipairs(self.list) do
-			if cursorY >= rowY and cursorY < rowY + lineInfo.height then
-				self.hoveredLine = { line = lineInfo, x = x, y = rowY, width = width }
-				break
-			end
-			rowY = rowY + lineInfo.height
 		end
 	end
 	SetViewport()
@@ -83,9 +53,6 @@ end
 function TextListClass:OnKeyDown(key, doubleClick)
 	if not self:IsShown() or not self:IsEnabled() then
 		return
-	end
-	if key == "LEFTBUTTON" and self.onClick then
-		self.onClick(self.hoveredLine)
 	end
 	local mOverControl = self:GetMouseOverControl()
 	if mOverControl and mOverControl.OnKeyDown then

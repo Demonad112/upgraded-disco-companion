@@ -17,7 +17,7 @@ import { snapshotToCharModel } from '../src/pob/to-model.js'
 import { normalizeItems } from '../src/model/slots.js'
 import type { CharModel } from '../src/model/types.js'
 
-const code = readFileSync(fileURLToPath(new URL('./pob2/forbidden-rites/main.code.txt', import.meta.url)), 'utf8').trim()
+const code = readFileSync(fileURLToPath(new URL('./reference/ninja-default/code.txt', import.meta.url)), 'utf8').trim()
 const { readPobSnapshotFromCode } = await import('../src/pob/export.js')
 const mainSnap = await readPobSnapshotFromCode(code)
 
@@ -143,22 +143,19 @@ describe('snapshotItems: the main build', () => {
     expect(bySlot[11]!.name).toBe('Mageblood')
   })
 
-  it('flasks and charms that are not switched on are not read; an empty slot adds nothing', () => {
-    // The 0.23.1 export carries 2 flasks and 3 charms, none with active="true".
-    expect(flasks).toEqual([])
+  it('reads the switched-on flasks and charms; an empty slot adds nothing', () => {
+    // poe.ninja's code switches on all 2 flasks and 3 charms (active="true").
+    expect(flasks).toHaveLength(5)
     expect(unmapped).toEqual([])
     expect(Array.isArray(jewels)).toBe(true)
   })
 
-  it('a switched-on flask or charm goes to `flasks`', () => {
+  it('a switched-off flask or charm is not read', () => {
     const set = activeItemSet(mainSnap)!
-    const on = structuredClone(mainSnap)
-    for (const slot of activeItemSet(on)!.slots) if (/^(Flask|Charm) \d+$/.test(slot.name)) slot.active = true
-    expect(set.slots.some((s) => s.active)).toBe(false)
-    const names = snapshotItems(on).flasks.map((f) => f.itemData.name ?? f.itemData.typeLine)
-    expect(names).toHaveLength(5)
-    expect(names).toContain("Arakaali's Gift")
-    expect(names).toContain('Concentrated Ultimate Mana Flask of the Sylvan')
+    expect(set.slots.filter((s) => /^(Flask|Charm) \d+$/.test(s.name)).every((s) => s.active)).toBe(true)
+    const off = structuredClone(mainSnap)
+    for (const slot of activeItemSet(off)!.slots) if (/^(Flask|Charm) \d+$/.test(slot.name)) slot.active = false
+    expect(snapshotItems(off).flasks).toEqual([])
   })
 
   it('splits implicit, rune and explicit lines by the Implicits count', () => {

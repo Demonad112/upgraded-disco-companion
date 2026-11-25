@@ -56,7 +56,7 @@
   ],
   "primarySkill": {
     "name": "Storm Wave",
-    "totalDps": 109867.25202098387
+    "totalDps": 110128.31235718314
   },
   "assessment": {
     "score": null,
@@ -85,7 +85,7 @@
   ],
   "pobConfigInputCount": null,
   "warnings": [],
-  "importHash": "21bc4ec4f66f7f7a",
+  "importHash": "9d9fd3af10fcbbf3",
   "holdingUp": {
     "resistances": [
       {

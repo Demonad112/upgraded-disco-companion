@@ -6,20 +6,16 @@
 local ipairs = ipairs
 local t_insert = table.insert
 
----@class PathControl: Control, ControlHost, UndoHandler
-local PathClass = newClass("PathControl", "Control", "ControlHost", "UndoHandler")
-
-function PathClass:PathControl(anchor, rect, basePath, subPath, onChange)
-	self:Control(anchor, rect)
-	self:ControlHost()
-	self:UndoHandler()
+local PathClass = newClass("PathControl", "Control", "ControlHost", "UndoHandler", function(self, anchor, rect, basePath, subPath, onChange)
+	self.Control(anchor, rect)
+	self.ControlHost()
+	self.UndoHandler()
 	self.basePath = basePath
 	self.baseName = basePath:match("([^/]+)/$") or "Base"
 	self:SetSubPath(subPath or "")
 	self:ResetUndo()
 	self.onChange = onChange
-	return self
-end
+end)
 
 function PathClass:SetSubPath(subPath, noUndo)
 	if subPath == self.subPath then
@@ -37,7 +33,7 @@ function PathClass:SetSubPath(subPath, noUndo)
 	for index, folder in ipairs(self.folderList) do
 		local button = self.controls["folder"..i]
 		if not button then
-			button = new("ButtonControl"):ButtonControl({ "LEFT", self, "LEFT" }, { 0, 0, 0, self.height - 4 })
+			button = new("ButtonControl", {"LEFT",self,"LEFT"}, {0, 0, 0, self.height - 4})
 			self.controls["folder"..i] = button
 		end
 		button.shown = true

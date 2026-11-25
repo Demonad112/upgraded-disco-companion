@@ -80,11 +80,11 @@
     "one-shot-chaos",
     "armour-negligible"
   ],
-  "pobConfigInputCount": 11,
+  "pobConfigInputCount": 22,
   "warnings": [
-    "8 stats disagree between poe.ninja and the attached Path of Building export. See the reconciliation report before trusting those figures."
+    "9 stats disagree between poe.ninja and the attached Path of Building export. See the reconciliation report before trusting those figures."
   ],
-  "importHash": "0b2bfb1b68d0ce0c",
+  "importHash": "f8b01e3d25f18dbf",
   "holdingUp": {
     "resistances": [
       {

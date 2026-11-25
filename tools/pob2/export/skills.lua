@@ -33,7 +33,7 @@ local function idsIn(file)
 			ids[#ids + 1] = id
 		end,
 	})
-	LoadModule("Data/Skills/" .. file)(into, stub, stub, stub)
+	LoadModule("Data/Skills/" .. file, into, stub, stub, stub)
 	return ids
 end
 

@@ -61,7 +61,7 @@ describe('top fixes', () => {
   it('default rows carry a lead and one gain line; the detail sentence is whole and Pro-only', async () => {
     for (const name of ['main']) {
       // The owner's main build: its PoB code read through core (PB-5 replaced the poe.ninja captures).
-      const code = readFileSync(new URL('../../../packages/core/test/pob2/forbidden-rites/main.code.txt', import.meta.url), 'utf8').trim()
+      const code = readFileSync(new URL('../../../packages/core/test/reference/ninja-default/code.txt', import.meta.url), 'utf8').trim()
       const payload = { type: 'character', charModel: await pobToCharModel(code) }
       const fixes = topFixes((await analyzeCharacter(payload)).recommendations)
       expect(fixes.length, name).toBeGreaterThan(0)

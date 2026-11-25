@@ -1,9 +1,8 @@
-/** PB-3: the XML tokenizer, `readPobSnapshot` (PoB's save schema 1:1), its selectors and the stale-export finding. */
+/** PB-3: the XML tokenizer, `readPobSnapshot` (PoB's save schema 1:1), its selectors. */
 
 import { describe, expect, it } from 'vitest'
 import { childNamed, decodeXmlEntities, findAll, findFirst, parseXml } from '../src/pob/xml.js'
 import { activeConfigSet, activeItemSet, activeSkillSet, activeSpec, readPobSnapshot, splitTree } from '../src/pob/snapshot.js'
-import { describeStaleExport, staleExport } from '../src/pob/stale.js'
 import { parseFullDpsLabel, passiveTreeNameOf, snapshotToCharModel } from '../src/pob/to-model.js'
 import { readPobConfig, readPobInputs } from '../src/pob/config.js'
 import { readPobMainSkill } from '../src/pob/main-skill.js'
@@ -296,36 +295,5 @@ describe('readers rebased onto the snapshot', () => {
       ['7', true, 2],
     ])
     expect(groups[2]).toMatchObject({ weaponSet: 2, source: 'item', sourceRaw: 'Item:3:Doom Grasp', skills: ['Arc', 'Ball Lightning'] })
-  })
-})
-
-describe('staleExport', () => {
-  const snap = readPobSnapshot(DOC)
-
-  it('lists every stat that differs or is on one side only, and nothing when all match', () => {
-    const stale = staleExport(snap, {
-      pobVersion: '0.23.1',
-      export: { PlayerStat: { Life: 3100, 'MainHand.Accuracy': 1200.5, CappedMaxHit: 'inf', Ward: '12', Junk: 'x' } },
-    })
-    expect(stale).toEqual({
-      pobVersion: '0.23.1',
-      stats: [
-        { stat: 'Life', embedded: 3000, recomputed: 3100 },
-        { stat: 'Ward', embedded: null, recomputed: 12 },
-      ],
-    })
-    expect(describeStaleExport(stale!)).toBe(
-      'Stale export: re-export from current Path of Building. 2 stats differ from what Path of Building 0.23.1 computes for this build now, including Life (3,000 in the code, 3,100 now).',
-    )
-    expect(staleExport(snap, { export: { PlayerStat: { Life: 3000, 'MainHand.Accuracy': 1200.5, CappedMaxHit: 'inf' } } })).toBeNull()
-  })
-
-  it('names a dropped stat and handles nan and -inf', () => {
-    const s = readPobSnapshot('<Build><PlayerStat stat="A" value="nan"/><PlayerStat stat="B" value="-inf"/><PlayerStat stat="C" value="1"/></Build>')
-    const stale = staleExport(s, { export: { PlayerStat: { A: 'nan', B: '-inf' } } })!
-    expect(stale.stats).toEqual([{ stat: 'C', embedded: 1, recomputed: null }])
-    expect(describeStaleExport(stale)).toBe(
-      'Stale export: re-export from current Path of Building. 1 stat differs from what current Path of Building computes for this build now, including C (1 in the code, absent now).',
-    )
   })
 })

@@ -20,8 +20,12 @@ export const useRatesPayloadJson = (): string =>
 
 export const mainPayload = JSON.parse(mainPayloadJson) as { type: string; charModel: Record<string, unknown> & { pathOfBuildingExport: string } }
 
-/** The reference character's PoB code (main-ninja, poe.ninja's export; CP-6), as pasted into the paste box. */
-export const mainCode: string = readFileSync(resolve('../../packages/core/test/ninja-legacy/main-ninja.code.txt'), 'utf8').trim()
+/** The reference character's PoB code (ninja-default: poe.ninja's export with its default config), as pasted into a code box. */
+export const mainCode: string = readFileSync(resolve('../../packages/core/test/reference/ninja-default/code.txt'), 'utf8').trim()
 
-/** The owner's updated character (forbidden-rites/current, 2026-11-24), for the `#pob=` share link (B9 E0). */
-export const currentCode: string = readFileSync(resolve('../../packages/core/test/pob2/forbidden-rites/current.code.txt'), 'utf8').trim()
+/** The reference code with Skull Song's 2 runes removed, for the empty-rune finding (CP-2; the reference fills every socket). */
+export const emptyRunesCode = (): string =>
+  execFileSync(process.execPath, [resolve('../../scripts/lib/main-payload.mjs'), '--empty-runes'], { encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 })
+
+/** The code the `#pob=` share link carries in e2e: the same reference code. */
+export const currentCode: string = mainCode

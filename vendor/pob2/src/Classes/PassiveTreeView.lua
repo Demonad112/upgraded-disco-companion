@@ -22,10 +22,7 @@ local JEWEL_RADIUS_TINT_NEUTRAL = { 1, 1, 1, 0.7 }
 local JEWEL_RADIUS_TINT_PRIMARY_ONLY = { 1, 0, 0, 0.7 }
 local JEWEL_RADIUS_TINT_COMPARE_ONLY = { 0, 1, 0, 0.7 }
 
----@class PassiveTreeView
-local PassiveTreeViewClass = newClass("PassiveTreeView")
-
-function PassiveTreeViewClass:PassiveTreeView()
+local PassiveTreeViewClass = newClass("PassiveTreeView", function(self)
 	self.ring = NewImageHandle()
 	self.ring:Load("Assets/ring.png", "CLAMP")
 	self.highlightRing = NewImageHandle()
@@ -39,8 +36,8 @@ function PassiveTreeViewClass:PassiveTreeView()
 	self.jewelShadedInnerRingFlipped = NewImageHandle()
 	self.jewelShadedInnerRingFlipped:Load("Assets/ShadedInnerRingFlipped.png", "CLAMP")
 
-	self.tooltip = new("Tooltip"):Tooltip()
-	self.skillTooltip = new("Tooltip"):Tooltip()
+	self.tooltip = new("Tooltip")
+	self.skillTooltip = new("Tooltip")
 
 	self.zoomLevel = 3
 	self.zoom = 1.2 ^ self.zoomLevel
@@ -53,9 +50,7 @@ function PassiveTreeViewClass:PassiveTreeView()
 	self.searchStrResults = {}
 	self.showStatDifferences = true
 	self.hoverNode = nil
-	self.connectorQueue = {}
-	return self
-end
+end)
 
 function PassiveTreeViewClass:Load(xml, fileName)
 	if xml.attrib.zoomLevel then
@@ -140,11 +135,6 @@ end
 
 -- Returns the draw color for a node when compare overlay is active.
 -- Handles diff coloring for allocated/unallocated, mastery changes, and jewel socket differences.
----@param node Node
----@param compareNode Node?
----@param spec PassiveSpec
----@param build Build
----@param nodeDefaultColor any
 function PassiveTreeViewClass:GetCompareNodeColor(node, compareNode, spec, build, nodeDefaultColor)
 	if not compareNode then
 		return nodeDefaultColor
@@ -166,12 +156,8 @@ function PassiveTreeViewClass:GetCompareNodeColor(node, compareNode, spec, build
 	return nodeDefaultColor
 end
 
----@param build Build
----@param viewPort any
----@param inputEvents any
 function PassiveTreeViewClass:Draw(build, viewPort, inputEvents)
 	local spec = build.spec
-	---@type PassiveTree
 	local tree = spec.tree
 
 	local cursorX, cursorY = GetCursorPos()
@@ -179,7 +165,7 @@ function PassiveTreeViewClass:Draw(build, viewPort, inputEvents)
 
 	-- Process input events
 	local treeClick
-	for _, event in ipairs(inputEvents) do
+	for id, event in ipairs(inputEvents) do
 		if event.type == "KeyDown" then
 			if event.key == "LEFTBUTTON" then
 				if mOver then
@@ -553,16 +539,7 @@ function PassiveTreeViewClass:Draw(build, viewPort, inputEvents)
 	elseif treeClick == "RIGHT" then
 		-- User right-clicked on a node
 		if hoverNode then
-			if IsKeyDown("SHIFT") then
-				-- Shift+Right-Click: open a popup to edit the per-node author note
-				-- (consumed by the PoE2 .build export as the node's additional_text).
-				local nodeId = hoverNode.id
-				local title = "Note: " .. (hoverNode.dn or hoverNode.name or "Passive")
-				main:OpenNoteEditPopup(title, spec.nodeNotes[nodeId], function(text)
-					spec.nodeNotes[nodeId] = text
-					build.modFlag = true
-				end)
-			elseif hoverNode.alloc and (hoverNode.type == "Socket" or hoverNode.containJewelSocket) then
+			if hoverNode.alloc and (hoverNode.type == "Socket" or hoverNode.containJewelSocket) then
 				local slot = build.itemsTab.sockets[hoverNode.id]
 				if slot:IsEnabled() then
 					-- User right-clicked a jewel socket, jump to the item page and focus the corresponding item slot control
@@ -594,7 +571,15 @@ function PassiveTreeViewClass:Draw(build, viewPort, inputEvents)
 		end
 	end
 
-	main:DrawBackground(viewPort)
+	-- Draw the background artwork
+	local bg = tree:GetAssetByName("Background2")
+	if bg.width == 0 then
+		bg.width, bg.height = bg.handle:ImageSize()
+	end
+	if bg.width > 0 then
+		SetDrawColor(1, 1, 1, 1)
+		DrawImage(bg.handle, viewPort.x, viewPort.y, viewPort.width, viewPort.height, 0, 0, viewPort.width / 100, viewPort.height / 100)
+	end
 
 	-- draw allocMode text
 	self:DrawAllocMode(spec.allocMode, viewPort)
@@ -672,6 +657,10 @@ function PassiveTreeViewClass:Draw(build, viewPort, inputEvents)
 		end
 	end
 
+	local connectorColor = { 1, 1, 1 }
+	local function setConnectorColor(r, g, b)
+		connectorColor[1], connectorColor[2], connectorColor[3] = r, g, b
+	end
 	local function nodeIsHoverPathEndpoint(node)
 		if node == hoverNode or hoverPath[node] then
 			return true
@@ -704,19 +693,9 @@ function PassiveTreeViewClass:Draw(build, viewPort, inputEvents)
 		end
 		return state
 	end
-	for _, connectorList in pairs(self.connectorQueue) do
-		connectorList.n = 0
-	end
-	-- 0.75 gray
-	local inactiveGray = "^xBFBFBF"
-	local brightRed = colorCodes.HIGHLIGHT
-	local brightGreen = "^x00FF00"
-	local alloc1Red = colorCodes.NEGATIVE
-	local alloc2Green = colorCodes.POSITIVE
-	local white = "^xFFFFFF"
 	local function renderConnector(connector)
 		local node1, node2 = spec.nodes[connector.nodeId1], spec.nodes[connector.nodeId2]
-		connector.colour = white
+		setConnectorColor(1, 1, 1)
 		local state = getState(node1, node2)
 		local baseState = state
 		if self.compareSpec then
@@ -725,26 +704,29 @@ function PassiveTreeViewClass:Draw(build, viewPort, inputEvents)
 				baseState = getState(cNode1,cNode2)
 			end
 		end
+
 		if baseState == "Active" and state ~= "Active" then
 			state = "Active"
-			connector.colour = brightGreen
+			setConnectorColor(0, 1, 0)
 		end
 		if baseState ~= "Active" and state == "Active" then
-			connector.colour = brightRed
+			setConnectorColor(1, 0, 0)
 		end
+
 		if baseState == "Intermediate" and spec.allocMode > 0 and not connector.ascendancyName then
 			if spec.allocMode == 1 then
-				connector.colour = alloc1Red
+				setConnectorColor(unpack(hexToRGB(colorCodes["NEGATIVE"]:sub(3))))
 			elseif spec.allocMode == 2 then
-				connector.colour = alloc2Green
+				setConnectorColor(unpack(hexToRGB(colorCodes["POSITIVE"]:sub(3))))
 			end
 		end
+
 		if baseState == "Active" and state == "Active" and not connector.ascendancyName then
-			local allocMode = (node1 and node1.allocMode and node1.allocMode ~= 0 and node1.allocMode) or (node2 and node2.allocMode and node2.allocMode ~= 0 and node2.allocMode) or 0
+			local allocMode =  (node1 and node1.allocMode and node1.allocMode ~= 0 and node1.allocMode) or (node2 and node2.allocMode and node2.allocMode ~= 0 and node2.allocMode) or 0
 			if allocMode == 1 then
-				connector.colour = alloc1Red
+				setConnectorColor(unpack(hexToRGB(colorCodes["NEGATIVE"]:sub(3))))
 			elseif allocMode == 2 then
-				connector.colour = alloc2Green
+				setConnectorColor(unpack(hexToRGB(colorCodes["POSITIVE"]:sub(3))))
 			end
 		end
 
@@ -754,70 +736,41 @@ function PassiveTreeViewClass:Draw(build, viewPort, inputEvents)
 		connector.c[3], connector.c[4] = treeToScreen(vert[3], vert[4])
 		connector.c[5], connector.c[6] = treeToScreen(vert[5], vert[6])
 		connector.c[7], connector.c[8] = treeToScreen(vert[7], vert[8])
+
 		if hoverNode and hoverNode.id == 5571 and hoverDep and (hoverDep[node1] or hoverDep[node2]) and not hoverNode.alloc and not connector.ascendancyName then
 			--Used to display Unseen Path nodes green when unallocated and hovered over
-			connector.colour = brightGreen
+			setConnectorColor(0, 1, 0)
 		elseif hoverDep and (hoverDep[node1] or hoverDep[node2]) and hoverNode.id == 5571 and not hoverNode.isAlloc and not connector.ascendancyName then
 			--Used to display Unseen Path nodes red when allocated and hovered over node
-			connector.colour = brightRed
+			setConnectorColor(1, 0, 0)
 		elseif hoverDep and hoverDep[node1] and hoverDep[node2] then
 			-- Both nodes depend on the node currently being hovered over, so color the line red
-			connector.colour = brightRed
+			setConnectorColor(1, 0, 0)
 		elseif connector.ascendancyName and connector.ascendancyName ~= spec.curAscendClassBaseName then
-			-- Fade out lines in ascendancy classes other than the current one (0.75 gray)
-			connector.colour = inactiveGray
+			-- Fade out lines in ascendancy classes other than the current one
+			setConnectorColor(0.75, 0.75, 0.75)
 		end
-		local handleName = connector.assetNames[state]
-		connector.state = state
-		local connectorHandleQueue = self.connectorQueue[handleName]
-		if not connectorHandleQueue then
-			connectorHandleQueue = { n = 0 }
-			self.connectorQueue[handleName] = connectorHandleQueue
-		end
-		connectorHandleQueue.n += 1
-		connectorHandleQueue[connectorHandleQueue.n] = connector
+		SetDrawColor(unpack(connectorColor))
+		handle = tree:GetAssetByName(connector.connectionArt .. connector.type..state).handle
+		DrawImageQuad(handle, unpack(connector.c))
 	end
 
 	-- Draw the connecting lines between nodes
 	SetDrawLayer(nil, 20)
 
-	local vpMaxX, vpMaxY = screenToTree(viewPort.x + viewPort.width, viewPort.y + viewPort.height)
-	local vpMinX, vpMinY = screenToTree(viewPort.x, viewPort.y)
-	for i = 1, #tree.connectors do
-		local connector = tree.connectors[i]
-		-- avoid rendering connectors that are out of view
-		if vpMinX <= connector.maxX and connector.minX <= vpMaxX
-			and vpMinY <= connector.maxY and connector.minY <= vpMaxY then
-			local node1 = spec.nodes[connector.nodeId1]
-			local node2 = spec.nodes[connector.nodeId2]
-			if not node1.unlockConstraint and not node2.unlockConstraint then
-				renderConnector(connector)
-			elseif self:checkUnlockConstraints(build, node1) and self:checkUnlockConstraints(build, node2) then
-				renderConnector(connector)
-			end
+	for _, connector in pairs(tree.connectors) do
+		local node1 = spec.nodes[connector.nodeId1]
+		local node2 = spec.nodes[connector.nodeId2]
+		if not node1.unlockConstraint and not node2.unlockConstraint  then
+			renderConnector(connector)
+		elseif self:checkUnlockConstraints(build, node1) and self:checkUnlockConstraints(build, node2) then
+			renderConnector(connector)
 		end
 	end
 
 	for _, subGraph in pairs(spec.subGraphs) do
 		for _, connector in pairs(subGraph.connectors) do
 			renderConnector(connector)
-		end
-	end
-	for assetName, connectors in pairs(self.connectorQueue) do
-		-- Empty queues may reference assets from a previously displayed tree version.
-		if connectors.n > 0 then
-			local handle = tree:GetAssetByName(assetName).handle
-			local currentColour
-			for i = 1, connectors.n do
-				local connector = connectors[i]
-				local c = connector.c
-				local colour = connector.colour or white
-				if currentColour ~= colour then
-					SetDrawColor(colour)
-					currentColour = colour
-				end
-				DrawImageQuad(handle, c[1], c[2], c[3], c[4], c[5], c[6], c[7], c[8], c[9], c[10], c[11], c[12], c[13], c[14], c[15], c[16])
-			end
 		end
 	end
 	-- Draw connectors for compare-only subgraphs (cluster jewels only in compare build)
@@ -926,7 +879,6 @@ function PassiveTreeViewClass:Draw(build, viewPort, inputEvents)
 	end
 
 	-- Draw the nodes
-	local halfGray = "^x808080"
 	for nodeId, node in pairs(spec.nodes) do
 		-- Determine the base and overlay images for this node based on type and state
 		local compareNode = self.compareSpec and self.compareSpec.nodes[nodeId] or nil
@@ -1106,7 +1058,7 @@ function PassiveTreeViewClass:Draw(build, viewPort, inputEvents)
 			else
 
 				if not self.showHeatMap and not launch.devModeAlt and not node.alloc then
-					SetDrawColor(halfGray)
+					self:LessLuminance()
 				end
 
 				self:DrawAsset(base, scrX, scrY, scale)
@@ -1118,7 +1070,7 @@ function PassiveTreeViewClass:Draw(build, viewPort, inputEvents)
 
 		if overlay then
 			if allocModeColor then
-				SetDrawColor(allocMode == 1 and alloc1Red or alloc2Green)
+				SetDrawColor(unpack(hexToRGB(colorCodes[allocMode == 1 and "NEGATIVE" or "POSITIVE"]:sub(3))))
 			end
 			-- Draw overlay
 			if node.type ~= "ClassStart" and node.type ~= "AscendClassStart" then
@@ -1169,7 +1121,7 @@ function PassiveTreeViewClass:Draw(build, viewPort, inputEvents)
 			end
 
 			if not self.showHeatMap and not launch.devModeAlt and not node.alloc and (node.type == "AscendClassStart" or node.type == "ClassStart") then
-				SetDrawColor(halfGray)
+				self:LessLuminance()
 			end
 			self:DrawAsset(overlayImage, scrX, scrY, scale)
 			if not self.showHeatMap and not launch.devModeAlt and not node.alloc and (node.type == "AscendClassStart" or node.type == "ClassStart") then
@@ -1298,8 +1250,8 @@ function PassiveTreeViewClass:Draw(build, viewPort, inputEvents)
 				circle1 = tree:GetAssetByName("art/textures/interface/2d/2dart/uiimages/ingame/".. conqueror .."/".. conqueror .."passiveskillscreenjewelcircle1.dds")
 				circle2 = circle1
 			end
-			self:DrawImageRotated(circle1.handle, scrX, scrY, outerSize * 2, outerSize * 2, -0.7, circle1)
-			self:DrawImageRotated(circle2.handle, scrX, scrY, outerSize * 2, outerSize * 2, 0.7, circle2)
+			self:DrawImageRotated(circle1.handle, scrX, scrY, outerSize * 2, outerSize * 2, -0.7, unpack(circle1))
+			self:DrawImageRotated(circle2.handle, scrX, scrY, outerSize * 2, outerSize * 2, 0.7, unpack(circle2))
 		else
 			self:DrawImageRotated(self.jewelShadedOuterRing, scrX, scrY, outerSize * 2, outerSize * 2, -0.7)
 			self:DrawImageRotated(self.jewelShadedOuterRingFlipped, scrX, scrY, outerSize * 2, outerSize * 2, 0.7)
@@ -1387,22 +1339,14 @@ function PassiveTreeViewClass:DrawAsset(data, x, y, scale, isHalf)
 		DrawImage(data.handle, x - width, y - height * 2, width * 2, height * 2)
 		DrawImage(data.handle, x - width, y, width * 2, height * 2, 0, 1, 1, 0)
 	else
-		if data[2] then
-			DrawImage(data.handle, x - width, y - height, width * 2, height * 2, data[1], data[2], data[3], data[4], data[5])
-		else
-			DrawImage(data.handle, x - width, y - height, width * 2, height * 2, data[1])
-		end
+		DrawImage(data.handle, x - width, y - height, width * 2, height * 2, unpack(data))
 	end
 end
 
-function PassiveTreeViewClass:DrawImageRotated(handle, x, y, width, height, angle, data)
+function PassiveTreeViewClass:DrawImageRotated(handle, x, y, width, height, angle, ...)
 	if main.showAnimations == false then
 		-- Skip rotation and animation
-		if data then
-			DrawImage(handle, x - width / 2, y - height / 2, width, height, unpack(data))
-		else
-			DrawImage(handle, x - width / 2, y - height / 2, width, height)
-		end
+		DrawImage(handle, x - width / 2, y - height / 2, width, height, ...)
 		return
 	end
 
@@ -1421,80 +1365,54 @@ function PassiveTreeViewClass:DrawImageRotated(handle, x, y, width, height, angl
 	local x4 = x - hw * cosA - hh * sinA
 	local y4 = y - hw * sinA + hh * cosA
 
-	local lengthData = data and #data or 0
-	if lengthData == 0 then
-		DrawImageQuad(handle, x1, y1, x2, y2, x3, y3, x4, y4)
-	elseif lengthData == 1 then
-		-- stack idx only
-		DrawImageQuad(handle, x1, y1, x2, y2, x3, y3, x4, y4, data[1])
-	elseif lengthData == 4 or lengthData == 5 then
-		DrawImageQuad(handle, x1, y1, x2, y2, x3, y3, x4, y4,
-			-- top-left
-			data[1], data[2],
-			-- top-right
-			data[3], data[2],
-			-- bottom-right
-			data[3], data[4],
-			-- bottom-left
-			data[1], data[4],
-			-- stack idx
-			data[5]
-		)
-	else
-		error("Invalid DrawImageRotated data length")
-	end
+	DrawImageQuad(handle, x1, y1, x2, y2, x3, y3, x4, y4, ...)
 end
 
-local function rotate(x, y, cx, cy, theta)
-	local translatedX = x - cx
-	local translatedY = y - cy
-
-	local cosTheta = math.cos(theta)
-	local sinTheta = math.sin(theta)
-	local rotatedX = translatedX * cosTheta - translatedY * sinTheta
-	local rotatedY = translatedX * sinTheta + translatedY * cosTheta
-
-	return rotatedX + cx, rotatedY + cy
-end
 function PassiveTreeViewClass:DrawQuadAndRotate(data, xTree, yTree, angleRad, treeToScreen)
 	local vertActive = {}
-	local xActive = xTree
-	local yActive = yTree
-	local widthActive = data.width
-	local heightActive = data.height
+		local xActive = xTree
+		local yActive = yTree
+		local widthActive = data.width
+		local heightActive = data.height
 
-	local x1, y1 = xActive - widthActive, yActive - heightActive
-	local x2, y2 = xActive + widthActive, yActive - heightActive
-	local x3, y3 = xActive + widthActive, yActive + heightActive
-	local x4, y4 = xActive - widthActive, yActive + heightActive
+		local function rotate(x, y, cx, cy, theta)
+			local translatedX = x - cy
+			local translatedY = y - cy
 
-	-- rotate the quad
-	x1, y1 = treeToScreen(rotate(x1, y1, xActive, yActive, angleRad))
-	x2, y2 = treeToScreen(rotate(x2, y2, xActive, yActive, angleRad))
-	x3, y3 = treeToScreen(rotate(x3, y3, xActive, yActive, angleRad))
-	x4, y4 = treeToScreen(rotate(x4, y4, xActive, yActive, angleRad))
+			local cosTheta = math.cos(theta)
+			local sinTheta = math.sin(theta)
+			local rotatedX =  translatedX * cosTheta - translatedY * sinTheta
+			local rotatedY =  translatedX * sinTheta + translatedY * cosTheta
 
-	local lengthData = data and #data or 0
-	if lengthData == 0 then
-		DrawImageQuad(data.handle, x1, y1, x2, y2, x3, y3, x4, y4)
-	elseif lengthData == 1 then
-		DrawImageQuad(data.handle, x1, y1, x2, y2, x3, y3, x4, y4, data[1])
-	elseif lengthData == 4 or lengthData == 5 then
-		DrawImageQuad(data.handle, x1, y1, x2, y2, x3, y3, x4, y4,
-			-- top-left
-			data[1], data[2],
-			-- top-right
-			data[3], data[2],
-			-- bottom-right
-			data[3], data[4],
-			-- bottom-left
-			data[1], data[4],
-			-- stack idx
-			data[5]
-		)
-	else
-		error("Invalid DrawQuadAndRotate data length")
-	end
+			return rotatedX + cx, rotatedY + cy
+		end
+
+		vertActive[1], vertActive[2] = xActive - widthActive, yActive - heightActive
+		vertActive[3], vertActive[4] = xActive + widthActive, yActive - heightActive
+		vertActive[5], vertActive[6] = xActive + widthActive, yActive + heightActive
+		vertActive[7], vertActive[8] = xActive - widthActive, yActive + heightActive
+
+		local lengthData = #data
+		if lengthData == 1 then
+			vertActive[9] = data[1] -- s1 (stack)
+		elseif lengthData == 4 then
+			vertActive[9], vertActive[10] = data[1], data[2] -- top-left
+			vertActive[11], vertActive[12] = data[3], data[2] -- top-right
+			vertActive[13], vertActive[14] = data[3], data[4] -- bottom-right
+			vertActive[15], vertActive[16] = data[1], data[4] -- bottom-left
+		else
+			for iData, vData in ipairs(data) do
+				vertActive[9 + (iData - 1)] = vData
+			end
+		end
+
+		-- rotate the quad
+		vertActive[1], vertActive[2] = treeToScreen(rotate(vertActive[1], vertActive[2], xActive, yActive, angleRad))
+		vertActive[3], vertActive[4] = treeToScreen(rotate(vertActive[3], vertActive[4], xActive, yActive, angleRad))
+		vertActive[5], vertActive[6] = treeToScreen(rotate(vertActive[5], vertActive[6], xActive, yActive, angleRad))
+		vertActive[7], vertActive[8] = treeToScreen(rotate(vertActive[7], vertActive[8], xActive, yActive, angleRad))
+
+		DrawImageQuad(data.handle, unpack(vertActive))
 end
 
 -- Zoom the tree in or out
@@ -1513,7 +1431,6 @@ function PassiveTreeViewClass:Zoom(level, viewPort)
 	self.zoomY = relY + (self.zoomY - relY) * factor
 end
 
----@param build Build
 function PassiveTreeViewClass:Focus(x, y, viewPort, build)
 	self.zoomLevel = 20
 	self.zoom = 1.2 ^ self.zoomLevel
@@ -1617,9 +1534,6 @@ function PassiveTreeViewClass:DoesNodeMatchSearchParams(build, node)
 	end
 end
 
----@param tooltip Tooltip
----@param node Node
----@param build Build
 function PassiveTreeViewClass:AddNodeName(tooltip, node, build)
 	local fontSizeBig = main.showFlavourText and 18 or 16
 	tooltip:SetRecipe(node.infoRecipe)
@@ -1643,7 +1557,7 @@ function PassiveTreeViewClass:AddNodeName(tooltip, node, build)
 		nodeName = "^xF8E6CA" .. node.dn
 	end
 	tooltip.center = true
-	tooltip:AddLine(24, launch.devModeAlt and (node.iname .. " ["..node.id.."]") or nodeName, "FONTIN")
+	tooltip:AddLine(24, nodeName..(launch.devModeAlt and " ["..node.id.."]" or ""), "FONTIN")
 	tooltip.center = false
 	if launch.devModeAlt and node.id > 65535 then
 		-- Decompose cluster node Id
@@ -1679,10 +1593,6 @@ function PassiveTreeViewClass:AddNodeName(tooltip, node, build)
 	end
 end
 
----@param tooltip Tooltip
----@param node Node
----@param build Build
----@param incSmallPassiveSkillEffect number? Whether the function should stop after writing the mod info, before any allocation-specific info
 function PassiveTreeViewClass:AddNodeTooltip(tooltip, node, build, incSmallPassiveSkillEffect)
 	local fontSizeBig = main.showFlavourText and 18 or 16
 	tooltip.center = true
@@ -1786,7 +1696,7 @@ function PassiveTreeViewClass:AddNodeTooltip(tooltip, node, build, incSmallPassi
 				local scale = 1 + ((node.type == "Normal" and ((incSmallPassiveSkillEffect or 0) + base) or base) / 100)
 
 				local modsList = copyTable(node.mods[i].list)
-				local scaledList = new("ModList"):ModList()
+				local scaledList = new("ModList")
 				scaledList:ScaleAddList(modsList, scale)
 				for j, mod in ipairs(scaledList) do
 					local newValue
@@ -1851,13 +1761,12 @@ function PassiveTreeViewClass:AddNodeTooltip(tooltip, node, build, incSmallPassi
 		local localIncEffect = 0
 		local hasWSCondition = false
 		local newSd = copyTable(mNode.sd)
-		local weaponSet = build.calcsTab.mainEnv and build.calcsTab.mainEnv.weaponSet or (build.itemsTab.activeItemSet.useSecondWeaponSet and 2 or 1)
 		for _, mod in ipairs(mNode.finalModList) do
 			-- if the jewelMod has a WS Condition, only add the incEffect given it matches the activeWeaponSet
 			-- otherwise the mod came from a jewel that is allocMode 0, so it always applies
 			for _, modCriteria in ipairs(mod) do
 				if modCriteria.type == "Condition" and modCriteria.var and modCriteria.var:match("^WeaponSet") then
-					if tonumber(modCriteria.var:match("(%d)")) == weaponSet then
+					if (tonumber(modCriteria.var:match("(%d)")) == (build.itemsTab.activeItemSet.useSecondWeaponSet and 2 or 1)) then
 						if mod.name == "JewelSmallPassiveSkillEffect" then
 							localIncEffect = mod.value
 						elseif mod.name == "JewelNotablePassiveSkillEffect" then
@@ -2082,15 +1991,6 @@ function PassiveTreeViewClass:AddNodeTooltip(tooltip, node, build, incSmallPassi
 		tooltip:AddLine(14, colorCodes.TIP.."Tip: Hold Ctrl to hide this tooltip.")
 		tooltip:AddLine(14, colorCodes.TIP.."Tip: Press Ctrl+C to copy this node's text.")
 	end
-	-- Per-node author note (Shift+Right-Click to set/edit) emitted into the PoE2 .build export.
-	if node.id and build.spec and build.spec.nodeNotes then
-		local existing = build.spec.nodeNotes[node.id]
-		tooltip:AddSeparator(10)
-		tooltip:AddLine(14, colorCodes.TIP.."Shift + Right-Click to add a build note (PoE2 .build export)")
-		if existing and existing ~= "" then
-			tooltip:AddBuildPlannerNote(14, existing, "^7Note: ")
-		end
-	end
 end
 
 -- Helper function to check if a node is connected to weapon set nodes
@@ -2173,6 +2073,27 @@ function PassiveTreeViewClass:DrawAllocMode(allocMode, viewPort)
 	SetDrawColor(1, 1, 1, 1)
 
 	SetDrawLayer(nil, 10)
+end
+
+function PassiveTreeViewClass:LessLuminance()
+	local luminanceFactor = 0.5
+	local r,g,b,a = 1, 1, 1, 1
+	local desaturationFactor = 0.5;
+	local alphaFactor = 1;
+	local luminance = 0.2126 * r + 0.7152 * g  + 0.0722 * b;
+
+	-- Blend with original color
+	local newR = (1.0 - desaturationFactor) * r + desaturationFactor * luminance;
+	local newG = (1.0 - desaturationFactor) * g + desaturationFactor * luminance;
+	local newB = (1.0 - desaturationFactor) * b + desaturationFactor * luminance;
+
+	-- Apply luminance adjustment
+	newR = newR * luminanceFactor;
+	newG = newG * luminanceFactor;
+	newB = newB * luminanceFactor;
+
+	local newA = a * alphaFactor;
+	SetDrawColor(newR, newG, newB, newA)
 end
 
 -- Checks if a node has unlockConstraint and if that node is allocated

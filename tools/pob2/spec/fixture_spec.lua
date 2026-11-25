@@ -3,7 +3,7 @@ local H = dofile((os.getenv("POB2_ROOT") or ".") .. "/tools/pob2/spec/helper.lua
 describe("decoded fixtures", function()
 	local fixtures = H.fixtures()
 
-	it("exist (npm run pob2:spec decodes packages/core/test/pob2/<league>/*.code.txt)", function()
+	it("exist (npm run pob2:spec decodes packages/core/test/reference/<name>/code.txt)", function()
 		assert.is_true(#fixtures > 0)
 	end)
 

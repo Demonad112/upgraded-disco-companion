@@ -7,36 +7,20 @@ Atziri's Splendour
 Sacrificial Regalia
 Source: Drops from unique{Atziri's Vault} in normal{Vaal Temple}
 League: Fate of the Vaal
-Has Alt Variant: true
-Selected Variant: 1
-Selected Alt Variant: 5
 Variant: Helmet
 Variant: Gloves
 Variant: Boots
 Variant: Shield
-Variant: Armour/Evasion/Energy Shield
-Variant: Armour
-Variant: Evasion
-Variant: Energy Shield
-Variant: Armour/Evasion
-Variant: Armour/Energy Shield
-Variant: Evasion/Energy Shield
 Sockets: S S S S S S
 Implicits: 1
 +1 to Level of all Corrupted Skill Gems
 Only Soul Cores can be Socketed in this item
-{variant:3}{group:1}This item gains bonuses from Socketed Soul Cores as though it was also Boots
-{variant:2}{group:1}This item gains bonuses from Socketed Soul Cores as though it was also Gloves
-{variant:1}{group:1}This item gains bonuses from Socketed Soul Cores as though it was also a Helmet
-{variant:4}{group:1}This item gains bonuses from Socketed Soul Cores as though it was also a Shield
+{variant:3}This item gains bonuses from Socketed Soul Cores as though it was also Boots
+{variant:2}This item gains bonuses from Socketed Soul Cores as though it was also Gloves
+{variant:1}This item gains bonuses from Socketed Soul Cores as though it was also a Helmet
+{variant:4}This item gains bonuses from Socketed Soul Cores as though it was also a Shield
 Has no Attribute Requirements
-{variant:6}{group:2}(200-300)% increased Armour
-{variant:7}{group:2}(200-300)% increased Evasion Rating
-{variant:8}{group:2}(200-300)% increased Energy Shield
-{variant:9}{group:2}(120-180)% increased Armour and Evasion
-{variant:10}{group:2}(120-180)% increased Armour and Energy Shield
-{variant:11}{group:2}(120-180)% increased Evasion and Energy Shield
-{variant:5}{group:2}(80-120)% increased Armour, Evasion and Energy Shield
+(80-120)% increased Armour, Evasion and Energy Shield
 +(10-20)% to all Elemental Resistances
 Skills from Corrupted Gems have 50% of Mana Costs Converted to Life Costs
 ]],[[
@@ -111,7 +95,6 @@ Vaal Cuirass
 ]],[[
 The Road Warrior
 Raider Plate
-Source: No longer obtainable
 Variant: Pre 0.1.1
 Variant: Current
 {variant:1}(50-100)% increased Armour
@@ -186,7 +169,6 @@ Grants Skill: Level (1-20) Mist Raven
 100% increased Attribute Requirements
 Chance to Deflect is Lucky while on Low Life
 Enemies in your Presence gain 1 Gruelling Madness each second
-Raven-Touched
 ]],[[
 Briskwrap
 Rhoahide Coat
@@ -266,7 +248,7 @@ Smuggler Coat
 Variant: Pre 0.2.0
 Variant: Pre 0.4.0
 Variant: Current
-(250-300)% increased Evasion Rating
+(100-150)% increased Evasion Rating
 -(15-10)% to Fire Resistance
 +(25-30)% to Cold Resistance
 +(10-15)% to Lightning Resistance
@@ -779,8 +761,9 @@ Anchorite Garb
 Variant: Pre 0.1.1
 Variant: Current
 +(50-70) to maximum Mana
+{variant:2}-15% to Cold Resistance
 {variant:1}+(20-30)% to Lightning Resistance
-{variant:2}+(20-30)% to Lightning Resistance
+{variant:2}+(30-40)% to Lightning Resistance
 20% chance to gain a Power Charge on Hit
 Lose all Power Charges on reaching maximum Power Charges
 Shocks you when you reach maximum Power Charges
@@ -791,8 +774,7 @@ Variant: Pre 0.4.0
 Variant: Pre 0.5.0
 Variant: Current
 (50-80)% increased Evasion and Energy Shield
--15% to Cold Resistance
-+(30-40)% to Lightning Resistance
++(15-25)% to Lightning Resistance
 {variant:3}(15-30)% increased Energy Shield Recharge Rate
 {variant:1,2}(30-50)% faster start of Energy Shield Recharge
 {variant:2,3}All Damage taken from Hits Contributes to Magnitude of Chill inflicted on you

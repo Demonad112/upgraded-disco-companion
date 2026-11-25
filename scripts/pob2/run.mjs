@@ -2,8 +2,8 @@
 //
 //   node scripts/pob2/run.mjs <code-file | ->     snapshot one PoB code (file or stdin) to stdout
 //   node scripts/pob2/run.mjs --groups <code-file | ->   every skill group's main output (tools/pob2/groups.lua) to stdout
-//   npm run pob2:oracle [-- --check]              regenerate every current-league *.oracle.json and *.groups.oracle.json,
-//                                                 plus GROUPS_EXTRA's groups oracles (--check: fail on a diff in any)
+//   npm run pob2:oracle [-- --check]              regenerate oracle.json and groups.oracle.json next to every
+//                                                 packages/core/test/reference/<name>/code.txt (--check: fail on a diff)
 //   npm run pob2:spec                             busted specs in tools/pob2/spec (fixtures decoded first)
 //   node scripts/pob2/run.mjs --export <mods|bases|skills|tree|constants>   dump PoB's own loaded data as JSON (tools/pob2/export/)
 //
@@ -16,7 +16,7 @@ import { dirname, join, relative } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
 export const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
-export const FIXTURES = join(ROOT, 'packages', 'core', 'test', 'pob2');
+export const FIXTURES = join(ROOT, 'packages', 'core', 'test', 'reference');
 const SPEC_FIXTURES = join(ROOT, 'tools', 'pob2', 'spec', '.fixtures');
 const PIN = join(ROOT, 'vendor', 'pob2', 'PIN.json');
 
@@ -32,28 +32,17 @@ export function canonicalJson(value) {
   return JSON.stringify(sort(value), null, 2) + '\n';
 }
 
-/** Current-league fixtures: <FIXTURES>/<league>/<name>.code.txt, excluding archive/. */
-export function currentLeagueCodes(dir = FIXTURES) {
+/** Reference codes: <FIXTURES>/<name>/code.txt. Each one's oracle must reproduce the code's own PlayerStats. */
+export function referenceCodes(dir = FIXTURES) {
   if (!existsSync(dir)) return [];
   return readdirSync(dir, { withFileTypes: true })
-    .filter((d) => d.isDirectory() && d.name !== 'archive')
-    .flatMap((d) =>
-      readdirSync(join(dir, d.name))
-        .filter((f) => f.endsWith('.code.txt'))
-        .sort()
-        .map((f) => join(dir, d.name, f)),
-    )
+    .filter((d) => d.isDirectory() && existsSync(join(dir, d.name, 'code.txt')))
+    .map((d) => join(dir, d.name, 'code.txt'))
     .sort();
 }
 
-export const oraclePath = (codeFile) => codeFile.replace(/\.code\.txt$/, '.oracle.json');
-export const groupsOraclePath = (codeFile) => codeFile.replace(/\.code\.txt$/, '.groups.oracle.json');
-
-/**
- * Codes outside the current-league folders that also get a groups oracle (CP-7): the reference character
- * (`ninja-legacy/main-ninja.code.txt`), whose numbers the core tests pin.
- */
-export const GROUPS_EXTRA = [join(ROOT, 'packages', 'core', 'test', 'ninja-legacy', 'main-ninja.code.txt')];
+export const oraclePath = (codeFile) => join(dirname(codeFile), 'oracle.json');
+export const groupsOraclePath = (codeFile) => join(dirname(codeFile), 'groups.oracle.json');
 
 function localLuajitWorks() {
   const r = spawnSync('luajit', ['-e', 'local a = 1; a += 1; require("lua-utf8")'], { stdio: 'ignore' });
@@ -159,8 +148,8 @@ function groupsText(file, data) {
 
 async function oracle(check) {
   const runner = pickRunner();
-  const codes = currentLeagueCodes();
-  if (!codes.length) throw new Error(`no *.code.txt under ${relative(ROOT, FIXTURES)}/<league>/`);
+  const codes = referenceCodes();
+  if (!codes.length) throw new Error(`no code.txt under ${relative(ROOT, FIXTURES)}/<name>/`);
   const stale = [];
   for (const file of codes) {
     const code = readFileSync(file, 'utf8');
@@ -169,10 +158,7 @@ async function oracle(check) {
     settle(oraclePath(file), canonicalJson(snap), check, stale);
     settle(groupsOraclePath(file), groupsText(file, await groups(code, runner)), check, stale);
   }
-  for (const file of GROUPS_EXTRA) {
-    settle(groupsOraclePath(file), groupsText(file, await groups(readFileSync(file, 'utf8'), runner)), check, stale);
-  }
-  console.log(`pob2:oracle ${codes.length} fixture(s) + ${GROUPS_EXTRA.length} groups-only via ${runner}`);
+  console.log(`pob2:oracle ${codes.length} reference code(s) via ${runner}`);
   if (stale.length) {
     console.error(
       `${stale.length} oracle file(s) differ from what PoB computes now. Run npm run pob2:oracle, review the diff ` +
@@ -195,8 +181,8 @@ async function spec() {
   rmSync(SPEC_FIXTURES, { recursive: true, force: true });
   mkdirSync(SPEC_FIXTURES, { recursive: true });
   const names = [];
-  for (const file of currentLeagueCodes()) {
-    const name = relative(FIXTURES, file).replace(/[/\\]/g, '__').replace(/\.code\.txt$/, '.xml');
+  for (const file of referenceCodes()) {
+    const name = `${relative(FIXTURES, dirname(file))}.xml`;
     writeFileSync(join(SPEC_FIXTURES, name), await decode(readFileSync(file, 'utf8')));
     names.push(name);
   }

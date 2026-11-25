@@ -60,6 +60,21 @@ const CONDITIONAL_LABELS: Readonly<Record<string, string>> = Object.freeze({
 /** Inputs that mean "this is being calculated against a boss". */
 const BOSS_KEYS = ['enemyIsBoss', 'conditionEnemyBoss', 'enemyIsBossType', 'bossSkillEffect'] as const
 
+/**
+ * PoB2's "Is the enemy a Boss?" (`enemyIsBoss`, ConfigOptions.lua `defaultIndex = 3`): a code that saves no value
+ * was calculated against a Guardian/Pinnacle boss. PoB writes only inputs that differ from their default, so the
+ * absence of the input is itself the boss setting (the owner's PoB2 0.23.1 screenshot of the ninja-default code).
+ */
+export const POB_DEFAULT_BOSS: PobBoss = 'Pinnacle'
+export type PobBoss = 'None' | 'Boss' | 'Pinnacle' | 'Uber'
+const BOSS_LABELS: Readonly<Record<PobBoss, string>> = Object.freeze({
+  None: 'not a boss',
+  Boss: 'standard boss',
+  Pinnacle: 'Guardian/Pinnacle boss',
+  Uber: 'Uber Pinnacle boss',
+})
+export const bossLabel = (b: PobBoss): string => BOSS_LABELS[b]
+
 /** Values PoB writes for "this setting is off". */
 const OFF_VALUES = new Set(['false', 'NONE', 'None', ''])
 
@@ -73,10 +88,14 @@ export interface PobMultiplier {
 export interface PobConfig {
   /** How many `<Input>` elements the export carried. 0 means none were saved. */
   inputCount: number
-  /** True when any boss setting is on. */
+  /** True when any boss setting is on, PoB's own default included. */
   versusBoss: boolean
-  /** Which input said so, so the claim is traceable. Null when none did. */
+  /** Which input said so, so the claim is traceable (`enemyIsBoss` also when it is PoB's default). Null when none did. */
   bossSetting: string | null
+  /** PoB's `enemyIsBoss` value: the saved one, or PoB's default (`Pinnacle`) when the code saved none. */
+  boss: PobBoss
+  /** False when `boss` is PoB's default rather than a saved input. */
+  bossSaved: boolean
   /**
    * PoB's buff mode. EFFECTIVE assumes every buff and charge is up, which is
    * the most optimistic of the three. Null when the export did not say.
@@ -100,8 +119,10 @@ const NO_MULTIPLIERS = Object.freeze([] as PobMultiplier[]) as PobMultiplier[]
 /** The empty result, for an export with no `<Calcs>` section at all. */
 export const NO_POB_CONFIG: Readonly<PobConfig> = Object.freeze({
   inputCount: 0,
-  versusBoss: false,
-  bossSetting: null,
+  versusBoss: true,
+  bossSetting: 'enemyIsBoss',
+  boss: POB_DEFAULT_BOSS,
+  bossSaved: false,
   buffMode: null,
   conditionals: NO_STRINGS,
   unlabelledConditionals: NO_STRINGS,
@@ -151,11 +172,16 @@ export function readPobConfig(source: PobSource): PobConfig {
     }
   }
 
+  const savedBoss = inputs.get('enemyIsBoss')
+  const boss: PobBoss =
+    savedBoss === 'None' || savedBoss === 'Boss' || savedBoss === 'Pinnacle' || savedBoss === 'Uber' ? savedBoss : POB_DEFAULT_BOSS
   const bossSetting =
-    BOSS_KEYS.find((k) => {
-      const v = inputs.get(k)
-      return v !== undefined && !OFF_VALUES.has(v)
-    }) ?? null
+    boss !== 'None'
+      ? 'enemyIsBoss'
+      : (BOSS_KEYS.find((k) => {
+          const v = inputs.get(k)
+          return k !== 'enemyIsBoss' && v !== undefined && !OFF_VALUES.has(v)
+        }) ?? null)
 
   const raw = inputs.get('misc_buffMode')
   const buffMode: BuffMode | null =
@@ -165,6 +191,8 @@ export function readPobConfig(source: PobSource): PobConfig {
     inputCount: inputs.size,
     versusBoss: bossSetting !== null,
     bossSetting,
+    boss,
+    bossSaved: savedBoss !== undefined,
     buffMode,
     conditionals: conditionals.sort(),
     unlabelledConditionals: unlabelled.sort(),
@@ -196,7 +224,9 @@ export function describePobConfig(config: PobConfig | null | undefined): string 
   }
 
   const parts: string[] = [
-    config.versusBoss ? 'calculated against a boss' : 'calculated against a normal enemy, not a boss',
+    config.versusBoss
+      ? `calculated against a boss (${bossLabel(config.boss === 'None' ? POB_DEFAULT_BOSS : config.boss)})`
+      : 'calculated against a normal enemy, not a boss',
   ]
 
   if (config.buffMode === 'effective') parts.push('with all buffs and charges assumed active')

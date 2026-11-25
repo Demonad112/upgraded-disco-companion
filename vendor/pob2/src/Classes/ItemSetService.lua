@@ -6,13 +6,9 @@
 
 local m_max = math.max
 
----@class ItemSetService
-local ItemSetServiceClass = newClass("ItemSetService")
-
-function ItemSetServiceClass:ItemSetService(itemsTab)
+local ItemSetServiceClass = newClass("ItemSetService", function(self, itemsTab)
 	self.itemsTab = itemsTab
-	return self
-end
+end)
 
 function ItemSetServiceClass:NewItemSet(name)
 	local itemSet = self.itemsTab:NewItemSet(nil, name)

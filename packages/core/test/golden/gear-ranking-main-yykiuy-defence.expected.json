@@ -1,20 +1,6 @@
 [
   {
     "rank": 1,
-    "slot": "Amulet",
-    "base": "Dusk Amulet",
-    "closes": {
-      "lightning": 2,
-      "chaos": 6
-    },
-    "reasons": [
-      "a replacement can close 2% lightning and 6% chaos of your resistance shortfall",
-      "1 line can only improve on a higher item-level base",
-      "2 tiers below the top, across its lines"
-    ]
-  },
-  {
-    "rank": 2,
     "slot": "Ring 2",
     "base": "Unset Ring",
     "closes": {
@@ -28,7 +14,7 @@
     ]
   },
   {
-    "rank": 3,
+    "rank": 2,
     "slot": "Boots",
     "base": "Runeforged Quickslip Shoes",
     "closes": {
@@ -42,7 +28,7 @@
     ]
   },
   {
-    "rank": 4,
+    "rank": 3,
     "slot": "Ring 1",
     "base": "Amethyst Ring",
     "closes": {
@@ -55,7 +41,7 @@
     ]
   },
   {
-    "rank": 5,
+    "rank": 4,
     "slot": "Helmet",
     "base": "Runeforged Brigand Mask",
     "closes": {
@@ -69,7 +55,7 @@
     ]
   },
   {
-    "rank": 6,
+    "rank": 5,
     "slot": "Body Armour",
     "base": "Runeforged Falconer's Jacket",
     "closes": {
@@ -83,7 +69,7 @@
     ]
   },
   {
-    "rank": 7,
+    "rank": 6,
     "slot": "Gloves",
     "base": "Runeforged Fists of Stone",
     "closes": {
@@ -93,6 +79,18 @@
     "reasons": [
       "a replacement can close 2% lightning and 6% chaos of your resistance shortfall",
       "1 tier below the top, across its lines"
+    ]
+  },
+  {
+    "rank": 7,
+    "slot": "Amulet",
+    "base": "Dusk Amulet",
+    "closes": {
+      "lightning": 2,
+      "chaos": 6
+    },
+    "reasons": [
+      "a replacement can close 2% lightning and 6% chaos of your resistance shortfall"
     ]
   },
   {

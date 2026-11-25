@@ -49,11 +49,12 @@ describe('pobToCharModel', () => {
   })
 
   it('splits the tree as PoB loads it: main tree, two weapon-set trees, the live-set flag and tree version (NP1-6b)', async () => {
-    // The main code allocates no weapon-set nodes and states no live set: both stay absent, never invented.
+    // The main code allocates no weapon-set nodes: those stay absent, never invented. It states its live set
+    // (`useSecondWeaponSet="false"`), so that is read as given.
     expect(converted.passiveSelection).toHaveLength(123)
     expect(converted.passiveSelectionSet1).toBeUndefined()
     expect(converted.passiveSelectionSet2).toBeUndefined()
-    expect(converted.useSecondWeaponSet).toBeUndefined()
+    expect(converted.useSecondWeaponSet).toBe(false)
     expect(converted.passiveTreeName).toBe(ninjaModel.passiveTreeName)
     // PoB's `nodes` lists every allocated node; <WeaponSet1/2> name the ones that belong to one set only.
     const ws = mainWithWeaponSets(8)
@@ -76,7 +77,7 @@ describe('analysing a converted code', () => {
 
   it('agrees with poe.ninja on the survivability headline and pools', () => {
     // PoB's own PlayerStats for the main code: physical is the lowest maximum hit.
-    expect(fromCode.defense.lowestMaximumHit).toBe(5004)
+    expect(fromCode.defense.lowestMaximumHit).toBe(5182)
     expect(fromCode.defense.lowestMaximumHitType).toBe('physical')
     expect(fromCode.defense.life).toBe(ninja.defense.life)
     expect(fromCode.defense.energyShield).toBe(ninja.defense.energyShield)

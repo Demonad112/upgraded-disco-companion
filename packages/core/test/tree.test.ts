@@ -26,9 +26,9 @@ const resolved = resolveAllocation(tree, allocation)
 
 describe('tree data', () => {
   it('loads every node and edge', () => {
-    // PoB's own tree (vendor/pob2, `npm run build:tree:pob`) without its decorative OnlyImage nodes.
-    expect(tree.size).toBe(4546)
-    expect([...tree.edgePairs()]).toHaveLength(5187)
+    // PoB's own tree (vendor/pob2 at the v0.23.1 release, `npm run build:tree:pob`) without its decorative OnlyImage nodes.
+    expect(tree.size).toBe(4544)
+    expect([...tree.edgePairs()]).toHaveLength(5185)
   })
 
   it('treats connections as undirected', () => {
@@ -42,7 +42,7 @@ describe('tree data', () => {
 
   it('classifies node kinds', () => {
     const all = [...tree.allNodes()]
-    expect(all.filter((n) => n.kind === NODE_KIND.notable)).toHaveLength(1193)
+    expect(all.filter((n) => n.kind === NODE_KIND.notable)).toHaveLength(1192)
     expect(all.filter((n) => n.kind === NODE_KIND.keystone)).toHaveLength(33)
     // PoB's Socket nodes: the 12 plain sockets, the Sinister sockets and Zarokh's Gift.
     expect(all.filter((n) => n.kind === NODE_KIND.jewel)).toHaveLength(18)
@@ -53,7 +53,7 @@ describe('tree data', () => {
     // PoB names the ascendancy on every wheel node, and the graph is a single
     // connected component, so structure alone could not identify them.
     const ascendancyNodes = [...tree.allNodes()].filter((n) => n.ascendancy !== null)
-    expect(ascendancyNodes).toHaveLength(431)
+    expect(ascendancyNodes).toHaveLength(429)
     expect(ascendancyNodes.filter((n) => n.isAscendancyClassNode)).toHaveLength(22)
     expect(tree.ascendancies).toHaveLength(22)
     expect(tree.ascendancies).toContain('Deadeye')
@@ -163,15 +163,15 @@ describe('allocation coverage', () => {
   })
 
   it('has no unresolved ids in any committed PoB code beyond the known data gaps', async () => {
-    // Fails when a committed code (test/pob2/<league>/*.code.txt, the oracle's inputs) allocates more nodes than the
+    // Fails when a committed code (test/reference/<name>/code.txt, the oracle's inputs) allocates more nodes than the
     // shipped tree data knows; a new code needs no edit here. A character known to need newer tree data is listed
     // with the most unresolved ids it may have; that number only ever goes down.
     // DATA-1 closed: the tree is PoB's own, so the list is empty.
     const KNOWN_DATA_GAPS: Record<string, number> = {}
-    const root = fileURLToPath(new URL('./pob2/', import.meta.url))
+    const root = fileURLToPath(new URL('./reference/', import.meta.url))
     const codes = readdirSync(root, { withFileTypes: true })
       .filter((d) => d.isDirectory())
-      .flatMap((d) => readdirSync(root + d.name).filter((f) => f.endsWith('.code.txt')).map((f) => `${d.name}/${f}`))
+      .flatMap((d) => readdirSync(root + d.name).filter((f) => f === 'code.txt').map((f) => `${d.name}/${f}`))
     expect(codes.length).toBeGreaterThan(0)
     for (const file of codes) {
       const m = await pobToCharModel(readFileSync(root + file, 'utf8').trim())

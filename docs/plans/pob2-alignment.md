@@ -34,7 +34,7 @@ The poe.ninja character import is dead (NP1-1: Cloudflare 403). The site has to 
 
 1. Vendoring: **committed byte-identical subset** in `vendor/pob2/`, with a CI hash guard.
 2. Pin source: **your fork `Demonad112/PathOfBuilding-PoE2` dev**, synced from upstream with the **manual "Sync fork" button**.
-3. Engine: **CI only now**. A live calc service is a later optional batch; hosting is decided then. *Superseded 2026-11-24 (owner): the engine runs in the browser (PoB2's Lua in WASM, `docs/plans/pob2-browser-engine.md`); no hosting needed.*
+3. Engine: **CI only now**. A live calc service is a later optional batch; hosting is decided then. *Decided 2026-11-25 (owner): the engine stays a CI guard; no PoB in the browser or on a server (`docs/plans/simple-code-analysis.md`).*
 4. poe.ninja: **hide the UI, keep the code dormant** (`NINJA_IMPORT_BLOCKED`).
 5. Bump cadence: **manual** (`npm run pob2:bump`).
 6. Core model: a **PoB-native `PobSnapshot`**, with a temporary adapter to `CharModel`.
@@ -82,7 +82,7 @@ packages/data/scripts/       build-*-pob.mjs call tools/pob2/export/*.lua instea
 | 5 | B6 Analysis on PobSnapshot + PoB-only import UX | Sonnet | B5 merged | none |
 | 6 | B7 One-command bump + league-rollover runbook | Haiku | B6 merged | B8 (B7 PR merges first) |
 | 6 | B8 Gap audit → ranked next-analysis plan | Sonnet | B6 merged | B7 |
-| 7 | B9 Browser engine + `pob-sim` Δ (`docs/plans/pob2-browser-engine.md`; no hosting) | Opus | spike merged | none |
+| 7 | ~~B9 Browser engine~~ dropped 2026-11-25 (owner): the code is the source of truth | | | |
 
 Critical files per batch are listed in the prompts appendix. Reuse:
 - `decodePobExport` (`pob/export.ts`), `readPobConfig` (`pob/config.ts`), `readPobSkillGroups` (`pob/skill-groups.ts`) and `readPobMainSkill` (`pob/main-skill.ts`): re-based onto the snapshot, not rewritten;

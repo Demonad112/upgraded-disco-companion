@@ -71,7 +71,7 @@ describe('grounding the model', () => {
   it('grounds a Path of Building import in its own narrower facts', async () => {
     const pob = await analyzeFromPob(model.pathOfBuildingExport!)
     const pobContext = buildPobChatContext(pob)
-    expect(pobContext).toContain('5004')
+    expect(pobContext).toContain('5182')
     expect(pobContext).toContain('THIS SOURCE CANNOT ANSWER')
     // The gaps must travel with the context, or the model will paper over them.
     expect(pobContext).toContain('Per-skill damage')

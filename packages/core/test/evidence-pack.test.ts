@@ -53,7 +53,7 @@ describe('Yykiuy (level 88 Martial Artist) evidence pack', () => {
     const code = mainPayload()
     const main = await analyzeCharacter(code)
     const stats = await analyzePob(code.charModel)
-    expect(stats.TotalDPS).toBeCloseTo(125_658, -1)
+    expect(stats.TotalDPS).toBeCloseTo(186_706, -1)
     expect(main.dps.primary?.dps).toBeCloseTo(stats.TotalDPS, 0)
   })
 

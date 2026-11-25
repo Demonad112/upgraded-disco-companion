@@ -4,7 +4,7 @@ import { ModTiers, analyzeCharacter, pobToCharModel, analyzeItem, rankEasyWins, 
 import { easyWinNote, sameAsTopFixes } from '@/components/character/EasyWins'
 
 // The owner's main build (PB-5 replaced the poe.ninja captures): its PoB code read through core.
-const mainCode = readFileSync(new URL('../../../packages/core/test/pob2/forbidden-rites/main.code.txt', import.meta.url), 'utf8').trim()
+const mainCode = readFileSync(new URL('../../../packages/core/test/reference/ninja-default/code.txt', import.meta.url), 'utf8').trim()
 const fixture = async () => ({ type: 'character', charModel: await pobToCharModel(mainCode) })
 const tiers = new ModTiers(
   JSON.parse(readFileSync(new URL('../../../packages/data/generated/mod-tiers.json', import.meta.url), 'utf8')) as ModTierData,

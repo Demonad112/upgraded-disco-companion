@@ -34,46 +34,33 @@ interface GroupsOracle {
 }
 
 const here = (p: string) => fileURLToPath(new URL(p, import.meta.url))
-const pob2 = here('./pob2/')
+const reference = here('./reference/')
 
-/** Current-league fixtures plus the reference character (run.mjs `GROUPS_EXTRA`). */
-const codes = [
-  ...readdirSync(pob2, { withFileTypes: true })
-    .filter((d) => d.isDirectory() && d.name !== 'archive')
-    .flatMap((d) => readdirSync(`${pob2}${d.name}`).filter((f) => f.endsWith('.code.txt')).map((f) => `${pob2}${d.name}/${f}`)),
-  here('./ninja-legacy/main-ninja.code.txt'),
-]
+/** Every reference code: `test/reference/<name>/code.txt`. */
+const codes = readdirSync(reference, { withFileTypes: true })
+  .filter((d) => d.isDirectory() && existsSync(`${reference}${d.name}/code.txt`))
+  .map((d) => `${reference}${d.name}/code.txt`)
+const groupsPath = (file: string) => file.replace(/code\.txt$/, 'groups.oracle.json')
 
 /**
  * Groups PoB folds into another group on its first calc (CalcSetup.lua mergedGroups / granted-skill cleanup), as
- * export index → PoB index of the group it computes them from. Both builds: 2 (Default Attack Spear Throw, swap) and
- * 18 (Daevata's Wind's Spear Throw, swap) into the kept Spear Throw; 16 and 17 (tree-granted Hollow Focus/Resonance)
- * into the user's own copies. A change here means PoB's merge rules changed.
+ * export index → PoB index of the group it computes them from. PoB2 0.23.1 (the release the code was written by)
+ * folds none on ninja-default: every group is computed from its own index. A change here means PoB's merge rules changed.
  */
-const FOLDED: Record<number, number> = { 2: 4, 16: 2, 17: 3, 18: 4 }
-
-/**
- * Codes whose embedded TotalDPS is stale against current PoB by more than 0.1 % (PB-3a): the owner's PoB2-app export
- * was written by an older PoB (125,658 embedded vs 125,919 now). Pinned, so a fix or a new drift shows up here.
- */
-const STALE_TOTAL_DPS: Record<string, { gap: number; why: string }> = {
-  'pob2/forbidden-rites/main.code.txt': { gap: 0.002077, why: 'PoB2-app export written by an older PoB (PB-3a)' },
-  // The owner's updated character (2026-11-24): 186,706 embedded vs 203,790 now.
-  'pob2/forbidden-rites/current.code.txt': { gap: 0.091498, why: 'PoB2-app export written by an older PoB (PB-3a)' },
-}
+const FOLDED: Record<number, number> = {}
 
 const label = (file: string) => file.replace(/^.*\/test\//, '')
 
 describe('PoB2 groups oracle (CP-7)', () => {
-  it('covers the reference character and every current-league fixture', () => {
-    expect(codes.length).toBeGreaterThanOrEqual(2)
-    for (const file of codes) expect(existsSync(file.replace(/\.code\.txt$/, '.groups.oracle.json')), label(file)).toBe(true)
+  it('covers every reference code', () => {
+    expect(codes.length).toBeGreaterThanOrEqual(1)
+    for (const file of codes) expect(existsSync(groupsPath(file)), label(file)).toBe(true)
   })
 
   for (const file of codes) {
     describe(label(file), async () => {
       const code = readFileSync(file, 'utf8').trim()
-      const oracle = JSON.parse(readFileSync(file.replace(/\.code\.txt$/, '.groups.oracle.json'), 'utf8')) as GroupsOracle
+      const oracle = JSON.parse(readFileSync(groupsPath(file), 'utf8')) as GroupsOracle
       const snap = await readPobSnapshotFromCode(code)
       const model = await pobToCharModel(code)
       const groups = activeSkillSet(snap)!.groups
@@ -83,22 +70,19 @@ describe('PoB2 groups oracle (CP-7)', () => {
         expect(oracle.rows.filter((r) => r.loadError)).toEqual([])
       })
 
-      it('the code’s TotalDPS equals the oracle row for its main group within 0.1 %', () => {
+      it('the code’s TotalDPS equals the oracle row for its main group', () => {
         const main = snap.build.mainSocketGroup!
         const active = groups[main - 1]!.mainActiveSkill ?? 1
         const row = oracle.rows.find((r) => r.group === main && r.activeSkill === active)!
         expect(row, `group ${main}`).toBeDefined()
         // Where the snapshot oracle exists, the groups run reproduces PoB's recomputed export exactly.
-        const snapshotOracle = file.replace(/\.code\.txt$/, '.oracle.json')
+        const snapshotOracle = file.replace(/code\.txt$/, 'oracle.json')
         if (existsSync(snapshotOracle)) {
           const recomputed = (JSON.parse(readFileSync(snapshotOracle, 'utf8')) as { export: { PlayerStat: Record<string, number> } }).export
           expect(row.TotalDPS).toBe(recomputed.PlayerStat.TotalDPS)
         }
         const stated = readPlayerStats(snap).TotalDPS!
-        const gap = Math.abs(row.TotalDPS! - stated) / stated
-        const stale = STALE_TOTAL_DPS[label(file)]
-        if (stale) expect(gap, stale.why).toBeCloseTo(stale.gap, 4)
-        else expect(gap).toBeLessThan(0.001)
+        expect(Math.abs(row.TotalDPS! - stated) / stated).toBeLessThan(1e-9)
       })
 
       it('has a row for every <Skill> group in the code', () => {
@@ -128,22 +112,21 @@ describe('PoB2 groups oracle (CP-7)', () => {
     })
   }
 
-  describe('main-ninja, the reference numbers', async () => {
-    const oracle = JSON.parse(readFileSync(here('./ninja-legacy/main-ninja.groups.oracle.json'), 'utf8')) as GroupsOracle
+  describe('ninja-default, the reference numbers', async () => {
+    const oracle = JSON.parse(readFileSync(here('./reference/ninja-default/groups.oracle.json'), 'utf8')) as GroupsOracle
     const row = (g: number, a = 1) => oracle.rows.find((r) => r.group === g && r.activeSkill === a)!
 
-    it('has 18 groups and 21 rows, Storm Wave at ≈ 98,591', () => {
+    it('has 18 groups and 21 rows, Storm Wave at the code’s 186,706', () => {
       expect(oracle.groups).toBe(18)
       expect(oracle.rows).toHaveLength(21)
       expect(row(15)).toMatchObject({ skill: 'Storm Wave' })
-      expect(Math.round(row(15).TotalDPS!)).toBe(98591)
+      expect(Math.round(row(15).TotalDPS!)).toBe(186706)
     })
 
-    it('has Hollow Resonance (group 4) as a combo skill: per use below if used continuously', () => {
-      // `ninja-legacy/code-analysis.test.ts` feeds these figures to the CP-2 per-use label.
-      expect(row(4)).toMatchObject({ skill: 'Hollow Resonance' })
-      expect(Math.round(row(4).CombinedDPS!)).toBe(33332)
-      expect(Math.round(row(4).TotalDPS!)).toBe(69531)
+    it('matches what poe.ninja showed for the other skills (Hollow Resonance 67k, Tempest Bell 47k, Whirling Assault 66k)', () => {
+      expect(Math.round(row(4).CombinedDPS! / 1000)).toBe(67)
+      expect(Math.round(row(6).CombinedDPS! / 1000)).toBe(47)
+      expect(Math.round(row(10).CombinedDPS! / 1000)).toBe(66)
     })
   })
 })

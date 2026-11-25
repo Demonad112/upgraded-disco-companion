@@ -6,7 +6,6 @@
 local t_insert = table.insert
 local m_floor = math.floor
 
----@enum (key) AnchorPoint
 local anchorPos = {
 	    ["TOPLEFT"] = { 0  , 0   },
 	        ["TOP"] = { 0.5, 0   },
@@ -33,27 +32,7 @@ local rect = {
 	for containers
 --]]
 
----@class Control
----@field enabled        boolean | fun(...: any): boolean
----@field onFocusGained? fun()
----@field onFocusLost?   fun()
----@field shown          Prop<boolean>
----@field x              Prop<number>?
----@field y              Prop<number>?
----@field width          Prop<number>?
----@field height         Prop<number>?
----@field collapseY      number? An additional offset which is applied when this control uses a collapsed anchor.
----@field collapseX      number? An additional offset which is applied when this control uses a collapsed anchor.
-local ControlClass = newClass("Control")
-
----@generic T
----@alias Prop<T> (fun(self: self): T) | T
----@alias Anchor [AnchorPoint, Control|ControlHost|nil, AnchorPoint, boolean|nil]
----@alias Rect [Prop<number>?,Prop<number>?, Prop<number>?, Prop<number>?]
-
----@param anchor? Anchor
----@param rect? Rect
-function ControlClass:Control(anchor, rect)
+local ControlClass = newClass("Control", function(self, anchor, rect)
 	self.rectStart = rect or {0, 0, 0, 0}
 	self.x, self.y, self.width, self.height = unpack(self.rectStart)
 	self.shown = true
@@ -62,8 +41,7 @@ function ControlClass:Control(anchor, rect)
 	if anchor then
 		self:SetAnchor(anchor[1], anchor[2], anchor[3], nil, nil, anchor[4])
 	end
-	return self
-end
+end)
 
 function ControlClass:GetProperty(name)
 	if type(self[name]) == "function" then
@@ -86,10 +64,7 @@ end
 
 function ControlClass:GetPos()
 	if self.anchor.collapse and self.anchor.other and not self.anchor.other:GetProperty("shown") then
-		local x, y = self.anchor.other:GetPos()
-		x = x + (self.collapseX or 0)
-		y = y + (self.collapseY or 0)
-		return x, y
+		return self.anchor.other:GetPos()
 	end
 	local x = self:GetProperty("x")
 	local y = self:GetProperty("y")
