@@ -64,6 +64,7 @@ function OverviewPanel({
   tiersState,
   sourceUrl,
   pobCode,
+  outlineInput,
   expandFindings,
   fixesReady,
 }: PanelProps & { sourceUrl: string | null; pobCode: string | null; expandFindings: boolean; fixesReady: boolean }) {
@@ -72,7 +73,7 @@ function OverviewPanel({
   return (
     <Panel id="overview" title="Overview">
       <Showcase analysis={a}>
-        {sourceUrl || pobCode ? <CopyLink url={sourceUrl} code={pobCode} name={a.identity.name} /> : null}
+        {sourceUrl || pobCode ? <CopyLink url={sourceUrl} code={pobCode} box={outlineInput?.box} config={outlineInput?.config} name={a.identity.name} /> : null}
         <ShareCard analysis={a} sourceUrl={sourceUrl} diff={history.diff} />
       </Showcase>
       {returning ? <ChangedSincePanel analysis={a} snapshots={history.snapshots} /> : null}
@@ -163,7 +164,7 @@ export function CharacterResults({
 
   return (
     <CharacterTabs tabs={TABS} active={tab} onSelect={onTab}>
-      {tab === 'overview' ? <OverviewPanel {...props} sourceUrl={sourceUrl} pobCode={pobCode} expandFindings={target === 'findings'} fixesReady={fixesReady} /> : null}
+      {tab === 'overview' ? <OverviewPanel {...props} outlineInput={outlineInput} sourceUrl={sourceUrl} pobCode={pobCode} expandFindings={target === 'findings'} fixesReady={fixesReady} /> : null}
       {tab === 'sheet' ? <SheetTab {...props} outlineInput={outlineInput} /> : null}
       {tab === 'defences' ? <DefenceTab {...props} /> : null}
       {tab === 'damage' ? <DamageTab {...props} /> : null}

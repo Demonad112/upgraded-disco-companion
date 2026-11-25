@@ -1,5 +1,6 @@
 'use client'
 
+import type { OutlineBox, OutlineConfigMode } from '@poe2/core'
 import { BASE_PATH } from './basePath'
 import { createLocalStore } from './localStore'
 
@@ -16,6 +17,9 @@ export interface RecentCharacter {
   url: string
   /** The pasted PoB code, kept so it re-opens without pasting again (CP-3); absent for a URL import. */
   code?: string
+  /** The box the code was pasted into and its config toggle, so a re-open uses the same config; absent means poe.ninja's baseline. */
+  box?: OutlineBox
+  config?: OutlineConfigMode
   /** `snapshotKey(identity)`, to find this character's history snapshots. */
   key: string
   name: string
@@ -76,7 +80,8 @@ export function recordRecent(entry: RecentCharacter): void {
   recentCharacters.set((prev) => {
     const same = prev[0]
     if (same && same.url === entry.url && same.key === entry.key && same.level === entry.level && same.grade === entry.grade &&
-      same.topFix?.title === entry.topFix?.title && same.code === entry.code && same.name === entry.name)
+      same.topFix?.title === entry.topFix?.title && same.code === entry.code && same.name === entry.name &&
+      same.box === entry.box && same.config === entry.config)
       return prev
     // A code row has no URL, so only a real URL (or the key) makes two rows the same character.
     return [entry, ...prev.filter((r) => !(entry.url && r.url === entry.url) && r.key !== entry.key)].slice(0, MAX_RECENT)

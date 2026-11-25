@@ -434,7 +434,7 @@ export function ImportBar({
                 size="sm"
                 disabled={busy}
                 onClick={() =>
-                  r.code ? onResult({ ok: true, kind: 'pob', code: r.code, name: r.name }) : void runImport(r.url)
+                  r.code ? onResult({ ok: true, kind: 'pob', code: r.code, name: r.name, box: r.box, config: r.config }) : void runImport(r.url)
                 }
                 title={r.code ? `${r.name} (PoB code)` : r.url}
                 className="font-medium text-ink-dim"

@@ -13,7 +13,7 @@ import {
 import { ImportBar, importProfile, sharedProfileUrl, type ImportResult } from '@/components/ImportBar'
 import { Skeleton } from '@/components/Skeleton'
 import type { OutlineInput } from '@/components/character/CharacterSheet'
-import { pobCodeFromHash } from '@/lib/pobLink'
+import { pobLinkFromHash } from '@/lib/pobLink'
 import { useCharacterHistory } from '@/lib/useCharacterHistory'
 import { CODE_ACCOUNT, recentCharacters, recordRecent, topFixOf } from '@/lib/recentCharacters'
 import { gradeText } from '@/lib/grade'
@@ -59,7 +59,7 @@ export default function Home() {
   const [sourceCode, setSourceCode] = useState<string | null>(null)
   // The code behind the loaded character, named or not, for its `#pob=` share link.
   const [pobCode, setPobCode] = useState<string | null>(null)
-  // The paste behind the sheet: its box and config toggle. A recents or `#pob=` re-open uses the poe.ninja baseline.
+  // The paste behind the sheet: its box and config toggle. Recents and `#pob=` links store both (absent: poe.ninja's baseline).
   const [outlineInput, setOutlineInput] = useState<OutlineInput | null>(null)
   // Whether "Load another character" is open while the import box is collapsed.
   const [boxOpen, setBoxOpen] = useState(false)
@@ -196,6 +196,7 @@ export default function Home() {
     recordRecent({
       url: sourceUrl ?? '',
       ...(sourceCode ? { code: sourceCode } : {}),
+      ...(sourceCode && outlineInput?.box === 'pob' ? { box: outlineInput.box, config: outlineInput.config } : {}),
       key: snapshotKey(identity),
       name: identity.name,
       className: identity.className ?? null,
@@ -204,7 +205,7 @@ export default function Home() {
       topFix: topFixOf(settled.recommendations.recommendations),
       at: new Date().toISOString(),
     })
-  }, [sourceUrl, sourceCode, settled])
+  }, [sourceUrl, sourceCode, settled, outlineInput])
 
   const handleResult = useCallback(async (r: ImportResult) => {
     if (!r.ok) {
@@ -247,7 +248,7 @@ export default function Home() {
   // reload, or a shared link. Read here, once per visit to the page.
   useEffect(() => {
     // `#pob=<code>`: a shared link (lib/pobLink.ts). Cleared once read, so the hash names the open tab again.
-    const linked = pobCodeFromHash(window.location.hash)
+    const linked = pobLinkFromHash(window.location.hash)
     if (linked) {
       let cancelled = false
       void loadResults()
@@ -257,7 +258,7 @@ export default function Home() {
         // Cosmetic only.
       }
       void Promise.resolve().then(() => {
-        if (!cancelled) void handleResult({ ok: true, kind: 'pob', code: linked })
+        if (!cancelled) void handleResult({ ok: true, kind: 'pob', code: linked.code, box: linked.box, config: linked.config })
       })
       return () => {
         cancelled = true
@@ -272,7 +273,7 @@ export default function Home() {
       void loadResults()
       // After this effect, like the `?import=` fetch below: handleResult sets state.
       void Promise.resolve().then(() => {
-        if (!cancelled) void handleResult({ ok: true, kind: 'pob', code, name: saved.name })
+        if (!cancelled) void handleResult({ ok: true, kind: 'pob', code, name: saved.name, box: saved.box, config: saved.config })
       })
       return () => {
         cancelled = true
