@@ -6,6 +6,7 @@
  */
 
 import { readFileSync } from 'node:fs'
+import { deflateSync } from 'node:zlib'
 import { dirname, join } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 
@@ -47,12 +48,28 @@ export async function useRatesPayload() {
   return { type: 'character', charModel: { ...model, name: 'Main', account: 'Demonad112#2589', league: 'Runes of Aldur' } }
 }
 
+/**
+ * The reference code with Skull Song's two runes removed (`Rune: None`, as PoB writes an empty socket), so the
+ * empty-rune finding (CP-2) has something to find. Same variant as core's code-analysis test.
+ */
+export async function emptyRunesCode() {
+  const core = await import(pathToFileURL(join(root, 'packages/core/dist/index.js')).href)
+  const xml = await core.decodePobExport(mainCode())
+  const runes = 'Rune: Soul Core of Topotante\nRune: Saqawal&apos;s Rune of the Sky'
+  if (!xml.includes(runes)) throw new Error("main-payload --empty-runes: Skull Song's runes not found in the decoded export")
+  return deflateSync(Buffer.from(xml.replace(runes, 'Rune: None\nRune: None'))).toString('base64url')
+}
+
 /** The payload as the JSON text a proxy or a paste box carries. */
 export async function mainPayloadJson() {
   return JSON.stringify(await mainPayload())
 }
 
-// `node scripts/lib/main-payload.mjs [--use-rates]` prints the payload JSON (the e2e suite reads it this way, synchronously).
+// `node scripts/lib/main-payload.mjs [--use-rates|--empty-runes]` prints the payload JSON, or with --empty-runes the
+// variant's PoB code (the e2e suite reads it this way, synchronously).
 if (process.argv[1] && pathToFileURL(process.argv[1]).href === import.meta.url) {
-  process.stdout.write(process.argv.includes('--use-rates') ? JSON.stringify(await useRatesPayload()) : await mainPayloadJson())
+  const arg = process.argv.slice(2)
+  process.stdout.write(
+    arg.includes('--empty-runes') ? await emptyRunesCode() : arg.includes('--use-rates') ? JSON.stringify(await useRatesPayload()) : await mainPayloadJson(),
+  )
 }

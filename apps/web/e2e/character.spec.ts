@@ -1,4 +1,4 @@
-import { mainCode, useRatesPayloadJson } from './main-payload'
+import { emptyRunesCode, mainCode, useRatesPayloadJson } from './main-payload'
 import { PROFILE_URL, expect, openTab, test } from './fixtures'
 
 const importUrl = `character/?import=${encodeURIComponent(PROFILE_URL)}`
@@ -80,7 +80,7 @@ test('a blocked import offers the paste box in one click, and a PoB code pasted 
   await expect(page.locator('.bc-top')).toContainText('From a Path of Building code')
 })
 
-test('the poe.ninja PoB code pasted with a name: six tabs, holding-up rows, named resist fix, gear tiers, empty runes', async ({ page }) => {
+test('the poe.ninja PoB code pasted with a name: six tabs, holding-up rows, named resist fix, gear tiers', async ({ page }) => {
   await page.goto('character/')
   await expect(page.getByText("Paste the PoB code from poe.ninja's character page", { exact: true })).toBeVisible()
   await page.getByLabel('Character model JSON or Path of Building code').fill(mainCode)
@@ -91,9 +91,6 @@ test('the poe.ninja PoB code pasted with a name: six tabs, holding-up rows, name
   // A resistance fix names the item to change (the reference code is 22% short on chaos).
   const fixes = page.locator('[data-top-fixes]:not([data-pending])')
   await expect(fixes.locator('li').filter({ hasText: 'Chaos resistance' }).first()).toContainText(/ on (Morbid Mantle|[A-Z]\w+ \w+)/, { timeout: 30_000 })
-  // The empty-rune finding (CP-2): Blight Weaver has 2 sockets with no rune.
-  await fixes.getByRole('button', { name: /^Show all/ }).click()
-  await expect(fixes.getByText('Fill the 2 empty rune sockets in Blight Weaver.').first()).toBeVisible()
 
   for (const id of PANEL_IDS) await openTab(page, id)
 
@@ -111,6 +108,16 @@ test('the poe.ninja PoB code pasted with a name: six tabs, holding-up rows, name
   await expect(page.getByRole('button', { name: /^Main/ })).toBeVisible({ timeout: 30_000 })
 })
 
+test('an empty rune socket shows as a fix (CP-2)', async ({ page }) => {
+  // The reference code fills every socket, so this pastes a variant with Skull Song's 2 runes removed.
+  await page.goto('character/')
+  await page.getByLabel('Character model JSON or Path of Building code').fill(emptyRunesCode())
+  await page.getByRole('button', { name: 'Analyse pasted data' }).click()
+  const fixes = page.locator('[data-top-fixes]:not([data-pending])')
+  await fixes.getByRole('button', { name: /^Show all/ }).click({ timeout: 30_000 })
+  await expect(fixes.getByText('Fill the 2 empty rune sockets in Skull Song.').first()).toBeVisible()
+})
+
 test('the per-use DPS line fits a 390 px screen when a skill has use rates (CP-2)', async ({ page }) => {
   const body = useRatesPayloadJson()
   await page.route('**/api/character**', (route) => route.fulfill({ status: 200, contentType: 'application/json', body }))
@@ -118,7 +125,7 @@ test('the per-use DPS line fits a 390 px screen when a skill has use rates (CP-2
   await page.goto(importUrl)
   await expect(page.getByRole('heading', { name: /Main/ }).first()).toBeVisible({ timeout: 30_000 })
   await openTab(page, 'damage')
-  const line = page.getByText(/^33,332 per use · 69,531 if used continuously$/)
+  const line = page.getByText(/^66,832 per use · 129,453 if used continuously$/)
   await expect(line).toBeVisible({ timeout: 15_000 })
   const box = (await line.boundingBox())!
   expect(box.x).toBeGreaterThanOrEqual(0)
