@@ -54,4 +54,5 @@ export * from './mods/index.js'
 export * from './tree/index.js'
 export * from './tree/suggest.js'
 
+export * from './outline/index.js'
 export * from './analyze.js'
