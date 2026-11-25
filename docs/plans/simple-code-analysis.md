@@ -251,7 +251,7 @@ Goal: one decoded object behind every tab. No new analysis.
   - Files: `ImportBar.tsx`, `CharacterSheet.tsx`, `character/page.tsx`, e2e spec.
 - **Checkpoint:** PR plus 390/1440 screenshots. The owner reviews the sheet and the missing list before Batch 2.
 - **Done 2026-11-25:** `buildCharacterOutline` (`packages/core/src/outline/`), two code boxes with the config toggle (`ImportBar.tsx`), the Sheet tab (`CharacterSheet.tsx`), the missing list and Pro detail, e2e in `apps/web/e2e/sheet.spec.ts`.
-- **What Batch 2 still lacks:** (1) item mod tiers are read from the ladder data once the Gear data loads; a line the ladders cannot place says why, and jewels carry no tier because their slot id is shared; (2) no per-slot gear score, stat swap or charm overkill flag, only the raw lines; (3) over-cap is shown per resistance, not yet shared across items (shared in core since 2.1; shown with 2.4); (4) Runic Ward, item rarity and ES recharge are not in a PoB2 code (shown as missing, not derivable); (5) the Sheet tab shows the code's numbers without grades or advice; (6) ~~recents and `#pob=` re-opens use the poe.ninja baseline~~ done 2026-11-25: both store the box and toggle (`#pob=<code>&box=pob&config=<mode>`); (7) the Defence axis still comes from the old assessment, unchanged.
+- **What Batch 2 still lacks:** (1) item mod tiers are read from the ladder data once the Gear data loads; a line the ladders cannot place says why, and jewels carry no tier because their slot id is shared; (2) ~~no per-slot gear score, stat swap or charm overkill flag~~ score and swaps on the Gear tab since 2.4; the charm flag stays core-only (owner, 2026-11-25: not on the site for now); (3) ~~over-cap is shown per resistance, not yet shared across items~~ done 2026-11-25 (2.4): the Sheet lists each resistance's over-cap split across the lines that spend it; (4) Runic Ward, item rarity and ES recharge are not in a PoB2 code (shown as missing, not derivable); (5) the Sheet tab shows the code's numbers without grades or advice; (6) ~~recents and `#pob=` re-opens use the poe.ninja baseline~~ done 2026-11-25: both store the box and toggle (`#pob=<code>&box=pob&config=<mode>`); (7) ~~the Defence axis still comes from the old assessment~~ done 2026-11-25 (2.4): the defence half, unchanged, graded on its own.
 
 ### Batch 2: Defence calcs, analysis and tips (`defence-analysis`)
 
@@ -267,10 +267,11 @@ Goal: one decoded object behind every tab. No new analysis.
   - Flag a charm or flask stat that targets an already capped value.
   - Acceptance: a unit test with a capped fire res and a fire res charm.
   - Done 2026-11-25: `findCharmOverkill` (`advice/charm-overkill.ts`), charms and flasks (owner, 2026-11-25). Resistance lines only; neither reference code has one, so nothing is flagged on them.
-- [ ] **2.4 Defence axis and beginner copy**
+- [x] **2.4 Defence axis and beginner copy**
   - The defence grade stands as its own axis.
   - Rewrite the Overview, Defence and Gear copy for new players per `COPY.md`; the old text moves behind Pro detail.
   - Acceptance: e2e text checks updated; screenshots.
+  - Done 2026-11-25: `defenceAxis` (`score/defence-axis.ts`, `test/defence-axis.test.ts`): the defence half over its 0.5 weight on the unchanged A–D bands (owner: keep A–D; S–D is B2-4a in the Owner queue), a range only when the max hit is unreported; up to three tips (weak hit types, then uncapped elemental, then chaos). The combined grade is retired from the stamp, share card, recents and What-if. `gearReview` (`advice/gear-review.ts`): gear axis = mean of graded slots on S–D, at most 5 swaps with up to 3 options each (owner: no tiebreak tuning), shared over-cap per resistance. Minion stats are their own family. Site: grade badges on Overview (Defence, Gear, Damage "not graded yet"), Defence grade card, Gear grade card, Sheet over-cap; the old verdict is behind Pro detail. e2e `grades.spec.ts`.
 - **Checkpoint:** PR plus screenshots. The owner reviews the defence and gear advice.
 
 ### Batch 3: Damage calcs, analysis and tips (`damage-analysis`)

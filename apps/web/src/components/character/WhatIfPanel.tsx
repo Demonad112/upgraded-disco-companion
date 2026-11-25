@@ -13,7 +13,7 @@ import {
   whatIfModel,
   type Analysis,
   type AnalyzeOptions,
-  type BuildAssessment,
+  defenceAxis,
   type Recommendation,
   type WhatIfOverrides,
 } from '@poe2/core'
@@ -36,11 +36,9 @@ const RES_STAT = /^(fire|cold|lightning|chaos)Resistance$/
 
 const fmtDefence = (n: number | null) => (n === null ? '—' : n.toFixed(2))
 
-/** The headline grade; a range when damage could not be graded. */
-function grade(a: BuildAssessment): string {
-  if (a.tier) return a.tier
-  if (!a.tierRange) return '—'
-  return a.tierRange.worst === a.tierRange.best ? a.tierRange.worst : `${a.tierRange.worst}–${a.tierRange.best}`
+/** The headline grade: the defence axis (Batch 2.4); a range only when the max hit went unreported. */
+function grade(a: Pick<Analysis, 'assessment' | 'defense'>): string {
+  return defenceAxis(a.assessment, a.defense).letter
 }
 
 /** Suggested re-crafts that move a single resistance, with the size of the move. */
@@ -206,15 +204,15 @@ export function WhatIfPanel({ analysis, options }: { analysis: Analysis; options
             <div className="border border-line bg-surface-sunken p-3">
               <div className="label-metric">Grade</div>
               <div className="mt-1 text-lg font-semibold">
-                <span className={grade(analysis.assessment) === grade(after.assessment) ? '' : 'text-ink-mute'}>
-                  {grade(analysis.assessment)}
+                <span className={grade(analysis) === grade(after) ? '' : 'text-ink-mute'}>
+                  {grade(analysis)}
                 </span>
-                {grade(analysis.assessment) !== grade(after.assessment) ? (
+                {grade(analysis) !== grade(after) ? (
                   <>
                     <span className="text-accent"> → </span>
                     {/* Keyed on the letter: the pulse plays each time the grade crosses a boundary, not on every move. */}
-                    <span key={grade(after.assessment)} className="whatif-pulse text-accent">
-                      {grade(after.assessment)}
+                    <span key={grade(after)} className="whatif-pulse text-accent">
+                      {grade(after)}
                     </span>
                   </>
                 ) : null}

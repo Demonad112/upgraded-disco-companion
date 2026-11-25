@@ -167,6 +167,8 @@ const SPECIFIC_OFFENCE: ReadonlySet<StatFamily> = new Set(['attack', 'spell', 'm
 /** The families a stat id belongs to, read from its name. Generic `damage` only when no attack/spell/minion family matched. */
 export function statFamilies(statId: string): StatFamily[] {
   const hits = FAMILY_RULES.filter(([, re]) => re.test(statId)).map(([f]) => f)
+  // A minion stat feeds the minions, never the player: their resistances, life or attack speed are not the build's.
+  if (hits.includes('minion')) return ['minion']
   // A resistance stat is never damage, whatever else its name holds.
   if (hits.includes('resistance')) return ['resistance']
   return hits.some((f) => SPECIFIC_OFFENCE.has(f)) ? hits.filter((f) => f !== 'damage') : hits

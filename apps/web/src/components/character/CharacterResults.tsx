@@ -5,8 +5,10 @@
 import { useEffect } from 'react'
 import dynamic from 'next/dynamic'
 import type { Analysis, AnalyzeOptions } from '@poe2/core'
+import { defenceAxis } from '@poe2/core'
 import { ProToggle } from '@/components/shared/ProToggle'
 import { BuildScore } from '@/components/BuildScore'
+import { useGearReview } from '@/lib/useGearReview'
 import { Recommendations } from '@/components/Recommendations'
 import { Skeleton } from '@/components/Skeleton'
 import { changedFor } from '@/lib/characterNotes'
@@ -62,6 +64,7 @@ function OverviewPanel({
   analysis: a,
   history,
   tiersState,
+  catalogState,
   sourceUrl,
   pobCode,
   outlineInput,
@@ -70,6 +73,8 @@ function OverviewPanel({
 }: PanelProps & { sourceUrl: string | null; pobCode: string | null; expandFindings: boolean; fixesReady: boolean }) {
   const returning = changedFor(a, history.snapshots).available
   const { proDetail } = usePrefs()
+  const { review, ready } = useGearReview(a, tiersState, catalogState)
+  const gearState = ready ? 'ready' : catalogState.status === 'idle' ? 'closed' : 'loading'
   return (
     <Panel id="overview" title="Overview">
       <Showcase analysis={a}>
@@ -97,7 +102,13 @@ function OverviewPanel({
       )}
       {fixesReady ? <EasyWins analysis={a} tiersState={tiersState} proDetail={proDetail} /> : null}
       <CouldntCheck analysis={a} />
-      <BuildScore assessment={a.assessment} keystones={a.keystones} />
+      <BuildScore
+        assessment={a.assessment}
+        keystones={a.keystones}
+        axis={defenceAxis(a.assessment, a.defense)}
+        gear={review}
+        gearState={gearState}
+      />
     </Panel>
   )
 }

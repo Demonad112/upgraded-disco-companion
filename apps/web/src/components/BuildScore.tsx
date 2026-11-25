@@ -10,7 +10,10 @@
  * tooltip nobody opens.
  */
 
-import type { BuildAssessment, KeystoneEffects } from '@poe2/core'
+import type { ReactNode } from 'react'
+import type { BuildAssessment, DefenceAxis, GearReview, KeystoneEffects } from '@poe2/core'
+import { AxisSummary } from './character/AxisReview'
+import { ProOnly } from './shared/ProToggle'
 import { Tag, fmt } from './ui'
 
 
@@ -38,6 +41,16 @@ function Half({ label, value, of, unscored }: { label: string; value: number | n
   )
 }
 
+/** The old verdict: shown as-is without an axis, behind Pro detail with one (docs/COPY.md). */
+function Detail({ pro, children }: { pro: boolean; children: ReactNode }) {
+  if (!pro) return <>{children}</>
+  return (
+    <ProOnly>
+      <div className="mt-4 border-t border-line pt-4">{children}</div>
+    </ProOnly>
+  )
+}
+
 function KeystoneList({ title, intro, items }: { title: string; intro: string; items: KeystoneEffects['unverified'] }) {
   if (!items.length) return null
   return (
@@ -57,7 +70,20 @@ function KeystoneList({ title, intro, items }: { title: string; intro: string; i
   )
 }
 
-export function BuildScore({ assessment, keystones }: { assessment: BuildAssessment; keystones: KeystoneEffects }) {
+export function BuildScore({
+  assessment,
+  keystones,
+  axis = null,
+  gear = null,
+  gearState = 'closed',
+}: {
+  assessment: BuildAssessment
+  keystones: KeystoneEffects
+  /** The defence axis (Batch 2.4). With it, the three axes lead and the old verdict moves behind Pro detail. */
+  axis?: DefenceAxis | null
+  gear?: GearReview | null
+  gearState?: 'ready' | 'loading' | 'closed'
+}) {
   const critical = assessment.weaknesses.filter((w) => w.severity === 'critical')
   const warnings = assessment.weaknesses.filter((w) => w.severity === 'warning')
 
@@ -65,9 +91,11 @@ export function BuildScore({ assessment, keystones }: { assessment: BuildAssessm
     <details id="assessment" data-surface="data" className="card group" open>
       <summary className="flex cursor-pointer list-none items-center justify-between gap-3 [&::-webkit-details-marker]:hidden">
         <span className="h3">Why this grade</span>
-        <span className="eyebrow">Defence and damage, weighted evenly</span>
+        <span className="eyebrow">{axis ? 'Each axis graded on its own' : 'Defence and damage, weighted evenly'}</span>
       </summary>
       <div className="dbody border-t border-line">
+      {axis ? <AxisSummary defence={axis} gear={gear} gearState={gearState} /> : null}
+      <Detail pro={axis !== null}>
       <p className="max-w-prose text-sm leading-relaxed text-balance text-ink">{assessment.note}</p>
       <p className="mt-2 max-w-prose text-xs leading-relaxed text-ink-mute">
         Damage is only compared with figures seen on the ladder, never made-up targets.
@@ -156,6 +184,7 @@ export function BuildScore({ assessment, keystones }: { assessment: BuildAssessm
           </ul>
         </details>
       ) : null}
+      </Detail>
 
       {keystones.notes.length ? (
         <div className="mt-4">

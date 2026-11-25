@@ -285,4 +285,6 @@ export const GEAR_SCORE = Object.freeze({
   swapMinWasteShare: 0.5,
   /** How many replacement affixes a stat swap names. */
   swapCandidates: 3,
+  /** How many stat swaps the site lists (biggest waste first). */
+  swapShown: 5,
 })

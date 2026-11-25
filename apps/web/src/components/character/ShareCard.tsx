@@ -35,7 +35,7 @@ export function ShareCard({
   const [size, setSize] = useState<CardSize>('landscape')
   const [status, setStatus] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
-  const data = shareCardData(analysis, gradeText(analysis.assessment), diff)
+  const data = shareCardData(analysis, gradeText(analysis), diff)
   const fileName = shareCardFileName(data.name).replace(/\.png$/, (card?.size ?? size) === 'portrait' ? '-portrait.png' : '.png')
   const dims = DIMS[card?.size ?? size]
 
