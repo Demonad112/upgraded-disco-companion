@@ -78,7 +78,11 @@
       "PowerShell(Remove-Item * -Recurse -Force*)",
       "PowerShell(Remove-Item * -Force -Recurse*)",
       "Bash(git branch -D *)",
-      "PowerShell(git branch -D *)"
+      "PowerShell(git branch -D *)",
+      "Bash(git commit --amend*)",
+      "Bash(git commit * --amend*)",
+      "PowerShell(git commit --amend*)",
+      "PowerShell(git commit * --amend*)"
     ],
     "deny": [
       "Bash(git push * main)",

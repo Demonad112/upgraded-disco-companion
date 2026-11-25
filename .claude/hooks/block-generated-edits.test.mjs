@@ -67,3 +67,24 @@ test('reminds about e2e specs for data edits without blocking', () => {
   }
   assert.equal(wantsE2eReminder('/repo/apps/web/src/app/page.tsx'), false);
 });
+
+test('asks before edits to quality thresholds and budgets', async () => {
+  const { isQualityGate } = await import('./block-generated-edits.mjs');
+  for (const p of [
+    'lighthouserc.json',
+    'C:\\repo\\lighthouserc.json',
+    'scripts/route-weight.mjs',
+    '/repo/packages/core/vitest.config.ts',
+    'apps/web/vitest.config.mts',
+  ]) {
+    assert.equal(isQualityGate(p), true, p);
+    const r = run('Edit', p);
+    assert.equal(r.status, 0, p);
+    const out = JSON.parse(r.stdout).hookSpecificOutput;
+    assert.equal(out.permissionDecision, 'ask', p);
+    assert.match(out.permissionDecisionReason, /threshold|budget/i);
+  }
+  for (const p of ['scripts/route-weight.test.mjs', 'packages/core/src/index.ts', 'docs/lighthouserc.md']) {
+    assert.equal(isQualityGate(p), false, p);
+  }
+});

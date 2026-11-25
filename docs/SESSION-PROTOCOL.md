@@ -28,7 +28,9 @@ kinds they name.
    `archive/REGISTER-CLOSED.md`; new rows get one line and an ID like `U1-3`). Check an ID is free with
    `git log --grep <prefix>` and a grep, not by reading whole files. When a plan is fully closed, add 1-2 sentences to
    `docs/HISTORY.md` and delete the plan file.
-3. Commit and push once, after the gate passes. Open one PR with the template sections and the Pages preview URL at
-   the top. Never force-push; never delete branches.
-4. Mark the PR ready and book one scheduled check-in (about 15 minutes). When it fires, fix only a failing required
-   check. Don't watch CI, subscribe to PR events or poll. Done means every required check is green.
+3. Commit and push once, after the gate passes. Open a PR only when the owner asks, with the template sections and
+   the Pages preview URL at the top: copy it from the Cloudflare Pages check or bot comment, never build it from the
+   branch name (Cloudflare truncates long names). Never force-push; never delete branches.
+4. Close out in chat: each item done, partial or not done, with evidence; gate result; CI status as passed, failed or
+   pending. Book no scheduled check-in and don't watch CI, subscribe to PR events or poll unless the owner asks; the
+   owner asks for status later, and a failing required check is fixed then.
