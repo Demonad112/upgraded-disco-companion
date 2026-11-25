@@ -115,6 +115,7 @@ const NOTES: Readonly<Record<string, Note>> = {
   'GEAR_SCORE.poolShare': judgement('Gear score profile pools'),
   'GEAR_SCORE.swapMinWasteShare': judgement('Stat swap threshold'),
   'GEAR_SCORE.swapCandidates': judgement('Stat swap list length'),
+  'GEAR_SCORE.swapShown': judgement('How many stat swaps the site lists'),
 }
 
 /** Explicit ranges, only where the code states one. */
