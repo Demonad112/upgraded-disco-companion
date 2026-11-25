@@ -1,10 +1,10 @@
 /**
  * Upgrade report schema.
  *
- * Observed and simulated results are separate types. A card is either read
- * from poe.ninja (`source: 'ninja'`) or produced by driving Path of Building
- * (`source: 'pob-sim'`), and only the second can carry simulation metadata;
- * it cannot be built without it. UI and exporters branch on `source`.
+ * Observed and estimated results are separate types. A card is either read
+ * (`source: 'ninja'`) or estimated by the mini-calc (`source: 'estimate'`, "≈ est."),
+ * and only the second can carry estimate metadata; it cannot be built without it.
+ * UI and exporters branch on `source`.
  */
 
 import type { CardWarning } from '../warnings/index.js'
@@ -50,18 +50,17 @@ export interface ObservedCard extends CardBase {
   source: 'ninja'
 }
 
-export interface SimulatedCard extends CardBase {
-  source: 'pob-sim'
-  simulation: {
-    pobVersion: string
-    /** Hash of the PoB configuration the numbers were computed under. */
+export interface EstimatedCard extends CardBase {
+  source: 'estimate'
+  estimate: {
+    /** The code's config the mini-calc applied (`readPobConfig`). */
     configHash: string
-    /** Conditions varied for a range, if any. */
+    /** Conditions the estimate assumed, from the code's <Config>. */
     conditions: string[]
   }
 }
 
-export type UpgradeCard = ObservedCard | SimulatedCard
+export type UpgradeCard = ObservedCard | EstimatedCard
 
 /** Something that was not evaluated, and why. Never silently dropped. */
 export interface NotEvaluated {
@@ -76,4 +75,4 @@ export interface UpgradeReport {
   dataUpdatedUtc: string | null
 }
 
-export const isSimulated = (card: UpgradeCard): card is SimulatedCard => card.source === 'pob-sim'
+export const isEstimated = (card: UpgradeCard): card is EstimatedCard => card.source === 'estimate'

@@ -88,7 +88,7 @@ test('the poe.ninja PoB code pasted with a name: six tabs, holding-up rows, name
   await page.getByRole('button', { name: 'Analyse pasted data' }).click()
   await expect(page.getByRole('heading', { name: /Main/ }).first()).toBeVisible({ timeout: 30_000 })
 
-  // A resistance fix names the item to change (main-ninja is 22% short on chaos).
+  // A resistance fix names the item to change (the reference code is 22% short on chaos).
   const fixes = page.locator('[data-top-fixes]:not([data-pending])')
   await expect(fixes.locator('li').filter({ hasText: 'Chaos resistance' }).first()).toContainText(/ on (Morbid Mantle|[A-Z]\w+ \w+)/, { timeout: 30_000 })
   // The empty-rune finding (CP-2): Blight Weaver has 2 sockets with no rune.

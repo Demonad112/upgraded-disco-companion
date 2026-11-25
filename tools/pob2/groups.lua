@@ -2,7 +2,7 @@
 -- Loads a decoded PoB export in real PoB2 headless (vendor/pob2, unmodified) once, then recalculates per skill group and active skill
 -- XML from stdin, and prints a JSON array: one row per (group, activeSkill) with PoB's own main output for it.
 -- A code stores PlayerStats for its mainSocketGroup only; every other group's numbers exist only when PoB's engine
--- computes them (provenance pob-sim). Decode the code first (scripts/pob2/run.mjs does this).
+-- computes them (CI-only ground truth, never shown). Decode the code first (scripts/pob2/run.mjs does this).
 -- Each row also says whether the group is enabled in the export.
 -- Exit codes: 0 written, 1 some variant failed to load (JSON still written, loadError on that row), 2 bad input.
 local out = io.stdout

@@ -2,7 +2,7 @@
 
 Status: **proposed**, awaiting the owner's approval.
 Intent (confirmed 2026-11-24): [`docs/intent/simple-code-analysis.md`](../intent/simple-code-analysis.md).
-Supersedes once approved: `code-source-parity.md` (CP), `pob2-browser-engine.md` (B9), `ninja-source-restore.md` (NJ). Those move to `docs/remaining/archive/` in Batch 1.
+Supersedes the CP, B9 (browser engine) and NJ plans, deleted 2026-11-25 (`docs/HISTORY.md`).
 
 ---
 

@@ -1,9 +1,9 @@
 /**
- * CP-2: decode completeness. Every element and attribute in main-ninja's PoB XML, and every key an item's text
+ * CP-2: decode completeness. Every element and attribute in the reference code's PoB XML, and every key an item's text
  * header uses, is listed here as read (and where) or not read (and why). A new element, attribute or item key
  * appearing in the code fails the test until it is listed, so nothing a code carries is dropped silently.
  *
- * The code (`main-ninja.code.txt`) is untrusted data: decoded and read, never executed.
+ * The code (`reference/ninja-default/code.txt`) is untrusted data: decoded and read, never executed.
  */
 import { describe, expect, it } from 'vitest'
 import { readFileSync } from 'node:fs'
@@ -185,7 +185,7 @@ const itemText = [...xml.matchAll(/<Item id="\d+">([\s\S]*?)<\/Item>/g)].map((m)
 // Leading `{enchant}{rune}…` markup is PoB's line flags, not text.
 const itemLines = itemText.flatMap((t) => t.split('\n').map((l) => l.trim().replace(/^(?:\{[^}]*\})+/, '')).filter(Boolean))
 
-describe('CP-2: every element and attribute of main-ninja’s code is accounted for', () => {
+describe('CP-2: every element and attribute of the reference code is accounted for', () => {
   it('lists every element path, marked read or not read', () => {
     const unlisted = [...found.keys()].filter((p) => !(p in XML))
     expect(unlisted, 'new elements: list each in XML as read or notRead with a reason').toEqual([])

@@ -5,10 +5,10 @@
  * needs one of five plain labels, and must never see one kind of number
  * dressed as another:
  *
- *  - `observed`       read as given from poe.ninja or from the Path of Building
- *                     export it embeds. Nothing recomputed here.
- *  - `pob-simulated`  produced by driving Path of Building (the injected
- *                     transport). Kept apart from observed values.
+ *  - `observed`       read as given from the PoB code (or poe.ninja). Nothing
+ *                     recomputed here.
+ *  - `estimate`       computed here by the mini-calc where the code carries no
+ *                     figure ("≈ est."). Never shown in place of a read number.
  *  - `derived`        arithmetic this project did on observed values. Says so.
  *  - `nominal`        a figure from game data that says what something grants in
  *                     isolation, not what it does on this build.
@@ -17,7 +17,7 @@
 
 import type { Provenance } from './types.js'
 
-export type ValueLabel = 'observed' | 'pob-simulated' | 'derived' | 'nominal' | 'unknown'
+export type ValueLabel = 'observed' | 'estimate' | 'derived' | 'nominal' | 'unknown'
 
 export interface ValueLabelInfo {
   label: ValueLabel
@@ -29,7 +29,7 @@ export interface ValueLabelInfo {
 
 const INFO: Record<ValueLabel, ValueLabelInfo> = {
   observed: { label: 'observed', text: 'observed', detail: 'Read as given from poe.ninja or the Path of Building export it attaches. Not recomputed here.' },
-  'pob-simulated': { label: 'pob-simulated', text: 'PoB-simulated', detail: 'Measured by running Path of Building. Separate from observed values.' },
+  estimate: { label: 'estimate', text: '≈ est.', detail: 'Estimated here from the code’s text with a simple calculation, not Path of Building’s exact figure.' },
   derived: { label: 'derived', text: 'derived', detail: 'Arithmetic done here on observed values. Check it against the source before relying on it.' },
   nominal: { label: 'nominal', text: 'nominal', detail: 'What the game data says it grants in isolation. Not measured on this build.' },
   unknown: { label: 'unknown', text: 'unknown', detail: 'The data cannot establish this value.' },
@@ -45,9 +45,8 @@ export function labelOf(provenance: Provenance | null | undefined): ValueLabelIn
     case 'ninja':
     case 'pob-export':
       return INFO.observed
-    case 'pob-sim':
-      return INFO['pob-simulated']
     case 'estimate':
+      return INFO.estimate
     case 'derived':
       return INFO.derived
     case 'nominal':
