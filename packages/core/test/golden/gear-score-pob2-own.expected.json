@@ -1,0 +1,157 @@
+{
+  "profile": {
+    "defence": "evasion",
+    "offence": "attack",
+    "pools": [
+      "life",
+      "energy-shield",
+      "evasion"
+    ],
+    "valued": [
+      "life",
+      "energy-shield",
+      "evasion",
+      "resistance",
+      "movement",
+      "attack",
+      "damage"
+    ],
+    "off": [
+      "armour",
+      "spell",
+      "minion"
+    ],
+    "reasons": [
+      "Armour 75 is under 25% of evasion 7407, so armour stats count for nothing.",
+      "Defence stats that count: life, energy shield, evasion.",
+      "Main skill is an attack: attack and damage stats count, spell and minion stats do not."
+    ],
+    "missing": []
+  },
+  "slots": [
+    {
+      "slot": "Helmet",
+      "item": "Hypnotic Keep",
+      "score": 79,
+      "grade": "A",
+      "missing": null,
+      "coverage": {
+        "read": 5,
+        "total": 7
+      },
+      "wasted": []
+    },
+    {
+      "slot": "Gloves",
+      "item": "Skull Nails",
+      "score": null,
+      "grade": null,
+      "missing": "Only 1 of its 7 affix lines could be read from the code, too few to grade the item.",
+      "coverage": {
+        "read": 1,
+        "total": 7
+      },
+      "wasted": []
+    },
+    {
+      "slot": "Body Armour",
+      "item": "Morbid Mantle",
+      "score": 27.8,
+      "grade": "D",
+      "missing": null,
+      "coverage": {
+        "read": 3,
+        "total": 6
+      },
+      "wasted": [
+        "over-cap: +(41-45)% to Lightning Resistance (43)",
+        "over-cap: +(31-35)% to Fire Resistance (12)"
+      ]
+    },
+    {
+      "slot": "Amulet",
+      "item": "Demon Pendant",
+      "score": 45.5,
+      "grade": "C",
+      "missing": null,
+      "coverage": {
+        "read": 4,
+        "total": 6
+      },
+      "wasted": [
+        "off-profile: (25-28)% increased Cast Speed (whole line)"
+      ]
+    },
+    {
+      "slot": "Boots",
+      "item": "Dire Span",
+      "score": 61.1,
+      "grade": "B",
+      "missing": null,
+      "coverage": {
+        "read": 5,
+        "total": 7
+      },
+      "wasted": [
+        "over-cap: +(36-40)% to Cold Resistance (36)"
+      ]
+    },
+    {
+      "slot": "Main Hand",
+      "item": "Skull Song",
+      "score": 58.9,
+      "grade": "B",
+      "missing": null,
+      "coverage": {
+        "read": 5,
+        "total": 6
+      },
+      "wasted": []
+    },
+    {
+      "slot": "Ring 1",
+      "item": "Behemoth Band",
+      "score": 66.4,
+      "grade": "B",
+      "missing": null,
+      "coverage": {
+        "read": 5,
+        "total": 6
+      },
+      "wasted": []
+    },
+    {
+      "slot": "Ring 2",
+      "item": "Viper Whorl",
+      "score": 55.1,
+      "grade": "B",
+      "missing": null,
+      "coverage": {
+        "read": 6,
+        "total": 6
+      },
+      "wasted": [
+        "over-cap: +(26-30)% to Cold Resistance (23)",
+        "over-cap: +(41-45)% to Lightning Resistance (11)"
+      ]
+    },
+    {
+      "slot": "Belt",
+      "item": "Mageblood",
+      "score": null,
+      "grade": null,
+      "missing": "Unique items have fixed lines, not affix choices, so the slot is not scored.",
+      "coverage": {
+        "read": 0,
+        "total": 0
+      },
+      "wasted": []
+    }
+  ],
+  "swaps": [
+    "Body Armour: 43% lightning resistance on this line is over the cap. It could be +(24-27)% to Chaos Resistance (of Bameth, tier 1) instead.",
+    "Boots: 36% cold resistance on this line is over the cap. It could be Gain Deflection Rating equal to (21-23)% of Evasion Rating (of Flexure, tier 1) instead.",
+    "Ring 2: 23% cold resistance on this line is over the cap. It could be Gain (41-53) Life per enemy killed (of Valour, tier 1) instead. Swapping it drops cold resistance 6% below the cap, so make that up elsewhere.",
+    "Amulet: (25-28)% increased Cast Speed does nothing for your build. It could be (35-38)% increased Critical Hit Chance (of Unmaking, tier 1) instead."
+  ]
+}

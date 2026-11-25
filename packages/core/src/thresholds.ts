@@ -260,3 +260,29 @@ export const GEAR_FIT = Object.freeze({
   /** A user override multiplies a derived stat weight by a value in this range. */
   overrideRange: Object.freeze({ min: 0, max: 3 }),
 })
+
+/**
+ * The per-slot gear score (gear/score.ts), plan `docs/plans/simple-code-analysis.md` Part 1 "Gear score".
+ * Not game rules. The grade bands (85/70/55/40) and the conditional-line discount are ideas borrowed from
+ * ets-public/poe2-upgrade-checker's method as the plan describes it, unverified against its source; no code or
+ * table was copied. The rest is project judgement.
+ */
+export const GEAR_SCORE = Object.freeze({
+  /** Lowest score for each grade, best first. Below the last band is D. */
+  grades: Object.freeze([
+    Object.freeze({ grade: 'S', min: 85 }),
+    Object.freeze({ grade: 'A', min: 70 }),
+    Object.freeze({ grade: 'B', min: 55 }),
+    Object.freeze({ grade: 'C', min: 40 }),
+  ] as const),
+  /** A line that only works under a condition ("while", "when", "if", "recently") counts this share. */
+  conditionalFactor: 0.6,
+  /** Weight of a stat in the profile's families, in a neutral family, and in a family the profile does not use. */
+  familyFactor: Object.freeze({ valued: 1, neutral: 0.5, off: 0 }),
+  /** A pool (life, energy shield, armour, evasion) is valued when it reaches this share of the larger of its pair. */
+  poolShare: 0.25,
+  /** A partly wasted resistance line is offered as a swap only when at least this share of it is over the cap. */
+  swapMinWasteShare: 0.5,
+  /** How many replacement affixes a stat swap names. */
+  swapCandidates: 3,
+})
