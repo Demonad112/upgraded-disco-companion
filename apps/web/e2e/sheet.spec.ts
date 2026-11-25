@@ -19,45 +19,48 @@ async function expectNoBlankCategory(page: import('@playwright/test').Page) {
   }
 }
 
-test('the poe.ninja code box fills the sheet, with what is missing named', async ({ page }) => {
-  await page.goto('character/')
-  await page.getByLabel('Character model JSON or Path of Building code').fill(mainCode)
-  await page.getByRole('button', { name: 'Analyse pasted data' }).click()
-  await openTab(page, 'sheet')
-  const sheet = page.getByTestId('character-sheet')
-  await expect(sheet).toHaveAttribute('data-box', 'ninja')
-  await expect(sheet).toHaveAttribute('data-config', 'ninja')
-  await expectNoBlankCategory(page)
-  // Read figures show as read; the ones a code cannot carry are listed, not blank.
-  await expect(page.locator('[data-outline-field="life"]')).toContainText('1,494')
-  await expect(page.locator('[data-outline-field="ehp"]')).toContainText('20,451.92')
-  await expect(page.locator('[data-outline-field="runicWard"]')).toContainText(/^missing:/)
-  await expect(page.getByTestId('sheet-missing')).toContainText('Runic Ward')
-  await expect(page.getByTestId('sheet-missing')).toContainText('League')
-})
-
-test('the PoB2 code box and each config toggle render every category', async ({ page }) => {
-  await page.goto('character/')
-  for (const [label, mode] of [
-    ['poe.ninja config', 'ninja'],
-    ['My own config', 'own'],
-    ['No config', 'none'],
-  ] as const) {
-    await page.getByRole('button', { name: label, exact: true }).click()
-    await page.getByLabel('Path of Building 2 code').fill(mainCode)
-    await page.getByRole('button', { name: 'Analyse PoB2 code' }).click()
+for (const [name, code] of [['ninja-default', mainCode], ['pob2-own', ownCode]] as const) {
+  test(`${name}: the poe.ninja code box fills the sheet, with what is missing named`, async ({ page }) => {
+    await page.goto('character/')
+    await page.getByLabel('Character model JSON or Path of Building code').fill(code)
+    await page.getByRole('button', { name: 'Analyse pasted data' }).click()
     await openTab(page, 'sheet')
     const sheet = page.getByTestId('character-sheet')
-    await expect(sheet).toHaveAttribute('data-box', 'pob', { timeout: 30_000 })
-    await expect(sheet).toHaveAttribute('data-config', mode)
+    await expect(sheet).toHaveAttribute('data-box', 'ninja')
+    await expect(sheet).toHaveAttribute('data-config', 'ninja')
     await expectNoBlankCategory(page)
-    // The toggle never changes a number read from the code.
+    // Read figures show as read; the ones a code cannot carry are listed, not blank.
     await expect(page.locator('[data-outline-field="life"]')).toContainText('1,494')
-    if (mode === 'none') await expect(page.locator('#sheet-config [data-outline-field]')).toHaveCount(0)
-    else await expect(page.locator('#sheet-config [data-outline-field]').first()).toBeVisible()
-    await page.getByText('Load another character').click()
-  }
-})
+    await expect(page.locator('[data-outline-field="ehp"]')).toContainText('20,451.92')
+    await expect(page.locator('[data-outline-field="runicWard"]')).toContainText(/^missing:/)
+    await expect(page.getByTestId('sheet-missing')).toContainText('Runic Ward')
+    await expect(page.getByTestId('sheet-missing')).toContainText('League')
+  })
+
+  // V1 criterion 1: both reference codes, in each box and each toggle state.
+  test(`${name}: the PoB2 code box and each config toggle render every category`, async ({ page }) => {
+    await page.goto('character/')
+    for (const [label, mode] of [
+      ['poe.ninja config', 'ninja'],
+      ['My own config', 'own'],
+      ['No config', 'none'],
+    ] as const) {
+      await page.getByRole('button', { name: label, exact: true }).click()
+      await page.getByLabel('Path of Building 2 code').fill(code)
+      await page.getByRole('button', { name: 'Analyse PoB2 code' }).click()
+      await openTab(page, 'sheet')
+      const sheet = page.getByTestId('character-sheet')
+      await expect(sheet).toHaveAttribute('data-box', 'pob', { timeout: 30_000 })
+      await expect(sheet).toHaveAttribute('data-config', mode)
+      await expectNoBlankCategory(page)
+      // The toggle never changes a number read from the code.
+      await expect(page.locator('[data-outline-field="life"]')).toContainText('1,494')
+      if (mode === 'none') await expect(page.locator('#sheet-config [data-outline-field]')).toHaveCount(0)
+      else await expect(page.locator('#sheet-config [data-outline-field]').first()).toBeVisible()
+      await page.getByText('Load another character').click()
+    }
+  })
+}
 
 test('a PoB2 code with its own config lists that config as PoB shows it', async ({ page }) => {
   await page.goto('character/')

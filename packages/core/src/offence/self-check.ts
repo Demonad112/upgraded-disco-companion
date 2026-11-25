@@ -6,6 +6,7 @@
  *   |ratio − 1| > 0.25 : they are hidden and the Full DPS steps are offered; "show anyway" shows the raw estimates
  *                        labelled "≈ est., unreliable (main skill off by N%)";
  *   no estimate, or a TotalDPS of 0 : the estimates stay, labelled "≈ est., unchecked".
+ *   own/none config (`exactOnly`, state `exact`) : no estimate at all; only the main skill and the code's Full DPS rows.
  *
  * The main skill itself always shows the code's number (provenance `pob-export`), never the estimate.
  */
@@ -23,7 +24,7 @@ export interface RawEstimate {
   unread: string[]
 }
 
-export type SelfCheckState = 'calibrated' | 'hidden' | 'unchecked'
+export type SelfCheckState = 'calibrated' | 'hidden' | 'unchecked' | 'exact'
 
 export interface CheckedSkill {
   group: number

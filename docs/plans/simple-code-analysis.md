@@ -1,6 +1,6 @@
 # Spec and plan: simple PoB2-code character analysis (V1)
 
-Status: **approved**; Batch 1 in progress (2026-11-25).
+Status: **approved**; V1 built; owner review of criterion 5 pending (2026-11-25). Criteria evidence: § Success criteria.
 Intent (confirmed 2026-11-24): [`docs/intent/simple-code-analysis.md`](../intent/simple-code-analysis.md).
 Supersedes the CP, B9 (browser engine) and NJ plans, deleted 2026-11-25 (`docs/HISTORY.md`).
 
@@ -191,6 +191,17 @@ Plus the existing conventions: pure functions in core, `Sourced<T>` / `labelOf` 
 5. The owner reads the Overview at 390 px and 1440 px (screenshots in chat) and judges it followable by a new player.
 6. B9 spike removed; `#pob=` still works (e2e); the oracle CI job still passes.
 
+Evidence, V1 closeout 2026-11-25 (main at `e1a79f7`, CI run [45722918217](https://github.com/Demonad112/upgraded-disco-companion/actions/runs/45722918217) green):
+
+| # | Result | Evidence |
+|---|---|---|
+| 1 | pass | e2e `sheet.spec.ts` (both reference codes in the poe.ninja box and the PoB2 box under each toggle; extended to `pob2-own` in the closeout), `grades.spec.ts`; CI e2e step green on main |
+| 2 | pass | `test/outline/outline.test.ts` "reads every PlayerStat exactly", `test/pob2-oracle.test.ts` "equals the code for every PlayerStat" |
+| 3 | pass | `test/offence-accuracy.test.ts`: estimate / TotalDPS 0.882 (ninja-default, 164,759 vs 186,706) and 0.879 (pob2-own, 327,913 vs 372,908); `test/offence-selfcheck.test.ts` (three states); e2e `damage-estimates.spec.ts` (TotalDPS ×3 hides, "Show anyway" shows unreliable) |
+| 4 | pass after fix | Failed before the closeout (the Damage tab showed estimates under own/none). Unit `offence-accuracy.test.ts` "under own/none config lists only the main skill and the Full DPS rows"; e2e `damage-estimates.spec.ts` |
+| 5 | owner | Overview screenshots at 390 and 1440 px in the project thread; V1-1 in the Owner queue |
+| 6 | pass | `tools/pob2/wasm` and `wasmoon` appear only in this plan and `HISTORY.md`; e2e `sharing.spec.ts` "a #pob= link opens the character"; last pob2-oracle pass: run [45580594681](https://github.com/Demonad112/upgraded-disco-companion/actions/runs/45580594681) (the job runs only on PoB paths) |
+
 ### Out of scope (deferred)
 
 - Tree analysis (nearby notables, pathing): owner said it's too much; shown only.
@@ -228,23 +239,23 @@ Build order: `code-outline` → `defence-analysis` → `damage-analysis`. One ba
 
 Goal: one decoded object behind every tab. No new analysis.
 
-- [ ] **1.1 Cleanup** (own commit)
+- [x] **1.1 Cleanup** (own commit)
   - Delete `tools/pob2/wasm/`, `scripts/pob2/wasm-transform.test.mjs` and the `wasmoon` mentions.
   - Archive the B9, CP and NJ plans to `docs/remaining/archive/`, with a pointer to this plan.
   - Keep `#pob=` (`apps/web/src/lib/pobLink.ts`) and the `forbidden-rites/current` fixture.
   - Acceptance: no reference to `tools/pob2/wasm` remains; `npm run test:scripts` passes; the `#pob=` e2e passes.
   - Files: `tools/pob2/wasm/*`, `scripts/pob2/wasm-transform.test.mjs`, `docs/plans/*`, `docs/remaining/REMAINING-WORK.md`.
-- [ ] **1.2 Outline types and builder**
+- [x] **1.2 Outline types and builder**
   - `packages/core/src/outline/{types,build,missing}.ts`: `buildCharacterOutline(snapshot, { box, config })` from `readPobSnapshot`, `readPobSkillGroups`, `readPobConfig`, the item readers and `code-breakdowns`.
   - Sections: identity, config (plain words via `humaniseCondition`), defences, offence (main skill plus Full DPS rows), items (flasks and charms listed, not analysed), skill groups and gems, tree (shown), missing.
   - Acceptance: both reference codes build an outline; every field is filled or `missing` with a reason; read values equal PlayerStats exactly.
   - Verify: `npx vitest run test/outline`, goldens `*.outline.expected.json`.
   - Files: about 4 new files plus 2 tests.
-- [ ] **1.3 Route the existing analysis through the outline**
+- [x] **1.3 Route the existing analysis through the outline**
   - `analyzeCharacter` receives the outline alongside today's `CharModel` adapter. Each tab's "missing" states read the outline's missing list.
   - Acceptance: existing goldens unchanged, or changed only where a blank became "missing: <reason>" (golden diff with the cause).
   - Files: `analyze.ts`, `pob/to-model.ts`, tab panels.
-- [ ] **1.4 Two boxes, toggle, character sheet**
+- [x] **1.4 Two boxes, toggle, character sheet**
   - Add a poe.ninja code box and a PoB2 code box with the toggle (poe.ninja config, the default / my own / none), saved in `localStorage`.
   - Add a beginner `CharacterSheet` (identity, numbers, gear, skills, config in plain words, "what's missing"); Pro detail shows the raw stat list.
   - Acceptance: e2e pastes each reference code into each box and each toggle state, and the sheet and all tabs render with no blank category; route budget holds or is raised by rule.
@@ -277,22 +288,27 @@ Goal: one decoded object behind every tab. No new analysis.
 
 ### Batch 3: Damage calcs, analysis and tips (`damage-analysis`)
 
-- [ ] **3.1 Mini-calc core**
+- [x] **3.1 Mini-calc core**
   - `offence/{pass,combine,hit,conversion,modifiers,crit,speed}.ts` mirroring CalcOffence names.
   - Acceptance: unit tests per step; the main skill is within 25% on both reference codes.
-- [ ] **3.2 Self-check, calibration, hide rule**
+  - Done 2026-11-25: `3613401` (per-level attack skill data export), `bea482b` (steps, tests first), `72c7853` (calibration). `offence/{parse,modifiers,conversion,pass,input}.ts` mirror CalcOffence's order; `buildSkillInputs`, `calcPass`. Tests: `test/offence-parse.test.ts`, `test/offence-calc.test.ts`, `test/offence-accuracy.test.ts` (main skill −12% on both codes; speed, crit chance and multiplier equal the code's).
+- [x] **3.2 Self-check, calibration, hide rule**
   - Ratio, the ±25% gate, Full DPS instructions, and a "show anyway" toggle.
   - Acceptance: unit tests for each of the three states.
-- [ ] **3.3 Per-skill list and damage mix**
+  - Done 2026-11-25: `72c7853`. `applySelfCheck` (`offence/self-check.ts`): ratio = code / estimate; calibrated, hidden (Full DPS steps plus "Show anyway"), unchecked; `estimateOffence` (`offence/index.ts`). Tests: `test/offence-selfcheck.test.ts` (each state), `test/offence-accuracy.test.ts`. V1 closeout: `exactOnly` (state `exact`) for own/none config, see criterion 4.
+- [x] **3.3 Per-skill list and damage mix**
   - The Damage tab lists exact rows (main, Full DPS) and ≈ est. rows; the damage mix is shown per skill.
   - Under own/none config, only exact rows appear.
   - Acceptance: e2e for both configs; the CI accuracy report against `*.groups.oracle.json`.
-- [ ] **3.4 Gem link check, damage gear tips**
+  - Done 2026-11-25: `e343d46`, review fixes `300c74d`. `DamageEstimates.tsx` on the Damage tab: main skill at the code's number, others ≈ est. with the self-check label. V1 closeout: under own/none config the list holds only the main skill and the Full DPS rows (it showed estimates before; red-then-green in `test/offence-accuracy.test.ts` and `e2e/damage-estimates.spec.ts`). The damage mix per skill is not built (the outline still lists it as missing).
+- [x] **3.4 Gem link check, damage gear tips**
   - Damage-stat swaps (e.g. over-cap res → crit) and the gem link findings.
   - Acceptance: unit tests on main-ninja's 18 groups.
-- [ ] **3.5 Damage axis, three-axis grade, build summary, next 3 steps**
+  - Done 2026-11-25: `e343d46`, `300c74d` (one finding per support pair). `linkCheck` (`gems/link-check.ts`, `test/link-check.test.ts`), shown under the Damage tab's per-skill list. Damage-stat swaps were not added; the swaps stay defensive (`advice/swaps.ts`).
+- [x] **3.5 Damage axis, three-axis grade, build summary, next 3 steps**
   - Assemble the Overview: three graded axes, "What your build is", and "Next 3 steps by content" ordered by the advice rule.
   - Acceptance: golden diff; e2e; screenshots; the owner judges new-player readability.
+  - Done 2026-11-25: `e343d46` (`damageAxis`, `score/damage-axis.ts`: time to kill a base rare at T15/T16, labelled project judgement; defence moved to the S–D scale via `gear/grade.ts`, B2-4a), `4790cea` (`buildSummary`, `advice/build-summary.ts`: "What your build is", "Next 3 steps"; lazy budget 214,000 B, owner). Tests: `test/damage-axis.test.ts`, `test/defence-axis.test.ts`, `test/build-summary.test.ts`; e2e `grades.spec.ts`. Owner's readability judgement: V1-1 in the Owner queue.
 - **Checkpoint:** PR plus screenshots. V1 is done against the success criteria; the owner starts the per-category deep dives.
 
 ### Risks
