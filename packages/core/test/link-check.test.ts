@@ -32,6 +32,14 @@ describe('linkCheck', () => {
     expect(r.findings[0]!.text).toContain('same kind of support')
   })
 
+  it('reports a pair of supports once when they share more than one family', () => {
+    const [a, b] = catalog.data.supports
+    const data = { ...catalog.data, supports: catalog.data.supports.map((s) => (s === a || s === b ? { ...s, family: ['x', 'y'], require: [], exclude: [] } : s)) }
+    const two = new SupportCatalog(data as typeof catalog.data)
+    const r = linkCheck([group('', [gem(sampleActive), gem(a!.name), gem(b!.name)])], two)
+    expect(r.findings).toHaveLength(1)
+  })
+
   it('counts groups checked and finds nothing wrong in the reference builds', async () => {
     for (const name of ['pob2-own', 'ninja-default']) {
       const snap = await readPobSnapshotFromCode(readFileSync(here(`./reference/${name}/code.txt`), 'utf8').trim())

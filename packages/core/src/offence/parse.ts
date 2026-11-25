@@ -174,7 +174,7 @@ export function parseModLine(raw: string): Mod[] | null {
 
   // "+3 to Level of all Attack Skills", "+1 to Level of all Melee Skills"
   if ((m = /^\+(\d+) to level of all (attack|melee|spell|projectile) skills$/i.exec(text)))
-    return [{ kind: 'skillLevel', value: Number(m[1]), scope: m[2]!.toLowerCase() === 'spell' ? 'spell' : 'attack', ...(m[2]!.toLowerCase() === 'melee' ? { melee: true as const } : {}), text }]
+    return [{ kind: 'skillLevel', value: Number(m[1]), scope: m[2]!.toLowerCase() === 'spell' ? 'spell' : 'attack', ...(m[2]!.toLowerCase() === 'melee' ? { melee: true as const } : {}), ...(m[2]!.toLowerCase() === 'projectile' ? { projectile: true as const } : {}), text }]
 
   // "Adds 78 to 107 Cold Damage", "Adds 14 to 24 Cold damage to Attacks"
   if ((m = /^adds (\d+(?:\.\d+)?) to (\d+(?:\.\d+)?) (physical|fire|cold|lightning|chaos) damage( to attacks)?$/i.exec(text)))

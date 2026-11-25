@@ -1,6 +1,6 @@
 /**
  * The damage axis (plan Batch 3.3): how fast the build kills a base rare monster at the endgame area levels, from the
- * code's own main-skill TotalDPS and the monster life table (`monster-stats.json` `life`, PoB's `monsterLifeTable`).
+ * code's own main-skill TotalDPS (plus TotalDotDPS, as the web passes it) and the monster life table (`monster-stats.json` `life`, PoB's `monsterLifeTable`).
  * Graded on gear's S–D scale (85/70/55/40). The scale, the rare multiplier and the time bounds are project judgement
  * and the axis says so (`label`). Pure; the DPS is the code's own figure, never an estimate.
  */

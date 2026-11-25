@@ -36,11 +36,15 @@ export function linkCheck(groups: readonly PobSocketGroup[], catalog: SupportCat
     if (!pick) return
     checked++
     const seen = new Map<string, string>()
+    const reported = new Set<string>()
     for (const s of supports) {
       for (const f of s.family) {
         const prior = seen.get(f)
-        if (prior && prior !== s.name) findings.push({ kind: 'same-family', group: i + 1, skill: pick.nameSpec, support: s.name, text: `${s.name} and ${prior} are the same kind of support, so only one works on ${pick.nameSpec}.` })
-        else seen.set(f, s.name)
+        if (prior && prior !== s.name) {
+          if (reported.has(`${s.name}\0${prior}`)) continue
+          reported.add(`${s.name}\0${prior}`)
+          findings.push({ kind: 'same-family', group: i + 1, skill: pick.nameSpec, support: s.name, text: `${s.name} and ${prior} are the same kind of support, so only one works on ${pick.nameSpec}.` })
+        } else seen.set(f, s.name)
       }
     }
   })
