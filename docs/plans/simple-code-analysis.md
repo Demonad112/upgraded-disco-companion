@@ -169,7 +169,7 @@ Plus the existing conventions: pure functions in core, `Sourced<T>` / `labelOf` 
 
 ### Testing strategy
 
-- **Reference codes:** `packages/core/test/ninja-legacy/main-ninja.code.txt` (poe.ninja) and `packages/core/test/pob2/forbidden-rites/current.code.txt` (PoB2 app). Both drive every batch's tests.
+- **Reference codes:** `packages/core/test/reference/ninja-default/` (poe.ninja config) and `packages/core/test/reference/pob2-own/` (PoB2 export, the owner's own config; added 2026-11-25 with three app screenshots). Both drive every batch's tests.
 - **Batch 1:** an outline golden per reference code (`*.outline.expected.json`); a test that every section key is filled or `missing` with a reason; a test that read values equal the code's PlayerStats exactly.
 - **Batch 2:** red-then-green unit tests for the gear score, stat swaps and charm overkill; golden diff for the Defence tab inputs.
 - **Batch 3:** mini-calc unit tests per step; an accuracy test that the main skill is within 25% of `TotalDPS` on both reference codes; per-skill estimates compared with `*.groups.oracle.json`, with the error reported and asserted ≤ 25% after calibration where the skill type is supported.

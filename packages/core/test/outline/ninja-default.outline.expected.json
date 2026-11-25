@@ -5331,7 +5331,7 @@
         "key": "configEnemyLevel",
         "label": "Enemy level",
         "value": "82",
-        "provenance": "nominal"
+        "provenance": "pob-export"
       },
       {
         "key": "configCondition:enemy is bleeding",
@@ -5370,14 +5370,32 @@
         "provenance": "pob-export"
       },
       {
+        "key": "configCharges:Power",
+        "label": "Power charges",
+        "value": "maximum",
+        "provenance": "pob-export"
+      },
+      {
+        "key": "configCharges:Frenzy",
+        "label": "Frenzy charges",
+        "value": "maximum",
+        "provenance": "pob-export"
+      },
+      {
+        "key": "configCharges:Endurance",
+        "label": "Endurance charges",
+        "value": "maximum",
+        "provenance": "pob-export"
+      },
+      {
         "key": "configMultiplier:multiplierNearbyEnemies",
-        "label": "multiplier nearby enemies",
+        "label": "Nearby enemies",
         "value": "1",
         "provenance": "pob-export"
       },
       {
         "key": "configMultiplier:multiplierNearbyRareOrUniqueEnemies",
-        "label": "multiplier nearby rare or unique enemies",
+        "label": "Nearby rare or unique enemies",
         "value": "1",
         "provenance": "pob-export"
       }

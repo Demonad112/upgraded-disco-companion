@@ -4,8 +4,8 @@
 
 | File | What | Written by |
 |---|---|---|
-| `code.txt` | The pasted code (`ninja-default`: the owner's poe.ninja code; its `<Config>` is poe.ninja's default config, see `docs/POB-NINJA-CONFIG.md`). | the owner |
-| `app.expected.json` | The owner's PoB2 0.23.1 app screenshots of the same code, transcribed. | hand |
+| `code.txt` | The pasted code. `ninja-default`: the owner's poe.ninja code; its `<Config>` is poe.ninja's default config, see `docs/POB-NINJA-CONFIG.md`. `pob2-own`: the same character exported from PoB2 with the owner's own config (5 power charges, chill and shock 27%, Rage 20, Combo 18). | the owner |
+| `app.expected.json` | The owner's PoB2 0.23.1 app screenshots of the same code, transcribed. `otherSkills` holds a non-main group the owner selected in the Calcs tab, checked against `groups.oracle.json`. | hand |
 | `oracle.json` | What headless PoB2 (`vendor/pob2`, pinned in `PIN.json`) computes for the code: `stats`, `fullDpsSkills`, `export` (PlayerStat/MinionStat/FullDPSSkill as PoB would write them). | `npm run pob2:oracle` |
 | `groups.oracle.json` | One row per (`<Skill>` group, active skill) with PoB's main output when that group is selected. | `npm run pob2:oracle` (`tools/pob2/groups.lua`) |
 

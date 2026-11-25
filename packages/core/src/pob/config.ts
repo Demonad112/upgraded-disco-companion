@@ -55,7 +55,23 @@ const CONDITIONAL_LABELS: Readonly<Record<string, string>> = Object.freeze({
   conditionFullLife: 'you are on full life',
   conditionLowLife: 'you are on low life',
   conditionUsingFlask: 'a flask is active',
+  conditionCritInPast8Sec: 'you have crit in the past 8 seconds',
+  conditionNonCritRecently: 'you have dealt a non-crit recently',
+  conditionKilledShockedLast3Seconds: 'you killed a shocked enemy in the last 3 seconds',
+  conditionChilledEnemyRecently: 'you have chilled an enemy recently',
+  conditionShockedEnemyRecently: 'you have shocked an enemy recently',
+  conditionFrozenEnemyRecently: 'you have frozen an enemy recently',
+  conditionHaveEnergyShield: 'you always have energy shield',
 })
+
+/** Multiplier inputs as PoB's Configuration tab names them; others fall back to `humaniseCondition`. */
+const MULTIPLIER_LABELS: Readonly<Record<string, string>> = Object.freeze({
+  multiplierRage: 'Rage',
+  multiplierCombo: 'Combo',
+  multiplierNearbyEnemies: 'Nearby enemies',
+  multiplierNearbyRareOrUniqueEnemies: 'Nearby rare or unique enemies',
+})
+export const multiplierLabel = (id: string): string => MULTIPLIER_LABELS[id] ?? humaniseCondition(id)
 
 /** Inputs that mean "this is being calculated against a boss". */
 const BOSS_KEYS = ['enemyIsBoss', 'conditionEnemyBoss', 'enemyIsBossType', 'bossSkillEffect'] as const

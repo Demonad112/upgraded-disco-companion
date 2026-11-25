@@ -196,8 +196,8 @@ describe('readPobSnapshot', () => {
   })
 
   it('reads a legacy <Config> that holds its inputs directly', () => {
-    const legacy = readPobSnapshot('<PathOfBuilding><Config><Input name="a" boolean="false"/><Input name="b" boolean="maybe"/></Config></PathOfBuilding>')
-    expect(legacy.config.sets).toEqual([{ id: null, title: null, inputs: { a: false, b: 'maybe' } }])
+    const legacy = readPobSnapshot('<PathOfBuilding><Config><Input name="a" boolean="false"/><Input name="b" boolean="maybe"/><Placeholder name="enemyLevel" number="82"/></Config></PathOfBuilding>')
+    expect(legacy.config.sets).toEqual([{ id: null, title: null, inputs: { a: false, b: 'maybe' }, placeholders: { enemyLevel: 82 } }])
   })
 
   it('reads an empty or foreign document as nulls and empties, never defaults', () => {

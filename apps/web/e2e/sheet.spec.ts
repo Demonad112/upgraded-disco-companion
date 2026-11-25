@@ -1,4 +1,4 @@
-import { mainCode } from './main-payload'
+import { mainCode, ownCode } from './main-payload'
 import { expect, openTab, test } from './fixtures'
 
 /**
@@ -57,6 +57,20 @@ test('the PoB2 code box and each config toggle render every category', async ({ 
     else await expect(page.locator('#sheet-config [data-outline-field]').first()).toBeVisible()
     await page.getByText('Load another character').click()
   }
+})
+
+test('a PoB2 code with its own config lists that config as PoB shows it', async ({ page }) => {
+  await page.goto('character/')
+  await page.getByRole('button', { name: 'My own config', exact: true }).click()
+  await page.getByLabel('Path of Building 2 code').fill(ownCode)
+  await page.getByRole('button', { name: 'Analyse PoB2 code' }).click()
+  await openTab(page, 'sheet')
+  await expect(page.getByTestId('character-sheet')).toHaveAttribute('data-config', 'own', { timeout: 30_000 })
+  await expectNoBlankCategory(page)
+  await expect(page.locator('[data-outline-field="configEnemyLevel"]')).toContainText('82')
+  await expect(page.locator('[data-outline-field="configCharges:Power"]')).toContainText('5')
+  await expect(page.locator('[data-outline-field="configEffect:conditionShockEffect"]')).toContainText('27%')
+  await expect(page.locator('#sheet-config')).toContainText('you have crit in the past 8 seconds')
 })
 
 test('Pro detail adds roll ranges, tiers and the raw PlayerStats', async ({ page }) => {

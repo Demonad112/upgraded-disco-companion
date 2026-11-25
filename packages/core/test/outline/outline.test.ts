@@ -176,3 +176,32 @@ Implicits: 0
     expect(json).toBe(want)
   })
 })
+
+describe('pob2-own: the owner’s own config, listed as PoB’s Configuration tab shows it', async () => {
+  const own = fileURLToPath(new URL('../reference/pob2-own/code.txt', import.meta.url))
+  const o = buildCharacterOutline(await readPobSnapshotFromCode(readFileSync(own, 'utf8').trim()), { box: 'pob', config: 'own' })
+  const shown = Object.fromEntries(o.config.settings.map((s) => [s.label === 'Condition' ? `Condition: ${s.value}` : s.label, s.value]))
+
+  it('lists every setting the code saved, in PoB’s words, with no blank value', () => {
+    expect(shown).toMatchObject({
+      Boss: 'Guardian/Pinnacle boss',
+      'Enemy level': '82',
+      'Power charges': '5',
+      'Effect of Chill': '27%',
+      'Effect of Shock': '27%',
+      Rage: '20',
+      Combo: '18',
+    })
+    for (const c of [
+      'enemy is chilled', 'enemy is dazed', 'enemy is shocked', 'you have been hit recently', 'you have crit recently',
+      'you have crit in the past 8 seconds', 'you have dealt a non-crit recently', 'you killed a shocked enemy in the last 3 seconds',
+      'you have chilled an enemy recently', 'you have shocked an enemy recently', 'you always have energy shield',
+    ]) expect(shown, c).toHaveProperty([`Condition: ${c}`])
+    for (const s of o.config.settings) expect(s.value, s.label).not.toBeNull()
+  })
+
+  it('reads Storm Wave as the main skill at the code’s 372,908 DPS', () => {
+    expect(o.mainSkill.name.value).toBe('Storm Wave')
+    expect(Math.round(o.skills.find((g) => g.main)!.dps.value!)).toBe(372908)
+  })
+})

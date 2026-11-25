@@ -23,6 +23,9 @@ export const mainPayload = JSON.parse(mainPayloadJson) as { type: string; charMo
 /** The reference character's PoB code (ninja-default: poe.ninja's export with its default config), as pasted into a code box. */
 export const mainCode: string = readFileSync(resolve('../../packages/core/test/reference/ninja-default/code.txt'), 'utf8').trim()
 
+/** The owner's PoB2 code with their own config (pob2-own: 5 power charges, chill/shock 27%, Storm Wave at 372,908 DPS). */
+export const ownCode: string = readFileSync(resolve('../../packages/core/test/reference/pob2-own/code.txt'), 'utf8').trim()
+
 /** The reference code with Skull Song's 2 runes removed, for the empty-rune finding (CP-2; the reference fills every socket). */
 export const emptyRunesCode = (): string =>
   execFileSync(process.execPath, [resolve('../../scripts/lib/main-payload.mjs'), '--empty-runes'], { encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 })

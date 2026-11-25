@@ -8,11 +8,11 @@
 import type { ItemAnalysis } from '../gear/analyze.js'
 import { slotLabel } from '../model/slots.js'
 import { NODE_KIND, type PassiveTree } from '../tree/index.js'
-import { bossLabel, humaniseCondition, readPobConfig, readPobInputs } from '../pob/config.js'
+import { bossLabel, humaniseCondition, multiplierLabel, readPobConfig, readPobInputs } from '../pob/config.js'
 import { parsePobItemText, resolveRange, snapshotEquipment, type ParsedPobItem } from '../pob/items.js'
 import { readPobMainSkill } from '../pob/main-skill.js'
 import { readPobSkillGroups } from '../pob/skill-groups.js'
-import { activeItemSet, activeSkillSet, activeSpec, splitTree, type PobItem, type PobSnapshot } from '../pob/snapshot.js'
+import { activeConfigSet, activeItemSet, activeSkillSet, activeSpec, splitTree, type PobItem, type PobSnapshot } from '../pob/snapshot.js'
 import type {
   CharacterOutline,
   OutlineBox,
@@ -320,7 +320,9 @@ export function buildCharacterOutline(snap: PobSnapshot, opts: OutlineOptions): 
     settings.push(
       track(read('configBoss', 'Boss', bossLabel(cfg.boss === 'None' ? 'None' : cfg.boss))) as OutlineField<string>,
     )
-    const lvl = inputs.get('enemyLevel')
+    // A saved input, else the default PoB showed (and calculated with) for the empty field.
+    const placeholder = activeConfigSet(snap)?.placeholders.enemyLevel
+    const lvl = inputs.get('enemyLevel') ?? (placeholder === undefined ? undefined : String(placeholder))
     settings.push(
       lvl !== undefined
         ? (track(read('configEnemyLevel', 'Enemy level', lvl)) as OutlineField<string>)
@@ -331,7 +333,16 @@ export function buildCharacterOutline(snap: PobSnapshot, opts: OutlineOptions): 
     for (const c of [...cfg.conditionals, ...cfg.unlabelledConditionals.map(humaniseCondition)]) {
       settings.push(track(read(`configCondition:${c}`, 'Condition', c)) as OutlineField<string>)
     }
-    for (const m of cfg.multipliers) settings.push(track(read(`configMultiplier:${m.name}`, humaniseCondition(m.name), String(m.value))) as OutlineField<string>)
+    for (const kind of ['Power', 'Frenzy', 'Endurance'] as const) {
+      if (inputs.get(`use${kind}Charges`) !== 'true') continue
+      const n = inputs.get(`override${kind}Charges`)
+      settings.push(track(read(`configCharges:${kind}`, `${kind} charges`, n ?? 'maximum')) as OutlineField<string>)
+    }
+    for (const [id, label] of [['conditionEnemyChilledEffect', 'Effect of Chill'], ['conditionShockEffect', 'Effect of Shock']] as const) {
+      const n = inputs.get(id)
+      if (n !== undefined) settings.push(track(read(`configEffect:${id}`, label, `${n}%`)) as OutlineField<string>)
+    }
+    for (const m of cfg.multipliers) settings.push(track(read(`configMultiplier:${m.name}`, multiplierLabel(m.name), String(m.value))) as OutlineField<string>)
     for (const [name, value] of inputs) {
       if (!name.startsWith('quest')) continue
       for (const line of String(value).split('\n')) {
