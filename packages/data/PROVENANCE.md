@@ -329,7 +329,7 @@ from [RePoE-fork](https://repoe-fork.github.io/poe2/) `mods.min.json` and
 plus 5,220 display-only mods (implicits, corrupted, unique) and 4,494 base names
 with their spawn tags. 2.0 MB raw, 0.26 MB gzipped.
 
-**`monster-stats.json`** — base monster damage by area level, waystone tier to
+**`monster-stats.json`** — base monster damage and life by area level (life is the same table as PoB's `data.monsterLifeTable`; added for the damage axis's time to kill), waystone tier to
 area level, and Path of Building's boss reference levels. From RePoE
 `default_monster_stats` and `base_items`, plus pob-data `WorldAreas`. 4.6 KB raw,
 1.9 KB gzipped.

@@ -1,6 +1,6 @@
 /**
  * The defence axis (plan `docs/plans/simple-code-analysis.md`, Batch 2.4): the defence half of `assessBuild`,
- * unchanged, graded on its own out of its weight with the same A–D bands, plus up to three beginner tips in
+ * unchanged, graded on its own out of its weight with the gear S–D scale, plus up to three beginner tips in
  * `docs/COPY.md` voice (action first, one reason).
  *
  * Tip order follows the assessment's headline: what kills first (a weak hit type, lowest first), then uncapped
@@ -9,8 +9,9 @@
  */
 
 import type { DefenseSummary, ResistanceState } from '../defense/index.js'
-import { DEFENCE_PART_WEIGHTS, DEFENCE_WEIGHT, TIER_A_MIN, TIER_B_MIN, TIER_C_MIN, WEAK_HIT_RATIO } from '../thresholds.js'
-import { resGapDamageTaken, type BuildAssessment, type BuildTier } from './index.js'
+import { gradeFor, type Grade } from '../gear/grade.js'
+import { DEFENCE_PART_WEIGHTS, DEFENCE_WEIGHT, WEAK_HIT_RATIO } from '../thresholds.js'
+import { resGapDamageTaken, type BuildAssessment } from './index.js'
 
 export interface DefenceTip {
   kind: 'weak-hit' | 'res-gap' | 'chaos-gap'
@@ -21,8 +22,8 @@ export interface DefenceTip {
 export interface DefenceAxis {
   /** 0–1: the defence half over its weight. Null when part of it went ungraded; read `range`. */
   score: number | null
-  grade: BuildTier | null
-  range: { min: number; max: number; worst: BuildTier; best: BuildTier } | null
+  grade: Grade | null
+  range: { min: number; max: number; worst: Grade; best: Grade } | null
   /** The letter to show: `A`, or `C–A` for a range. */
   letter: string
   /** Why part of the axis went ungraded. Null when all of it was graded. */
@@ -35,7 +36,8 @@ export interface DefenceAxis {
 
 export const DEFENCE_TIP_LIMIT = 3
 
-const tierOf = (n: number): BuildTier => (n >= TIER_A_MIN ? 'A' : n >= TIER_B_MIN ? 'B' : n >= TIER_C_MIN ? 'C' : 'D')
+/** The gear S–D scale (85/70/55/40) applied to the 0–1 defence score (B2-4a). */
+const tierOf = (n: number): Grade => gradeFor(n * 100)
 const round = (n: number) => Math.round(Math.min(1, Math.max(0, n)) * 100) / 100
 const pct = (n: number) => `${Math.round(n * 100)}%`
 

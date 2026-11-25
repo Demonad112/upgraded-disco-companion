@@ -6,6 +6,7 @@ import { useEffect } from 'react'
 import dynamic from 'next/dynamic'
 import type { Analysis, AnalyzeOptions } from '@poe2/core'
 import { defenceAxis } from '@poe2/core'
+import { useDamageAxis } from '@/lib/useDamageAxis'
 import { ProToggle } from '@/components/shared/ProToggle'
 import { BuildScore } from '@/components/BuildScore'
 import { useGearReview } from '@/lib/useGearReview'
@@ -74,6 +75,7 @@ function OverviewPanel({
   const returning = changedFor(a, history.snapshots).available
   const { proDetail } = usePrefs()
   const { review, ready } = useGearReview(a, tiersState, catalogState)
+  const { axis: damage } = useDamageAxis(a)
   const gearState = ready ? 'ready' : catalogState.status === 'idle' ? 'closed' : 'loading'
   return (
     <Panel id="overview" title="Overview">
@@ -108,6 +110,7 @@ function OverviewPanel({
         axis={defenceAxis(a.assessment, a.defense)}
         gear={review}
         gearState={gearState}
+        damage={damage}
       />
     </Panel>
   )
@@ -178,7 +181,7 @@ export function CharacterResults({
       {tab === 'overview' ? <OverviewPanel {...props} outlineInput={outlineInput} sourceUrl={sourceUrl} pobCode={pobCode} expandFindings={target === 'findings'} fixesReady={fixesReady} /> : null}
       {tab === 'sheet' ? <SheetTab {...props} outlineInput={outlineInput} /> : null}
       {tab === 'defences' ? <DefenceTab {...props} /> : null}
-      {tab === 'damage' ? <DamageTab {...props} /> : null}
+      {tab === 'damage' ? <DamageTab {...props} outlineInput={outlineInput} /> : null}
       {tab === 'gear' ? <GearTab {...props} /> : null}
       {tab === 'progress' ? <ProgressTab {...props} /> : null}
       {tab === 'advanced' ? <AdvancedTab {...props} /> : null}
