@@ -6,7 +6,7 @@
  * reason); the method and the long reasons sit behind Pro detail.
  */
 
-import type { DefenceAxis, GearReview, SlotScore, StatSwap } from '@poe2/core'
+import type { DamageAxis, DefenceAxis, GearReview, NextStep, SlotScore, StatSwap } from '@poe2/core'
 import { ProOnly } from '@/components/shared/ProToggle'
 import { Tag } from '@/components/ui'
 
@@ -27,7 +27,7 @@ function Letter({ letter, label }: { letter: string; label: string }) {
 }
 
 /** The three axes side by side: defence, gear, damage. Each is graded on its own. */
-export function AxisSummary({ defence, gear, gearState }: { defence: DefenceAxis; gear: GearReview | null; gearState: 'ready' | 'loading' | 'closed' }) {
+export function AxisSummary({ defence, gear, gearState, damage = null }: { defence: DefenceAxis; gear: GearReview | null; gearState: 'ready' | 'loading' | 'closed'; damage?: DamageAxis | null }) {
   const graded = gearState === 'ready' && gear?.axis.grade ? gear.axis.grade : null
   const gearLine = graded
     ? `${gear!.axis.graded} of ${gear!.axis.total} items graded. The Gear tab says which line to change first.`
@@ -53,13 +53,40 @@ export function AxisSummary({ defence, gear, gearState }: { defence: DefenceAxis
         </div>
       </li>
       <li className="flex min-w-0 gap-3" data-axis="damage">
-        <Letter letter="—" label="Damage" />
+        <Letter letter={damage?.letter ?? '—'} label="Damage" />
         <div className="min-w-0">
           <div className="label-metric">Damage</div>
-          <p className="text-xs leading-relaxed text-ink-dim">Not graded yet. Damage grading comes in the next update.</p>
+          <p className="text-xs leading-relaxed text-ink-dim">
+            {damage ? `${damage.sentence} (${damage.label})` : 'Not graded: this code carries no main-skill damage figure.'}
+          </p>
         </div>
       </li>
     </ul>
+  )
+}
+
+/** Batch 3.5: what the build is in one sentence, and up to three next steps from the advice already computed. */
+export function BuildNarrative({ summary, steps }: { summary: string | null; steps: NextStep[] }) {
+  if (!summary && !steps.length) return null
+  return (
+    <div className="mt-4 space-y-3" data-build-narrative>
+      {summary ? (
+        <section aria-labelledby="what-build-title" data-what-build>
+          <h4 id="what-build-title" className="label-metric">What your build is</h4>
+          <p className="text-sm text-ink">{summary}</p>
+        </section>
+      ) : null}
+      {steps.length ? (
+        <section aria-labelledby="next-steps-title" data-next-steps>
+          <h4 id="next-steps-title" className="label-metric">Next {steps.length === 1 ? 'step' : `${steps.length} steps`}</h4>
+          <ol className="mt-1 space-y-1">
+            {steps.map((s, i) => (
+              <li key={i} className="text-sm text-ink" data-step-area={s.area}>{s.text}</li>
+            ))}
+          </ol>
+        </section>
+      ) : null}
+    </div>
   )
 }
 
@@ -87,7 +114,7 @@ export function DefenceAxisCard({ axis }: { axis: DefenceAxis }) {
       <ProOnly>
         <p className="mt-3 text-xs leading-relaxed text-ink-mute">
           {axis.score !== null
-            ? `Defence scores ${Math.round(axis.score * 100)}% on the build grade's rubric: largest hit survived, elemental and chaos resistance. A is 75% or more, B 50%, C 30%.`
+            ? `Defence scores ${Math.round(axis.score * 100)}% on the build grade's rubric: largest hit survived, elemental and chaos resistance. S is 85% or more, A 70%, B 55%, C 40%.`
             : `Defence scores between ${Math.round(axis.range!.min * 100)}% and ${Math.round(axis.range!.max * 100)}%. ${axis.missing ?? ''}`}
         </p>
       </ProOnly>

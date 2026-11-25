@@ -2,6 +2,12 @@
 
 Guidance for the web app (`@poe2/web`). Root `CLAUDE.md` covers the repo as a whole.
 
+## Architecture (web)
+
+- **Data flow for the web app.** `packages/data/generated/*` is copied into `apps/web/public` by `sync-data` (generated, gitignored). `next.config.ts` hashes those files into `NEXT_PUBLIC_DATA_VERSION`, which keys the service-worker caches.
+- **Character import.** The browser cannot call poe.ninja (no CORS, preflight 405), so it goes through `services/ninja-proxy`. The base URL is `NEXT_PUBLIC_NINJA_PROXY_BASE`, inlined at build time, defaulting to `https://poe2-v3-ninja-proxy.vercel.app` (`apps/web/src/lib/proxy.ts`). Any other value must also be added to `connect-src` in `apps/web/public/_headers`.
+- **`basePath`.** Applied only when `GITHUB_ACTIONS=true` (derived from `GITHUB_REPOSITORY`) and `ROOT_BASE_PATH` is not `1`; empty locally and on Cloudflare Pages. Client code must read `BASE_PATH` from `apps/web/src/lib/basePath.ts`, because Next only inlines `NEXT_PUBLIC_*` env vars into client bundles.
+
 ## Design (decided; change only with the owner)
 
 Dark palette; headings in uppercase EB Garamond, metric labels in uppercase Geist Mono (finding, step and strategy titles are sentence case); square corners everywhere, no script fonts, no rounded shapes; gold constellation sky rotating slowly; clear glass on home and hero, bars and data panels are solid (`--data-fill` is opaque; no text legible through them), the sky stays in the margins, hero and home; thread connectors only on `[data-links]` sequences; phones use a bottom tab bar ordered Character, Farm, Atlas, Checklist (the `/dashboard` route is labelled "Farm"); Threads-style tool cards; sky dimmed behind blocks with a footer toggle (`poe2-sky-dim`); lighter sky on phones (width-based); "Up next" block kept except on Atlas (the command bar replaces it); the hooded wraith companion (original art, blue eyes, square speech bubble; `docs/design/WRAITH.md`) sits top-right under the nav on desktop and phones (64 px desktop, 80 px phones, pale outline rim), docked in the header at 48 px under 480 px, with a footer toggle; under 480 px the sky defaults to still (Auto), a footer pick still wins. Light theme is deferred; cursor effects deferred except the desktop lantern.

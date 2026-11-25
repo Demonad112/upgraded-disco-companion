@@ -5,7 +5,7 @@ hand-written endgame guide content lives in `apps/web/src/data`.
 
 ## Freshness
 
-`mod-tiers.json`, `bases.json`, `pob-skills.json` and `passive-tree.json` are
+`mod-tiers.json`, `bases.json`, `pob-skills.json`, `skill-levels.json` and `passive-tree.json` are
 built from the **vendored Path of Building 2** (`vendor/pob2`, the owner's fork
 pinned in `vendor/pob2/PIN.json`): commit `601768b` (2026-11-10), PoB `0.23.1`,
 tree `0_5`, game patch **0.5.5**. They are not parsed out of PoB's Lua text.
@@ -329,7 +329,7 @@ from [RePoE-fork](https://repoe-fork.github.io/poe2/) `mods.min.json` and
 plus 5,220 display-only mods (implicits, corrupted, unique) and 4,494 base names
 with their spawn tags. 2.0 MB raw, 0.26 MB gzipped.
 
-**`monster-stats.json`** — base monster damage by area level, waystone tier to
+**`monster-stats.json`** — base monster damage and life by area level (life is the same table as PoB's `data.monsterLifeTable`; added for the damage axis's time to kill), waystone tier to
 area level, and Path of Building's boss reference levels. From RePoE
 `default_monster_stats` and `base_items`, plus pob-data `WorldAreas`. 4.6 KB raw,
 1.9 KB gzipped.
@@ -431,3 +431,16 @@ maximum resistances stay poe.ninja's values.
 - **Build:** `npm run build:monk-gloves -w @poe2/data [url-or-path]`.
 - **Shape:** `{ modId, source, transformed[] }[]`, `modId` being the source mod id.
 - **Not synced to the web yet.**
+
+## `generated/skill-levels.json`
+
+Per-level data of the attack skills (first stat set flagged `attack`), for the damage mini-calc (Batch 3): castTime,
+base flags, constant stats (for example the physical-to-lightning conversion) and `levels[gemLevel - 1] =
+[baseMultiplier, attackSpeedMultiplier]`. An attack's hit is the weapon's damage times `baseMultiplier`, so nothing
+else is needed. Spells (base damage from a per-level table) are not exported; the calc reports them "not estimated".
+Supports come from `pob-skills.json`. Source: PoB2's loaded `data.skills` through
+`tools/pob2/export/skill-levels.lua`, MIT licensed, Path of Building Community.
+
+```
+npm run build:skill-levels -w @poe2/data
+```

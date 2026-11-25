@@ -19,7 +19,7 @@ import { pin, pobCommit, pobCommitDate, pobCommitShort, pobSource } from './pob.
 export const GAME_PATCH = '0.5.5'
 
 /** Every artifact built from PoB's data; each is rebuilt by `npm run build:pob -w @poe2/data`. */
-export const POB_ARTIFACTS = ['mod-tiers.json', 'bases.json', 'pob-skills.json', 'passive-tree.json']
+export const POB_ARTIFACTS = ['mod-tiers.json', 'bases.json', 'pob-skills.json', 'skill-levels.json', 'passive-tree.json']
 
 export function writeDataVersion(outDir, { artifacts = POB_ARTIFACTS } = {}) {
   const tree = pin.latestTreeVersion.replace('_', '.')

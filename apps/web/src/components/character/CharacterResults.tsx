@@ -2,10 +2,11 @@
 
 // The character page below the import box, as tabs (PX4). Overview is in this chunk, so the build card and Top 3 paint
 // without waiting for anything else; each other tab is its own chunk, fetched when the tab first opens (PX9).
-import { useEffect } from 'react'
+import { useEffect, useMemo } from 'react'
 import dynamic from 'next/dynamic'
 import type { Analysis, AnalyzeOptions } from '@poe2/core'
-import { defenceAxis } from '@poe2/core'
+import { buildSummary, defenceAxis, nextSteps } from '@poe2/core'
+import { useDamageAxis } from '@/lib/useDamageAxis'
 import { ProToggle } from '@/components/shared/ProToggle'
 import { BuildScore } from '@/components/BuildScore'
 import { useGearReview } from '@/lib/useGearReview'
@@ -74,6 +75,10 @@ function OverviewPanel({
   const returning = changedFor(a, history.snapshots).available
   const { proDetail } = usePrefs()
   const { review, ready } = useGearReview(a, tiersState, catalogState)
+  const { axis: damage } = useDamageAxis(a)
+  const defAxis = useMemo(() => defenceAxis(a.assessment, a.defense), [a])
+  const summary = useMemo(() => buildSummary({ className: a.identity.className, skill: a.dps.primary, life: a.defense.life, energyShield: a.defense.energyShield }), [a])
+  const steps = useMemo(() => nextSteps({ defence: defAxis, swaps: review?.swaps ?? [], damage }), [defAxis, review, damage])
   const gearState = ready ? 'ready' : catalogState.status === 'idle' ? 'closed' : 'loading'
   return (
     <Panel id="overview" title="Overview">
@@ -105,9 +110,12 @@ function OverviewPanel({
       <BuildScore
         assessment={a.assessment}
         keystones={a.keystones}
-        axis={defenceAxis(a.assessment, a.defense)}
+        axis={defAxis}
         gear={review}
         gearState={gearState}
+        damage={damage}
+        summary={summary}
+        steps={steps}
       />
     </Panel>
   )
@@ -178,7 +186,7 @@ export function CharacterResults({
       {tab === 'overview' ? <OverviewPanel {...props} outlineInput={outlineInput} sourceUrl={sourceUrl} pobCode={pobCode} expandFindings={target === 'findings'} fixesReady={fixesReady} /> : null}
       {tab === 'sheet' ? <SheetTab {...props} outlineInput={outlineInput} /> : null}
       {tab === 'defences' ? <DefenceTab {...props} /> : null}
-      {tab === 'damage' ? <DamageTab {...props} /> : null}
+      {tab === 'damage' ? <DamageTab {...props} outlineInput={outlineInput} /> : null}
       {tab === 'gear' ? <GearTab {...props} /> : null}
       {tab === 'progress' ? <ProgressTab {...props} /> : null}
       {tab === 'advanced' ? <AdvancedTab {...props} /> : null}

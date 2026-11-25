@@ -11,8 +11,8 @@
  */
 
 import type { ReactNode } from 'react'
-import type { BuildAssessment, DefenceAxis, GearReview, KeystoneEffects } from '@poe2/core'
-import { AxisSummary } from './character/AxisReview'
+import type { BuildAssessment, NextStep, DamageAxis, DefenceAxis, GearReview, KeystoneEffects } from '@poe2/core'
+import { AxisSummary, BuildNarrative } from './character/AxisReview'
 import { ProOnly } from './shared/ProToggle'
 import { Tag, fmt } from './ui'
 
@@ -76,6 +76,9 @@ export function BuildScore({
   axis = null,
   gear = null,
   gearState = 'closed',
+  damage = null,
+  summary = null,
+  steps = [],
 }: {
   assessment: BuildAssessment
   keystones: KeystoneEffects
@@ -83,6 +86,10 @@ export function BuildScore({
   axis?: DefenceAxis | null
   gear?: GearReview | null
   gearState?: 'ready' | 'loading' | 'closed'
+  damage?: DamageAxis | null
+  /** Batch 3.5: "What your build is" and "Next 3 steps". */
+  summary?: string | null
+  steps?: NextStep[]
 }) {
   const critical = assessment.weaknesses.filter((w) => w.severity === 'critical')
   const warnings = assessment.weaknesses.filter((w) => w.severity === 'warning')
@@ -94,7 +101,8 @@ export function BuildScore({
         <span className="eyebrow">{axis ? 'Each axis graded on its own' : 'Defence and damage, weighted evenly'}</span>
       </summary>
       <div className="dbody border-t border-line">
-      {axis ? <AxisSummary defence={axis} gear={gear} gearState={gearState} /> : null}
+      {axis ? <AxisSummary defence={axis} gear={gear} gearState={gearState} damage={damage} /> : null}
+      {axis ? <BuildNarrative summary={summary} steps={steps} /> : null}
       <Detail pro={axis !== null}>
       <p className="max-w-prose text-sm leading-relaxed text-balance text-ink">{assessment.note}</p>
       <p className="mt-2 max-w-prose text-xs leading-relaxed text-ink-mute">

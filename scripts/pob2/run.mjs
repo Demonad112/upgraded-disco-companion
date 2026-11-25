@@ -108,7 +108,7 @@ export async function groups(code, runner = pickRunner()) {
   return JSON.parse(r.stdout);
 }
 
-export const EXPORTS = ['mods', 'bases', 'skills', 'tree', 'constants'];
+export const EXPORTS = ['mods', 'bases', 'skills', 'skill-levels', 'tree', 'constants'];
 
 /**
  * Run one data exporter (tools/pob2/export/<name>.lua) against vendor/pob2 and return its parsed JSON.

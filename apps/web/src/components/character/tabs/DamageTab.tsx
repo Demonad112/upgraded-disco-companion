@@ -3,10 +3,11 @@
 import { Accordion } from '@/components/shared/Accordion'
 import { DamageReview } from '@/components/DamageReview'
 import { DpsMatrix } from '@/components/DpsMatrix'
+import { DamageEstimates } from './DamageEstimates'
 import { Panel } from './Panel'
 import type { PanelProps } from './types'
 
-export default function DamageTab({ analysis: a, tiersState, catalogState }: PanelProps) {
+export default function DamageTab({ analysis: a, tiersState, catalogState, outlineInput }: PanelProps) {
   return (
     <Panel id="damage" title="Damage">
       <DpsMatrix
@@ -14,6 +15,7 @@ export default function DamageTab({ analysis: a, tiersState, catalogState }: Pan
         pobConfig={a.pobConfig}
         configApplies={a.reconciliation?.checks.find((c) => c.stat.startsWith('dps:'))?.severity === 'match'}
       />
+      <DamageEstimates code={outlineInput?.code ?? null} />
       <Accordion
         id="damage-review"
         title="Supports and gear changes for this skill"

@@ -31,11 +31,12 @@ import { inferArchetype, type ArchetypeInput, type DefenceKind, type OffenceKind
 import { OCCUPIES_AFFIX_SLOT, RESIST_STAT, type ItemAnalysis } from './analyze.js'
 import type { AffixKind, ModTiers } from './tiers.js'
 import { deriveStatWeights } from './weights.js'
+import { gradeFor, type Grade } from './grade.js'
 
 export const GEAR_SCORE_BASIS =
   'How close each item is to the best it could be for your build: its rolls against the best this base can roll, on the stats your build uses. Project judgement, not a game number.'
 
-export type Grade = 'S' | 'A' | 'B' | 'C' | 'D'
+export type { Grade } from './grade.js'
 
 export type StatFamily =
   | 'life'
@@ -140,10 +141,7 @@ export interface GearScoreInput extends ArchetypeInput {
 
 const round1 = (n: number): number => Math.round(n * 10) / 10
 
-export function gradeFor(score: number): Grade {
-  for (const band of GEAR_SCORE.grades) if (score >= band.min) return band.grade
-  return 'D'
-}
+export { gradeFor } from './grade.js'
 
 // ---------------------------------------------------------------------------
 // Families and profile
