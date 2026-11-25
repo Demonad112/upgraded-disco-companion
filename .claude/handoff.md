@@ -26,11 +26,8 @@
 - Plan fully closed: 1-2 sentences in docs/HISTORY.md and delete the plan file.
 
 ## PR
-- Open no PR unless the owner asks; push to the branch and report back. If asked: template sections from the repo, Cloudflare Pages preview URL at the top.
-- Visual work: before opening the PR, ask whether to run the screenshot check (390 px + 1440 px); images go in chat, never git.
-
-## Check-in
-- None unless the owner asks (no scheduled check-ins, no PR watching). If one is requested: ~15 min, fix only a failing required check; done = every required check green.
+- Template sections from the repo, Cloudflare Pages preview URL at the top.
+- Screenshots (390 + 1440 px) only for UI or design work, or when asked; images go in chat, never git.
 
 ## Resume block
 - Constraints add: Sonnet unless the plan says Opus; fast mode off; one cause / <= ~40 files per batch; never edit generated data, vendor/pob2 or package-lock.json; copy voice per docs/COPY.md.
