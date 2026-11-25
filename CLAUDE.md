@@ -26,6 +26,7 @@ npm workspaces (`packages/*`, `apps/*`), Node >=22, TypeScript strict. `packages
 - Reference build: read `packages/core/test/reference/{ninja-default,pob2-own}/decoded.md`, never decode a code again (skill `reference-build`).
 - Web app, data flow, proxy, `basePath`, design rules (decided; owner only) and Cloudflare Pages: `apps/web/CLAUDE.md`.
 - Dependency bumps: `docs/DEPENDENCY-BUMPS.md`. Session steps: `docs/SESSION-PROTOCOL.md` (no required reading).
+- Handoff: per-repo overrides in `.claude/handoff.md`; `.claude/hooks/handoff_watch.py` injects the time/context triggers.
 
 ## Cloud sessions
 
