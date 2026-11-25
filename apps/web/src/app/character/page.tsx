@@ -77,13 +77,13 @@ export default function Home() {
   //
   // What loads when: the affix ladders on import (Top 3 needs them); the passive tree once the build card has painted,
   // when the browser is idle (keystones can change the card's pool and the findings, and the history snapshot waits for
-  // it); the support-gem catalogue when Damage opens; the implicit/unique mod text when Gear, Damage or Advanced opens.
+  // it); the support-gem catalogue when Damage or Gear opens (the gear grade needs the main skill's tags); the implicit/unique mod text when Gear, Damage or Advanced opens.
   const [treeWanted, setTreeWanted] = useState(false)
   const [tiersBase, setTiersBase] = useState(false)
   const displayTab = opened.has('gear') || opened.has('damage') || opened.has('advanced')
   const tiersState = useModTiers(raw !== null, tiersBase && displayTab, analysis?.identity.className === 'Martial Artist')
   const treeState = usePassiveTree(treeWanted)
-  const catalogState = useSupportCatalog(opened.has('damage'))
+  const catalogState = useSupportCatalog(opened.has('damage') || opened.has('gear'))
   const wantsDisplay = useMemo(() => analysisNeedsDisplay(analysis, tiersState), [analysis, tiersState])
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- one-way latch for the hook
@@ -201,7 +201,7 @@ export default function Home() {
       name: identity.name,
       className: identity.className ?? null,
       level: identity.level ?? null,
-      grade: gradeText(settled.assessment)?.letter ?? null,
+      grade: gradeText(settled)?.letter ?? null,
       topFix: topFixOf(settled.recommendations.recommendations),
       at: new Date().toISOString(),
     })

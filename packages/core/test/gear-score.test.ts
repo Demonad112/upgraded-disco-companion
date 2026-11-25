@@ -131,3 +131,12 @@ describe('scoreGear', () => {
     expect(r.slots[0]!.score).toBe(100)
   })
 })
+
+describe('statFamilies: minion stats', () => {
+  it('files a minion line under minion only, never resistance or attack', async () => {
+    const { statFamilies } = await import('../src/gear/score.js')
+    expect(statFamilies('minion_elemental_resistance_%')).toEqual(['minion'])
+    expect(statFamilies('minion_attack_and_cast_speed_+%')).toEqual(['minion'])
+    expect(statFamilies('base_cold_damage_resistance_%')).toEqual(['resistance'])
+  })
+})

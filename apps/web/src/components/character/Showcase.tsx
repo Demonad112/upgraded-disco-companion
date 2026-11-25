@@ -9,7 +9,7 @@
  */
 
 import { useEffect, useRef, useSyncExternalStore, type CSSProperties, type ReactNode } from 'react'
-import { dataAge, toSnapshot, type Analysis, type BuildAssessment, type BuildTier } from '@poe2/core'
+import { dataAge, toSnapshot, type Analysis, type BuildTier, type DefenceAxis } from '@poe2/core'
 import { Tag } from '@/components/ui'
 import { DMG_VAR, cap } from './dmg'
 import '@/styles/buildcard.css'
@@ -25,9 +25,9 @@ const serverNow = (): number | null => null
 const LADDER: readonly BuildTier[] = ['D', 'C', 'B', 'A']
 
 /** The grade letters worst to best, with the letter (or every letter of a `D–B` range) lit. */
-function GradeLadder({ assessment }: { assessment: BuildAssessment }) {
-  const lo = assessment.tier ?? assessment.tierRange?.worst
-  const hi = assessment.tier ?? assessment.tierRange?.best
+function GradeLadder({ axis }: { axis: DefenceAxis }) {
+  const lo = axis.grade ?? axis.range?.worst
+  const hi = axis.grade ?? axis.range?.best
   if (!lo || !hi) return null
   const [from, to] = [LADDER.indexOf(lo), LADDER.indexOf(hi)]
   return (
@@ -127,7 +127,7 @@ export function Showcase({ analysis, children }: { analysis: Analysis; children?
   const { identity, assessment, defense, dps } = analysis
   const nowMs = useSyncExternalStore(subscribeNever, clientNow, serverNow)
   const age = nowMs === null ? null : dataAge(identity.updatedUtc, new Date(nowMs))
-  const grade = gradeText(assessment)
+  const grade = gradeText(analysis)
   const snap = toSnapshot(analysis, '')
   const skill = dps.primary
   const hitType = defense.lowestMaximumHitType
@@ -175,8 +175,8 @@ export function Showcase({ analysis, children }: { analysis: Analysis; children?
               <GradeStamp letter={grade.letter} />
               <div className="min-w-0">
                 <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1">
-                  <GradeLadder assessment={assessment} />
-                  <span className="tabular font-mono text-[length:var(--fs-11)] whitespace-nowrap text-ink-dim">score {grade.score}</span>
+                  <GradeLadder axis={grade.axis} />
+                  <span className="tabular font-mono text-[length:var(--fs-11)] whitespace-nowrap text-ink-dim">defence {grade.score}</span>
                 </div>
                 {analysis.pobStats ? (
                   <div className="mt-1">
@@ -190,7 +190,7 @@ export function Showcase({ analysis, children }: { analysis: Analysis; children?
           )}
         </div>
         <p className="bc-note">
-          {assessment.note}{' '}
+          {grade?.axis.sentence ?? assessment.note}{' '}
           <a href="#assessment" onClick={openAssessment} className="whitespace-nowrap text-accent underline underline-offset-2">
             Why this grade
           </a>
