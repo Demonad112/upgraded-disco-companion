@@ -12,6 +12,6 @@ describe('gradeText: the defence axis is the headline grade (Batch 2.4)', () => 
 
   it('is a range only when the max hit went unreported', () => {
     const assessment = { defence: 0.2, defenceUnscoredReason: 'Survivability not graded' } as never
-    expect(gradeText({ assessment, defense })).toMatchObject({ letter: 'C–A', score: '40%–100%' })
+    expect(gradeText({ assessment, defense })).toMatchObject({ letter: 'C–S', score: '40%–100%' })
   })
 })

@@ -9,7 +9,7 @@
  */
 
 import { useEffect, useRef, useSyncExternalStore, type CSSProperties, type ReactNode } from 'react'
-import { dataAge, toSnapshot, type Analysis, type BuildTier, type DefenceAxis } from '@poe2/core'
+import { dataAge, toSnapshot, type Analysis, type DefenceAxis, type Grade } from '@poe2/core'
 import { Tag } from '@/components/ui'
 import { DMG_VAR, cap } from './dmg'
 import '@/styles/buildcard.css'
@@ -22,7 +22,7 @@ const subscribeNever = () => () => {}
 const clientNow = (): number => (mountedAt ??= Date.now())
 const serverNow = (): number | null => null
 
-const LADDER: readonly BuildTier[] = ['D', 'C', 'B', 'A']
+const LADDER: readonly Grade[] = ['D', 'C', 'B', 'A', 'S']
 
 /** The grade letters worst to best, with the letter (or every letter of a `D–B` range) lit. */
 function GradeLadder({ axis }: { axis: DefenceAxis }) {

@@ -69,8 +69,11 @@ async function load(name, url) {
 const [monsters, areas, bases] = await Promise.all(Object.entries(SOURCES).map(([n, u]) => load(n, u)))
 
 const physicalDamage = {}
+const life = {}
 for (const [level, stats] of Object.entries(monsters)) {
   if (typeof stats?.physical_damage === 'number') physicalDamage[level] = stats.physical_damage
+  // Base monster life per area level; equals PoB's data.monsterLifeTable (vendor/pob2/src/Data/Misc.lua).
+  if (typeof stats?.life === 'number') life[level] = stats.life
 }
 
 const mapsByLevel = {}
@@ -126,9 +129,10 @@ const artifact = {
   generatedFrom: Object.values(SOURCES).join(' + '),
   limitation:
     'Map tier maps to area level as 64 + tier, matching every waystone base drop level for tiers 2-16 and ' +
-    'corroborated by WorldAreas. Monster damage is for a BASE monster of that level: rare and unique monsters and ' +
+    'corroborated by WorldAreas. Monster damage and life are for a BASE monster of that level: rare and unique monsters and ' +
     'map modifiers scale it further, and those multipliers are not modelled here.',
   physicalDamage,
+  life,
   tiers,
   enemyLevels,
   mapLevels: Object.keys(mapsByLevel).map(Number).sort((a, b) => a - b),
@@ -139,7 +143,7 @@ mkdirSync(outDir, { recursive: true })
 const json = JSON.stringify(artifact)
 writeFileSync(join(outDir, 'monster-stats.json'), json)
 
-console.log(`monster levels     ${Object.keys(physicalDamage).length}`)
+console.log(`monster levels     ${Object.keys(physicalDamage).length} (life: ${Object.keys(life).length})`)
 console.log(`waystone tiers     T${tiers[0]?.tier}-T${tiers.at(-1)?.tier} -> area level ${tiers[0]?.areaLevel}-${tiers.at(-1)?.areaLevel} (64 + tier)`)
 console.log(`  drop level agrees ${tiers.filter((t) => t.dropLevelMatches).length}/${tiers.length} (T1 drops in the campaign at ${tiers[0]?.dropLevel})`)
 console.log(`boss levels        pinnacle min ${enemyLevels.pinnacleMinimum}, cap ${enemyLevels.maxNormalAndBoss}`)

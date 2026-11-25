@@ -24,14 +24,19 @@ const assessment = (defence: number, defenceUnscoredReason: string | null = null
   ({ defence, defenceUnscoredReason } as Pick<BuildAssessment, 'defence' | 'defenceUnscoredReason'>)
 
 describe('defenceAxis', () => {
-  it('grades the defence half on its own, out of its 0.5 weight, on the unchanged A–D bands', () => {
+  it('moves the bands to 85/70/55/40: 0.84 is A, 0.85 is S, 0.55 is B, 0.4 is C, 0.39 is D', () => {
+    const g = (n: number) => defenceAxis(assessment(n / 2), defense()).grade
+    expect([g(0.85), g(0.84), g(0.7), g(0.55), g(0.4), g(0.39)]).toEqual(['S', 'A', 'A', 'B', 'C', 'D'])
+  })
+
+  it('grades the defence half on its own, out of its 0.5 weight, on the gear S–D scale (85/70/55/40, B2-4a)', () => {
     const axis = defenceAxis(assessment(0.42), defense())
     expect(axis).toMatchObject({ score: 0.84, grade: 'A', range: null, letter: 'A', missing: null })
   })
 
   it('is a range when the max hit was not reported, widened by the max-hit weight', () => {
     const axis = defenceAxis(assessment(0.2, 'Survivability not graded'), defense({ maxHits: [] }))
-    expect(axis).toMatchObject({ score: null, grade: null, range: { min: 0.4, max: 1, worst: 'C', best: 'A' }, letter: 'C–A' })
+    expect(axis).toMatchObject({ score: null, grade: null, range: { min: 0.4, max: 1, worst: 'C', best: 'S' }, letter: 'C–S' })
     expect(axis.missing).toBe('Survivability not graded')
   })
 
