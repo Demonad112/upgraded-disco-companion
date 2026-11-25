@@ -1,0 +1,133 @@
+/**
+ * One calculation pass of the mini-calc (Batch 3), mirroring PoB's CalcOffence for an attack: attacks run one pass
+ * per hand, everything else one pass. Per-pass values are `output.<Name>`; `combineStat` (combine.ts) merges hands.
+ *
+ * Steps, in PoB's order: base hit damage → conversion and gain-as → increased and more → enemy resistance and
+ * penetration → crit chance and bonus → attack speed → DPS. Output names match PoB's (`TotalDPS`, `AverageHit`,
+ * `Speed`, `CritChance`, `CritMultiplier`, `HitChance`, `<Type>HitAverage`).
+ *
+ * Not ported, by contract: ailments and damage over time, minions, totems/traps/mines, triggered skills, spells
+ * (their base damage is a per-level table of its own), accuracy (`HitChance` is 100), armour (physical is unmitigated).
+ */
+
+import { ModList, type SkillContext } from './modifiers.js'
+import { emptyConversion, normaliseConversion, summedBase, zeroTypes, type GainTable, type TypeMap } from './conversion.js'
+import { DAMAGE_TYPES, type DamageType, type Mod } from './parse.js'
+
+export interface Weapon {
+  /** Weapon class (`Staff`, `Spear`, ...). */
+  type: string
+  /** Physical and added damage on the weapon, local mods already applied. */
+  min: TypeMap
+  max: TypeMap
+  /** Base crit chance in percent, with the weapon's own local mods. */
+  critChance: number
+  /** Attacks per second, with the weapon's own local mods. */
+  attackRate: number
+}
+
+export interface PassSkill {
+  isAttack: boolean
+  isSpell: boolean
+  melee: boolean
+  area: boolean
+  projectile: boolean
+  /** The gem level's `baseMultiplier` (damage effectiveness of an attack). */
+  baseMultiplier: number
+  /** The gem level's `attackSpeedMultiplier`, in percent (-25 = 25% slower). */
+  attackSpeedMultiplier: number
+  castTime: number
+  /** `[from, to, percent]` conversions the skill itself carries. */
+  conversion: [DamageType, DamageType, number][]
+}
+
+export interface PassInput {
+  weapon: Weapon | null
+  skill: PassSkill
+  mods: readonly Mod[]
+  conds: ReadonlySet<string>
+  /** Config counters (`combo`, `rage`, ...). */
+  counters?: Readonly<Record<string, number>>
+  /** Enemy resistance per type, in percent. */
+  enemy: { resist: TypeMap }
+}
+
+export type PassOutput = Record<string, number>
+
+const round2 = (n: number): number => Math.round(n * 100) / 100
+const cap = (t: DamageType): string => t[0]!.toUpperCase() + t.slice(1)
+
+export function calcPass(input: PassInput): PassOutput {
+  const { skill, weapon } = input
+  const list = new ModList(input.mods)
+  const ctx: SkillContext = {
+    isAttack: skill.isAttack,
+    isSpell: skill.isSpell,
+    melee: skill.melee,
+    area: skill.area,
+    projectile: skill.projectile,
+    weapon: weapon?.type,
+    conds: input.conds,
+    counters: input.counters,
+  }
+  const out: PassOutput = {}
+
+  // 1. Base hit damage: (weapon + added) × the gem level's base multiplier.
+  const baseMin = zeroTypes()
+  const baseMax = zeroTypes()
+  for (const t of DAMAGE_TYPES) {
+    const added = list.of(ctx, 'add').filter((m) => m.dmg === t && m.global)
+    const addMin = added.reduce((a, m) => a + m.value, 0)
+    const addMax = added.reduce((a, m) => a + (m.max ?? m.value), 0)
+    baseMin[t] = ((weapon?.min[t] ?? 0) + addMin) * skill.baseMultiplier
+    baseMax[t] = ((weapon?.max[t] ?? 0) + addMax) * skill.baseMultiplier
+    out[`${cap(t)}MinBase`] = baseMin[t]
+    out[`${cap(t)}MaxBase`] = baseMax[t]
+  }
+
+  // 2. Conversion and gain-as.
+  const conv = emptyConversion()
+  for (const [from, to, pct] of skill.conversion) conv[from][to] += pct / 100
+  const table = normaliseConversion(conv)
+  const gain: GainTable = { physical: {}, lightning: {}, cold: {}, fire: {}, chaos: {} }
+  for (const m of list.of(ctx, 'gain')) {
+    for (const from of m.from ? [m.from] : DAMAGE_TYPES) gain[from][m.to!] = (gain[from][m.to!] ?? 0) + m.value / 100
+  }
+  const sumMin = summedBase(table, gain, baseMin)
+  const sumMax = summedBase(table, gain, baseMax)
+
+  // 3 + 4. Increased and more by the final type, then the enemy's resistance minus penetration.
+  let hit = 0
+  for (const t of DAMAGE_TYPES) {
+    const inc = 1 + list.sum(ctx, 'inc', 'damage', t) / 100
+    const more = list.more(ctx, 'damage', t)
+    let factor = 1
+    if (t !== 'physical') {
+      const pen = list.of(ctx, 'pen').filter((m) => m.dmg === t).reduce((a, m) => a + m.value, 0)
+      factor = 1 - (input.enemy.resist[t] - pen) / 100
+    }
+    const avg = ((sumMin[t] + sumMax[t]) / 2) * inc * more * factor
+    out[`${cap(t)}HitAverage`] = avg
+    hit += avg
+  }
+  out.AverageHit = hit
+  out.HitChance = 100
+
+  // 5. Crit chance and bonus.
+  const baseCrit = (weapon?.critChance ?? 0) + list.sum(ctx, 'base', 'critChance')
+  const critInc = list.sum(ctx, 'inc', 'critChance')
+  out.CritChance = Math.min(100, baseCrit * (1 + critInc / 100) * list.more(ctx, 'critChance'))
+  const bonus = 100 * (1 + list.sum(ctx, 'inc', 'critBonus') / 100) * list.more(ctx, 'critBonus')
+  out.CritMultiplier = 1 + Math.max(0, bonus) / 100
+  const c = out.CritChance / 100
+  out.AverageDamage = hit * (1 - c + c * out.CritMultiplier)
+
+  // 6. Speed, as PoB: 1 / (baseTime / round((1 + inc) × more, 2)).
+  const rate = (weapon?.attackRate ?? 1 / skill.castTime) * (1 + skill.attackSpeedMultiplier / 100)
+  const speedInc = 1 + list.sum(ctx, 'inc', 'speed') / 100
+  out.Speed = rate * round2(speedInc * list.more(ctx, 'speed'))
+
+  // 7. DPS.
+  out.TotalDPS = out.AverageDamage * out.Speed * (out.HitChance / 100)
+  return out
+}
