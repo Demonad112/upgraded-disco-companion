@@ -251,19 +251,22 @@ Goal: one decoded object behind every tab. No new analysis.
   - Files: `ImportBar.tsx`, `CharacterSheet.tsx`, `character/page.tsx`, e2e spec.
 - **Checkpoint:** PR plus 390/1440 screenshots. The owner reviews the sheet and the missing list before Batch 2.
 - **Done 2026-11-25:** `buildCharacterOutline` (`packages/core/src/outline/`), two code boxes with the config toggle (`ImportBar.tsx`), the Sheet tab (`CharacterSheet.tsx`), the missing list and Pro detail, e2e in `apps/web/e2e/sheet.spec.ts`.
-- **What Batch 2 still lacks:** (1) item mod tiers are read from the ladder data once the Gear data loads; a line the ladders cannot place says why, and jewels carry no tier because their slot id is shared; (2) no per-slot gear score, stat swap or charm overkill flag, only the raw lines; (3) over-cap is shown per resistance, not yet shared across items; (4) Runic Ward, item rarity and ES recharge are not in a PoB2 code (shown as missing, not derivable); (5) the Sheet tab shows the code's numbers without grades or advice; (6) recents and `#pob=` re-opens use the poe.ninja baseline, since the box and toggle are not stored with them; (7) the Defence axis still comes from the old assessment, unchanged.
+- **What Batch 2 still lacks:** (1) item mod tiers are read from the ladder data once the Gear data loads; a line the ladders cannot place says why, and jewels carry no tier because their slot id is shared; (2) no per-slot gear score, stat swap or charm overkill flag, only the raw lines; (3) over-cap is shown per resistance, not yet shared across items (shared in core since 2.1; shown with 2.4); (4) Runic Ward, item rarity and ES recharge are not in a PoB2 code (shown as missing, not derivable); (5) the Sheet tab shows the code's numbers without grades or advice; (6) ~~recents and `#pob=` re-opens use the poe.ninja baseline~~ done 2026-11-25: both store the box and toggle (`#pob=<code>&box=pob&config=<mode>`); (7) the Defence axis still comes from the old assessment, unchanged.
 
 ### Batch 2: Defence calcs, analysis and tips (`defence-analysis`)
 
-- [ ] **2.1 Gear score**
+- [x] **2.1 Gear score**
   - `gear/score.ts` with a profile pick, per-slot 0–100 and S–D, and "wasted" stats.
   - Acceptance: red-then-green tests on hand-built items; the per-slot table is in the PR for owner review.
-- [ ] **2.2 Stat swaps and defensive gear tips**
+  - Done 2026-11-25: `scoreGear`, `pickProfile` (`test/gear-score.test.ts`); both reference tables pinned in `test/golden/gear-score-*.expected.json`. Weights are `familyFactor × (½ + ½ × importance)` from `deriveStatWeights`; the best roll is `ModTiers.topRoll` on the base; bands and discounts in `GEAR_SCORE` (`thresholds.ts`). Each resistance's over-cap is spent once across items, biggest line first (closes "lacks" item 3 in core; the Sheet shows it with 2.4). An item with fewer than half its affix lines readable is not graded (the reference gloves: 1 of 7, item 1).
+- [x] **2.2 Stat swaps and defensive gear tips**
   - Turn over-cap surpluses into "this line could be X", with X drawn from the profile's valued stats that the slot can roll (mod tier data).
   - Acceptance: on main-ninja, Cold +59 over cap produces a swap suggestion naming a concrete affix.
-- [ ] **2.3 Charm overkill flag**
+  - Done 2026-11-25: `findStatSwaps` (`advice/swaps.ts`). Short resistances first (a gap one swap closes is not offered again), then valued stats; same affix kind, spawnable on the base, best tier at the item's level with the better tier on a new base named. A partly wasted line is offered only when at least half is waste. Reference: Boots' 36% cold → `of Flexure` deflection, tier 1.
+- [x] **2.3 Charm overkill flag**
   - Flag a charm or flask stat that targets an already capped value.
   - Acceptance: a unit test with a capped fire res and a fire res charm.
+  - Done 2026-11-25: `findCharmOverkill` (`advice/charm-overkill.ts`), charms and flasks (owner, 2026-11-25). Resistance lines only; neither reference code has one, so nothing is flagged on them.
 - [ ] **2.4 Defence axis and beginner copy**
   - The defence grade stands as its own axis.
   - Rewrite the Overview, Defence and Gear copy for new players per `COPY.md`; the old text moves behind Pro detail.

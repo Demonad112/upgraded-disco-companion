@@ -104,6 +104,17 @@ const NOTES: Readonly<Record<string, Note>> = {
   'GEAR_FIT.missingShown': judgement('Gear fit readout length'),
   'GEAR_FIT.overrideRange.min': judgement('Gear fit weight override', 'Allowed override range'),
   'GEAR_FIT.overrideRange.max': judgement('Gear fit weight override', 'Allowed override range'),
+  'GEAR_SCORE.grades.0.min': borrowed('Gear score grade bands'),
+  'GEAR_SCORE.grades.1.min': borrowed('Gear score grade bands'),
+  'GEAR_SCORE.grades.2.min': borrowed('Gear score grade bands'),
+  'GEAR_SCORE.grades.3.min': borrowed('Gear score grade bands'),
+  'GEAR_SCORE.conditionalFactor': borrowed('Gear score conditional-line discount'),
+  'GEAR_SCORE.familyFactor.valued': judgement('Gear score profile weight'),
+  'GEAR_SCORE.familyFactor.neutral': judgement('Gear score profile weight'),
+  'GEAR_SCORE.familyFactor.off': judgement('Gear score profile weight'),
+  'GEAR_SCORE.poolShare': judgement('Gear score profile pools'),
+  'GEAR_SCORE.swapMinWasteShare': judgement('Stat swap threshold'),
+  'GEAR_SCORE.swapCandidates': judgement('Stat swap list length'),
 }
 
 /** Explicit ranges, only where the code states one. */
