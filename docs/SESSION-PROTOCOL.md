@@ -32,5 +32,4 @@ kinds they name.
    the Pages preview URL at the top: copy it from the Cloudflare Pages check or bot comment, never build it from the
    branch name (Cloudflare truncates long names). Never force-push; never delete branches.
 4. Close out in chat: each item done, partial or not done, with evidence; gate result; CI status as passed, failed or
-   pending. Book no scheduled check-in and don't watch CI, subscribe to PR events or poll unless the owner asks; the
-   owner asks for status later, and a failing required check is fixed then.
+   pending.
