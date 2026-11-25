@@ -33,3 +33,8 @@ kinds they name.
    branch name (Cloudflare truncates long names). Never force-push; never delete branches.
 4. Close out in chat: each item done, partial or not done, with evidence; gate result; CI status as passed, failed or
    pending.
+
+### Handoff prompts
+- Print in chat as one copyable code block; a file only if asked.
+- Only the scope named: no cron jobs, extra batches or behaviour changes in a cleanup prompt.
+- State branch/PR status, what is verified, what is pending, and the exact first step.
