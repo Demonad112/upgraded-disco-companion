@@ -110,6 +110,11 @@ export interface PobConfigSet {
   id: number | null
   title: string | null
   inputs: Record<string, PobInputValue>
+  /**
+   * `<Placeholder>`: the value PoB showed greyed in a field the user left empty, i.e. the default it calculated
+   * with (enemy level 82, enemy resistances). Written beside the inputs, so the code carries it.
+   */
+  placeholders: Record<string, PobInputValue>
 }
 
 export interface PobSnapshot {
@@ -184,9 +189,9 @@ function idList(raw: string | null): number[] {
   return out
 }
 
-function inputsOf(el: XmlElement | null): Record<string, PobInputValue> {
+function inputsOf(el: XmlElement | null, tag: 'Input' | 'Placeholder' = 'Input'): Record<string, PobInputValue> {
   const out: Record<string, PobInputValue> = {}
-  for (const input of childrenNamed(el, 'Input')) {
+  for (const input of childrenNamed(el, tag)) {
     const name = input.attrs.name
     if (!name) continue
     // PoB writes exactly one of these three per input.
@@ -308,8 +313,11 @@ export function readPobSnapshot(xml: string): PobSnapshot {
     id: int(s, 'id'),
     title: str(s, 'title'),
     inputs: inputsOf(s),
+    placeholders: inputsOf(s, 'Placeholder'),
   }))
-  if (!configSets.length && childrenNamed(configEl, 'Input').length) configSets.push({ id: null, title: null, inputs: inputsOf(configEl) })
+  if (!configSets.length && childrenNamed(configEl, 'Input').length) {
+    configSets.push({ id: null, title: null, inputs: inputsOf(configEl), placeholders: inputsOf(configEl, 'Placeholder') })
+  }
 
   return {
     build: {
