@@ -1,6 +1,6 @@
 # Spec and plan: simple PoB2-code character analysis (V1)
 
-Status: **proposed**, awaiting the owner's approval.
+Status: **approved**; Batch 1 in progress (2026-11-25).
 Intent (confirmed 2026-11-24): [`docs/intent/simple-code-analysis.md`](../intent/simple-code-analysis.md).
 Supersedes the CP, B9 (browser engine) and NJ plans, deleted 2026-11-25 (`docs/HISTORY.md`).
 
@@ -56,6 +56,18 @@ The toggle never changes a number read from the code; PoB computed those at expo
 | League, account, "updated X ago", ladder, poe.ninja link | **missing** (stated, never blank) | n/a; `#pob=` replaces the link |
 | Flasks, charms | not analysed; charm overkill flag only | `<Item>` |
 
+### Rules decided 2026-11-25 (they win over anything below that disagrees)
+
+- **Authority order:** the PoB code, then the owner's PoB2 screenshots (`app.expected.json`), then the poe.ninja page, then the intent and this plan, then the repo.
+- **Read numbers always win.** A number the code carries is shown as read. Anything computed for it only measures error and calibrates.
+- **Self-check:** `error = estimate / TotalDPS − 1`. If `|error| ≤ 0.25`, scale the other same-kind (attack or spell) skills by `TotalDPS / estimate`. Otherwise hide them, show the Full DPS steps and offer "show anyway". With no estimate, or a `TotalDPS` of 0, the estimate is hidden and labelled "≈ est., unchecked".
+- **Mini-calc conditions** come from the code's `<Config>` (`readPobConfig().conditionals`; `humaniseCondition` only for conditions with no label), not from a separate baseline list.
+- **Every outline field** is a value with provenance, or `{ missing, reason }`.
+- **Names:** `ImportBar.tsx`, `apps/web/src/app/character/page.tsx`, `readPobSnapshotFromCode`, `codeBreakdowns(snap, model, tree)`, the `AverageDamage` PlayerStat, `TAB_IDS` in `apps/web/src/lib/characterTab.ts`.
+- **Charm overkill** covers charms only (flasks are not analysed).
+- **Stat swaps** name a suffix that can roll on that base, and share over-cap across items.
+- **No blank category (testable):** every `[data-outline-field]` has a `data-provenance` in `pob-export`, `derived`, `estimate`, `nominal` or `missing`, and non-empty text.
+
 ### Mini-calc contract (Batch 3)
 
 - **Shape:** mirrors PoB's CalcOffence (`vendor/pob2/src/Modules/CalcOffence.lua`, `docs/calcOffence.md` in PoB2):
@@ -87,6 +99,22 @@ The ladder-based damage half and the single combined score are retired.
 3. **Improving while playing:** Progress, "Next 3 steps by content".
 
 Plus "What your build is" (a plain summary from skill, damage mix, defence layers and ascendancy), a gem link check (supports whose tags don't match the skill, empty support slots, gems under level, duplicate families), and a charm overkill flag (a charm granting a stat that is already capped).
+
+### Section map: the poe.ninja character page (from the owner's .mht, Yykiuy)
+
+| Section | Fields |
+|---|---|
+| Header | name, level + ascendancy, account, league, last fetched |
+| Import code | PoB code box |
+| Equipment | weapon sets I/II, Trade/Copy per item; Runes; Base Jewels |
+| Stats → Character | Str/Dex/Int, Movement Speed 139 %, Item Rarity 15 %, charges 3/3/5 |
+| Stats → Defensive | Life 1,494; ES 2,827; Runic Ward 854 (not in the code); Mana 790; Spirit 147; Armour 75; DR 1 %; Evasion 7,407; Evade 44 %; Deflection 1,925 / 15 %; Resists 75/80/76/53; EHP 20k; Max Hit 5.2k / 18k / 23k / 19k / 8.0k |
+| Stats → Recovery | mana regen 41/s, ES recharge 353/s, recharge delay 3.51 s |
+| Main Skills | per skill: speed, crit, multiplier, hit, radius/duration, DPS, damage mix by type, gem level/quality, attack rate, cooldown |
+| Passive tree | 113 / 1 / 8 points |
+| Ascendancy & Keystones | the ascendancy notables and keystones |
+| Quest Rewards | per act |
+| Skills | gem groups with level/quality and supports |
 
 ### Tech stack
 
@@ -222,6 +250,8 @@ Goal: one decoded object behind every tab. No new analysis.
   - Acceptance: e2e pastes each reference code into each box and each toggle state, and the sheet and all tabs render with no blank category; route budget holds or is raised by rule.
   - Files: `ImportBar.tsx`, `CharacterSheet.tsx`, `character/page.tsx`, e2e spec.
 - **Checkpoint:** PR plus 390/1440 screenshots. The owner reviews the sheet and the missing list before Batch 2.
+- **Done 2026-11-25:** `buildCharacterOutline` (`packages/core/src/outline/`), two code boxes with the config toggle (`ImportBar.tsx`), the Sheet tab (`CharacterSheet.tsx`), the missing list and Pro detail, e2e in `apps/web/e2e/sheet.spec.ts`.
+- **What Batch 2 still lacks:** (1) item mod tiers are read from the ladder data once the Gear data loads; a line the ladders cannot place says why, and jewels carry no tier because their slot id is shared; (2) no per-slot gear score, stat swap or charm overkill flag, only the raw lines; (3) over-cap is shown per resistance, not yet shared across items; (4) Runic Ward, item rarity and ES recharge are not in a PoB2 code (shown as missing, not derivable); (5) the Sheet tab shows the code's numbers without grades or advice; (6) recents and `#pob=` re-opens use the poe.ninja baseline, since the box and toggle are not stored with them; (7) the Defence axis still comes from the old assessment, unchanged.
 
 ### Batch 2: Defence calcs, analysis and tips (`defence-analysis`)
 

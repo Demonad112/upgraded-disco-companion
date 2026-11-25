@@ -1,4 +1,5 @@
 import type { Analysis, AnalyzeOptions } from '@poe2/core'
+import type { OutlineInput } from '../CharacterSheet'
 import type { CharacterHistory } from '@/lib/useCharacterHistory'
 import type { ModTiersState } from '@/lib/useModTiers'
 import type { PassiveTreeState } from '@/lib/usePassiveTree'
@@ -12,4 +13,6 @@ export interface PanelProps {
   treeState: PassiveTreeState
   catalogState: SupportCatalogState
   analysisOptions: AnalyzeOptions
+  /** The paste behind the character (code, box, config toggle). Only the Sheet tab reads it. */
+  outlineInput?: OutlineInput | null
 }

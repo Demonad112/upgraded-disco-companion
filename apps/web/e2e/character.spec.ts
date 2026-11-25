@@ -2,7 +2,7 @@ import { emptyRunesCode, mainCode, useRatesPayloadJson } from './main-payload'
 import { PROFILE_URL, expect, openTab, test } from './fixtures'
 
 const importUrl = `character/?import=${encodeURIComponent(PROFILE_URL)}`
-const PANEL_IDS = ['overview', 'defences', 'damage', 'gear', 'progress', 'advanced'] as const
+const PANEL_IDS = ['overview', 'sheet', 'defences', 'damage', 'gear', 'progress', 'advanced'] as const
 
 test('?import= analyses the character and records it for the home page', async ({ page }) => {
   await page.goto(importUrl)
@@ -80,9 +80,9 @@ test('a blocked import offers the paste box in one click, and a PoB code pasted 
   await expect(page.locator('.bc-top')).toContainText('From a Path of Building code')
 })
 
-test('the poe.ninja PoB code pasted with a name: six tabs, holding-up rows, named resist fix, gear tiers', async ({ page }) => {
+test('the poe.ninja PoB code pasted with a name: seven tabs, holding-up rows, named resist fix, gear tiers', async ({ page }) => {
   await page.goto('character/')
-  await expect(page.getByText("Paste the PoB code from poe.ninja's character page", { exact: true })).toBeVisible()
+  await expect(page.getByText("poe.ninja code: paste the PoB code from poe.ninja's character page", { exact: true })).toBeVisible()
   await page.getByLabel('Character model JSON or Path of Building code').fill(mainCode)
   await page.getByLabel('Character name (optional)').fill('Main')
   await page.getByRole('button', { name: 'Analyse pasted data' }).click()

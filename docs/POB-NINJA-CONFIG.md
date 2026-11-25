@@ -1,23 +1,36 @@
 # poe.ninja's PoB config baseline
 
-Source: the owner (2026-11-22). This is the config poe.ninja applies when it computes a build's numbers, and it explains why PoB2's damage on a pasted code differs from the figures poe.ninja showed before. **Not implemented yet**: the oracle and the headless runner use the code's own saved config today (see PB-10 in `docs/remaining/REMAINING-WORK.md`).
+Source: the `<Config>` of the reference code (`packages/core/test/reference/ninja-default/code.txt`), the owner's PoB2 0.23.1 Configuration-tab screenshot (`app.expected.json`), and PoB2's own defaults (`vendor/pob2/src/Modules/ConfigOptions.lua`). This is the config poe.ninja applies when it computes a build's numbers. The owner's earlier Arbiter of Ash description is gone: the code shows a Guardian/Pinnacle boss, and the code outranks that description.
 
-- Boss: Arbiter of Ash. Flasks and charms on. "Disable EHP gain on block/suppress" checked. Nearby enemies 1, nearby rare/unique 1. Enemy ailments: bleed, chill, ignite.
-- Charges set to max, depending on which skills and items are present:
-  - Power: Voll's Protector, Power Charge on Critical or Hit, Ailith's Chimes, Guatelitzi's Ablation, Lingering Illusion, Killing Palm, Power Siphon, Profane Ritual, Siphoning Strike, Wing Blast, Devour, Combat Frenzy + Resonance, or any Frenzy skill + Resonance.
-  - Frenzy: Frenzy Charge on Hit, Combat Frenzy, Sniper's Mark, Cull The Weak, Disengage, Mist Raven, or any Endurance skill + Resonance.
-  - Endurance: Endurance Charge every second when hit recently, Magma Barrier, Lingering Illusion + Resonance, or any Power skill + Resonance.
-  - All: Charge Profusion Support or Thaumaturgic Generator.
-- Buffs and states, each enabled only when its source is present:
-  - Low Life: Coward's Legacy.
-  - Rage max: any Rage source.
-  - Crit Recently: all builds unless Resolute Technique is allocated.
-  - Lifetap, Arcane Surge, Used Warcry Recently, Banner (planted, max Valour), Trinity Resonance, Flame Wall added damage.
-  - While Moving: a "while moving" node.
-- Enemy debuffs:
-  - Impaled, Dazed, Blinded.
-  - Withered at 10 stacks.
-  - Open Weakness (Predatory Instinct), Intimidated (Blackheart or Intimidate on Hit), Critical Weakness (Sandstorm Visage, Malice, Effigy of Cruelty).
-  - Elemental exposure (matching source or Potent Exposure Support).
-  - Enemy Near You (Meat Shield).
-- Second pass: Been Hit Recently is on unless the calculated evade chance against the Arbiter is 50% or more. Wind Dancer max stages is on when Been Hit Recently is off.
+PoB writes only inputs that differ from their default, so a setting the code does not save is the default, not "off".
+
+## Enemy
+
+| Setting | Value | Where it comes from |
+|---|---|---|
+| Enemy level | 82 | saved (`enemyLevel`) |
+| Boss | Guardian/Pinnacle | not saved: PoB's default `enemyIsBoss` index 3 (`POB_DEFAULT_BOSS`) |
+| Endgame resistance penalty | −60 % | PoB's default for a level 82 enemy |
+| Enemy resistances | fire 50, cold 50, lightning 50, chaos 0 | saved (`enemy*Resist`) |
+| Enemy ailments on | Dazed, Bleeding, Ignited, Chilled | saved (`conditionEnemy*`) |
+| Nearby enemies | 1 | saved (`multiplierNearbyEnemies`) |
+| Nearby rare or unique enemies | 1 | saved (`multiplierNearbyRareOrUniqueEnemies`) |
+
+## You
+
+| Setting | Value | Where it comes from |
+|---|---|---|
+| Power, frenzy and endurance charges | on (use max) | saved (`usePowerCharges`, `useFrenzyCharges`, `useEnduranceCharges`) |
+| Crit Recently | on | saved (`conditionCritRecently`) |
+| Been Hit Recently | on | saved (`conditionBeenHitRecently`) |
+| Quest rewards | ticked (acts 2 to 4, interlude 2) | saved (`quest*`) |
+| EHP gain on block | disabled | saved (`DisableEHPGainOnBlock`) |
+
+Anything else in a code's `<Config>` is listed in plain words on the site (`readPobConfig().conditionals`, `humaniseCondition` for a condition with no label). `<Placeholder>` entries are PoB's saved defaults for settings that are not active; they are not conditions.
+
+## What the baseline means for each box
+
+- **poe.ninja code:** the code was exported with this config, so every PlayerStat in it already includes it. The site states the baseline in words and adds nothing.
+- **PoB2 code, "poe.ninja config" (default):** the same statement. The numbers are the code's; the toggle never changes a number read from it.
+- **PoB2 code, "my own config":** the site lists the code's own `<Config>` conditions instead of the baseline.
+- **PoB2 code, "no config":** the site states that no conditions are assumed beyond what the code shows.
