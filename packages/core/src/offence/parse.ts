@@ -59,6 +59,8 @@ export interface Mod {
   global?: true
   /** `value` per stack of this counter, up to `limit` total ("8% increased Damage per Combo consumed, up to 40%"). */
   per?: { counter: string; limit: number }
+  /** Needs a skill of this PoB type (the combo mod applies to combo-stacking skills only). */
+  skillType?: string
   /** The condition key it needs (see `CONDITION_KEYS`), when the text says "if/while/against". */
   when?: string
   /** The line this came from. */
@@ -87,6 +89,9 @@ export const CONDITION_KEYS: [RegExp, string][] = [
   [/against enemies on full life/i, 'enemyFullLife'],
   [/against rare or unique enemies/i, 'enemyRareOrUnique'],
   [/at maximum power charges|with maximum power charges|per power charge/i, 'powerCharges'],
+  [/while affected by herald of thunder/i, 'heraldThunder'],
+  [/while affected by herald of ice/i, 'heraldIce'],
+  [/while affected by herald of ash/i, 'heraldAsh'],
   [/while affected by a herald|while affected by herald/i, 'herald'],
   [/hit recently/i, 'hitRecently'],
 ]
@@ -97,7 +102,7 @@ function condition(text: string): string | undefined {
 }
 
 /** A line is about offence when it names one of these; then it must be read in full or reported. */
-const OFFENCE_HINT = /damage|critical|speed|penetrat|as extra|^adds \d|level of all/i
+const OFFENCE_HINT = /damage|critical|speed|penetrat|as extra|^adds \d|level of all|^legacy of/i
 /** ...unless it is about the defence side, the minions, or something else the calc never reads. */
 const NOT_OFFENCE =
   /movement speed|projectile speed|recovery|damage taken|taken as|damage reduction|reduction|from hits|minion|totem|trap|mine\b|charm|flask|leech|recoup|stun|ailment|thorns|reflect|per second|mana cost|accuracy|armour|evasion|energy shield|resistance|resistances(?! penet)|life|mana|spirit|daze on hit|knocks? back|chance to|duration|area of effect|skill effect|cooldown|rarity|charge|aura|curse|buff|warcry|banner|companion|reservation|regenerat/i
@@ -128,6 +133,7 @@ function statWords(words: string, text: string, kind: 'inc' | 'more', value: num
   if (w === 'critical damage bonus') return [{ ...base, stat: 'critBonus' }]
   if (w === 'critical hit chance') return [{ ...base, stat: 'critChance' }]
   if (w === 'critical hit chance for attacks') return [{ ...base, stat: 'critChance', scope: 'attack' }]
+  if (w === 'critical damage bonus for attack damage') return [{ ...base, stat: 'critBonus', scope: 'attack' }]
   if (w === 'critical damage bonus with quarterstaves') return [{ ...base, stat: 'critBonus', weapon: 'Staff' }]
   if (w === 'attack speed') return [{ ...base, stat: 'speed', scope: 'attack' }]
   if (w === 'skill speed' || w === 'attack and cast speed') return [{ ...base, stat: 'speed', scope: 'skill' }]
@@ -152,10 +158,19 @@ export function parseModLine(raw: string): Mod[] | null {
   if (!text) return []
   // No offence effect: not about damage/crit/speed at all, or about something the calc never reads.
   if (!OFFENCE_HINT.test(text)) return []
-  if (NOT_OFFENCE.test(text) && !/penetrat|as extra|^adds \d|level of all/i.test(text) && !/^\d+(?:\.\d+)?% (?:increased|reduced|more|less) .*(?:damage|critical|speed)/i.test(text)) return []
+  if (NOT_OFFENCE.test(text) && !/penetrat|as extra|^adds \d|level of all|^legacy of/i.test(text) && !/^\d+(?:\.\d+)?% (?:increased|reduced|more|less) .*(?:damage|critical|speed)/i.test(text)) return []
   if (/movement speed|projectile speed|minions?\b|totem|trap|\bmine\b|damage taken|recovery/i.test(text)) return []
 
   let m: RegExpExecArray | null
+
+  // Mageblood's offence legacies (PoB: CalcPerform `legacies`), at their base effect.
+  if ((m = /^legacy of (diamond|silver|sulphur)$/i.exec(text))) {
+    const which = m[1]!.toLowerCase()
+    if (which === 'diamond') return [{ kind: 'inc', stat: 'critChance', value: 75, text }]
+    if (which === 'silver') return [{ kind: 'inc', stat: 'speed', value: 30, scope: 'skill', text }]
+    return [{ kind: 'inc', stat: 'damage', value: 60, text }]
+  }
+  if (/^legacy of /i.test(text)) return []
 
   // "+3 to Level of all Attack Skills", "+1 to Level of all Melee Skills"
   if ((m = /^\+(\d+) to level of all (attack|melee|spell|projectile) skills$/i.exec(text)))
@@ -187,7 +202,7 @@ export function parseModLine(raw: string): Mod[] | null {
 
   // "Skills deal 8% increased Damage per Combo consumed, up to 40%"
   if ((m = /^skills deal (\d+(?:\.\d+)?)% (increased|more) damage per combo consumed, up to (\d+)%$/i.exec(text)))
-    return [{ kind: /more/i.test(m[2]!) ? 'more' : 'inc', stat: 'damage', value: Number(m[1]), per: { counter: 'combo', limit: Number(m[3]) }, text }]
+    return [{ kind: /more/i.test(m[2]!) ? 'more' : 'inc', stat: 'damage', value: Number(m[1]), per: { counter: 'combo', limit: Number(m[3]) }, skillType: 'ComboStacking', text }]
 
   // "<n>% increased|reduced|more|less <words>"
   if ((m = /^(\d+(?:\.\d+)?)% (increased|reduced|more|less) (.+)$/i.exec(text))) {

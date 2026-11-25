@@ -37,6 +37,10 @@ export interface PassSkill {
   /** The gem level's `attackSpeedMultiplier`, in percent (-25 = 25% slower). */
   attackSpeedMultiplier: number
   castTime: number
+  /** Seconds added to the attack time after the speed modifiers (`total_attack_time_+_ms`), 0 for most skills. */
+  extraAttackTime?: number
+  /** The skill's PoB types. */
+  types?: readonly string[]
   /** `[from, to, percent]` conversions the skill itself carries. */
   conversion: [DamageType, DamageType, number][]
 }
@@ -49,7 +53,7 @@ export interface PassInput {
   /** Config counters (`combo`, `rage`, ...). */
   counters?: Readonly<Record<string, number>>
   /** Enemy resistance per type, in percent. */
-  enemy: { resist: TypeMap }
+  enemy: { resist: TypeMap; /** Increased damage the enemy takes (shock), in percent. */ takenInc?: number }
 }
 
 export type PassOutput = Record<string, number>
@@ -69,6 +73,7 @@ export function calcPass(input: PassInput): PassOutput {
     weapon: weapon?.type,
     conds: input.conds,
     counters: input.counters,
+    types: new Set(skill.types ?? []),
   }
   const out: PassOutput = {}
 
@@ -95,6 +100,10 @@ export function calcPass(input: PassInput): PassOutput {
   }
   const sumMin = summedBase(table, gain, baseMin)
   const sumMax = summedBase(table, gain, baseMax)
+  for (const t of DAMAGE_TYPES) {
+    out[`${cap(t)}SummedMinBase`] = sumMin[t]
+    out[`${cap(t)}SummedMaxBase`] = sumMax[t]
+  }
 
   // 3 + 4. Increased and more by the final type, then the enemy's resistance minus penetration.
   let hit = 0
@@ -106,7 +115,7 @@ export function calcPass(input: PassInput): PassOutput {
       const pen = list.of(ctx, 'pen').filter((m) => m.dmg === t).reduce((a, m) => a + m.value, 0)
       factor = 1 - (input.enemy.resist[t] - pen) / 100
     }
-    const avg = ((sumMin[t] + sumMax[t]) / 2) * inc * more * factor
+    const avg = ((sumMin[t] + sumMax[t]) / 2) * inc * more * factor * (1 + (input.enemy.takenInc ?? 0) / 100)
     out[`${cap(t)}HitAverage`] = avg
     hit += avg
   }
@@ -125,7 +134,8 @@ export function calcPass(input: PassInput): PassOutput {
   // 6. Speed, as PoB: 1 / (baseTime / round((1 + inc) × more, 2)).
   const rate = (weapon?.attackRate ?? 1 / skill.castTime) * (1 + skill.attackSpeedMultiplier / 100)
   const speedInc = 1 + list.sum(ctx, 'inc', 'speed') / 100
-  out.Speed = rate * round2(speedInc * list.more(ctx, 'speed'))
+  const baseTime = 1 / rate
+  out.Speed = 1 / (baseTime / round2(speedInc * list.more(ctx, 'speed')) + (skill.extraAttackTime ?? 0))
 
   // 7. DPS.
   out.TotalDPS = out.AverageDamage * out.Speed * (out.HitChance / 100)

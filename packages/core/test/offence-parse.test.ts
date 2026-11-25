@@ -41,6 +41,7 @@ describe('parseModLine', () => {
     expect(parseModLine('Gain 5% of Damage as Extra Damage of all Elements')).toHaveLength(3)
     expect(one('Damage Penetrates 15% Cold Resistance')).toMatchObject({ kind: 'pen', dmg: 'cold', value: 15 })
     expect(parseModLine('Attacks with this Weapon Penetrate 15% Elemental Resistances')).toHaveLength(3)
+    expect(one('Legacy of Diamond')).toMatchObject({ kind: 'inc', stat: 'critChance', value: 75 })
     expect(one('+3 to Level of all Attack Skills')).toMatchObject({ kind: 'skillLevel', value: 3, scope: 'attack' })
   })
 

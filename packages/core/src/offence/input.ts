@@ -25,7 +25,7 @@ export interface SkillLevelRow {
 export interface SupportEffect {
   stat: string
   value: number
-  mods: { name: string; type: string; flags: string[]; conditional: boolean }[]
+  mods: { name: string; type: string; flags: string[]; conditional: boolean; conditions?: string[] }[]
 }
 export interface SupportRow {
   name: string
@@ -152,22 +152,25 @@ const SUPPORT_DAMAGE: Record<string, Mod['dmg']> = {
 }
 
 /** A support's effects as mods. A conditional effect is not applied and is reported. */
-function supportMods(row: SupportRow, unread: string[]): Mod[] {
+function supportMods(row: SupportRow, unread: string[], conditionOn: (v: string) => boolean): Mod[] {
   const out: Mod[] = []
   for (const e of row.effects) {
     for (const m of e.mods) {
-      if (m.conditional) {
+      // A conditional effect applies when every PoB condition it names is switched on in the code's config.
+      if (m.conditional && !(m.conditions?.length && m.conditions.every(conditionOn))) {
         unread.push(`${row.name}: ${e.stat} (conditional)`)
         continue
       }
       const text = `${row.name}: ${e.stat}`
       const kind = m.type === 'MORE' ? 'more' : m.type === 'INC' ? 'inc' : null
-      if (!kind) continue
+      if (!kind && !(m.type === 'BASE' && m.name.startsWith('DamageGainAs'))) continue
       const flag = { ...(m.flags.includes('Attack') ? { scope: 'attack' as const } : {}), ...(m.flags.includes('Melee') ? { melee: true as const } : {}), ...(m.flags.includes('Area') ? { area: true as const } : {}) }
-      if (m.name in SUPPORT_DAMAGE) out.push({ kind, stat: 'damage', value: e.value, dmg: SUPPORT_DAMAGE[m.name], text, ...flag })
-      else if (m.name === 'Speed') out.push({ kind, stat: 'speed', value: e.value, scope: 'skill', text })
-      else if (m.name === 'CritChance') out.push({ kind, stat: 'critChance', value: e.value, text, ...flag })
-      else if (m.name === 'CritMultiplier') out.push({ kind, stat: 'critBonus', value: e.value, text, ...flag })
+      if (m.name in SUPPORT_DAMAGE) out.push({ kind: kind!, stat: 'damage', value: e.value, dmg: SUPPORT_DAMAGE[m.name], text, ...flag })
+      else if (/^DamageGainAs(Physical|Fire|Cold|Lightning|Chaos)$/.test(m.name) && m.type === 'BASE')
+        out.push({ kind: 'gain', value: e.value, to: m.name.slice('DamageGainAs'.length).toLowerCase() as DamageType, text, ...flag })
+      else if (m.name === 'Speed') out.push({ kind: kind!, stat: 'speed', value: e.value, scope: 'skill', text })
+      else if (m.name === 'CritChance') out.push({ kind: kind!, stat: 'critChance', value: e.value, text, ...flag })
+      else if (m.name === 'CritMultiplier') out.push({ kind: kind!, stat: 'critBonus', value: e.value, text, ...flag })
     }
   }
   for (const u of row.unmapped) {
@@ -217,6 +220,14 @@ export function buildSkillInputs(snap: PobSnapshot, data: OffenceData): SkillInp
     if (it) lines.push(...itemLines(it.raw))
   }
 
+  // "Allocates <notable>" (an amulet enchant) grants that passive's lines.
+  const byName = new Map<string, string[]>()
+  for (const n of Object.values(data.treeNodes)) if (n.n && n.s?.length && !byName.has(n.n)) byName.set(n.n, n.s)
+  for (const line of [...lines]) {
+    const a = /^Allocates (.+)$/.exec(line)
+    if (a) lines.push(...(byName.get(a[1]!) ?? []))
+  }
+
   const global: Mod[] = [...w.rest]
   const unread: string[] = [...unreadShared]
   for (const line of lines) {
@@ -228,8 +239,33 @@ export function buildSkillInputs(snap: PobSnapshot, data: OffenceData): SkillInp
 
   const conds = configConditions(snap)
   const counters = configCounters(snap)
+  const cfgInputs = activeConfigSet(snap)?.inputs ?? {}
+  const conditionOn = (v: string): boolean => cfgInputs[`condition${v}`] === true
+  const rage = counters.rage ?? 0
+  if (rage > 0) global.push({ kind: 'more', stat: 'damage', value: rage, scope: 'attack', text: `Rage: ${rage}` })
+  const shockEffect = cfgInputs.conditionShockEffect
+  const takenInc = conds.has('enemyShocked') && typeof shockEffect === 'number' ? shockEffect : 0
+  // "while affected by Herald of X" is on when a Herald of X skill is enabled in a socket group.
+  const heralds = activeSkillSet(snap)?.groups.filter((g) => g.enabled).flatMap((g) => g.gems.filter((x) => x.enabled).map((x) => x.nameSpec)) ?? []
+  if (heralds.some((n) => /^Herald of /.test(n))) conds.add('herald')
+  if (heralds.includes('Herald of Thunder')) conds.add('heraldThunder')
+  if (heralds.includes('Herald of Ice')) conds.add('heraldIce')
+  if (heralds.includes('Herald of Ash')) conds.add('heraldAsh')
   const out: SkillInput[] = []
   const groups = activeSkillSet(snap)?.groups ?? []
+  // PoB applies a support's conditional "gain as extra damage" buff (Innervate, Blazing Critical, Ice Bite) from any
+  // enabled socket group, not only the skill's own; the config's condition decides whether it is on.
+  const buffUnread: string[] = []
+  const buffMods: Mod[] = []
+  groups.forEach((g, gi) => {
+    if (!g.enabled) return
+    for (const sup of g.gems.filter(isSupport)) {
+      const sr = data.supports.find((x) => x.name === sup.nameSpec)
+      if (!sr) continue
+      const gainOnly: SupportRow = { ...sr, unmapped: [], effects: sr.effects.map((e) => ({ ...e, mods: e.mods.filter((m) => m.conditional && /^DamageGainAs/.test(m.name)) })) }
+      buffMods.push(...supportMods(gainOnly, buffUnread, conditionOn).map((m) => ({ ...m, text: `${m.text} (from group ${gi + 1})` })))
+    }
+  })
   groups.forEach((g, i) => {
     if (!g.enabled) return
     const actives = g.gems.filter(isActive)
@@ -244,24 +280,27 @@ export function buildSkillInputs(snap: PobSnapshot, data: OffenceData): SkillInp
     if (!types.includes('Attack') || !row) return fail('Not estimated: only attack skills are estimated')
     if (!w.weapon) return fail(`Not estimated: ${w.reason ?? 'no weapon'}`)
     const melee = types.includes('Melee')
+    // A skill that consumes charges is paced by charge gain, not by attack speed.
+    if (types.includes('ConsumesCharges')) return fail('Not estimated: this skill is paced by the charges it consumes')
     const level = Math.min(row.levels.length, Math.max(1, (gem.level ?? 1) + levelBonus(melee)))
     const [baseMultiplier, attackSpeedMultiplier] = row.levels[level - 1]!
     const skill: PassSkill = {
-      isAttack: true, isSpell: false, melee, area: types.includes('Area'), projectile: types.includes('Projectile'),
-      baseMultiplier, attackSpeedMultiplier, castTime: row.castTime, conversion: conversionOf(row.constants),
+      isAttack: true, isSpell: false, melee, area: types.includes('Area'), projectile: types.includes('Projectile'), types,
+      baseMultiplier, attackSpeedMultiplier, castTime: row.castTime, extraAttackTime: (row.constants.find(([k]) => k === 'total_attack_time_+_ms')?.[1] ?? 0) / 1000, conversion: conversionOf(row.constants),
     }
     const supUnread: string[] = []
     const supMods: Mod[] = []
     for (const s of sups) {
       const sr = data.supports.find((x) => x.name === s.nameSpec)
-      if (sr) supMods.push(...supportMods(sr, supUnread))
+      // Its own conditional gain buffs are applied once, from the group pass above.
+      if (sr) supMods.push(...supportMods(sr, supUnread, conditionOn).filter((m) => m.kind !== 'gain'))
       else supUnread.push(`${s.nameSpec}: not in the data`)
     }
     out.push({
       ...base,
       gemLevel: level,
       unread: [...unread, ...supUnread],
-      input: { weapon: w.weapon, skill, mods: [...global, ...supMods], conds, counters, enemy: { resist: data.defaultResist } },
+      input: { weapon: w.weapon, skill, mods: [...global, ...supMods, ...buffMods], conds, counters, enemy: { resist: data.defaultResist, takenInc } },
     })
   })
   return out

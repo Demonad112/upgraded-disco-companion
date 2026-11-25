@@ -17,6 +17,8 @@ export interface SkillContext {
   weapon?: string
   /** Conditions that hold (see `CONDITION_KEYS`). A mod that needs one not in the set is off. */
   conds: ReadonlySet<string>
+  /** The skill's PoB types (`Attack`, `Melee`, `ComboStacking`, ...). */
+  types?: ReadonlySet<string>
   /** Counters from the config (combo stacks, rage, ...). */
   counters?: Readonly<Record<string, number>>
 }
@@ -35,6 +37,7 @@ export function applies(mod: Mod, ctx: SkillContext): boolean {
   if (mod.projectile && !ctx.projectile) return false
   if (mod.weapon && mod.weapon !== ctx.weapon) return false
   if (mod.when && !ctx.conds.has(mod.when)) return false
+  if (mod.skillType && !ctx.types?.has(mod.skillType)) return false
   return true
 }
 

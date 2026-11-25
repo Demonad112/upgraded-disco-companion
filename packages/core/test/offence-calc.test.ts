@@ -98,10 +98,21 @@ describe('calcPass', () => {
     expect(out.Speed).toBeCloseTo(1)
   })
 
-  it('scales a per-combo mod by the config counter, up to its limit', () => {
+  it('scales a per-combo mod by the config counter, up to its limit, for combo-stacking skills only', () => {
     const line = 'Skills deal 8% increased Damage per Combo consumed, up to 40%'
-    expect(calcPass(input({ mods: mods(line), counters: { combo: 3 } })).PhysicalHitAverage).toBeCloseTo(200 * 1.24)
-    expect(calcPass(input({ mods: mods(line), counters: { combo: 18 } })).PhysicalHitAverage).toBeCloseTo(200 * 1.4)
-    expect(calcPass(input({ mods: mods(line) })).PhysicalHitAverage).toBeCloseTo(200)
+    const combo = { ...input().skill, types: ['ComboStacking'] }
+    expect(calcPass(input({ skill: combo, mods: mods(line), counters: { combo: 3 } })).PhysicalHitAverage).toBeCloseTo(200 * 1.24)
+    expect(calcPass(input({ skill: combo, mods: mods(line), counters: { combo: 18 } })).PhysicalHitAverage).toBeCloseTo(200 * 1.4)
+    expect(calcPass(input({ skill: combo, mods: mods(line) })).PhysicalHitAverage).toBeCloseTo(200)
+    expect(calcPass(input({ mods: mods(line), counters: { combo: 18 } })).PhysicalHitAverage).toBeCloseTo(200)
+  })
+
+  it('adds the seconds a skill adds to its attack time after the speed modifiers', () => {
+    const out = calcPass(input({ skill: { ...input().skill, extraAttackTime: 1 } }))
+    expect(out.Speed).toBeCloseTo(0.5)
+  })
+
+  it('multiplies hits by the enemy\'s increased damage taken', () => {
+    expect(calcPass(input({ enemy: { resist: { ...none }, takenInc: 27 } })).PhysicalHitAverage).toBeCloseTo(200 * 1.27)
   })
 })
