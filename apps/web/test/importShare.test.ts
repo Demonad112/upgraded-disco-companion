@@ -58,3 +58,12 @@ describe('busy backoff', () => {
     expect(out).toMatchObject({ ok: false, cancelled: true })
   })
 })
+
+describe('siteLinkError', () => {
+  it('names the build site of a pasted link and says to paste the code', async () => {
+    const { siteLinkError } = await import('../src/components/ImportBar')
+    expect(siteLinkError('https://pobb.in/AbCdEf123')).toMatch(/^Open the pobb\.in link, copy its PoB code/)
+    expect(siteLinkError('https://poe.ninja/poe2/pob/1a2b')).toMatch(/poe\.ninja link/)
+    expect(siteLinkError('eNr' + 'A'.repeat(120))).toBeNull()
+  })
+})

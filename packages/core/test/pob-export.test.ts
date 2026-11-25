@@ -71,3 +71,23 @@ describe('readPlayerStats / parsePobXml', () => {
     expect(out.level).toBe(97)
   })
 })
+
+describe('decodePobExport matches PoB2 ImportTab leniency', () => {
+  const code = encode(xml)
+
+  it('trims whitespace and "?" and drops characters outside the base64 alphabet, as PoB does', async () => {
+    const wrapped = `?? ${code.slice(0, 40)}\n${code.slice(40, 80)} \r\n${code.slice(80)}"…? `
+    await expect(decodePobExport(wrapped)).resolves.toContain('TotalDPS')
+  })
+
+  it('accepts a gzip payload (PoB inflate auto-detects zlib or gzip)', async () => {
+    const { gzipSync } = await import('node:zlib')
+    const gz = gzipSync(Buffer.from(xml)).toString('base64').replace(/\+/g, '-').replace(/\//g, '_')
+    await expect(decodePobExport(gz)).resolves.toContain('TotalDPS')
+  })
+
+  it('names the build site when a link is pasted instead of a code', async () => {
+    await expect(decodePobExport('https://pobb.in/AbCdEf123')).rejects.toThrow(/pobb\.in link/)
+    await expect(decodePobExport('poe.ninja/poe2/pob/1a2b')).rejects.toThrow(/poe\.ninja link/)
+  })
+})

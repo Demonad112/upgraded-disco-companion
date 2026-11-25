@@ -195,3 +195,16 @@ describe('humaniseCondition (B1-7)', () => {
     expect(humaniseCondition('condition')).toBe('condition')
   })
 })
+
+describe('enemyIsBoss load migration (PoB2 ConfigTab.lua:657-659)', () => {
+  const doc = (v: string) =>
+    `<PathOfBuilding2><Config activeConfigSet="1"><ConfigSet id="1"><Input name="enemyIsBoss" string="${v}"/></ConfigSet></Config></PathOfBuilding2>`
+  it('title-cases the value, then maps legacy names the way PoB does', () => {
+    expect(readPobConfig(doc('NONE')).boss).toBe('None')
+    expect(readPobConfig(doc('uber')).boss).toBe('Uber')
+    expect(readPobConfig(doc('Uber Atziri')).boss).toBe('Boss')
+    expect(readPobConfig(doc('Shaper')).boss).toBe('Pinnacle')
+    expect(readPobConfig(doc('Sirus')).boss).toBe('Pinnacle')
+    expect(readPobConfig(doc('NONE')).versusBoss).toBe(false)
+  })
+})

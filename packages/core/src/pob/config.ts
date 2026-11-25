@@ -91,6 +91,21 @@ const BOSS_LABELS: Readonly<Record<PobBoss, string>> = Object.freeze({
 })
 export const bossLabel = (b: PobBoss): string => BOSS_LABELS[b]
 
+/**
+ * `enemyIsBoss` as PoB2 loads it (ConfigTab.lua:657-659): each word title-cased, then the pre-0.1 names
+ * mapped (`Uber Atziri` -> `Boss`, `Shaper`/`Sirus` -> `Pinnacle`). An old or hand-edited code otherwise
+ * reads as an unknown value and falls back to the default.
+ */
+function migrateBoss(raw: string | undefined): string | undefined {
+  if (raw === undefined) return undefined
+  return raw
+    .toLowerCase()
+    .replace(/([a-z])(\w*)/g, (_, a: string, b: string) => a.toUpperCase() + b)
+    .replace('Uber Atziri', 'Boss')
+    .replace('Shaper', 'Pinnacle')
+    .replace('Sirus', 'Pinnacle')
+}
+
 /** Values PoB writes for "this setting is off". */
 const OFF_VALUES = new Set(['false', 'NONE', 'None', ''])
 
@@ -188,7 +203,7 @@ export function readPobConfig(source: PobSource): PobConfig {
     }
   }
 
-  const savedBoss = inputs.get('enemyIsBoss')
+  const savedBoss = migrateBoss(inputs.get('enemyIsBoss'))
   const boss: PobBoss =
     savedBoss === 'None' || savedBoss === 'Boss' || savedBoss === 'Pinnacle' || savedBoss === 'Uber' ? savedBoss : POB_DEFAULT_BOSS
   const bossSetting =

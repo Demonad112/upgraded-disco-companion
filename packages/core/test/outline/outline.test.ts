@@ -205,3 +205,17 @@ describe('pob2-own: the owner’s own config, listed as PoB’s Configuration ta
     expect(Math.round(o.skills.find((g) => g.main)!.dps.value!)).toBe(372908)
   })
 })
+
+describe('custom modifiers (PoB2 ConfigOptions.lua customMods)', () => {
+  const xml = `<PathOfBuilding2><Config activeConfigSet="1"><ConfigSet id="1">
+<Input name="customMods" string="+500 to maximum Life&#10;&#10;  20% more Damage  "/></ConfigSet></Config></PathOfBuilding2>`
+  it('lists each non-empty line as a setting, since PoB applied it to the numbers', () => {
+    const snap = readPobSnapshot(xml)
+    const own = buildCharacterOutline(snap, { box: 'pob', config: 'own' })
+    const custom = own.config.settings.filter((s) => s.label === 'Custom modifier')
+    expect(custom.map((s) => s.value)).toEqual(['+500 to maximum Life', '20% more Damage'])
+    expect(custom.every((s) => s.provenance === 'pob-export')).toBe(true)
+    expect(buildCharacterOutline(snap, { box: 'pob', config: 'none' }).config.settings).toEqual([])
+  })
+})
+

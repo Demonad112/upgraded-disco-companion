@@ -29,7 +29,7 @@
  * a code cannot supply rather than substituting a guess.
  */
 
-import { importPobExport, type PobBuildInfo } from './export.js'
+import { importPobExport, pobSiteLink, type PobBuildInfo } from './export.js'
 import type { DamageType } from '../model/types.js'
 import { RES_CAP_DEFAULT } from '../defense/constants.js'
 
@@ -292,7 +292,10 @@ export async function analyzeFromPob(code: string): Promise<PobAnalysis> {
 /** True when a pasted string looks like a Path of Building code rather than JSON. */
 export function looksLikePobCode(text: string): boolean {
   const trimmed = text.trim()
-  if (!trimmed || trimmed.startsWith('{') || trimmed.startsWith('[')) return false
-  // base64url, no whitespace, and long enough to be a real build.
-  return trimmed.length > 100 && /^[A-Za-z0-9_-]+={0,2}$/.test(trimmed)
+  if (!trimmed || trimmed.startsWith('{') || trimmed.startsWith('[') || pobSiteLink(trimmed)) return false
+  // base64url and long enough to be a real build. Line breaks inside and `?` at the ends are allowed: PoB2's
+  // import trims and drops them, and a code copied out of a chat or forum post often carries them. Spaces are
+  // not: text with spaces is prose, not a wrapped code.
+  const compact = trimmed.replace(/^\?+|\?+$/g, '').replace(/[\r\n\t]+/g, '')
+  return compact.length > 100 && /^[A-Za-z0-9_-]+={0,2}$/.test(compact)
 }
