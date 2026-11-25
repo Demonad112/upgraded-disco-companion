@@ -250,6 +250,8 @@ Goal: one decoded object behind every tab. No new analysis.
   - Acceptance: e2e pastes each reference code into each box and each toggle state, and the sheet and all tabs render with no blank category; route budget holds or is raised by rule.
   - Files: `ImportBar.tsx`, `CharacterSheet.tsx`, `character/page.tsx`, e2e spec.
 - **Checkpoint:** PR plus 390/1440 screenshots. The owner reviews the sheet and the missing list before Batch 2.
+- **Done 2026-11-25:** `buildCharacterOutline` (`packages/core/src/outline/`), two code boxes with the config toggle (`ImportBar.tsx`), the Sheet tab (`CharacterSheet.tsx`), the missing list and Pro detail, e2e in `apps/web/e2e/sheet.spec.ts`.
+- **What Batch 2 still lacks:** (1) item mod tiers are read from the ladder data once the Gear data loads; a line the ladders cannot place says why, and jewels carry no tier because their slot id is shared; (2) no per-slot gear score, stat swap or charm overkill flag, only the raw lines; (3) over-cap is shown per resistance, not yet shared across items; (4) Runic Ward, item rarity and ES recharge are not in a PoB2 code (shown as missing, not derivable); (5) the Sheet tab shows the code's numbers without grades or advice; (6) recents and `#pob=` re-opens use the poe.ninja baseline, since the box and toggle are not stored with them; (7) the Defence axis still comes from the old assessment, unchanged.
 
 ### Batch 2: Defence calcs, analysis and tips (`defence-analysis`)
 

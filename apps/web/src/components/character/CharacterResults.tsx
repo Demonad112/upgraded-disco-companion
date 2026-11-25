@@ -30,7 +30,7 @@ import type { SupportCatalogState } from '@/lib/useSupportCatalog'
 
 const lazyTab = (load: () => Promise<{ default: (p: PanelProps) => React.ReactNode }>) =>
   dynamic(load, { ssr: false, loading: () => <Skeleton /> })
-const SheetTab = dynamic(() => import('./tabs/SheetTab'), { ssr: false, loading: () => <Skeleton /> })
+const SheetTab = lazyTab(() => import('./tabs/SheetTab'))
 const DefenceTab = lazyTab(() => import('./tabs/DefenceTab'))
 const DamageTab = lazyTab(() => import('./tabs/DamageTab'))
 const GearTab = lazyTab(() => import('./tabs/GearTab'))
