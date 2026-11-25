@@ -11,7 +11,7 @@ npm workspaces (`packages/*`, `apps/*`), Node >=22, TypeScript strict. `packages
 - `npm run test:coverage -w @poe2/core` enforces 90% statements / 75% branches. `npm run e2e -w @poe2/web` runs against `apps/web/out` (build first); `E2E_BASE_URL=<preview>` runs it against a deployed site.
 - PoB2 headless oracle commands (`pob2:oracle`, `pob2:spec`, `pob2:run`): skill `pob2-oracle`.
 - Core goldens (`packages/core/test/golden/`): review the diff, then `npx vitest run -u` in `packages/core` and commit the changed `*.expected.json` with the cause. This is the "golden diff" HG1-1 asks for.
-- Screenshot check (390 px + 1440 px, real character): `node scripts/screenshot.mjs [baseUrl] [outDir]`; write to the scratchpad, never git. Import path without network: `node scripts/mock-proxy.mjs [port]` serves the committed fixture.
+- Screenshots (UI or design work, or when asked): `node scripts/screenshot.mjs [baseUrl] [outDir]` (390 + 1440 px) to the scratchpad, never git; offline: `node scripts/mock-proxy.mjs [port]`.
 
 ## Architecture
 
@@ -36,7 +36,13 @@ The SessionStart hook installs and builds core when needed (a FAILED line means 
 - "Plan" means stop after the plan. "Fix" or "remove" means do it in this session; write a prompt for another chat only when asked.
 - Record the owner's decisions in their words: "not yet" is deferred, not never.
 - Never lower a threshold, raise a budget, skip a test or amend a pushed commit to get green without the owner's OK.
-- End with a closeout: each item done, partial or not done, with evidence, and what is pending (CI, browser, real data). Handoff prompts go in chat as one code block.
+- End with a closeout: each item done, partial or not done, with evidence, and what is pending (CI, browser, real data).
+
+## Handoff prompts
+
+- Print in chat as one copyable code block; a file only if asked.
+- Only the scope named: no cron jobs, extra batches or behaviour changes in a cleanup prompt.
+- State branch/PR status, what is verified, what is pending, and the exact first step.
 
 ## Working style
 
@@ -52,6 +58,3 @@ The SessionStart hook installs and builds core when needed (a FAILED line means 
 - **Context.** Keep it for what matters: batch independent tool calls; grep before reading and read whole files only
   when editing them; query `packages/data/generated/**` and the large fixtures with `node -e` when you
   need only part of them; cap listings, never errors or failing tests. Hand off at a task boundary.
-- **No watching.** Don't schedule check-ins, subscribe to PR events or poll CI unless the owner asks: each wake is a full paid turn. End with the branch pushed (PR only when asked) and CI status in the closeout; the owner asks for status later.
-- Visual work: before opening the PR, ask whether to run a screenshot check; if yes, post the 390 px and 1440 px
-  Playwright screenshots in chat (images stay out of git).
