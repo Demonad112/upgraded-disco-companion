@@ -1,4 +1,4 @@
-Preview: <!-- https://<branch-slug>.upgraded-disco-companion.pages.dev/ -->
+Preview: <!-- Copy the URL from the Cloudflare Pages check or bot comment. Never build it from the branch name: Cloudflare truncates long names. -->
 
 ## Summary
 

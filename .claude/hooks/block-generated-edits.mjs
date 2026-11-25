@@ -1,4 +1,4 @@
-// PreToolUse hook (Edit|Write): denies edits to generated files. Bash/PowerShell are not matched, so the regen
+// PreToolUse hook (Edit|Write): denies edits to generated files and asks before edits to quality thresholds. Bash/PowerShell are not matched, so the regen
 // commands (the packages/data build:* scripts) still work. Exit 2 blocks the call and the
 // stderr text goes back to Claude. package-lock.json is also blocked (npm writes it). Edits under the data
 // folders get a reminder to check the e2e specs, which pin those shapes.
@@ -27,6 +27,16 @@ export const E2E_REMINDER =
 const REMIND_DIRS = ['apps/web/src/data/', 'packages/data/scripts/'];
 
 const norm = (filePath) => filePath.replace(/\\/g, '/');
+
+// Quality gates: thresholds and budgets CI enforces. Lowering one to get green needs the owner's OK, so edits ask first.
+export const GATE_REASON =
+  'Quality threshold or budget file. Fix the cause first; change a threshold or raise a budget only with the owner\'s OK.';
+const GATE = /(^|\/)(lighthouserc\.json|scripts\/route-weight\.mjs|vitest\.config\.[cm]?[jt]s)$/;
+
+export function isQualityGate(filePath) {
+  if (typeof filePath !== 'string' || !filePath) return false;
+  return GATE.test(norm(filePath));
+}
 
 export function isLockfile(filePath) {
   if (typeof filePath !== 'string' || !filePath) return false;
@@ -62,6 +72,11 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
   if (isLockfile(file)) {
     console.error(LOCK_MESSAGE);
     process.exit(2);
+  }
+  if (isQualityGate(file)) {
+    const hookSpecificOutput = { hookEventName: 'PreToolUse', permissionDecision: 'ask', permissionDecisionReason: GATE_REASON };
+    console.log(JSON.stringify({ hookSpecificOutput }));
+    process.exit(0);
   }
   if (wantsE2eReminder(file)) {
     console.log(JSON.stringify({ hookSpecificOutput: { hookEventName: 'PreToolUse', additionalContext: E2E_REMINDER } }));
