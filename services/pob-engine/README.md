@@ -46,21 +46,11 @@ docker build -f services/pob-engine/Dockerfile -t pob-engine .
 docker run --rm -p 8080:8080 pob-engine
 ```
 
-## Deploy (owner queue PE-1): Cloudflare Containers
+## Deploy (owner queue PE-1, deferred)
 
-`services/pob-engine/cloudflare/` is a Worker in front of one container instance (`standard-2`: 1 vCPU, 6 GiB; sleeps after 15 minutes idle). The GitHub workflow **Deploy pob-engine** (`.github/workflows/pob-engine-deploy.yml`) builds the image on the runner (it needs Docker, which a cloud session lacks), runs `wrangler deploy`, checks the live engine reproduces the reference TotalDPS, then sets `NEXT_PUBLIC_POB_ENGINE_BASE` on the Pages project (production and preview) and starts a production build. It runs on pushes to `main` that touch the engine, `tools/pob2` or `vendor/pob2`, and by hand from the Actions tab.
+Not deployed: the owner chose to leave it off for now (2026-11-26) and rules out anything needing a paid account. Cloud Run and Cloudflare Containers both need billing. A free host that fits the ~700 MB worker is a Hugging Face Space (Docker SDK, free CPU tier, no card, sleeps after 48 h idle). Any host works with the same image: set `NEXT_PUBLIC_POB_ENGINE_BASE` to its https URL in the Pages build env; `apps/web/scripts/csp-hashes.mjs` adds the origin to `connect-src`.
 
-One-time setup (owner):
-
-1. Cloudflare dashboard → My Profile → API Tokens → Create Token → Custom token with **Account · Workers Scripts · Edit**, **Account · Containers · Edit**, **Account · Cloudflare Pages · Edit** and **Account · Account Settings · Read**, for your account.
-2. GitHub → repository Settings → Secrets and variables → Actions: add `CLOUDFLARE_API_TOKEN` (the token) and `CLOUDFLARE_ACCOUNT_ID` (dashboard URL or Workers overview).
-3. Actions → Deploy pob-engine → Run workflow.
-
-Containers need the Workers Paid plan. Billing is per active vCPU-second and GiB-second while the container runs, and it sleeps when idle. The first request after a sleep waits for the container and PoB to start.
-
-Any other container host works with the same image (for example Cloud Run: `--cpu 1 --memory 1Gi --concurrency 4 --min-instances 0`). Set `NEXT_PUBLIC_POB_ENGINE_BASE` to its https URL in the Pages build env; `apps/web/scripts/csp-hashes.mjs` adds the origin to `connect-src`.
-
-After a PoB bump (`docs/POB2-SYNC.md`) the workflow redeploys by itself, because the image carries `vendor/pob2`.
+After a PoB bump (`docs/POB2-SYNC.md`), rebuild and redeploy wherever it runs: the image carries `vendor/pob2`.
 
 ## Tests
 
