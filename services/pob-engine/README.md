@@ -46,20 +46,11 @@ docker build -f services/pob-engine/Dockerfile -t pob-engine .
 docker run --rm -p 8080:8080 pob-engine
 ```
 
-## Deploy (owner queue PE-1)
+## Deploy (owner queue PE-1, deferred)
 
-Recommended: Google Cloud Run, scale to zero, so it costs nothing idle and cents per day in use.
+Not deployed: the owner chose to leave it off for now (2026-11-26) and rules out anything needing a paid account. Cloud Run and Cloudflare Containers both need billing. A free host that fits the ~700 MB worker is a Hugging Face Space (Docker SDK, free CPU tier, no card, sleeps after 48 h idle). Any host works with the same image: set `NEXT_PUBLIC_POB_ENGINE_BASE` to its https URL in the Pages build env; `apps/web/scripts/csp-hashes.mjs` adds the origin to `connect-src`.
 
-```sh
-gcloud builds submit --tag REGION-docker.pkg.dev/PROJECT/pob/pob-engine -f services/pob-engine/Dockerfile .   # or build + push with docker
-gcloud run deploy pob-engine --image REGION-docker.pkg.dev/PROJECT/pob/pob-engine \
-  --region REGION --allow-unauthenticated --cpu 1 --memory 1Gi --concurrency 4 \
-  --min-instances 0 --max-instances 2 --timeout 120 --cpu-boost
-```
-
-Then set `NEXT_PUBLIC_POB_ENGINE_BASE=https://pob-engine-….run.app` in the Cloudflare Pages build environment and redeploy the site; `apps/web/scripts/csp-hashes.mjs` adds the origin to `connect-src`. A cold start adds ~3 s to the first build. Fly.io (`shared-cpu-1x`, 1 GB, auto-stop) or Cloudflare Containers (Workers Paid) also work with the same image.
-
-After a PoB bump (`docs/POB2-SYNC.md`), rebuild and redeploy: the image carries `vendor/pob2`.
+After a PoB bump (`docs/POB2-SYNC.md`), rebuild and redeploy wherever it runs: the image carries `vendor/pob2`.
 
 ## Tests
 
