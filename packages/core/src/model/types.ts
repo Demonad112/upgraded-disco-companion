@@ -17,6 +17,8 @@ export type Provenance =
   | 'ninja'
   /** Tier 2: read from the PoB export blob poe.ninja embeds. */
   | 'pob-export'
+  /** Computed by Path of Building's own engine (`services/pob-engine`) from the pasted code: figures the code does not store. */
+  | 'pob-calc'
   /** Tier 3: computed by this codebase. MUST be surfaced as an estimate. */
   | 'estimate'
   /** Arithmetic on observed values, labelled as such (e.g. an implied resistance). */
@@ -79,6 +81,10 @@ export interface NinjaSkillDps {
    * combo or cooldown skill, while `dps` assumes the skill is used without pause.
    */
   combinedDps?: number
+  /** Ours, not poe.ninja's: where this entry came from when it is not the source's own (`pob-calc`, `pob/engine.ts`). */
+  provenance?: Provenance
+  /** Ours: where `damageTypes` came from when it is not the entry's own source (`pob-calc` on a code's main skill). */
+  splitProvenance?: Provenance
 }
 
 export interface NinjaGem {

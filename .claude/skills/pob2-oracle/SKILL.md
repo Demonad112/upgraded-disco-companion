@@ -5,7 +5,7 @@ description: Use when a task touches vendor/pob2, tools/pob2, scripts/pob2, the 
 
 # PoB2 headless oracle (CI guard only)
 
-The oracle never feeds the site. It must reproduce every PlayerStat the reference code carries (`packages/core/test/reference/`). Full background, pin rules and the bump runbook: `docs/POB2-SYNC.md`.
+The oracle files never feed the site; `services/pob-engine` runs the same Lua (`tools/pob2/serve.lua`, `groups_lib.lua`) server-side for pasted codes (provenance `pob-calc`). It must reproduce every PlayerStat the reference code carries (`packages/core/test/reference/`). Full background, pin rules and the bump runbook: `docs/POB2-SYNC.md`.
 
 ## Layout
 
@@ -22,6 +22,6 @@ Needs `scripts/pob2/install-luajit.sh` (session-only) or Docker, plus a built co
 | `npm run pob2:oracle -- --check` | Fails on a diff (CI job `pob2-oracle`; the gate runs it for these paths) |
 | `npm run pob2:spec` | Runs the busted specs |
 | `npm run pob2:run -- <code-file>` | Prints one snapshot |
-| `node scripts/pob2/run.mjs --groups <code-file\|->` | Prints every skill group's PoB output (CI-only ground truth, never shown on the site) |
+| `node scripts/pob2/run.mjs --groups <code-file\|->` | Prints every skill group's PoB output (CI ground truth; the engine service serves the same rows) |
 
 For the decoded reference build itself, use the `reference-build` skill, not these commands.

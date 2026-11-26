@@ -6,6 +6,7 @@ Guidance for the web app (`@poe2/web`). Root `CLAUDE.md` covers the repo as a wh
 
 - **Data flow for the web app.** `packages/data/generated/*` is copied into `apps/web/public` by `sync-data` (generated, gitignored). `next.config.ts` hashes those files into `NEXT_PUBLIC_DATA_VERSION`, which keys the service-worker caches.
 - **Character import.** The browser cannot call poe.ninja (no CORS, preflight 405), so it goes through `services/ninja-proxy`. The base URL is `NEXT_PUBLIC_NINJA_PROXY_BASE`, inlined at build time, defaulting to `https://poe2-v3-ninja-proxy.vercel.app` (`apps/web/src/lib/proxy.ts`). Any other value must also be added to `connect-src` in `apps/web/public/_headers`.
+- **PoB engine.** For a pasted code the page asks `services/pob-engine` for every skill group's damage (`src/lib/usePobEngine.ts`, ~10 s, the analysis re-runs when it answers). Off unless `NEXT_PUBLIC_POB_ENGINE_BASE` is set at build time; `scripts/csp-hashes.mjs` adds that origin to `connect-src` in `out/_headers`, and the service's `ALLOWED_ORIGIN` must allow the site.
 - **`basePath`.** Applied only when `GITHUB_ACTIONS=true` (derived from `GITHUB_REPOSITORY`) and `ROOT_BASE_PATH` is not `1`; empty locally and on Cloudflare Pages. Client code must read `BASE_PATH` from `apps/web/src/lib/basePath.ts`, because Next only inlines `NEXT_PUBLIC_*` env vars into client bundles.
 
 ## Design (decided; change only with the owner)

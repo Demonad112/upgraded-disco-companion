@@ -18,6 +18,7 @@ import { useCharacterHistory } from '@/lib/useCharacterHistory'
 import { CODE_ACCOUNT, recentCharacters, recordRecent, topFixOf } from '@/lib/recentCharacters'
 import { gradeText } from '@/lib/grade'
 import { useLadder } from '@/lib/useLadder'
+import { usePobEngine } from '@/lib/usePobEngine'
 import { EMPTY_PROMPT, IMPORT_PROMPT, NINJA_IMPORT_BLOCKED, PROXY_BASE } from '@/lib/proxy'
 import { PageHeader } from '@/components/layout/PageHeader'
 import { analysisNeedsDisplay, useModTiers } from '@/lib/useModTiers'
@@ -106,6 +107,9 @@ export default function Home() {
   // if it answered in time), which writes Top 3; the full pass once the tree is in too. The tree changes Top 3 only for
   // keystone builds, so it is not worth holding Top 3 for (PX9 measurement, docs/HISTORY.md: identical rows with and without it on both
   // reference characters).
+  // PoB's engine on a pasted code: every skill group's damage, which the code stores for its main group only. It
+  // answers in ~10 s; whichever pass runs after that includes it, and its arrival re-runs the current pass.
+  const engine = usePobEngine(source === 'pob-export' ? pobCode : null)
   const want: 'card' | 'fixes' | 'full' = tiersIn && (ladderSettled || grace) ? (treeSettled ? 'full' : 'fixes') : 'card'
 
   // One options object for the main analysis and the what-if re-runs. Keyed on the tiers as first loaded, so the
@@ -121,18 +125,19 @@ export default function Home() {
       ...(catalog ? { catalog } : {}),
       ladder,
       source,
+      engine,
       dataVersion: SHIPPED_DATA_VERSION,
     }),
-    [baseTiers, tree, catalog, ladder, source],
+    [baseTiers, tree, catalog, ladder, source, engine],
   )
   // The card pass's options: one object per source, so inputs arriving before the fixes pass do not re-run it.
-  const cardOptions = useMemo(() => ({ source, dataVersion: SHIPPED_DATA_VERSION }), [source])
+  const cardOptions = useMemo(() => ({ source, engine, dataVersion: SHIPPED_DATA_VERSION }), [source, engine])
 
   // Three passes per import: card, fixes, full (above). Each runs once; the ladder landing after the grace window is
   // the only reason for another. A result from a run that has since been superseded is dropped.
   const passOptions = useMemo(
-    () => (want === 'card' ? cardOptions : want === 'fixes' ? { ...(baseTiers ? { tiers: baseTiers } : {}), ladder, source, dataVersion: SHIPPED_DATA_VERSION } : analysisOptions),
-    [want, cardOptions, baseTiers, ladder, source, analysisOptions],
+    () => (want === 'card' ? cardOptions : want === 'fixes' ? { ...(baseTiers ? { tiers: baseTiers } : {}), ladder, source, engine, dataVersion: SHIPPED_DATA_VERSION } : analysisOptions),
+    [want, cardOptions, baseTiers, ladder, source, engine, analysisOptions],
   )
   const runId = useRef(0)
   const [stage, setStage] = useState<'card' | 'fixes' | 'full'>('card')

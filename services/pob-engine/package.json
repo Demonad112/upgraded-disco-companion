@@ -1,0 +1,14 @@
+{
+  "name": "poe2-pob-engine",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "PoB2's own calc engine (vendor/pob2, headless LuaJIT) behind a small HTTP API: a pasted PoB code in, every stat PoB computes out. Deployed as a container, separately from the monorepo workspaces.",
+  "scripts": {
+    "start": "node src/server.mjs",
+    "test": "node --test test/*.test.mjs"
+  },
+  "engines": {
+    "node": "22.x"
+  }
+}

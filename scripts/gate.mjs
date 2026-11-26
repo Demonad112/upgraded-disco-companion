@@ -41,6 +41,7 @@ export function plan(files) {
   if (coreSrc || any('packages/data/', 'packages/core/test/reference/', 'scripts/decode-reference.mjs')) add('npm run decode:reference -- --check');
   if (any('scripts/', '.claude/hooks/', 'packages/data/')) add('npm run test:scripts');
   if (any('services/ninja-proxy/')) add('npm --prefix services/ninja-proxy test');
+  if (any('services/pob-engine/', 'tools/pob2/')) add('npm --prefix services/pob-engine test');
   return cmds;
 }
 

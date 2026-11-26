@@ -5,6 +5,7 @@ The site talks like a golf caddy to a new player: what to do, and one short reas
 - Default-visible text: at most 2 sentences, about 140 characters.
 - Lead with the action. At most one reason ("Use X, because Y").
 - No formulas, stacked numbers or patch history in default text.
+- A number PoB's engine calculated from the code (`pob-calc`, `services/pob-engine`) is labelled "PoB calc": exact for PoB, but not stored in the code.
 - A simulated or estimated number is labelled where it shows ("≈ est.", provenance `pob-sim` or `estimate`), never passed off as PoB's or poe.ninja's exact figure. A missing input with no estimate stays "missing".
 - Tooltips (glossary `short`, primer `short`): about 80–90 characters.
 - Long text lives only behind **Pro detail** (`ProOnly`, `ProSwap`, finding `detail`).

@@ -27,6 +27,7 @@ import { CRIT_UNINVESTED, DAMAGE_TYPE_MIN_SHARE } from './thresholds.js'
 import { readPlayerStats, readPobSnapshotFromCode } from './pob/export.js'
 import { readPobConfig, type PobConfig } from './pob/config.js'
 import { pobCodeGaps, type PobGap } from './pob/analyze.js'
+import { applyPobEngine, type EngineNote, type PobEngineResult } from './pob/engine.js'
 import { codeBreakdowns, type CodeBreakdowns } from './pob/code-breakdowns.js'
 import { snapshotItems } from './pob/items.js'
 import { readPobMainSkill } from './pob/main-skill.js'
@@ -59,6 +60,8 @@ export interface Analysis {
   source: AnalysisSource
   /** What this source cannot answer, stated rather than filled in. Empty for poe.ninja. */
   sourceGaps: PobGap[]
+  /** What Path of Building's engine added to a pasted code (`AnalyzeOptions.engine`); null when it was not run. */
+  engine: EngineNote | null
   /**
    * The unwrapped character model.
    *
@@ -211,6 +214,11 @@ export interface AnalyzeOptions {
   source?: AnalysisSource
   /** The shipped game data version (`readDataVersion` of `version.json`), echoed in `Analysis.stamp`. */
   dataVersion?: DataVersion | null
+  /**
+   * PoB's own engine on the same code (`services/pob-engine`, `fetchPobEngine`). Only with `source: 'pob-export'`:
+   * it adds the damage of every group the code stores no figure for, labelled `pob-calc` (`pob/engine.ts`).
+   */
+  engine?: PobEngineResult | null
 }
 
 /**
@@ -286,7 +294,8 @@ function skillContext(dps: DpsSummary, catalog: SupportCatalog | undefined): Mai
 
 /** The same damage reading, labelled as Path of Building's: a converted code's figures are PoB's, not poe.ninja's. */
 function asPobDps(dps: DpsSummary): DpsSummary {
-  const relabel = <T extends { provenance: unknown }>(s: T): T => ({ ...s, provenance: 'pob-export' })
+  // Figures PoB's engine added (`pob-calc`) keep their own label.
+  const relabel = <T extends { provenance: unknown }>(s: T): T => (s.provenance === 'pob-calc' ? s : { ...s, provenance: 'pob-export' })
   const skills = dps.skills.map(relabel)
   const same = (s: SkillDamage | null) => (s ? (skills.find((k) => k.name === s.name) ?? relabel(s)) : null)
   return {
@@ -327,6 +336,7 @@ export async function analyzeCharacter(
   let pobMinionStats: Record<string, number> | null = null
   let unmappedSlots: string[] = []
   let fromCodeLines: CodeBreakdowns | null = null
+  let engineNote: EngineNote | null = null
   if (model.pathOfBuildingExport) {
     try {
       const snapshot = await readPobSnapshotFromCode(model.pathOfBuildingExport)
@@ -338,6 +348,11 @@ export async function analyzeCharacter(
       pobSkillGroups = readPobSkillGroups(snapshot)
       pobMinionStats = snapshot.minionStats
       unmappedSlots = snapshotItems(snapshot).unmapped
+      if (fromCode && options.engine) {
+        const applied = applyPobEngine(model, snapshot, pobStats, options.engine)
+        model = applied.model
+        engineNote = applied.note
+      }
     } catch (err) {
       warnings.push(
         `The attached Path of Building export could not be decoded (${(err as Error).message}), so poe.ninja's numbers could not be cross-checked.`,
@@ -395,6 +410,7 @@ export async function analyzeCharacter(
 
   const analysis: Analysis = {
     source,
+    engine: engineNote,
     sourceGaps: fromCode
       ? pobCodeGaps(pobStats ?? {}, {
           items: model.items?.length ?? 0,

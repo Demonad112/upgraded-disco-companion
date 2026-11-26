@@ -34,5 +34,19 @@ const re = /script-src 'self'[^;]*(?=;)/
 const directive = re.exec(headers)?.[0]
 if (!directive) throw new Error("csp-hashes: script-src 'self' not found in out/_headers")
 const kept = directive.split(/\s+/).filter((t) => !t.startsWith("'sha256-"))
-writeFileSync(headersPath, headers.replace(re, [...kept, ...[...hashes].sort()].join(' ')))
+let next = headers.replace(re, [...kept, ...[...hashes].sort()].join(' '))
+
+// The PoB engine (src/lib/usePobEngine.ts) is deployed separately, so its origin comes from the same build-time env
+// var the app reads, rather than a host hard-coded in public/_headers.
+const engineBase = process.env.NEXT_PUBLIC_POB_ENGINE_BASE
+if (engineBase) {
+  const origin = new URL(engineBase).origin
+  if (!/^(https:\/\/|http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$)/.test(origin)) throw new Error(`csp-hashes: NEXT_PUBLIC_POB_ENGINE_BASE must be https (or localhost), got ${origin}`)
+  const connect = /connect-src 'self'[^;]*(?=;)/
+  const current = connect.exec(next)?.[0]
+  if (!current) throw new Error("csp-hashes: connect-src 'self' not found in out/_headers")
+  if (!current.split(/\s+/).includes(origin)) next = next.replace(connect, `${current} ${origin}`)
+  console.log(`csp-hashes: PoB engine ${origin} added to connect-src`)
+}
+writeFileSync(headersPath, next)
 console.log(`csp-hashes: ${hashes.size} inline script hashes written to out/_headers`)
