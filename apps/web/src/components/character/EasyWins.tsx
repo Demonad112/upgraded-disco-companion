@@ -10,7 +10,7 @@ import { analyzeItem, gradeGainText, rankEasyWins, rankReplacements, type Analys
 import { TRADE_LEAGUE } from '@/lib/constants'
 import type { ModTiersState } from '@/lib/useModTiers'
 import { FixRow, useTradeMap } from './TopFixes'
-import { topFixes, tradeStatFor } from './topFixesData'
+import { tradeStatFor } from './topFixesData'
 
 const EFFORT: Record<EasyWin['effort'], string> = {
   free: 'Free',
@@ -20,7 +20,7 @@ const EFFORT: Record<EasyWin['effort'], string> = {
   unknown: 'Effort unclear',
 }
 
-/** True when every Easy-wins row is already a Top fix, so the card would repeat it (B1-3). */
+/** True when every Easy-wins row is in a given list of finding ids (B1-3; no longer used on the Overview, where the steps list replaced Top fixes). */
 export function sameAsTopFixes(winIds: readonly string[], topIds: readonly string[]): boolean {
   const top = new Set(topIds)
   return winIds.length > 0 && winIds.every((id) => top.has(id))
@@ -58,7 +58,7 @@ export function EasyWins({
     const f = byId.get(w.id)
     return f ? tradeStatFor(f) !== null : false
   }))
-  if (!rows.length || sameAsTopFixes(rows.map((w) => w.id), topFixes(a.recommendations).map((f) => f.id))) return null
+  if (!rows.length) return null
   return (
     <section data-surface="data" className="card min-w-0" aria-labelledby="easy-wins-title" data-easy-wins>
       <h3 id="easy-wins-title" className="h3">

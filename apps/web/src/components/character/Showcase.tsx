@@ -151,16 +151,14 @@ export function Showcase({ analysis, axes, children }: { analysis: Analysis; axe
         </p>
 
         {identity.name && summary ? <p className="bc-note">{summary}</p> : null}
-        <div className="bc-grade">
-          <div className="min-w-0 grow">
-            <AxisChips defence={grade?.letter ?? null} {...axes} />
-            <ProOnly>
-              <div className="mt-2 flex flex-wrap items-center gap-2">
-                {grade ? <span className="tabular font-mono text-[length:var(--fs-11)] whitespace-nowrap text-ink-dim">defence {grade.score}</span> : null}
-                {analysis.pobStats ? <Tag tone="good">Cross-validated</Tag> : null}
-              </div>
-            </ProOnly>
-          </div>
+        <div className="mt-2 min-w-0">
+          <AxisChips defence={grade?.letter ?? null} {...axes} />
+          <ProOnly>
+            <div className="mt-2 flex flex-wrap items-center gap-2">
+              {grade ? <span className="tabular font-mono text-[length:var(--fs-11)] whitespace-nowrap text-ink-dim">defence {grade.score}</span> : null}
+              {analysis.pobStats ? <Tag tone="good">Cross-validated</Tag> : null}
+            </div>
+          </ProOnly>
         </div>
         <p className="bc-note">
           <a href="#assessment" onClick={openAssessment} className="whitespace-nowrap text-accent underline underline-offset-2">

@@ -51,4 +51,22 @@ describe('nextSteps', () => {
     expect(steps).toHaveLength(1)
     expect(steps[0]!.area).toBe('clear')
   })
+  it('folds a weak-hit tip into the resistance tip of the same type, then fills from findings', () => {
+    const d = { tips: [{ kind: 'weak-hit', type: 'chaos', text: 'chaos hits' }, { kind: 'chaos-gap', type: 'chaos', text: 'chaos res' }, { kind: 'weak-hit', type: 'physical', text: 'phys hits' }] } as never
+    const findings = [{ id: 'g', area: 'gear', text: 'Fill the empty affix slots.' }] as never
+    // The chaos hit tip folds into its resistance tip: one fix, and the resistance is the concrete one.
+    expect(nextSteps({ defence: d, swaps: [], damage: damage(90), findings }).map((s) => s.text)).toEqual(['chaos res', 'phys hits', 'Fill the empty affix slots.'])
+  })
+  it('fills from ranked gear and damage findings, skipping defence findings and stats a tip already names', () => {
+    const d = { tips: [{ kind: 'chaos-gap', type: 'chaos', text: 'chaos res' }] } as never
+    const findings = [
+      { id: 'a', area: 'defence', text: 'Toughen up.' },
+      { id: 'b', area: 'gear', text: 'Chaos again.', stat: 'chaosResistance' },
+      { id: 'c', area: 'gear', text: 'Fill the empty affix slots.' },
+      { id: 'd', area: 'damage', text: 'Raise accuracy to 100%.' },
+    ] as never
+    const steps = nextSteps({ defence: d, swaps: [], damage: damage(90), findings })
+    expect(steps.map((s) => s.text)).toEqual(['chaos res', 'Fill the empty affix slots.', 'Raise accuracy to 100%.'])
+    expect(steps[1]!.findingId).toBe('c')
+  })
 })

@@ -96,33 +96,6 @@
   min-width: 0;
   overflow-wrap: anywhere;
 }
-.bc-grade {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  margin-top: 8px;
-}
-.bc-stamp {
-  flex: none;
-  display: grid;
-  place-items: center;
-  width: 64px;
-  height: 64px;
-  border: 2px solid var(--accent);
-  transform: rotate(-6deg);
-  background: linear-gradient(180deg, var(--accent-soft), transparent 60%), var(--well);
-  box-shadow:
-    0 0 0 1px black,
-    0 0 0 3px var(--metal-hi),
-    inset 0 2px 6px black,
-    inset 0 0 0 3px var(--well),
-    inset 0 0 0 4px var(--accent-line);
-}
-.bc-stamp span {
-  font-family: var(--font-heading);
-  font-weight: 700;
-  line-height: 1;
-}
 .bc-note {
   margin-top: 6px;
   font-size: var(--fs-12);

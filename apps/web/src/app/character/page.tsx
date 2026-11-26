@@ -77,7 +77,7 @@ export default function Home() {
   //
   // What loads when: the affix ladders on import (Top 3 needs them); the passive tree once the build card has painted,
   // when the browser is idle (keystones can change the card's pool and the findings, and the history snapshot waits for
-  // it); the support-gem catalogue once the affix ladders are in (the gear grade on the Overview needs the main skill's tags); the implicit/unique mod text when Gear, Damage or Advanced opens.
+  // it); the support-gem catalogue with the tree, once the card has painted (the gear grade on the Overview needs the main skill's tags); the implicit/unique mod text when Gear, Damage or Advanced opens.
   const [treeWanted, setTreeWanted] = useState(false)
   const [tiersBase, setTiersBase] = useState(false)
   const displayTab = opened.has('gear') || opened.has('damage') || opened.has('advanced')
@@ -96,8 +96,8 @@ export default function Home() {
   const tiersSettled = tiersState.status === 'ready' || tiersState.status === 'error'
   const [grace, setGrace] = useState(false)
   const tiersIn = raw !== null && tiersSettled
-  // Starts with the fixes pass, after the card has painted; the Overview grades Gear from it.
-  const catalogState = useSupportCatalog(tiersIn)
+  // Starts once the card has painted and the browser is idle; the Overview grades Gear from it.
+  const catalogState = useSupportCatalog(treeWanted && tiersIn)
   useEffect(() => {
     if (!tiersIn || ladderSettled) return
     const t = window.setTimeout(() => setGrace(true), LADDER_GRACE_MS)

@@ -60,8 +60,8 @@ export function AxisSummary({ defence, gear, gearState, damage = null }: { defen
           </p>
           {damage ? (
             <p className="mt-0.5 text-[length:var(--fs-11)] leading-relaxed text-ink-mute" data-damage-bands>
-              Time to kill a base rare:{' '}
-              {damage.bands.map((b, i) => `${b.grade} ${b.maxTtk === null ? `slower than ${damage.bands[i - 1]!.maxTtk} s` : `${b.maxTtk} s or less`}`).join(' · ')}.
+              Base rare time to kill:{' '}
+              {damage.bands.map((b, i) => `${b.grade} ${b.maxTtk === null ? `over ${damage.bands[i - 1]!.maxTtk}` : `≤ ${b.maxTtk}`} s`).join(' · ')}.
             </p>
           ) : null}
         </div>

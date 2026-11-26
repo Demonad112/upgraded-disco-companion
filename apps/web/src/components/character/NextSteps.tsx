@@ -64,15 +64,15 @@ export function NextSteps({
                       <a href={details} className="btn btn-secondary btn-sm" aria-label={`Details: ${s.text}`}>
                         Details
                       </a>
-                      {trade ? (
-                        <a href={trade} target="_blank" rel="noopener noreferrer" className="btn btn-secondary btn-sm" aria-label={`Find on trade: search trade2 for step ${i + 1}`} data-trade="search">
-                          Find on trade
-                        </a>
-                      ) : (
-                        <a href={`${BASE_PATH}/trade/`} className="btn btn-secondary btn-sm" aria-label={`Find on trade: open the trade page for step ${i + 1}`} data-trade="page">
-                          Find on trade
-                        </a>
-                      )}
+                      <a
+                        href={trade ?? `${BASE_PATH}/trade/`}
+                        {...(trade ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
+                        className="btn btn-secondary btn-sm"
+                        aria-label={`Find on trade: step ${i + 1}`}
+                        data-trade={trade ? 'search' : 'page'}
+                      >
+                        Find on trade
+                      </a>
                     </div>
                   ) : null}
                 </div>

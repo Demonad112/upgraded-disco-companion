@@ -23,7 +23,7 @@ import { CouldntCheck } from './CouldntCheck'
 import { ShareCard } from './ShareCard'
 import { Showcase } from './Showcase'
 import { NextSteps } from './NextSteps'
-import { damageLever } from './topFixesData'
+import { damageLever, stepFindings } from './topFixesData'
 import type { OutlineInput } from './CharacterSheet'
 import { Panel } from './tabs/Panel'
 import type { PanelProps } from './tabs/types'
@@ -79,7 +79,7 @@ function OverviewPanel({
   const { axis: damage, ready: damageReady } = useDamageAxis(a)
   const defAxis = useMemo(() => defenceAxis(a.assessment, a.defense), [a])
   const steps = useMemo(
-    () => nextSteps({ defence: defAxis, swaps: review?.swaps ?? [], damage, damageLever: damageLever(a.recommendations) }),
+    () => nextSteps({ defence: defAxis, swaps: review?.swaps ?? [], damage, damageLever: damageLever(a.recommendations), findings: stepFindings(a.recommendations) }),
     [a, defAxis, review, damage],
   )
   // Gear is graded on load: "grading…" until the affix data and the gem data are in (or either failed, then it is not graded).

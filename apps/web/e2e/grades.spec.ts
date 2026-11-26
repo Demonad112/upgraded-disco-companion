@@ -20,7 +20,7 @@ test('the reference code shows the defence, gear and over-cap review', async ({ 
   // Damage: time to kill a base rare from the code's own TotalDPS (186,706 on this code), graded against the bands shown under it.
   await expect(page.locator('[data-axis="damage"] [data-axis-letter]')).toHaveText('B')
   await expect(page.locator('[data-axis="damage"]')).toContainText('A base rare at tier 16 dies in 0.5 s')
-  await expect(page.locator('[data-axis="damage"] [data-damage-bands]')).toContainText('S 0.2 s or less · A 0.4 s or less · B 0.8 s or less · C 1.6 s or less · D slower than 1.6 s')
+  await expect(page.locator('[data-axis="damage"] [data-damage-bands]')).toContainText('S ≤ 0.2 s · A ≤ 0.4 s · B ≤ 0.8 s · C ≤ 1.6 s · D over 1.6 s')
   await expect(page.locator('[data-axis="damage"]')).not.toContainText('project judgement')
 
   // Batch 3.5: the plain-words summary and at most three next steps, the first being the top defence tip.

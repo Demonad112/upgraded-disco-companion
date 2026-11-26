@@ -15,7 +15,7 @@ export function CouldntCheck({ analysis }: { analysis: Analysis }) {
         <strong id="couldnt-check-title" className="font-medium text-ink">
           What we couldn’t check:
         </strong>{' '}
-        {items.length === 1 ? '1 thing' : `${items.length} things`} this code doesn’t carry. Turn on Pro detail to see them.
+        {items.length === 1 ? '1 thing' : `${items.length} things`} this code doesn’t carry. Pro detail lists them.
       </p>
       <ProOnly>
         <ul className="mt-2 space-y-1.5">

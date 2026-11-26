@@ -19,12 +19,13 @@ export const TTK_BEST_S = 0.1
 export const TTK_WORST_S = 10
 
 /** What each grade means as a time to kill a base rare: S is 0.2 s or faster, then each band doubles. D is anything slower than the last. */
-export const DAMAGE_BANDS: readonly { grade: Grade; maxTtk: number | null }[] = Object.freeze(
-  ([['S', 85], ['A', 70], ['B', 55], ['C', 40]] as const)
-    .map(([grade, min]) => ({ grade: grade as Grade, maxTtk: Math.round(TTK_BEST_S * (TTK_WORST_S / TTK_BEST_S) ** ((100 - min) / 100) * 10) / 10 as number | null }))
-    .concat([{ grade: 'D' as Grade, maxTtk: null }])
-    .map((b) => Object.freeze(b)),
-)
+export const DAMAGE_BANDS: readonly { grade: Grade; maxTtk: number | null }[] = [
+  { grade: 'S', maxTtk: 0.2 },
+  { grade: 'A', maxTtk: 0.4 },
+  { grade: 'B', maxTtk: 0.8 },
+  { grade: 'C', maxTtk: 1.6 },
+  { grade: 'D', maxTtk: null },
+]
 
 export interface DamageRow {
   tier: number
