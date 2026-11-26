@@ -278,3 +278,9 @@ NP1-1, NP1-4, NP1-5 are superseded by PoB-code import (`docs/plans/pob2-alignmen
 | GF1-1 | May the per-item Gear fit readout (`gear/fit.ts`) appear in the UI? | **Answered yes (owner):** labelled readout only (`GEAR_FIT_BASIS` is the copy) | GF1 (`docs/plans/gear-fit-ranking.md`) |
 | GF1-2 | May the Gear fit influence recommendation order or the build grade? | No. Gear ranking stays "ordered, not weighed" (`priority.ts`) | GF1 |
 | GF1-3 | The archetype and fit cut-offs (`ARCHETYPE`, `GEAR_FIT` in `thresholds.ts`) are borrowed ideas from ets-public/poe2-upgrade-checker, not checked against its source (GPL-3.0, ideas only) | **Run on Yykiuy (GF1-6): no cut-off changes the readout today.** `ARCHETYPE` only fills `Analysis.gearFit.archetype`, which no screen reads, and the weights come from the worn items. It does mislabel Yykiuy: ES 2,922 vs 2 × life 2,954 misses by 32, so an evasion + ES build reads "evasion". Not tuned on one sample; revisit if a screen starts reading the archetype. `rollCeilingRatio` 1.15 clamped nothing here | GF1 |
+
+## Closed in the V1 closeout (2026-11-25)
+| ID | Question | Answer | Source |
+|---|---|---|---|
+| V1-1 | Sign off V1 criterion 5: is the Overview followable by a new player at 390 and 1440 px? | **Answered yes (owner, 2026-11-25).** Readability follow-ups go to the per-category deep dives | V1 closeout (#265) |
+| B2-4a | Grade the defence axis on the gear score's S–D bands (85/70/55/40) instead of the A–D build bands | **Answered: keep S–D (owner, 2026-11-25).** Shipped in `e343d46`; all three axes share one scale; the reference build reads Defence A (84%) | Batch 2.4, V1 closeout (#265) |

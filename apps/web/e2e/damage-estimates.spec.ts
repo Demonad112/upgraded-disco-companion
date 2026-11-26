@@ -3,7 +3,7 @@ import { mainCode, ownCode } from './main-payload'
 import { expect, openTab, test } from './fixtures'
 
 /**
- * V1 success criteria 3 and 4 (docs/plans/simple-code-analysis.md), on the Damage tab's per-skill list.
+ * V1 success criteria 3 and 4 (V1 plan, `git show 2e9c146:docs/plans/simple-code-analysis.md`), on the Damage tab's per-skill list.
  * C4: under own/none config no estimate appears; only the main skill and the code's Full DPS rows are listed.
  * C3: past 25% the other skills hide behind the Full DPS steps, and "Show anyway" shows them labelled unreliable.
  */

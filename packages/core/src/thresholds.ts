@@ -262,7 +262,7 @@ export const GEAR_FIT = Object.freeze({
 })
 
 /**
- * The per-slot gear score (gear/score.ts), plan `docs/plans/simple-code-analysis.md` Part 1 "Gear score".
+ * The per-slot gear score (gear/score.ts), the V1 plan (deleted; `git show 2e9c146:docs/plans/simple-code-analysis.md`) Part 1 "Gear score".
  * Not game rules. The grade bands (85/70/55/40) and the conditional-line discount are ideas borrowed from
  * ets-public/poe2-upgrade-checker's method as the plan describes it, unverified against its source; no code or
  * table was copied. The rest is project judgement.

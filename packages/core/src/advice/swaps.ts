@@ -1,6 +1,6 @@
 /**
  * Stat swaps: a line the gear score lists as wasted becomes "this line could be X instead" (plan
- * `docs/plans/simple-code-analysis.md`, Batch 2.2).
+ * the V1 plan (deleted; `git show 2e9c146:docs/plans/simple-code-analysis.md`), Batch 2.2).
  *
  * - The wasted lines come from `scoreGear`: resistance above the cap (each type's over-cap already spent once
  *   across items, so two lines never both claim the same points) and stats outside the build's profile.
