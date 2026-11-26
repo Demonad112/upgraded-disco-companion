@@ -9,6 +9,7 @@ import { describe, expect, it } from 'vitest'
 import { NO_KEYSTONE_EFFECTS, type Analysis } from '@poe2/core'
 import { couldntCheck } from '@/lib/couldntCheck'
 import { CouldntCheck } from '@/components/character/CouldntCheck'
+import { PersistedStateProvider } from '@/hooks/usePersistedState'
 
 const base = {
   warnings: [] as string[],
@@ -44,9 +45,10 @@ describe('couldntCheck', () => {
     expect(items.some((i) => i.text.includes('could not be decoded'))).toBe(true)
   })
 
-  it('renders as one panel titled "What we couldn’t check"', () => {
-    const html = renderToStaticMarkup(createElement(CouldntCheck, { analysis: stale }))
+  it('renders as one panel titled "What we couldn’t check", one line with the list behind Pro detail', () => {
+    const html = renderToStaticMarkup(createElement(PersistedStateProvider, null, createElement(CouldntCheck, { analysis: stale })))
     expect(html.match(/<aside/g)).toHaveLength(1)
     expect(html).toContain('What we couldn’t check')
+    expect(html).not.toContain('<ul')
   })
 })

@@ -1,6 +1,6 @@
 /**
  * The damage axis (plan Batch 3.3): how fast the build kills a base rare monster at the endgame area levels, from the
- * code's own main-skill TotalDPS (plus TotalDotDPS, as the web passes it) and the monster life table (`monster-stats.json` `life`, PoB's `monsterLifeTable`).
+ * code's own main-skill TotalDPS and the monster life table (`monster-stats.json` `life`, PoB's `monsterLifeTable`).
  * Graded on gear's S–D scale (85/70/55/40). The scale, the rare multiplier and the time bounds are project judgement
  * and the axis says so (`label`). Pure; the DPS is the code's own figure, never an estimate.
  */
@@ -17,6 +17,14 @@ export const TTK_TIERS = Object.freeze([
 /** Time to kill at or under this scores 100; at or over TTK_WORST_S scores 0; log scale between, so each grade band is a doubling. */
 export const TTK_BEST_S = 0.1
 export const TTK_WORST_S = 10
+
+/** What each grade means as a time to kill a base rare: S is 0.2 s or faster, then each band doubles. D is anything slower than the last. */
+export const DAMAGE_BANDS: readonly { grade: Grade; maxTtk: number | null }[] = Object.freeze(
+  ([['S', 85], ['A', 70], ['B', 55], ['C', 40]] as const)
+    .map(([grade, min]) => ({ grade: grade as Grade, maxTtk: Math.round(TTK_BEST_S * (TTK_WORST_S / TTK_BEST_S) ** ((100 - min) / 100) * 10) / 10 as number | null }))
+    .concat([{ grade: 'D' as Grade, maxTtk: null }])
+    .map((b) => Object.freeze(b)),
+)
 
 export interface DamageRow {
   tier: number
@@ -37,6 +45,8 @@ export interface DamageAxis {
   rows: DamageRow[]
   dps: number
   label: 'project judgement'
+  /** What each grade means in seconds, for the yardstick under the grade. */
+  bands: typeof DAMAGE_BANDS
   /** One sentence for the headline. */
   sentence: string
 }
@@ -70,6 +80,7 @@ export function damageAxis(input: { dps: number | undefined; life: Readonly<Reco
     rows,
     dps,
     label: 'project judgement',
+    bands: DAMAGE_BANDS,
     sentence: `A base rare at tier ${hardest.tier} dies in ${fmt(hardest.ttk)} s at ${Math.round(dps).toLocaleString('en-US')} damage per second.`,
   }
 }

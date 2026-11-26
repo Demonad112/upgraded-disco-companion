@@ -257,7 +257,7 @@
   }
 }
 
-/* The Top 3 card sits right under the build card: a tighter pad keeps its heading on the first phone screen. */
-[data-top-fixes] {
+/* The Next 3 steps card sits right under the build card: a tighter pad keeps its heading on the first phone screen. */
+[data-next-steps] {
   padding: 14px;
 }

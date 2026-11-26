@@ -19,6 +19,16 @@ export interface DamageSplit {
   percent: number
 }
 
+/**
+ * The one DPS figure the Overview shows: the skill's hit DPS (PoB's TotalDPS), so the hero card and the Sheet agree.
+ * A skill that only ticks damage over time has no hit DPS, so it shows the total and says so (`includesDot`).
+ */
+export function headlineDps(skill: Pick<SkillDamage, 'dps' | 'dotDps' | 'totalDps'> | null | undefined): { value: number; includesDot: boolean } | null {
+  if (!skill) return null
+  if (skill.dps > 0) return { value: skill.dps, includesDot: false }
+  return skill.totalDps > 0 ? { value: skill.totalDps, includesDot: true } : null
+}
+
 export interface SkillDamage {
   name: string
   /** Hit DPS. 0 for buffs/heralds, which carry only damage over time. */

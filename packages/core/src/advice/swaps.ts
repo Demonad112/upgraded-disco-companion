@@ -51,6 +51,8 @@ export interface StatSwap {
   cost: string
   /** One or two sentences for the reader (`docs/COPY.md`). */
   sentence: string
+  /** The same advice without the affix name and tier, for the Overview (those sit behind Pro detail there). */
+  plain: string
 }
 
 export interface StatSwapInput {
@@ -139,6 +141,7 @@ export function findStatSwaps(input: StatSwapInput): StatSwap[] {
         ? 'This item is corrupted, so its lines cannot be changed. The swap needs a replacement item.'
         : `Recraft one ${mod.kind} on ${slot.name}; the rest of the item stays.`,
       sentence: sentenceFor(slot.slotLabel, w, first, belowCapAfter),
+      plain: sentenceFor(slot.slotLabel, w, first, belowCapAfter, false),
     })
   }
   return out
@@ -179,14 +182,14 @@ function rankEntry(
   return best
 }
 
-function sentenceFor(slot: string, w: WastedStat, c: SwapCandidate, below: StatSwap['belowCapAfter']): string {
+function sentenceFor(slot: string, w: WastedStat, c: SwapCandidate, below: StatSwap['belowCapAfter'], detail = true): string {
   const what =
     w.kind === 'over-cap'
       ? `${slot}: ${w.amount}% ${resLabel(w.statId)} on this line is over the cap.`
       : `${slot}: ${w.text} does nothing for your build.`
   const tierNote = c.reachableOnThisItem ? `${c.affix ?? c.modId}, tier ${c.tier}` : `${c.affix ?? c.modId}, tier ${c.tier}, needs item level ${c.ilvl}`
   const drop = below.length ? ` Swapping it drops ${below.map((b) => `${b.type} resistance ${b.points}%`).join(' and ')} below the cap, so make that up elsewhere.` : ''
-  return `${what} It could be ${c.text ?? c.modId} (${tierNote}) instead.${drop}`
+  return `${what} It could be ${c.text ?? c.modId}${detail ? ` (${tierNote})` : ''} instead.${drop}`
 }
 
 function resLabel(statId: string): string {

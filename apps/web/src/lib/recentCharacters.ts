@@ -7,7 +7,7 @@ import { createLocalStore } from './localStore'
 /** The first Top-3 finding at import: its lead line and the hash that opens it on the character page. */
 export interface TopFix {
   title: string
-  /** An id on the character page, e.g. `top-fixes-title` (lib/characterTab maps it to its tab). */
+  /** An id on the character page, e.g. `next-steps-title` (lib/characterTab maps it to its tab). */
   tab: string
 }
 
@@ -96,5 +96,5 @@ export function topFixOf(recs: readonly { action: string; category: string }[]):
   const first = recs.find((r) => r.category !== 'question')
   if (!first) return null
   const at = first.action.indexOf(' — ')
-  return { title: (at < 0 ? first.action : first.action.slice(0, at)).trim(), tab: 'top-fixes-title' }
+  return { title: (at < 0 ? first.action : first.action.slice(0, at)).trim(), tab: 'next-steps-title' }
 }

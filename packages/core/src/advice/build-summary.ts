@@ -5,13 +5,15 @@
  */
 
 import type { DamageAxis } from '../score/damage-axis.js'
-import type { DefenceAxis } from '../score/defence-axis.js'
+import type { DefenceAxis, DefenceTip } from '../score/defence-axis.js'
 import type { SkillDamage } from '../dps/index.js'
 import type { StatSwap } from './swaps.js'
 
 export interface NextStep {
   area: 'defence' | 'gear' | 'damage' | 'clear'
   text: string
+  /** For a defence step: the tip's kind and type, so the web can find the finding (and trade search) behind it. */
+  tip?: { kind: DefenceTip['kind']; type: DefenceTip['type'] }
 }
 
 export const NEXT_STEP_LIMIT = 3
@@ -27,13 +29,14 @@ export function buildSummary(i: { className: string | null; skill: Pick<SkillDam
   return `${who}${i.skill ? ` using ${i.skill.name}${mix}` : ''}${layers ? `, on ${layers}${layers === 'life' ? ' only' : ''}` : ''}.`
 }
 
-export function nextSteps(i: { defence: Pick<DefenceAxis, 'tips'> | null; swaps: readonly Pick<StatSwap, 'sentence'>[]; damage: Pick<DamageAxis, 'score' | 'sentence'> | null }): NextStep[] {
+export function nextSteps(i: { defence: Pick<DefenceAxis, 'tips'> | null; swaps: readonly Pick<StatSwap, 'sentence' | 'plain'>[]; damage: Pick<DamageAxis, 'score'> | null; damageLever?: string | null }): NextStep[] {
   const tips = i.defence?.tips ?? []
   const steps: NextStep[] = []
-  if (tips[0]) steps.push({ area: 'defence', text: tips[0].text })
-  if (i.swaps[0]) steps.push({ area: 'gear', text: i.swaps[0].sentence })
-  if (i.damage && i.damage.score < DAMAGE_STEP_BELOW) steps.push({ area: 'damage', text: `Raise damage. ${i.damage.sentence}` })
-  for (const t of tips.slice(1)) steps.push({ area: 'defence', text: t.text })
+  const defenceStep = (t: DefenceTip): NextStep => ({ area: 'defence', text: t.text, tip: { kind: t.kind, type: t.type } })
+  if (tips[0]) steps.push(defenceStep(tips[0]))
+  if (i.swaps[0]) steps.push({ area: 'gear', text: i.swaps[0].plain })
+  if (i.damage && i.damage.score < DAMAGE_STEP_BELOW && i.damageLever) steps.push({ area: 'damage', text: `Raise damage: ${i.damageLever}` })
+  for (const t of tips.slice(1)) steps.push(defenceStep(t))
   if (!steps.length) return [{ area: 'clear', text: 'Nothing urgent. Keep levelling and check again after your next upgrade.' }]
   return steps.slice(0, NEXT_STEP_LIMIT)
 }

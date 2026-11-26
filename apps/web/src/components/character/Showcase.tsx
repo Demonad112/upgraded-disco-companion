@@ -9,73 +9,50 @@
  */
 
 import { useEffect, useRef, useSyncExternalStore, type CSSProperties, type ReactNode } from 'react'
-import { dataAge, toSnapshot, type Analysis, type DefenceAxis, type Grade } from '@poe2/core'
+import { buildSummary, dataAge, headlineDps, toSnapshot, type Analysis, type DamageAxis } from '@poe2/core'
 import { Tag } from '@/components/ui'
+import { ProOnly } from '@/components/shared/ProToggle'
 import { DMG_VAR, cap } from './dmg'
 import '@/styles/buildcard.css'
 import { gradeText } from '@/lib/grade'
 import { ResName } from '@/components/shared/ResName'
-import { characterName, sourceLabel } from '@/lib/characterName'
+import { sourceLabel } from '@/lib/characterName'
 
 let mountedAt: number | null = null
 const subscribeNever = () => () => {}
 const clientNow = (): number => (mountedAt ??= Date.now())
 const serverNow = (): number | null => null
 
-const LADDER: readonly Grade[] = ['D', 'C', 'B', 'A', 'S']
+const GRADE_COLOR: Record<string, string> = { S: 'var(--good)', A: 'var(--good)', B: 'var(--accent)', C: 'var(--warn)', D: 'var(--danger)' }
 
-/** The grade letters worst to best, with the letter (or every letter of a `D–B` range) lit. */
-function GradeLadder({ axis }: { axis: DefenceAxis }) {
-  const lo = axis.grade ?? axis.range?.worst
-  const hi = axis.grade ?? axis.range?.best
-  if (!lo || !hi) return null
-  const [from, to] = [LADDER.indexOf(lo), LADDER.indexOf(hi)]
-  return (
-    <ol aria-hidden className="inline-flex gap-1" data-grade-ladder>
-      {LADDER.map((l, i) => {
-        const lit = i >= from && i <= to
-        return (
-          <li
-            key={l}
-            data-lit={lit || undefined}
-            className={`grid size-6 place-items-center border font-display text-sm font-bold ${
-              lit ? 'border-accent bg-accent-soft text-accent' : 'border-line text-ink-mute'
-            }`}
-          >
-            {l}
-          </li>
-        )
-      })}
-    </ol>
-  )
+export interface AxisChipsState {
+  /** The gear letter once graded; null while grading or when nothing could be graded. */
+  gear: string | null
+  gearState: 'ready' | 'loading' | 'closed'
+  damage: DamageAxis | null
 }
 
-/**
- * The grade as a square ink stamp. It lands once on mount (Web Animations, so no global keyframes); with reduced
- * motion it is simply there.
- */
-function GradeStamp({ letter }: { letter: string }) {
-  const ref = useRef<HTMLDivElement>(null)
-  useEffect(() => {
-    const el = ref.current
-    if (!el || typeof el.animate !== 'function') return
-    if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return
-    el.animate(
-      [
-        { opacity: 0, transform: 'rotate(-16deg) scale(1.7)' },
-        { opacity: 1, transform: 'rotate(-5deg) scale(0.94)', offset: 0.7 },
-        { opacity: 1, transform: 'rotate(-6deg) scale(1)' },
-      ],
-      { duration: 560, easing: 'cubic-bezier(.2,.8,.2,1)' },
-    )
-  }, [])
-  const long = letter.length > 1
+/** Three grades, each on its own: defence, gear, damage. No letter stands for the whole build. */
+function AxisChips({ defence, gear, gearState, damage }: { defence: string | null } & AxisChipsState) {
+  const chips = [
+    { id: 'defence', label: 'Defence', letter: defence, note: defence ? null : 'unknown' },
+    { id: 'gear', label: 'Gear', letter: gear, note: gearState === 'ready' ? (gear ? null : 'not graded') : 'grading…' },
+    { id: 'damage', label: 'Damage', letter: damage?.letter ?? null, note: damage ? null : 'no DPS in code' },
+  ]
   return (
-    <div ref={ref} data-grade-stamp className="bc-stamp">
-      <span className="text-gradient-gold" style={{ fontSize: long ? "var(--fs-22)" : "var(--fs-36)" }}>
-        {letter}
-      </span>
-    </div>
+    <ul className="grid grid-cols-3 gap-2" aria-label="Grades" data-axis-chips>
+      {chips.map((c) => (
+        <li key={c.id} data-chip={c.id} className="min-w-0 border border-line bg-sunken/65 px-2.5 py-2" style={{ borderLeft: `3px solid ${c.letter ? GRADE_COLOR[c.letter] ?? 'var(--accent)' : 'var(--line)'}` }}>
+          <div className="label-metric">{c.label}</div>
+          <div className="flex items-baseline gap-2">
+            <span data-chip-letter aria-label={`${c.label} ${c.letter ?? c.note}`} className="font-display text-[length:var(--fs-22)] leading-none font-bold text-ink">
+              {c.letter ?? '—'}
+            </span>
+            {c.note ? <span className="truncate text-[length:var(--fs-11)] text-ink-mute">{c.note}</span> : null}
+          </div>
+        </li>
+      ))}
+    </ul>
   )
 }
 
@@ -123,16 +100,20 @@ function Figure({ value, delay }: { value: number | null; delay: number }) {
 const RES_TONE = { fire: 'var(--dmg-fire)', cold: 'var(--dmg-cold)', lightning: 'var(--dmg-lightning)', chaos: 'var(--dmg-chaos)' } as const
 const RES_LABEL = { fire: 'Fire', cold: 'Cold', lightning: 'Lightning', chaos: 'Chaos' } as const
 
-export function Showcase({ analysis, children }: { analysis: Analysis; children?: ReactNode }) {
-  const { identity, assessment, defense, dps } = analysis
+export function Showcase({ analysis, axes, children }: { analysis: Analysis; axes: AxisChipsState; children?: ReactNode }) {
+  const { identity, defense, dps } = analysis
   const nowMs = useSyncExternalStore(subscribeNever, clientNow, serverNow)
   const age = nowMs === null ? null : dataAge(identity.updatedUtc, new Date(nowMs))
   const grade = gradeText(analysis)
   const snap = toSnapshot(analysis, '')
   const skill = dps.primary
+  // One DPS figure: the hit DPS PoB calls TotalDPS, the same number the Sheet shows.
+  const headline = headlineDps(skill)
+  const summary = buildSummary({ className: identity.className, skill, life: defense.life, energyShield: defense.energyShield })
+  const title = identity.name || summary || 'Unnamed character'
   const hitType = defense.lowestMaximumHitType
   const tiles: { label: string; value: number | null; tone: string; sub?: string }[] = [
-    { label: 'Main skill DPS', value: snap.dps && snap.dps > 0 ? snap.dps : null, tone: 'var(--accent)', sub: skill?.dominantType ? cap(skill.dominantType) : undefined },
+    { label: 'Main skill DPS', value: headline ? Math.round(headline.value) : null, tone: 'var(--accent)', sub: headline?.includesDot ? 'incl. damage over time' : skill?.dominantType ? cap(skill.dominantType) : undefined },
     { label: 'Killed by', value: snap.weakestHit && snap.weakestHit > 0 ? snap.weakestHit : null, tone: 'var(--dmg-physical)', sub: hitType ? cap(hitType) : undefined },
     { label: 'Life', value: snap.life && snap.life > 0 ? snap.life : null, tone: 'var(--dmg-fire)' },
     { label: 'Energy shield', value: snap.energyShield && snap.energyShield > 0 ? snap.energyShield : null, tone: 'var(--dmg-cold)' },
@@ -145,7 +126,7 @@ export function Showcase({ analysis, children }: { analysis: Analysis; children?
         <div className="bc-head">
           <div className="min-w-0">
             <div className="bc-top">{[identity.className, sourceLabel(analysis)].filter(Boolean).join(' · ') || 'Character'}</div>
-            <h2 id="showcase-title" className="bc-name text-gradient-gold">{characterName(analysis)}</h2>
+            <h2 id="showcase-title" className="bc-name text-gradient-gold">{title}</h2>
           </div>
           <div className="bc-level" aria-label={identity.level === null ? 'Level unknown' : `Level ${identity.level}`}>
             <span>
@@ -161,7 +142,7 @@ export function Showcase({ analysis, children }: { analysis: Analysis; children?
               <span>{skill.name}</span>
             </>
           ) : null}
-          {age ? (
+          {age && age.hours !== null ? (
             <time className={`bc-age${age.stale ? ' text-danger' : ''}`} dateTime={identity.updatedUtc ?? undefined} title={age.stale ? 'Re-import before buying' : undefined}>
               {age.label.replace(/^updated /, '')}
               {age.stale ? ' · re-import' : ''}
@@ -169,30 +150,21 @@ export function Showcase({ analysis, children }: { analysis: Analysis; children?
           ) : null}
         </p>
 
+        {identity.name && summary ? <p className="bc-note">{summary}</p> : null}
         <div className="bc-grade">
-          {grade ? (
-            <>
-              <GradeStamp letter={grade.letter} />
-              <div className="min-w-0">
-                <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1">
-                  <GradeLadder axis={grade.axis} />
-                  <span className="tabular font-mono text-[length:var(--fs-11)] whitespace-nowrap text-ink-dim">defence {grade.score}</span>
-                </div>
-                {analysis.pobStats ? (
-                  <div className="mt-1">
-                    <Tag tone="good">Cross-validated</Tag>
-                  </div>
-                ) : null}
+          <div className="min-w-0 grow">
+            <AxisChips defence={grade?.letter ?? null} {...axes} />
+            <ProOnly>
+              <div className="mt-2 flex flex-wrap items-center gap-2">
+                {grade ? <span className="tabular font-mono text-[length:var(--fs-11)] whitespace-nowrap text-ink-dim">defence {grade.score}</span> : null}
+                {analysis.pobStats ? <Tag tone="good">Cross-validated</Tag> : null}
               </div>
-            </>
-          ) : (
-            <div className="label-metric">Grade unknown</div>
-          )}
+            </ProOnly>
+          </div>
         </div>
         <p className="bc-note">
-          {grade?.axis.sentence ?? assessment.note}{' '}
           <a href="#assessment" onClick={openAssessment} className="whitespace-nowrap text-accent underline underline-offset-2">
-            Why this grade
+            Why these grades
           </a>
         </p>
 

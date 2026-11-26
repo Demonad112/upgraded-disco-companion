@@ -5,6 +5,7 @@ import {
   gradeGainText,
   type Recommendation,
   type RecommendationCategory,
+  type NextStep,
   type RecommendationReport,
   type TradeStatMap,
 } from '@poe2/core'
@@ -81,4 +82,21 @@ export function tradeLinkFor(r: Pick<Recommendation, 'impact'>, map: TradeStatMa
   if (!exact || exact.unmapped.length) return null
   const url = buildTradeUrl(league, exact.query)
   return url.ok ? url.url : null
+}
+
+const STEP_ANCHOR: Record<NextStep['area'], string | null> = { defence: '#defences', gear: '#gear', damage: '#damage', clear: null }
+
+/** The tab a next step's Details button opens; none for the all-clear step. */
+export const stepAnchor = (s: Pick<NextStep, 'area'>): string | null => STEP_ANCHOR[s.area]
+
+/** The finding behind a defence step (the resistance it asks you to raise), for its gain line and trade search. */
+export function findingForStep(s: Pick<NextStep, 'area' | 'tip'>, report: RecommendationReport): Recommendation | null {
+  if (s.area !== 'defence' || !s.tip || s.tip.kind === 'weak-hit') return null
+  return report.recommendations.find((r) => r.impact?.stat === `${s.tip!.type}Resistance` && tradeStatFor(r) !== null) ?? null
+}
+
+/** The top real lever in the Damage review: the first damage finding's action, before its dash. Null when there is none. */
+export function damageLever(report: RecommendationReport): string | null {
+  const f = report.recommendations.find((r) => r.category === 'damage')
+  return f ? splitAction(f.action).lead : null
 }

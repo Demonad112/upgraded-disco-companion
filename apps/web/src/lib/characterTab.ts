@@ -15,6 +15,7 @@ const ALIASES: Record<string, TabId> = {
   findings: 'overview',
   assessment: 'overview',
   'top-fixes-title': 'overview',
+  'next-steps-title': 'overview',
   'easy-wins': 'overview',
   headroom: 'defences',
   'defence-checklist-disclosure': 'defences',

@@ -28,13 +28,12 @@ test('/character data requests follow the card and the tab that needs them', asy
     const at = await started(f)
     if (at !== null) expect(at, `${f} started before the card`).toBeGreaterThan(cardAt as number)
   }
-  expect(await started('pob-skills'), 'pob-skills before Damage').toBeNull()
+  // The Overview grades Gear on load, which needs the gem data: it follows the card, not the Damage tab.
+  await expect.poll(() => started('pob-skills')).not.toBeNull()
   expect(await started('mod-display'), 'mod-display before Gear/Damage/Advanced').toBeNull()
 
   const beforeDamage = await now()
   await openTab(page, 'damage')
-  await expect.poll(() => started('pob-skills')).not.toBeNull()
-  expect(await started('pob-skills')).toBeGreaterThan(beforeDamage)
   await expect.poll(() => started('mod-display')).not.toBeNull()
   expect(await started('mod-display')).toBeGreaterThan(beforeDamage)
 })

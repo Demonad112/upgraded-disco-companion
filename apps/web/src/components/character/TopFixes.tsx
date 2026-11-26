@@ -1,17 +1,15 @@
 'use client'
 
 /**
- * Top 3 fixes: the engine's three highest-ranked actionable findings as one-liners, each with a link to the panel
- * behind it and a Trade button. A resistance shortfall gets a prefilled trade2 search (`?q=`, built by core's
- * `buildTradeQueries`); anything else, or a stat the trade snapshot cannot map, opens the site's own /trade page.
+ * The fix row and trade-map loader shared by Easy wins and Next 3 steps. A resistance shortfall gets a prefilled
+ * trade2 search (`?q=`, built by core's `buildTradeQueries`); anything else, or a stat the trade snapshot cannot map,
+ * opens the site's own /trade page.
  */
 
 import { useEffect, useState, type ReactNode } from 'react'
-import type { Recommendation, RecommendationReport, TradeStatMap } from '@poe2/core'
-import { usePrefs } from '@/hooks/usePrefs'
+import type { Recommendation, TradeStatMap } from '@poe2/core'
 import { BASE_PATH, dataUrl } from '@/lib/basePath'
-import { TRADE_LEAGUE } from '@/lib/constants'
-import { fixAnchor, fixLines, topFixes, tradeLinkFor, tradeStatFor } from './topFixesData'
+import { fixAnchor, fixLines, tradeLinkFor } from './topFixesData'
 
 let tradeMapRequest: Promise<TradeStatMap> | null = null
 /** One fetch of the trade map for the whole page, however many rows want it. */
@@ -99,74 +97,5 @@ export function FixRow({
         </div>
       </div>
     </li>
-  )
-}
-
-export function TopFixes({
-  report,
-  league,
-  all,
-  expand = false,
-}: {
-  report: RecommendationReport
-  league?: string | null
-  /** The full findings list, shown in place under "Show all (n)". */
-  all?: ReactNode
-  /** A link to `#findings` asks for the list to be open. */
-  expand?: boolean
-}) {
-  const [shown, setShown] = useState(false)
-  const open = shown || expand
-  const fixes = topFixes(report)
-  const total = report.recommendations.length
-  const map = useTradeMap(fixes.some((f) => tradeStatFor(f) !== null))
-  const tradeLeague = league || TRADE_LEAGUE
-  const { proDetail } = usePrefs()
-
-  return (
-    <section data-surface="data" className="card min-w-0" aria-labelledby="top-fixes-title" data-top-fixes>
-      <h3 id="top-fixes-title" className="h3">
-        {fixes.length > 1 ? `Top ${fixes.length} fixes` : 'Top fix'}
-      </h3>
-      {!fixes.length ? (
-        <p className="mt-1.5 text-sm text-ink-dim">{report.summary || 'Nothing urgent to fix.'}</p>
-      ) : (
-        <ol className="mt-3 space-y-3">
-          {fixes.map((f, i) => (
-            <FixRow key={f.id} f={f} index={i + 1} map={map} league={tradeLeague} pro={proDetail} />
-          ))}
-        </ol>
-      )}
-      {all && (total > fixes.length || report.suppressed.length > 0 || report.unresolved.length > 0) ? (
-        <div className="mt-3">
-          <button
-            type="button"
-            className="btn btn-ghost btn-sm"
-            aria-expanded={open}
-            aria-controls="findings"
-            onClick={() => setShown(!open)}
-          >
-            {open ? 'Show fewer' : `Show all (${total})`}
-          </button>
-          {open ? (
-            <div id="findings" className="mt-3">
-              {all}
-            </div>
-          ) : null}
-        </div>
-      ) : null}
-    </section>
-  )
-}
-
-/** Holds the Top 3's place (same heading, fixed height) until the full analysis has run, so the rows are written once. */
-export function TopFixesPlaceholder() {
-  return (
-    <section data-surface="data" className="card min-w-0" aria-labelledby="top-fixes-title" aria-busy="true" data-top-fixes data-pending>
-      <h3 id="top-fixes-title" className="h3">
-        Top 3 fixes
-      </h3>
-      <div className="skeleton mt-3" style={{ height: 'min(360px, 64vw + 130px)' }} />
-    </section>
   )
 }
