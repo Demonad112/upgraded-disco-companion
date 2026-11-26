@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { USE_RATE_LABELS, describePobConfig, type DpsSummary, type PobConfig, type SkillDamage } from '@poe2/core'
 import { Empty, Tag, fmt, fmtCompact } from './ui'
 import { Diamond, TYPE_ORDER, cap } from './character/dmg'
+import { ProvenanceBadge } from './shared/ProvenanceBadge'
 import { useFirstView } from '@/hooks/useFirstView'
 import '@/styles/bars.css'
 
@@ -39,7 +40,10 @@ function SplitBar({ skill }: { skill: SkillDamage }) {
           </span>
         </span>
       </div>
-      <p className="tabular mt-1.5 font-mono text-[length:var(--fs-11)] text-ink-mute">{text}</p>
+      <p className="tabular mt-1.5 font-mono text-[length:var(--fs-11)] text-ink-mute">
+        {text}
+        {skill.splitProvenance === 'pob-calc' && skill.provenance !== 'pob-calc' ? ' · split from PoB calc' : ''}
+      </p>
     </div>
   )
 }
@@ -85,6 +89,11 @@ function SkillRow({ s, isPrimary, top, total }: { s: SkillDamage; isPrimary: boo
             {s.isDotOnly ? (
               <span className="ml-2 align-middle">
                 <Tag>dot only</Tag>
+              </span>
+            ) : null}
+            {s.provenance === 'pob-calc' ? (
+              <span className="ml-2 align-middle">
+                <ProvenanceBadge provenance="pob-calc" />
               </span>
             ) : null}
           </span>
@@ -194,7 +203,13 @@ export function DpsMatrix({
     <section data-surface="data" className="card" aria-label="Damage per skill">
       <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
         <h3 className="h3">{primary ? `${primary.name} · ${fmt(primary.totalDps)} dps` : 'Damage'}</h3>
-        <span className="eyebrow">{dps.provenance === 'pob-export' ? 'Read from your PoB code, not recalculated' : 'Read from poe.ninja, not recalculated'}</span>
+        <span className="eyebrow">
+          {dps.provenance !== 'pob-export'
+            ? 'Read from poe.ninja, not recalculated'
+            : dps.skills.some((s) => s.provenance === 'pob-calc')
+              ? 'Main skill read from your PoB code; others calculated by PoB'
+              : 'Read from your PoB code, not recalculated'}
+        </span>
       </div>
       <div ref={seen} className="mt-3">
         {rows.map((s) => (

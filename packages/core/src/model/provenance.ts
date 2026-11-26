@@ -7,6 +7,8 @@
  *
  *  - `observed`       read as given from the PoB code (or poe.ninja). Nothing
  *                     recomputed here.
+ *  - `calculated`     computed by Path of Building's own engine from the code, for
+ *                     figures the code does not store (every skill but the main one).
  *  - `estimate`       computed here by the mini-calc where the code carries no
  *                     figure ("≈ est."). Never shown in place of a read number.
  *  - `derived`        arithmetic this project did on observed values. Says so.
@@ -17,7 +19,7 @@
 
 import type { Provenance } from './types.js'
 
-export type ValueLabel = 'observed' | 'estimate' | 'derived' | 'nominal' | 'unknown'
+export type ValueLabel = 'observed' | 'calculated' | 'estimate' | 'derived' | 'nominal' | 'unknown'
 
 export interface ValueLabelInfo {
   label: ValueLabel
@@ -29,6 +31,7 @@ export interface ValueLabelInfo {
 
 const INFO: Record<ValueLabel, ValueLabelInfo> = {
   observed: { label: 'observed', text: 'observed', detail: 'Read as given from poe.ninja or the Path of Building export it attaches. Not recomputed here.' },
+  calculated: { label: 'calculated', text: 'PoB calc', detail: 'Calculated by Path of Building’s own engine from your code. Exact for PoB, but not stored in the code itself.' },
   estimate: { label: 'estimate', text: '≈ est.', detail: 'Estimated here from the code’s text with a simple calculation, not Path of Building’s exact figure.' },
   derived: { label: 'derived', text: 'derived', detail: 'Arithmetic done here on observed values. Check it against the source before relying on it.' },
   nominal: { label: 'nominal', text: 'nominal', detail: 'What the game data says it grants in isolation. Not measured on this build.' },
@@ -45,6 +48,8 @@ export function labelOf(provenance: Provenance | null | undefined): ValueLabelIn
     case 'ninja':
     case 'pob-export':
       return INFO.observed
+    case 'pob-calc':
+      return INFO.calculated
     case 'estimate':
       return INFO.estimate
     case 'derived':

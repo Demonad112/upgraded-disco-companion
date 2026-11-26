@@ -1,0 +1,6 @@
+*
+!vendor/pob2
+!tools/pob2
+tools/pob2/spec
+!services/pob-engine
+services/pob-engine/test

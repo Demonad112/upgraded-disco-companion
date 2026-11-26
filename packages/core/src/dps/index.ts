@@ -53,6 +53,8 @@ export interface SkillDamage {
   dominantType: DamageType | null
 
   provenance: Provenance
+  /** Where `damageSplit` came from when it differs from `provenance` (a code's main skill split from PoB's engine). */
+  splitProvenance?: Provenance
   /** Support/meta gems socketed alongside, when the payload lists them. */
   gems: string[]
   /**
@@ -147,7 +149,8 @@ function toSkillDamage(entry: NinjaSkillDps, skill: NinjaSkill): SkillDamage | n
     damageSplit,
     dotSplit,
     dominantType: damageSplit[0]?.type ?? dotSplit[0]?.type ?? null,
-    provenance: 'ninja',
+    provenance: entry.provenance ?? 'ninja',
+    ...(entry.splitProvenance ? { splitProvenance: entry.splitProvenance } : {}),
     gems: gemNames(skill),
     useRates: useRatesOf(entry, dps),
   }

@@ -27,6 +27,8 @@ jobs:
       code: ${{ steps.scope.outputs.code }}
       # PoB2 headless inputs changed: the pob2-oracle job runs.
       pob2: ${{ steps.scope.outputs.pob2 }}
+      # The engine service or what its image copies changed: the pob-engine job runs.
+      engine: ${{ steps.scope.outputs.engine }}
       # Draft PRs run typecheck, lint and unit tests only; e2e and Lighthouse wait until the PR is marked ready.
       heavy: ${{ steps.scope.outputs.code == 'true' && github.event.pull_request.draft != true }}
     steps:
@@ -44,6 +46,11 @@ jobs:
             echo "pob2=true" >> "$GITHUB_OUTPUT"
           else
             echo "pob2=false" >> "$GITHUB_OUTPUT"
+          fi
+          if git diff --name-only HEAD^1 HEAD | grep -qE '^(vendor/pob2|tools/pob2|services/pob-engine)/'; then
+            echo "engine=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "engine=false" >> "$GITHUB_OUTPUT"
           fi
   secrets:
     runs-on: ubuntu-latest
@@ -179,6 +186,42 @@ jobs:
         # Regenerates packages/core/test/reference/<name>/{oracle,groups.oracle}.json and fails on any byte diff;
         # the diff is printed in the log. Fix: npm run pob2:oracle, review, commit with the cause.
         run: npm run pob2:oracle -- --check
+
+  pob-engine:
+    # services/pob-engine: its unit tests, then its Docker image built and asked to calculate the reference code, which
+    # must give the oracle's TotalDPS. Not a required check (owner queue).
+    needs: changes
+    if: needs.changes.outputs.engine == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+      - name: Unit tests (the engine test skips without luajit; the image below runs the real engine)
+        working-directory: services/pob-engine
+        run: npm test
+      - name: Build image
+        run: docker build -f services/pob-engine/Dockerfile -t pob-engine .
+      - name: Image reproduces the oracle
+        run: |
+          docker run -d --name engine -p 8080:8080 pob-engine
+          for i in $(seq 1 60); do curl -fs localhost:8080/health | grep -q pobVersion && break; sleep 2; done
+          node -e '
+            const fs = require("fs")
+            const ref = "packages/core/test/reference/ninja-default/"
+            const code = fs.readFileSync(ref + "code.txt", "utf8").trim()
+            const want = JSON.parse(fs.readFileSync(ref + "oracle.json", "utf8")).stats.TotalDPS
+            fetch("http://localhost:8080/calc", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ code }) })
+              .then((r) => r.json())
+              .then((j) => {
+                const got = j.snapshot && j.snapshot.stats && j.snapshot.stats.TotalDPS
+                console.log("TotalDPS", got, "oracle", want, "rows", j.groups && j.groups.rows.length, "ms", j.ms)
+                process.exit(got === want ? 0 : 1)
+              })'
+      - if: failure()
+        run: docker logs engine || true
 
   lighthouse:
     needs: changes

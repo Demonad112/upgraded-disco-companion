@@ -2,6 +2,7 @@ import { labelOf, valueLabelInfo, type Provenance, type ValueLabel } from '@poe2
 
 const TONE: Record<ValueLabel, string> = {
   observed: 'border-line text-ink-mute',
+  calculated: 'border-line-strong text-ink-dim',
   estimate: 'border-accent/40 bg-accent/10 text-accent',
   derived: 'border-warn/40 bg-warn/10 text-warn',
   nominal: 'border-warn/40 bg-warn/10 text-warn',
@@ -9,7 +10,7 @@ const TONE: Record<ValueLabel, string> = {
 }
 
 /**
- * Says where a number came from: observed, estimate ("≈ est."), derived, nominal or
+ * Says where a number came from: observed, PoB calc, estimate ("≈ est."), derived, nominal or
  * unknown. Pass `provenance` for a figure that carries one, or `label` directly.
  */
 export function ProvenanceBadge({ provenance, label }: { provenance?: Provenance | null; label?: ValueLabel }) {
