@@ -77,12 +77,18 @@ function indexOf(tiers: ModTiers): Map<string, Entry[]> {
 /** stat id -> affixes that carry it as a later (not first) stat: their line 2 reads like a plain mod's line. */
 const laterStats = new WeakMap<ModTiers, Map<string, { id: string; min: number; max: number }[]>>()
 
+/** poe.ninja's id for a Martial Artist glove line: the source mod's id behind this prefix (`gear/tiers.ts`). */
+const HAND_WRAPS = 'HandWraps'
+
 function laterStatsOf(tiers: ModTiers): Map<string, { id: string; min: number; max: number }[]> {
   const cached = laterStats.get(tiers)
   if (cached) return cached
   const out = new Map<string, { id: string; min: number; max: number }[]>()
   for (const [id, raw] of tiers.allMods()) {
-    raw.stats.slice(1).forEach(([stat, min, max]) => {
+    // A Martial Artist glove mod's text is the transformed line, which need not be its first stat
+    // (`HandWrapsGlobalMeleeSkillGemLevel2` prints the melee level, its second stat), so every stat of a multi-stat one counts.
+    const later = id.startsWith(HAND_WRAPS) && raw.stats.length > 1 ? raw.stats : raw.stats.slice(1)
+    later.forEach(([stat, min, max]) => {
       const list = out.get(stat)
       if (list) list.push({ id, min, max })
       else out.set(stat, [{ id, min, max }])
@@ -138,6 +144,17 @@ export interface LineMatch {
 }
 
 /**
+ * Whether an affix can be on this base. A `HandWraps<Source>` mod carries no spawn rule of its own: it rolls as its
+ * source mod and the Martial Artist ascendancy rewrites the line, so it counts on gloves where the source can spawn.
+ * Only gloves: the rewritten text is never printed anywhere else.
+ */
+function canRollOn(modId: string, baseTags: readonly string[], tiers: ModTiers): boolean {
+  if (tiers.canSpawn(modId, baseTags)) return true
+  if (!modId.startsWith(HAND_WRAPS) || !baseTags.includes('gloves')) return false
+  return tiers.canSpawn(modId.slice(HAND_WRAPS.length), baseTags)
+}
+
+/**
  * The mod a rendered line is, or null when the text does not prove one. `baseTags` null (an unknown base)
  * leaves affixes unresolved: spawn rules are the proof.
  */
@@ -156,7 +173,7 @@ export function matchModLine(
   // fixed roll must not be given a craftable tier, and a rare's line must not match a unique's mod.
   const displayOnly = context.rarity === 'Unique' || kind === 'implicit'
   let pool = candidates.filter((e) =>
-    displayOnly ? e.display : !e.display && context.baseTags !== null && tiers.canSpawn(e.id, context.baseTags),
+    displayOnly ? e.display : !e.display && context.baseTags !== null && canRollOn(e.id, context.baseTags, tiers),
   )
   if (!pool.length) return null
   // Implicits carry no spawn rules, but the game names each after the class it sits on (`AmuletImplicit…`,
@@ -176,7 +193,7 @@ export function matchModLine(
     const [stat] = exact.stats[0]!
     const roll = values[0]!
     const hybrid = (laterStatsOf(tiers).get(stat) ?? []).some(
-      (h) => h.id !== exact.id && roll >= h.min - EPS && roll <= h.max + EPS && tiers.canSpawn(h.id, context.baseTags!),
+      (h) => h.id !== exact.id && roll >= h.min - EPS && roll <= h.max + EPS && canRollOn(h.id, context.baseTags!, tiers),
     )
     if (hybrid) return null
   }

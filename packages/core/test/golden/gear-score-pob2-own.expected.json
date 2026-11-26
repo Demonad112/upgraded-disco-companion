@@ -46,9 +46,9 @@
       "item": "Skull Nails",
       "score": null,
       "grade": null,
-      "missing": "Only 1 of its 7 affix lines could be read from the code, too few to grade the item.",
+      "missing": "Martial Artist glove lines have no best roll on this base to grade against.",
       "coverage": {
-        "read": 1,
+        "read": 0,
         "total": 7
       },
       "wasted": []
@@ -99,7 +99,7 @@
     {
       "slot": "Main Hand",
       "item": "Skull Song",
-      "score": 58.9,
+      "score": 61.6,
       "grade": "B",
       "missing": null,
       "coverage": {

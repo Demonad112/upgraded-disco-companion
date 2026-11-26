@@ -21,7 +21,12 @@ function orderedSplit(skill: SkillDamage) {
 /** Damage-type split as a full-width bar plus a text row, so the split never depends on colour alone. */
 function SplitBar({ skill }: { skill: SkillDamage }) {
   const ordered = orderedSplit(skill)
-  if (!ordered.length) return <span className="text-xs text-ink-mute">Damage split unknown</span>
+  if (!ordered.length)
+    return (
+      <span className="text-xs text-ink-mute">
+        {skill.provenance === 'pob-export' ? 'Not in the code: see the ≈ est. mix below.' : 'Damage split unknown'}
+      </span>
+    )
   const text = ordered.map((s) => `${cap(s.type)} ${pct(s.percent)}`).join(', ')
   return (
     <div>
@@ -189,7 +194,7 @@ export function DpsMatrix({
     <section data-surface="data" className="card" aria-label="Damage per skill">
       <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
         <h3 className="h3">{primary ? `${primary.name} · ${fmt(primary.totalDps)} dps` : 'Damage'}</h3>
-        <span className="eyebrow">Read from poe.ninja, not recalculated</span>
+        <span className="eyebrow">{dps.provenance === 'pob-export' ? 'Read from your PoB code, not recalculated' : 'Read from poe.ninja, not recalculated'}</span>
       </div>
       <div ref={seen} className="mt-3">
         {rows.map((s) => (

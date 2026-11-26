@@ -60,6 +60,11 @@ export function DamageEstimates({ code, exactOnly = false }: { code: string | nu
             <div className="min-w-0">
               <div className="text-sm text-ink">{s.name}</div>
               {s.value === null && s.reason ? <p className="text-xs leading-relaxed text-ink-mute">{s.reason}</p> : null}
+              {s.value !== null && s.mix?.length ? (
+                <p className="tabular text-xs leading-relaxed text-ink-mute" data-damage-mix data-provenance="estimate">
+                  {s.mix.map((m) => `${m.type[0]!.toUpperCase()}${m.type.slice(1)} ${Math.round(m.percent)}%`).join(' · ')} <span>(≈ est. mix)</span>
+                </p>
+              ) : null}
             </div>
             <div className="text-right">
               {s.value !== null ? <div className="tabular font-mono text-sm text-ink" data-outline-field data-provenance={s.label ? 'estimate' : 'pob-export'}>{fmt(Math.round(s.value))}</div> : <div className="text-xs text-ink-mute">not shown</div>}

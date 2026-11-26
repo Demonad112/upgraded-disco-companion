@@ -196,7 +196,7 @@ export function pobCodeGaps(stats: Record<string, number>, gear?: GearReadState,
       why: 'Not among the exported PlayerStat values, so it is reported as absent rather than as zero.',
     })
   }
-  if (num(stats, 'BlockChance') === null) {
+  if (num(stats, 'BlockChance') === null && num(stats, 'EffectiveBlockChance') === null) {
     gaps.push({ what: 'Block chance', why: 'Not among the exported PlayerStat values.' })
   }
   const resists = Object.values(RESIST_STATS).filter((key) => num(stats, key) !== null)

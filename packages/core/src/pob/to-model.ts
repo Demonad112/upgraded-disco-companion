@@ -50,8 +50,13 @@ const DIRECT: ReadonlyArray<readonly [keyof NinjaDefensiveStats, string]> = [
   ['evasionRating', 'Evasion'],
   ['evadeChance', 'EvadeChance'],
   ['blockChance', 'BlockChance'],
+  ['deflectionRating', 'DeflectionRating'],
+  ['deflectChance', 'DeflectChance'],
   ['effectiveHealthPool', 'TotalEHP'],
 ]
+
+/** PoB2 exports block as `EffectiveBlockChance` (no `BlockChance` PlayerStat); read when the direct stat is absent. */
+const FALLBACK: ReadonlyArray<readonly [keyof NinjaDefensiveStats, string]> = [['blockChance', 'EffectiveBlockChance']]
 
 const MAX_HITS: ReadonlyArray<readonly [DamageType, string]> = [
   ['physical', 'PhysicalMaximumHitTaken'],
@@ -92,6 +97,10 @@ export function defensiveStatsFromPob(stats: Record<string, number>): NinjaDefen
   for (const [field, key] of DIRECT) {
     const value = num(stats, key)
     if (value !== undefined) out[field] = value
+  }
+  for (const [field, key] of FALLBACK) {
+    const value = num(stats, key)
+    if (value !== undefined && out[field] === undefined) out[field] = value
   }
   for (const [type, key] of MAX_HITS) {
     const value = num(stats, key)

@@ -13,9 +13,17 @@
 
 export const SELF_CHECK_TOLERANCE = 0.25
 
+/** One damage type's share of a skill's average hit, in percent (the mini-calc's `<Type>HitAverage` / `AverageHit`). */
+export interface DamageMixShare {
+  type: 'physical' | 'fire' | 'cold' | 'lightning' | 'chaos'
+  percent: number
+}
+
 export interface RawEstimate {
   group: number
   name: string
+  /** The estimated damage mix, largest first; null or absent when the skill is not estimated. */
+  mix?: DamageMixShare[] | null
   /** The mini-calc's TotalDPS, or null when the skill is not estimated. */
   estimate: number | null
   /** Why it is not estimated. */
@@ -34,6 +42,8 @@ export interface CheckedSkill {
   label: string | null
   reason: string | null
   unread: string[]
+  /** The estimated mix (≈ est.), shown only while the estimates are: null when hidden or not estimated. */
+  mix: DamageMixShare[] | null
 }
 
 export interface SelfCheckReport {
@@ -60,8 +70,10 @@ export function applySelfCheck(rows: readonly RawEstimate[], mainGroup: number, 
   const errorPct = usable ? Math.round((est / codeDps - 1) * 100) : null
   const state: SelfCheckState = !usable ? 'unchecked' : Math.abs(ratio! - 1) <= SELF_CHECK_TOLERANCE ? 'calibrated' : 'hidden'
 
+  // A mix is a share, so calibration leaves it as is; past the tolerance it is as untrusted as the number.
+  const mixShown = state !== 'hidden' || opts.showAnyway === true
   const skills: CheckedSkill[] = rows.map((r) => {
-    const base = { group: r.group, name: r.name, reason: r.reason, unread: r.unread }
+    const base = { group: r.group, name: r.name, reason: r.reason, unread: r.unread, mix: mixShown ? (r.mix ?? null) : null }
     if (r.group === mainGroup && codeDps > 0) return { ...base, value: codeDps, label: null }
     if (r.estimate === null) return { ...base, value: null, label: null }
     if (state === 'calibrated') return { ...base, value: r.estimate * ratio!, label: '≈ est., calibrated' }

@@ -186,6 +186,19 @@ export interface CodeBreakdowns {
   checks: CodeStatCheck[]
 }
 
+/**
+ * Mageblood's "Legacy of …" lines keep a charm's effect on permanently (PoB's `LegacyOf<Charm>` mods). The effect's size
+ * comes from the charm, not from a line in the code, so it is not read: these are the resistances each one moves, named
+ * in the not-reproduced reason instead of left as an unexplained gap.
+ */
+const LEGACY_RESISTS: Readonly<Record<string, readonly CodeBreakdownStat[]>> = {
+  'Legacy of Bismuth': ['fireResistance', 'coldResistance', 'lightningResistance'],
+  'Legacy of Ruby': ['fireResistance'],
+  'Legacy of Sapphire': ['coldResistance'],
+  'Legacy of Topaz': ['lightningResistance'],
+  'Legacy of Amethyst': ['chaosResistance'],
+}
+
 /** True for the slots that hold armour pieces (helmet, gloves, body armour, boots) or an item with a defence header. */
 function isArmourPiece(e: SnapshotEquipment, header: Map<string, number>): boolean {
   return [1, 2, 3, 5].includes(e.itemSlot) || header.has('Armour') || header.has('Evasion') || header.has('Energy Shield')
@@ -259,6 +272,11 @@ export function codeBreakdowns(snap: PobSnapshot, model: CharModel, tree: Passiv
     if (/^Bonded:\s*/.test(line)) {
       const parts = readLine(line.replace(/^Bonded:\s*/, ''))?.parts ?? []
       for (const p of parts) notRead.get(p.stat)!.push(`${where}: ${line} (Bonded rune lines are not read)`)
+      return
+    }
+    const legacy = LEGACY_RESISTS[line]
+    if (legacy) {
+      for (const stat of legacy) notRead.get(stat)!.push(`${where}: ${line} (a charm effect the code doesn't size)`)
       return
     }
     let direct = readLine(line)

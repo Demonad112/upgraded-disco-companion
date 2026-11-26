@@ -3,8 +3,7 @@
   "sourceGaps": [
     "Per-skill damage",
     "Stat attribution — which item or passive grants each point",
-    "Ward",
-    "Block chance"
+    "Ward"
   ],
   "passives": {
     "main": 104,
@@ -93,6 +92,7 @@
     "weaknesses": [
       "warning: Uncapped elemental resistance (Cold 74% of 75%, 4% more cold damage taken)",
       "critical: Chaos resistance below its cap (Chaos 18% of 75%, 228% more chaos damage taken)",
+      "warning: Little armour or block — leaning on evasion and resistances alone",
       "warning: 2 weak damage types — Chaos 3,808, Physical 4,264, against 14,611 at best"
     ]
   },
@@ -105,7 +105,7 @@
   ],
   "pobConfigInputCount": 20,
   "warnings": [],
-  "importHash": "fe7b2ad214c57cd1",
+  "importHash": "3303b5c55ec42fd7",
   "holdingUp": {
     "resistances": [
       {
