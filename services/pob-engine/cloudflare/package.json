@@ -1,0 +1,16 @@
+{
+  "name": "poe2-pob-engine-cloudflare",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Cloudflare Containers deploy of services/pob-engine (Worker + container).",
+  "scripts": {
+    "deploy": "wrangler deploy"
+  },
+  "dependencies": {
+    "@cloudflare/containers": "0.3.7"
+  },
+  "devDependencies": {
+    "wrangler": "4.158.0"
+  }
+}
