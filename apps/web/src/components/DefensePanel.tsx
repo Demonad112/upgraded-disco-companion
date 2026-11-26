@@ -214,7 +214,9 @@ function Pools({ d }: { d: DefenseSummary }) {
         <PoolTile label="Deflection" value={fmt(d.deflectionRating)} hint={
             d.deflectChance !== null && d.deflectEffect !== null
               ? `${fmt(d.deflectChance)}% · ${fmt(d.deflectEffect)}% effect`
-              : undefined
+              : d.deflectChance !== null
+                ? `${fmt(d.deflectChance)}% deflect chance`
+                : undefined
           }
         />
       </div>

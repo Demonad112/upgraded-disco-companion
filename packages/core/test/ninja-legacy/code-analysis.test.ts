@@ -99,6 +99,15 @@ describe('code breakdowns on ninja-default', () => {
     )
   })
 
+  it('names the Mageblood Legacy lines behind each resistance it cannot reproduce', async () => {
+    const cb = codeBreakdowns(await readPobSnapshotFromCode(code), await pobToCharModel(code), tree)!
+    const reason = (stat: CodeBreakdownStat) => cb.checks.find((c) => c.stat === stat)!.reason ?? ''
+    for (const stat of ['fireResistance', 'coldResistance', 'lightningResistance'] as const) expect(reason(stat), stat).toContain('Legacy of Bismuth')
+    expect(reason('coldResistance')).toContain('Legacy of Sapphire')
+    expect(reason('chaosResistance')).toContain('Legacy of Amethyst')
+    expect(reason('fireResistance')).not.toContain('Legacy of Diamond')
+  })
+
   it('lists each resistance as not reproducing, with the read and PoB figures, and never adjusts it', async () => {
     const snap = await readPobSnapshotFromCode(code)
     const cb = codeBreakdowns(snap, await pobToCharModel(code), tree)!
@@ -225,9 +234,12 @@ describe('CP-2 (PB-12): mod ids matched from ninja-default’s item text', () =>
         for (const { id } of list as { id: string }[]) {
           checked++
           if (bucket !== 'implicit' && tiers.raw(id)) {
-            // An affix: PoB's spawn rules allow it on this base, and the class pool lists it where both are known.
-            expect(tags && tiers.canSpawn(id, tags), `${id} on ${base}`).toBe(true)
-            const pool = modDb.classesForMod(id)
+            // An affix: PoB's spawn rules allow it on this base, and the class pool lists it where both are known. A
+            // Martial Artist glove line (`HandWraps<Source>`) rolls as its source mod, and only on gloves.
+            const rolled = id.startsWith('HandWraps') ? id.slice('HandWraps'.length) : id
+            if (rolled !== id) expect(tags?.includes('gloves'), `${id} on ${base}`).toBe(true)
+            expect(tags && tiers.canSpawn(rolled, tags), `${id} on ${base}`).toBe(true)
+            const pool = modDb.classesForMod(rolled)
             const poolClass = modDb.classForBase(base)
             if (pool && poolClass) expect(pool, `${id} on ${base}`).toContain(poolClass)
           } else if (bucket === 'implicit' && /^[A-Z][A-Za-z]+Implicit/.test(id) && cls) {

@@ -438,6 +438,7 @@ function scoreSlot(
     const ratios: number[] = []
     const used: string[] = []
     let weight = 0
+    let noBest = false
     for (const r of mod.rolled) {
       const w = weightOf(r.id)
       const s = spent.get(lineKey(item.slotId, mod.id, r.id))
@@ -456,7 +457,7 @@ function scoreSlot(
       }
       const top = tiers.topRoll(r.id, tags)
       if (top === null || top <= 0) {
-        unscored.push({ text: mod.text, reason: `No roll of ${r.id} can spawn on this base, so there is no best roll to compare with.` })
+        noBest = true
         continue
       }
       const value = r.value - (s?.amount ?? 0)
@@ -464,7 +465,14 @@ function scoreSlot(
       used.push(r.id)
       weight = Math.max(weight, w.weight)
     }
-    if (used.length === 0) continue
+    if (used.length === 0) {
+      // Nothing to compare with is not a roll of 0: the line is left out of both sides, like one the code can't read.
+      if (noBest) {
+        read -= 1
+        unscored.push({ text: mod.text, reason: monkLine(mod.id) ? MONK_UNSCORED : 'No best roll on this base to compare with.' })
+      }
+      continue
+    }
     const ratio = ratios.reduce((a, b) => a + b, 0) / ratios.length
     const factor = CONDITIONAL.test(mod.text) ? GEAR_SCORE.conditionalFactor : 1
     earned += weight * ratio * factor
@@ -478,9 +486,12 @@ function scoreSlot(
   if (ideal <= 0) return { ...base, missing: 'Nothing your build uses can roll on this base.', lines, wasted, unscored, coverage }
   if (total === 0) return { ...base, missing: 'It has no affix lines to score.', coverage }
   if (read * 2 < total) {
+    const monk = item.mods.filter((m) => OCCUPIES_AFFIX_SLOT.has(m.source) && monkLine(m.id)).length
     return {
       ...base,
-      missing: `Only ${read} of its ${total} affix lines could be read from the code, too few to grade the item.`,
+      missing: monk * 2 >= total
+        ? MONK_UNSCORED
+        : `Only ${read} of its ${total} affix lines could be read from the code, too few to grade the item.`,
       lines, wasted, unscored, coverage,
     }
   }
@@ -490,6 +501,10 @@ function scoreSlot(
   const rescaled = read === total ? lines : lines.map((l) => ({ ...l, points: round1((l.points * total) / read) }))
   return { ...base, score, grade: gradeFor(score), lines: rescaled, wasted, unscored, coverage }
 }
+
+/** A Martial Artist glove line: poe.ninja's `HandWraps<Source>` id, also given to a code's rewritten glove text. */
+const monkLine = (modId: string | null): boolean => modId !== null && modId.startsWith('HandWraps')
+const MONK_UNSCORED = 'Martial Artist glove lines have no best roll on this base to grade against.'
 
 const round2 = (n: number): number => Math.round(n * 100) / 100
 

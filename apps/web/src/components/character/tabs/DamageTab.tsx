@@ -13,7 +13,8 @@ export default function DamageTab({ analysis: a, tiersState, catalogState, outli
       <DpsMatrix
         dps={a.dps}
         pobConfig={a.pobConfig}
-        configApplies={a.reconciliation?.checks.find((c) => c.stat.startsWith('dps:'))?.severity === 'match'}
+        // A code's config is the one its own DPS was computed under; poe.ninja's figure only when PoB agrees with it.
+        configApplies={a.source === 'pob-export' || a.reconciliation?.checks.find((c) => c.stat.startsWith('dps:'))?.severity === 'match'}
       />
       {/* Keyed on the code: a new code starts from loading with "show anyway" off. A poe.ninja code is always the
           poe.ninja baseline; a PoB2 code under its own or no config gets exact rows only (criterion 4). */}

@@ -3,8 +3,7 @@
   "sourceGaps": [
     "Per-skill damage",
     "Stat attribution — which item or passive grants each point",
-    "Ward",
-    "Block chance"
+    "Ward"
   ],
   "passives": {
     "main": 123,
@@ -91,6 +90,7 @@
     "offenceUnscoredReason": "No ladder sample was available for this league and ascendancy, and this codebase does not carry invented damage thresholds to fall back on.",
     "weaknesses": [
       "critical: Chaos resistance below its cap (Chaos 53% of 75%, 88% more chaos damage taken)",
+      "warning: Little armour or block — leaning on evasion and resistances alone",
       "warning: 2 weak damage types — Physical 5,182, Chaos 8,003, against 22,500 at best"
     ]
   },
@@ -100,7 +100,7 @@
   ],
   "pobConfigInputCount": 22,
   "warnings": [],
-  "importHash": "1cbbe609839c2086",
+  "importHash": "41c9e70a2438438e",
   "holdingUp": {
     "resistances": [
       {

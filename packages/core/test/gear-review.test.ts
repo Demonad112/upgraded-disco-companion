@@ -29,7 +29,7 @@ describe.each(['ninja-default', 'pob2-own'])('gearReview on %s', async (name) =>
     expect(review.axis.total).toBe(9)
     const mean = Math.round((graded.reduce((n, s) => n + s.score!, 0) / graded.length) * 10) / 10
     expect(review.axis.score).toBe(mean)
-    expect(review.axis).toMatchObject({ score: 56.3, grade: 'B' })
+    expect(review.axis).toMatchObject({ score: 56.6, grade: 'B' })
   })
 
   it('offers at most five swaps, each with up to three options', () => {

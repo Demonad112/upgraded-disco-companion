@@ -92,7 +92,7 @@ Total DPS: 372908.01 · Average hit: 219810.2 · Attack or cast rate: 1.7/s · C
   - rune: Bonded: 20% reduced Slowing Potency of Debuffs on You
   - explicit: Attacks Gain 22% of Damage as Extra Physical Damage
   - explicit: Attacks Gain 18% of Damage as Extra Cold Damage
-  - explicit: +1 to Level of all Melee Skills [T2]
+  - explicit: +1 to Level of all Melee Skills
   - explicit: +10% to Quality of all Skills
   - explicit: Recover 2% of maximum Mana on Kill
   - explicit: +19% Surpassing chance to fire an additional Projectile
@@ -180,11 +180,11 @@ Total DPS: 372908.01 · Average hit: 219810.2 · Attack or cast rate: 1.7/s · C
 ## Gear score (core gear/score.ts)
 profile: {"defence":"evasion","offence":"attack","pools":["life","energy-shield","evasion"],"valued":["life","energy-shield","evasion","resistance","movement","attack","damage"],"off":["armour","spell","minion"],"reasons":["Armour 75 is under 25% of evasion 7407, so armour stats count for nothing.","Defence stats that count: life, energy shield, evasion.","Main skill is an attack: attack and damage stats count, spell and minion stats do not."],"missing":[]}
 - Helmet Hypnotic Keep: 79 A ([object Object])
-- Gloves Skull Nails: — — ([object Object], missing Only 1 of its 7 affix lines could be read from the code, too few to grade the item.)
+- Gloves Skull Nails: — — ([object Object], missing Martial Artist glove lines have no best roll on this base to grade against.)
 - Body Armour Morbid Mantle: 27.8 D ([object Object]) wasted: +(41-45)% to Lightning Resistance (43); +(31-35)% to Fire Resistance (12)
 - Amulet Demon Pendant: 45.5 C ([object Object]) wasted: (25-28)% increased Cast Speed (whole line)
 - Boots Dire Span: 61.1 B ([object Object]) wasted: +(36-40)% to Cold Resistance (36)
-- Main Hand Skull Song: 58.9 B ([object Object])
+- Main Hand Skull Song: 61.6 B ([object Object])
 - Ring 1 Behemoth Band: 66.4 B ([object Object])
 - Ring 2 Viper Whorl: 55.1 B ([object Object]) wasted: +(26-30)% to Cold Resistance (23); +(41-45)% to Lightning Resistance (11)
 - Belt Mageblood: — — ([object Object], missing Unique items have fixed lines, not affix choices, so the slot is not scored.)
@@ -203,7 +203,7 @@ These numbers were calculated with the config saved in your code, listed below. 
 Boss: Guardian/Pinnacle boss · Enemy level: 82 · Condition: enemy is chilled · Condition: enemy is dazed · Condition: enemy is shocked · Condition: you always have energy shield · Condition: you have been hit recently · Condition: you have chilled an enemy recently · Condition: you have crit in the past 8 seconds · Condition: you have crit recently · Condition: you have dealt a non-crit recently · Condition: you have shocked an enemy recently · Condition: you killed a shocked enemy in the last 3 seconds · Power charges: 5 · Effect of Chill: 27% · Effect of Shock: 27% · Combo: 18 · Rage: 20
 Quest rewards: Act 4Halls Of The DeadTasalio's Test: +5% to Cold Resistance · Act 4Halls Of The DeadTawhoa's Test: +5% to Lightning Resistance · Act 4Halls Of The DeadNgamahu's Test: +5% to Fire Resistance · Act 3Venom CryptsVenom Draught: 25% increased Stun Threshold · Interlude 2QimahSeven Pillars: 15% increased Global Armour, Evasion and Energy Shield · Act 4Abandoned PrisonGoddess of Justice: 30% increased Mana Recovery from Flasks · Act 4Eye of HinekoraTribal Medicine: 30% increased Global Armour, Evasion and Energy Shield · Act 2Valley of the TitansMedallion: 30% increased Charm Charges Gained · Act 2Valley of the TitansMedallion: +1 Charm Slot
 
-## Missing from the code (252; key: reason)
+## Missing from the code (253; key: reason)
 - a PoB code carries no character name: name
 - a PoB code carries no account: account
 - a PoB code carries no league: league
@@ -216,8 +216,8 @@ Quest rewards: Act 4Halls Of The DeadTasalio's Test: +5% to Cold Resistance · A
 - PoB did not compute this skill (it is not ticked for Full DPS): skillDps1, skillDps2, skillDps5 (+5 more)
 - implicit lines carry no mod id, so they cannot be tiered.: Main Hand.implicit0.tier, Belt.implicit0.tier, Amulet.implicit0.tier (+6 more)
 - the code carries the rolled number only, with no (min-max) range for this line: Main Hand.implicit0.range, Main Hand.explicit0.range, Main Hand.explicit1.range (+115 more)
-- this line is not in the craftable ladder data: Main Hand.explicit0.tier, Main Hand.explicit3.tier, Main Hand.explicit4.tier (+61 more)
-- The code gives this line as text only, and it does not match exactly one mod this base can roll, so it has no tier.: Main Hand.explicit1.tier, Main Hand.explicit2.tier, Belt.explicit0.tier (+18 more)
+- this line is not in the craftable ladder data: Main Hand.explicit0.tier, Main Hand.explicit3.tier, Main Hand.explicit4.tier (+65 more)
+- The code gives this line as text only, and it does not match exactly one mod this base can roll, so it has no tier.: Main Hand.explicit1.tier, Main Hand.explicit2.tier, Belt.explicit0.tier (+15 more)
 - This is an implicit, corrupted or unique modifier, not a craftable affix, so it has no tier ladder.: Ring 2.implicit0.tier, Belt.implicit1.tier, Body Armour.implicit0.tier
 - enchant lines carry no mod id, so they cannot be tiered.: Amulet.enchant0.tier
 - rune lines carry no mod id, so they cannot be tiered.: Main Hand.rune0.tier, Main Hand.rune1.tier, Main Hand.rune2.tier (+15 more)

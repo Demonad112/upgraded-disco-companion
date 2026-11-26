@@ -354,8 +354,11 @@ export function analyzeItem(
     const ladder = baseTags ? tiers.ladderFor(lookupId, baseTags) : null
     const position = ladder?.entries.find((e) => e.id === lookupId) ?? null
 
+    // A transformed glove line's stats are the transformed ones, so their roll range is on the `HandWraps` mod itself.
+    const transformed = monk ? tiers.raw(entry.id) : null
     const rolled: RolledStat[] = Object.entries(entry.stats).map(([id, value]) => {
-      const range = position?.stats.find((s) => s.id === id) ?? raw?.stats.find(([sid]) => sid === id)
+      const range =
+        position?.stats.find((s) => s.id === id) ?? raw?.stats.find(([sid]) => sid === id) ?? transformed?.stats.find(([sid]) => sid === id)
       const min = range ? ('min' in range ? range.min : range[1]) : null
       const max = range ? ('max' in range ? range.max : range[2]) : null
       return {
@@ -393,7 +396,8 @@ export function analyzeItem(
       const inverted = firstStat ? tiers.lowerIsBetter(ladder, firstStat.id) : false
       for (const better of ladder.entries.filter((e) => e.tier < position.tier)) {
         const betterStat = better.stats.find((s) => s.id === firstStat?.id)
-        const best = betterStat ? (inverted ? betterStat.min : betterStat.max) : null
+        const betterMonk = monk && !betterStat ? tiers.raw(`HandWraps${better.id}`)?.stats.find(([sid]) => sid === firstStat?.id) : undefined
+        const best = betterStat ? (inverted ? betterStat.min : betterStat.max) : betterMonk ? (inverted ? betterMonk[1] : betterMonk[2]) : null
         upgrades.push({
           tier: better.tier,
           ilvl: better.ilvl,
