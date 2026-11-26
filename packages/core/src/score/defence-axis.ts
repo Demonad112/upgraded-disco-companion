@@ -1,5 +1,5 @@
 /**
- * The defence axis (plan `docs/plans/simple-code-analysis.md`, Batch 2.4): the defence half of `assessBuild`,
+ * The defence axis (the V1 plan (deleted; `git show 2e9c146:docs/plans/simple-code-analysis.md`), Batch 2.4): the defence half of `assessBuild`,
  * unchanged, graded on its own out of its weight with the gear S–D scale, plus up to three beginner tips in
  * `docs/COPY.md` voice (action first, one reason).
  *

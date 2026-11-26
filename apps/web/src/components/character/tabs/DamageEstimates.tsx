@@ -4,7 +4,8 @@
  * Batch 3.3: the Damage tab's per-skill rows. The main skill shows the code's own number (provenance `pob-export`);
  * the other skills show the text mini-calc's estimate, labelled "≈ est." and scaled by how close it came on the main
  * skill (the self-check). When the main skill is off by more than 25% the estimates are hidden, with the Full DPS
- * steps instead, and "show anyway" reveals them labelled unreliable.
+ * steps instead, and "show anyway" reveals them labelled unreliable. Under own/none config (`exactOnly`) no estimate
+ * is made: only the main skill and the code's Full DPS rows are listed (success criterion 4).
  */
 
 import { useEffect, useState } from 'react'
@@ -29,7 +30,7 @@ async function loadOffenceData(): Promise<{ data: OffenceData; catalog: SupportC
   } }
 }
 
-export function DamageEstimates({ code }: { code: string | null }) {
+export function DamageEstimates({ code, exactOnly = false }: { code: string | null; exactOnly?: boolean }) {
   const [showAnyway, setShowAnyway] = useState(false)
   const [state, setState] = useState<{ status: 'loading' } | { status: 'error' } | { status: 'ready'; data: OffenceData; catalog: SupportCatalog; snap: Awaited<ReturnType<typeof readPobSnapshotFromCode>> }>({ status: 'loading' })
 
@@ -48,7 +49,7 @@ export function DamageEstimates({ code }: { code: string | null }) {
   if (!code) return null
   if (state.status === 'loading') return <p className="text-sm text-ink-dim" data-estimates="loading">Reading every skill…</p>
   if (state.status === 'error') return <Empty>Skill estimates could not be read from this code.</Empty>
-  const report: SelfCheckReport = estimateOffence(state.snap, state.data, { showAnyway })
+  const report: SelfCheckReport = estimateOffence(state.snap, state.data, { showAnyway, exactOnly })
   const links = linkCheck(activeSkillSet(state.snap)?.groups ?? [], state.catalog).findings
   return (
     <section className="card p-4 sm:p-5" data-estimates={report.state} aria-labelledby="skill-estimates-title">
@@ -77,7 +78,7 @@ export function DamageEstimates({ code }: { code: string | null }) {
       {report.fullDpsHint ? (
         <div className="mt-3 text-xs leading-relaxed text-ink-dim" data-full-dps-hint>
           <p>{report.fullDpsHint}</p>
-          <button type="button" className="mt-1 underline" onClick={() => setShowAnyway(true)}>Show anyway</button>
+          {report.state === 'hidden' ? <button type="button" className="mt-1 underline" onClick={() => setShowAnyway(true)}>Show anyway</button> : null}
         </div>
       ) : null}
     </section>

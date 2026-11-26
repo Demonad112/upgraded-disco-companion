@@ -53,6 +53,20 @@ describe.each(['ninja-default', 'pob2-own'])('mini-calc accuracy: %s', (name) =>
     expect(out.CritMultiplier).toBeCloseTo(snap.playerStats.CritMultiplier!, 2)
   })
 
+  it('under own/none config lists only the main skill and the Full DPS rows, with no estimate (criterion 4)', async () => {
+    const snap = await readPobSnapshotFromCode(code)
+    const report = estimateOffence(snap, data(), { exactOnly: true })
+    const fullDps = new Map(snap.fullDpsSkills.map((r) => [r.stat.replace(/^\d+x /, ''), r.value]))
+    expect(report.state).toBe('exact')
+    expect(report.skills.length).toBeGreaterThan(0)
+    for (const s of report.skills) {
+      expect(s.label, s.name).toBeNull()
+      if (s.group === report.mainGroup) expect(s.value).toBe(snap.playerStats.TotalDPS)
+      else expect(s.value, s.name).toBe(fullDps.get(s.name))
+    }
+    expect(report.skills.some((s) => s.group === report.mainGroup)).toBe(true)
+  })
+
   it('keeps the calibrated per-skill estimates within 25% of PoB for the supported skills', async () => {
     const snap = await readPobSnapshotFromCode(code)
     const report = estimateOffence(snap, data())

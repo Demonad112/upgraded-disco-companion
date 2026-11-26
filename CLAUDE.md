@@ -15,7 +15,7 @@ npm workspaces (`packages/*`, `apps/*`), Node >=22, TS strict. `packages/core` i
 - One analysis implementation: `apps/web` imports `@poe2/core`. Web state is client-side (`localStorage`); reference content is hand-edited in `apps/web/src/data/`.
 - **The PoB2 code is the source of truth.** Numbers decoded from a pasted code are correct and shown as read (provenance `pob-export`). Numbers it doesn't carry are computed by the text mini-calc and labelled "≈ est." (`estimate`), or shown as missing with a reason. Computed values only measure error and calibrate. Never call a code "stale" because another number differs.
 - Headless PoB2 (`vendor/pob2`, `docs/POB2-SYNC.md`) is a CI guard that must reproduce the reference code (`packages/core/test/reference/`); it never feeds the site. No PoB in the browser or server, no `pob-sim` provenance.
-- Two import boxes: poe.ninja code (baseline `docs/POB-NINJA-CONFIG.md`) and PoB2 code (same baseline by default, toggle for own/no config). poe.ninja import stays dormant (`NINJA_IMPORT_BLOCKED`). `PobSnapshot` is the core model; `buildCharacterOutline` (`packages/core/src/outline/`) sorts it into poe.ninja's sections. Intent `docs/intent/simple-code-analysis.md`, plan `docs/plans/simple-code-analysis.md`.
+- Two import boxes: poe.ninja code (baseline `docs/POB-NINJA-CONFIG.md`) and PoB2 code (same baseline by default, toggle for own/no config). poe.ninja import stays dormant (`NINJA_IMPORT_BLOCKED`). `PobSnapshot` is the core model; `buildCharacterOutline` (`packages/core/src/outline/`) sorts it into poe.ninja's sections. Intent `docs/intent/simple-code-analysis.md`; V1 plan done (`docs/HISTORY.md`).
 
 ## Pointers (read only when the task needs them)
 

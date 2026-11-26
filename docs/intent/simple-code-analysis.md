@@ -1,7 +1,7 @@
 # Intent: simple PoB2-code character analysis
 
 Status: confirmed by the owner, 2026-11-24 (interview, explicit "Yes, that's it").
-Spec and plan: [`docs/plans/simple-code-analysis.md`](../plans/simple-code-analysis.md).
+Spec and plan: the V1 plan (deleted; `git show 2e9c146:docs/plans/simple-code-analysis.md`); V1 done, see `docs/HISTORY.md`.
 
 ## Statement of intent
 

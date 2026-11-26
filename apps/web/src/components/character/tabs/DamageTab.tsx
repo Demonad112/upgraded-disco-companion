@@ -15,8 +15,13 @@ export default function DamageTab({ analysis: a, tiersState, catalogState, outli
         pobConfig={a.pobConfig}
         configApplies={a.reconciliation?.checks.find((c) => c.stat.startsWith('dps:'))?.severity === 'match'}
       />
-      {/* Keyed on the code: a new code starts from loading with "show anyway" off. */}
-      <DamageEstimates key={outlineInput?.code ?? ''} code={outlineInput?.code ?? null} />
+      {/* Keyed on the code: a new code starts from loading with "show anyway" off. A poe.ninja code is always the
+          poe.ninja baseline; a PoB2 code under its own or no config gets exact rows only (criterion 4). */}
+      <DamageEstimates
+        key={outlineInput?.code ?? ''}
+        code={outlineInput?.code ?? null}
+        exactOnly={outlineInput?.box === 'pob' && outlineInput.config !== 'ninja'}
+      />
       <Accordion
         id="damage-review"
         title="Supports and gear changes for this skill"

@@ -34,7 +34,7 @@ The poe.ninja character import is dead (NP1-1: Cloudflare 403). The site has to 
 
 1. Vendoring: **committed byte-identical subset** in `vendor/pob2/`, with a CI hash guard.
 2. Pin source: **your fork `Demonad112/PathOfBuilding-PoE2` dev**, synced from upstream with the **manual "Sync fork" button**.
-3. Engine: **CI only now**. A live calc service is a later optional batch; hosting is decided then. *Decided 2026-11-25 (owner): the engine stays a CI guard; no PoB in the browser or on a server (`docs/plans/simple-code-analysis.md`).*
+3. Engine: **CI only now**. A live calc service is a later optional batch; hosting is decided then. *Decided 2026-11-25 (owner): the engine stays a CI guard; no PoB in the browser or on a server (the V1 plan (deleted; `git show 2e9c146:docs/plans/simple-code-analysis.md`)).*
 4. poe.ninja: **hide the UI, keep the code dormant** (`NINJA_IMPORT_BLOCKED`).
 5. Bump cadence: **manual** (`npm run pob2:bump`).
 6. Core model: a **PoB-native `PobSnapshot`**, with a temporary adapter to `CharModel`.

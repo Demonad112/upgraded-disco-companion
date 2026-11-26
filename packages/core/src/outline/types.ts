@@ -1,6 +1,6 @@
 /**
  * The character outline: one decoded object behind every tab, sorted into the sections of poe.ninja's old
- * character page (`docs/plans/simple-code-analysis.md`, "Section map").
+ * character page (the V1 plan (deleted; `git show 2e9c146:docs/plans/simple-code-analysis.md`), "Section map").
  *
  * Every field is a value with its provenance, or `{ value: null, provenance: 'missing', reason }`. Nothing is
  * undefined, blank or silently zero: a figure the code does not carry says so.

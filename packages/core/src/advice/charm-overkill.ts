@@ -1,6 +1,6 @@
 /**
  * Charm overkill: a charm or flask line that raises a value already at its cap (plan
- * `docs/plans/simple-code-analysis.md`, Batch 2.3). "+25% to Fire Resistance" on a charm does nothing while fire
+ * the V1 plan (deleted; `git show 2e9c146:docs/plans/simple-code-analysis.md`), Batch 2.3). "+25% to Fire Resistance" on a charm does nothing while fire
  * resistance is capped. This is the only analysis of charms and flasks; everything else about them is listed.
  *
  * Read from the item text and the code's own resistance totals. A resistance whose value or cap the code does not

@@ -1,6 +1,6 @@
 /**
  * Gear score: one 0–100 figure and an S–D grade per equipped slot, plus the stats on it that do nothing
- * (plan `docs/plans/simple-code-analysis.md`, Batch 2.1 and Part 1 "Gear score").
+ * (the V1 plan (deleted; `git show 2e9c146:docs/plans/simple-code-analysis.md`), Batch 2.1 and Part 1 "Gear score").
  *
  * `score = 100 × Σ lines(weight × min(roll / bestRoll, 1) × factor) / ideal`
  *

@@ -1,5 +1,5 @@
 /**
- * What the site shows from Batch 2 (plan `docs/plans/simple-code-analysis.md`, 2.4): the gear axis, the per-slot
+ * What the site shows from Batch 2 (the V1 plan (deleted; `git show 2e9c146:docs/plans/simple-code-analysis.md`), 2.4): the gear axis, the per-slot
  * table, at most `GEAR_SCORE.swapShown` stat swaps (each with up to `swapCandidates` options), and each
  * resistance's over-cap shared across the lines that spend it. One call, so every tab reads the same numbers.
  *
