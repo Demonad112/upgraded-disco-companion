@@ -10,6 +10,7 @@
 import { parseModLine, type DamageType, type Mod } from './parse.js'
 import { zeroTypes, type TypeMap } from './conversion.js'
 import type { PassInput, PassSkill, Weapon } from './pass.js'
+import { typeExpressionMatches } from '../gems/catalog.js'
 import { activeConfigSet, activeItemSet, activeSkillSet, activeSpec, splitTree, type PobGem, type PobSnapshot } from '../pob/snapshot.js'
 
 export interface BaseRow {
@@ -20,19 +21,33 @@ export interface SkillLevelRow {
   castTime: number
   flags: string[]
   constants: [string, number][]
-  levels: [number, number][]
+  /** Per gem level: [baseMultiplier, attackSpeedMultiplier, cooldown (s, 0: none), storedUses]. */
+  levels: [number, number, number?, number?][]
+  /** The gem's quality stats: [stat, value per 1% quality]. */
+  quality?: [string, number][]
   /** A buff's per-level added damage per stack (min, max stats), indexed by gem level - 1. */
   buffStats?: { stats: string[]; levels: number[][] }
 }
 export interface SupportEffect {
   stat: string
   value: number
-  mods: { name: string; type: string; flags: string[]; conditional: boolean; conditions?: string[] }[]
+  mods: { name: string; type: string; flags: string[]; conditional: boolean; conditions?: string[]; tags?: ModTag[] }[]
+}
+/** One of PoB's mod tags as `pob-skills.json` carries it (Condition, MultiplierThreshold, DistanceRamp, ...). */
+export interface ModTag {
+  type: string
+  var?: string
+  neg?: boolean
+  threshold?: number
+  ramp?: [number, number][]
 }
 export interface SupportRow {
   name: string
   effects: SupportEffect[]
   unmapped: { stat: string; value: number }[]
+  /** PoB's skill-type expressions the supported skill must match / must not match (`pob-skills.json`). */
+  require?: string[]
+  exclude?: string[]
 }
 export interface OffenceData {
   bases: Record<string, BaseRow>
@@ -47,6 +62,9 @@ export interface OffenceData {
 }
 
 /** Enemy resistances when the code's config has neither a value nor a placeholder: the placeholders PoB2 saved in both reference codes. */
+/** PoB2's enemy distance placeholder (ConfigOptions `enemyDistance`, defaultPlaceholderState 20 units). */
+const DEFAULT_ENEMY_DISTANCE = 20
+
 export const DEFAULT_ENEMY_RESIST: Readonly<TypeMap> = Object.freeze({ physical: 0, lightning: 50, cold: 50, fire: 50, chaos: 0 })
 
 const ENEMY_RESIST_KEYS = { lightning: 'enemyLightningResist', cold: 'enemyColdResist', fire: 'enemyFireResist', chaos: 'enemyChaosResist' } as const
@@ -182,15 +200,60 @@ const SUPPORT_DAMAGE: Record<string, Mod['dmg']> = {
   Damage: undefined, PhysicalDamage: 'physical', ElementalDamage: 'elemental', FireDamage: 'fire', ColdDamage: 'cold', LightningDamage: 'lightning', ChaosDamage: 'chaos',
 }
 
-/** A support's effects as mods. A conditional effect is not applied and is reported. */
-function supportMods(row: SupportRow, unread: string[], conditionOn: (v: string) => boolean, skipConditionalGain = false): Mod[] {
+/** What a support mod's PoB tags are evaluated against: the code's config. */
+interface Gates {
+  /** A config condition (`condition<Var>`) is switched on. */
+  on: (v: string) => boolean
+  /** A config multiplier (`multiplier<Var>`), 0 when unset. */
+  counter: (v: string) => number
+  /** Distance to the enemy in units (PoB's `enemyDistance`, default 20). */
+  distance: number
+}
+
+/** PoB's ModStore EvalMod for a DistanceRamp: the factor at `d`, linear between the ramp's points, flat outside them. */
+export function rampFactor(ramp: readonly [number, number][], d: number): number {
+  if (!ramp.length) return 1
+  if (d <= ramp[0]![0]) return ramp[0]![1]
+  const last = ramp[ramp.length - 1]!
+  if (d >= last[0]) return last[1]
+  for (let i = 0; i < ramp.length - 1; i++) {
+    const [d0, f0] = ramp[i]!
+    const [d1, f1] = ramp[i + 1]!
+    if (d <= d1) return f0 + ((f1 - f0) * (d - d0)) / (d1 - d0)
+  }
+  return last[1]
+}
+
+/**
+ * The factor PoB's tags put on a mod's value under the code's config (0: off), or null when a tag is one this calc
+ * cannot evaluate. A Condition reads `condition<Var>` (negated when `neg`), a MultiplierThreshold reads
+ * `multiplier<Var>` against its threshold, a DistanceRamp scales by the enemy distance.
+ */
+function tagFactor(tags: readonly ModTag[], g: Gates): number | null {
+  let f = 1
+  for (const t of tags) {
+    if (t.type === 'Condition' && t.var) f *= g.on(t.var) !== (t.neg === true) ? 1 : 0
+    else if (t.type === 'MultiplierThreshold' && t.var && typeof t.threshold === 'number') f *= (g.counter(t.var) >= t.threshold) !== (t.neg === true) ? 1 : 0
+    else if (t.type === 'DistanceRamp' && t.ramp) f *= rampFactor(t.ramp, g.distance)
+    else return null
+  }
+  return f
+}
+
+/** A support's effects as mods. A conditional effect applies when its PoB tags hold in the config; else it is reported. */
+function supportMods(row: SupportRow, unread: string[], gates: Gates, skipConditionalGain = false): Mod[] {
   const out: Mod[] = []
   for (const e of row.effects) {
     for (const m of e.mods) {
-      // A conditional effect applies when every PoB condition it names is switched on in the code's config.
-      if (m.conditional && !(m.conditions?.length && m.conditions.every(conditionOn))) {
-        unread.push(`${row.name}: ${e.stat} (conditional)`)
-        continue
+      let value = e.value
+      if (m.conditional) {
+        // Evaluate PoB's own tags when this calc knows every one of them; otherwise every named condition must be on.
+        const f = (m.tags ? tagFactor(m.tags, gates) : null) ?? (m.conditions?.length && m.conditions.every(gates.on) ? 1 : 0)
+        if (!f) {
+          unread.push(`${row.name}: ${e.stat} (conditional)`)
+          continue
+        }
+        value = e.value * f
       }
       // An active conditional gain buff is applied once, from the all-groups buff pass.
       if (skipConditionalGain && m.conditional && /^DamageGainAs/.test(m.name)) continue
@@ -198,17 +261,45 @@ function supportMods(row: SupportRow, unread: string[], conditionOn: (v: string)
       const kind = m.type === 'MORE' ? 'more' : m.type === 'INC' ? 'inc' : null
       if (!kind && !(m.type === 'BASE' && m.name.startsWith('DamageGainAs'))) continue
       const flag = { ...(m.flags.includes('Attack') ? { scope: 'attack' as const } : {}), ...(m.flags.includes('Melee') ? { melee: true as const } : {}), ...(m.flags.includes('Area') ? { area: true as const } : {}) }
-      if (m.name in SUPPORT_DAMAGE) out.push({ kind: kind!, stat: 'damage', value: e.value, dmg: SUPPORT_DAMAGE[m.name], text, ...flag })
+      if (m.name in SUPPORT_DAMAGE) out.push({ kind: kind!, stat: 'damage', value, dmg: SUPPORT_DAMAGE[m.name], text, ...flag })
       else if (/^DamageGainAs(Physical|Fire|Cold|Lightning|Chaos)$/.test(m.name) && m.type === 'BASE')
-        out.push({ kind: 'gain', value: e.value, to: m.name.slice('DamageGainAs'.length).toLowerCase() as DamageType, text, ...flag })
-      else if (m.name === 'Speed') out.push({ kind: kind!, stat: 'speed', value: e.value, scope: 'skill', text })
-      else if (m.name === 'CritChance') out.push({ kind: kind!, stat: 'critChance', value: e.value, text, ...flag })
-      else if (m.name === 'CritMultiplier') out.push({ kind: kind!, stat: 'critBonus', value: e.value, text, ...flag })
+        out.push({ kind: 'gain', value, to: m.name.slice('DamageGainAs'.length).toLowerCase() as DamageType, text, ...flag })
+      else if (m.name === 'Speed') out.push({ kind: kind!, stat: 'speed', value, scope: 'skill', text })
+      else if (m.name === 'CritChance') out.push({ kind: kind!, stat: 'critChance', value, text, ...flag })
+      else if (m.name === 'CritMultiplier') out.push({ kind: kind!, stat: 'critBonus', value, text, ...flag })
     }
   }
   for (const u of row.unmapped) {
     if (u.stat === 'attack_speed_+%') out.push({ kind: 'inc', stat: 'speed', value: u.value, scope: 'attack', text: `${row.name}: ${u.stat}` })
     else if (/damage/.test(u.stat) && u.value !== 0) unread.push(`${row.name}: ${u.stat}`)
+  }
+  return out
+}
+
+/** Supports' stats that add cooldown uses (PoB2 SkillStatMap → AdditionalCooldownUses), and the skill type each needs or must lack. */
+const COOLDOWN_USE_STATS: Record<string, (types: ReadonlySet<string>) => boolean> = {
+  'base_limit_+': () => true,
+  base_added_cooldown_count: () => true,
+  support_added_cooldown_count_if_not_instant: (t) => !t.has('Instant'),
+  'support_storm_skill_limit_+': (t) => t.has('Storm'),
+}
+
+/**
+ * A gem's quality stats as mods (PoB2 buildSkillInstanceStats: each stat is truncated value-per-quality × quality).
+ * Stats the calc cannot read are reported when they touch damage.
+ */
+function qualityMods(name: string, stats: readonly [string, number][], quality: number, unread: string[]): Mod[] {
+  const out: Mod[] = []
+  if (quality <= 0) return out
+  for (const [stat, per] of stats) {
+    const value = Math.trunc(per * quality)
+    if (!value) continue
+    const text = `${name} quality ${quality}%: ${stat}`
+    if (stat === 'attack_speed_+%') out.push({ kind: 'inc', stat: 'speed', value, scope: 'attack', text })
+    else if (stat === 'base_cooldown_speed_+%') out.push({ kind: 'inc', stat: 'cooldownRecovery', value, text })
+    else if (stat === 'active_skill_critical_strike_chance_+%_final') out.push({ kind: 'more', stat: 'critChance', value, text })
+    else if (stat === 'active_skill_lightning_damage_+%_final') out.push({ kind: 'more', stat: 'damage', value, dmg: 'lightning', text })
+    else if (/damage|speed|critical/.test(stat)) unread.push(text)
   }
   return out
 }
@@ -234,6 +325,24 @@ const ATTACK_BUFFS: Record<string, { dmg: DamageType; line: string; on: (inputs:
     line: 'added Lightning damage per consumed Power Charge',
     on: (inputs, weapon) => weapon === 'Staff' && inputs.usePowerCharges === true && inputs.overridePowerCharges !== 0,
   },
+}
+
+/**
+ * Seconds between Ancestral Call's boosted strikes when one of `sups` is an Ancestral Call that can support a skill of
+ * these types, else undefined. PoB2 skips the boost for Vaal, Channelling and proxy-used skills (CalcOffence).
+ */
+function ancestralCallOf(sups: readonly PobGem[], data: OffenceData, types: readonly string[]): number | undefined {
+  const set = new Set(types)
+  if (['Vaal', 'Channel', 'OtherThingUsesSkill'].some((t) => set.has(t))) return undefined
+  for (const s of sups) {
+    const sr = data.supports.find((x) => x.name === s.nameSpec)
+    const ms = sr?.unmapped.find((u) => u.stat === 'ancestral_call_spirit_strike_interval_ms')?.value
+    if (!sr || !ms) continue
+    if (sr.exclude?.length && typeExpressionMatches(sr.exclude, set)) continue
+    if (sr.require?.length && !typeExpressionMatches(sr.require, set)) continue
+    return ms / 1000
+  }
+  return undefined
 }
 
 const isActive = (g: PobGem): boolean => g.enabled && !(g.skillId ?? '').startsWith('Support')
@@ -298,6 +407,14 @@ export function buildSkillInputs(snap: PobSnapshot, data: OffenceData): SkillInp
   const counters = configCounters(snap)
   const cfgInputs = activeConfigSet(snap)?.inputs ?? {}
   const conditionOn = (v: string): boolean => cfgInputs[`condition${v}`] === true
+  const cfgSet = activeConfigSet(snap)
+  const distance = [cfgSet?.inputs.enemyDistance, cfgSet?.placeholders.enemyDistance].find((v): v is number => typeof v === 'number' && Number.isFinite(v)) ?? DEFAULT_ENEMY_DISTANCE
+  const gates: Gates = {
+    on: conditionOn,
+    counter: (v) => (typeof cfgInputs[`multiplier${v}`] === 'number' ? (cfgInputs[`multiplier${v}`] as number) : 0),
+    distance,
+  }
+  const qualityBonus = global.filter((m) => m.kind === 'quality').reduce((a, m) => a + m.value, 0)
   const rage = counters.rage ?? 0
   if (rage > 0) global.push({ kind: 'more', stat: 'damage', value: rage, scope: 'attack', text: `Rage: ${rage}` })
   const shockEffect = cfgInputs.conditionShockEffect
@@ -323,7 +440,7 @@ export function buildSkillInputs(snap: PobSnapshot, data: OffenceData): SkillInp
       const sr = data.supports.find((x) => x.name === sup.nameSpec)
       if (!sr) continue
       const gainOnly: SupportRow = { ...sr, unmapped: [], effects: sr.effects.map((e) => ({ ...e, mods: e.mods.filter((m) => m.conditional && /^DamageGainAs/.test(m.name)) })) }
-      const mods = supportMods(gainOnly, buffUnread, conditionOn).map((m) => ({ ...m, text: `${m.text} (from group ${gi + 1})` }))
+      const mods = supportMods(gainOnly, buffUnread, gates).map((m) => ({ ...m, text: `${m.text} (from group ${gi + 1})` }))
       const prior = buffBySupport.get(sr.name)
       if (mods.length && (!prior || total(mods) > total(prior))) buffBySupport.set(sr.name, mods)
     }
@@ -374,17 +491,28 @@ export function buildSkillInputs(snap: PobSnapshot, data: OffenceData): SkillInp
     if (types.includes('ConsumesCharges')) return fail('Not estimated: this skill is paced by the charges it consumes')
     if (!row.levels.length) return fail('Not estimated: no level data for this skill')
     const level = Math.min(row.levels.length, Math.max(1, (gem.level ?? 1) + levelBonus(melee, types.includes('Projectile'))))
-    const [baseMultiplier, attackSpeedMultiplier] = row.levels[level - 1]!
+    const [baseMultiplier, attackSpeedMultiplier, cooldown = 0, storedUses = 1] = row.levels[level - 1]!
     const skill: PassSkill = {
       isAttack: true, isSpell: false, melee, area: types.includes('Area'), projectile: types.includes('Projectile'), types,
       baseMultiplier, attackSpeedMultiplier, castTime: row.castTime, extraAttackTime: (row.constants.find(([k]) => k === 'total_attack_time_+_ms')?.[1] ?? 0) / 1000, conversion: conversionOf(row.constants),
     }
+    const ancestralCallInterval = ancestralCallOf(sups, data, types)
+    if (ancestralCallInterval) skill.ancestralCallInterval = ancestralCallInterval
+    const typeSet = new Set(types)
+    if (cooldown > 0) {
+      let uses = storedUses
+      for (const s of sups) {
+        for (const u of data.supports.find((x) => x.name === s.nameSpec)?.unmapped ?? []) if (COOLDOWN_USE_STATS[u.stat]?.(typeSet)) uses += u.value
+      }
+      skill.cooldown = cooldown
+      skill.cooldownUses = uses
+    }
     const supUnread: string[] = []
-    const supMods: Mod[] = []
+    const supMods: Mod[] = [...qualityMods(gem.nameSpec, row.quality ?? [], (gem.quality ?? 0) + qualityBonus, supUnread)]
     for (const s of sups) {
       const sr = data.supports.find((x) => x.name === s.nameSpec)
       // Its own conditional gain buffs are applied once, from the group pass above.
-      if (sr) supMods.push(...supportMods(sr, supUnread, conditionOn, true))
+      if (sr) supMods.push(...supportMods(sr, supUnread, gates, true))
       else supUnread.push(`${s.nameSpec}: not in the data`)
     }
     out.push({

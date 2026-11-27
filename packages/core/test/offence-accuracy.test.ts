@@ -30,7 +30,7 @@ function data(): OffenceData {
 }
 
 /** Skills whose calibrated estimate is within 25% of PoB's, on both codes. */
-const CALIBRATED_OK = ['Storm Wave', 'Staggering Palm']
+const CALIBRATED_OK = ['Storm Wave', 'Staggering Palm', 'Tempest Bell', 'Whirling Assault']
 
 describe.each(['ninja-default', 'pob2-own'])('mini-calc accuracy: %s', (name) => {
   const code = readFileSync(here(`./reference/${name}/code.txt`), 'utf8').trim()
@@ -51,6 +51,17 @@ describe.each(['ninja-default', 'pob2-own'])('mini-calc accuracy: %s', (name) =>
     expect(out.Speed).toBeCloseTo(snap.playerStats.Speed!, 1)
     expect(out.CritChance).toBeCloseTo(snap.playerStats.CritChance!, 1)
     expect(out.CritMultiplier).toBeCloseTo(snap.playerStats.CritMultiplier!, 2)
+  })
+
+  it('applies Ancestral Call II to Whirling Assault from its 3 s interval, as PoB (1 + attack time / 3)', async () => {
+    const snap = await readPobSnapshotFromCode(code)
+    const inputs = buildSkillInputs(snap, data())
+    const wa = inputs.find((s) => s.name === 'Whirling Assault')!
+    expect(wa.input!.skill.ancestralCallInterval).toBe(3)
+    const out = calcPass(wa.input!)
+    expect(out.AncestralCallDamageEffect).toBeCloseTo(1 + 1 / (out.Speed! * 3), 6)
+    // Storm Wave has no Ancestral Call.
+    expect(inputs.find((s) => s.name === 'Storm Wave')!.input!.skill.ancestralCallInterval).toBeUndefined()
   })
 
   it('under own/none config lists only the main skill and the Full DPS rows, with no estimate (criterion 4)', async () => {
@@ -102,6 +113,59 @@ describe.each(['ninja-default', 'pob2-own'])('Charged Staff from another group: 
     const set = snap.config.sets[0]!
     const off = { ...snap, config: { activeConfigSet: set.id, sets: [{ ...set, inputs: { ...set.inputs, usePowerCharges: false } }] } }
     expect(chargedStaff(mainOf(off))).toEqual([])
+  })
+})
+
+describe.each(['ninja-default', 'pob2-own'])('Tempest Bell and Whirling Assault against PoB: %s', (name) => {
+  const code = readFileSync(here(`./reference/${name}/code.txt`), 'utf8').trim()
+  const oracle = JSON.parse(readFileSync(here(`./reference/${name}/groups.oracle.json`), 'utf8')).rows as { group: number; skill: string; TotalDPS: number; Speed: number }[]
+  const pass = async (skill: string, edit?: (inputs: Record<string, unknown>) => void) => {
+    let snap = await readPobSnapshotFromCode(code)
+    if (edit) {
+      const set = snap.config.sets[0]!
+      const inputs = { ...set.inputs }
+      edit(inputs)
+      snap = { ...snap, config: { activeConfigSet: set.id, sets: [{ ...set, inputs }] } }
+    }
+    const s = buildSkillInputs(snap, data()).find((x) => x.name === skill)!
+    return { s, out: calcPass(s.input!), truth: oracle.find((r) => r.group === s.group && r.skill === skill)! }
+  }
+
+  // PoB2 CalcOffence: Speed = min(speed, 1 / Cooldown); Overabundance II's base_limit_+ is an extra cooldown use, so
+  // the 0.5 s cooldown is not rounded to server ticks.
+  it("caps Tempest Bell's speed at its cooldown (PoB: 2.0 per second)", async () => {
+    const { out, truth } = await pass('Tempest Bell')
+    expect(out.Speed).toBeCloseTo(truth.Speed, 3)
+  })
+
+  // Gem quality 20 + "+10% to Quality of all Skills" = 30% increased attack speed, and Rage III's 15% applies below
+  // maximum Rage (a negated condition).
+  it("reads Whirling Assault's speed as PoB: gem quality and Rage III below maximum Rage", async () => {
+    const { out, truth } = await pass('Whirling Assault')
+    expect(out.Speed).toBeCloseTo(truth.Speed, 3)
+  })
+
+  it('drops Rage III at maximum Rage', async () => {
+    const below = (await pass('Whirling Assault')).out.Speed!
+    const atMax = (await pass('Whirling Assault', (i) => { i.conditionHaveMaximumRage = true })).out.Speed!
+    expect(atMax).toBeLessThan(below)
+  })
+
+  // Close Combat II: 30% more ramped by distance ({10, 1} to {35, 0}); PoB's default distance 20 gives 18%.
+  it("applies Close Combat II at the config's enemy distance", async () => {
+    const { s } = await pass('Tempest Bell')
+    expect(s.input!.mods).toContainEqual(expect.objectContaining({ kind: 'more', stat: 'damage', text: expect.stringContaining('Close Combat II') }))
+    const near = (await pass('Tempest Bell', (i) => { i.enemyDistance = 5 })).out
+    const far = (await pass('Tempest Bell', (i) => { i.enemyDistance = 50 })).out
+    // Lightning, which armour does not touch: the ratio is the ramp alone.
+    expect(near.LightningHitAverage! / far.LightningHitAverage!).toBeCloseTo(1.3, 6)
+  })
+
+  it('brings both within 2% of PoB\'s TotalDPS', async () => {
+    for (const skill of ['Tempest Bell', 'Whirling Assault']) {
+      const { out, truth } = await pass(skill)
+      expect(Math.abs(out.TotalDPS! / truth.TotalDPS - 1), skill).toBeLessThanOrEqual(0.02)
+    }
   })
 })
 

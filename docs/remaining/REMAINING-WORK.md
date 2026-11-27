@@ -17,6 +17,7 @@ Class codes:
 ## Owner queue
 One row per Needs-owner item, with the recommended answer. Answer by ID in a prompt's `Owner notes`.
 Answers of 2026-11-27 (MC-1 "Yes, do MC-1") are applied; row in `archive/REGISTER-CLOSED.md`.
+Answer of 2026-11-27 (mini-calc parity, Tempest Bell / Whirling Assault): owner chose "Yes, extend the skill exporters". `skill-levels.json` carries per-level cooldown and stored uses and each gem's quality stats; `pob-skills.json` mod rows carry PoB's tags (`neg`, `threshold`, DistanceRamp `ramp`). All four estimated skills on both reference codes are within 0.3% of PoB's TotalDPS.
 Answers of 2026-11-25 (V1-1 signed off, B2-4a keep S–D) are applied; rows in `archive/REGISTER-CLOSED.md`.
 Answers of 2026-11-24 are applied: the code is the source of truth; the oracle is a CI guard that must reproduce it; there is no browser engine and no `pob-sim`. Estimates are allowed only from the mini-calc, labelled "≈ est." (`docs/intent/simple-code-analysis.md`).
 Answers of 2026-11-17 (HG1-1, -2, -4, -5, -6) are applied. Answers of 2026-11-15 are applied and the rows cleared: PRO1-3, WQA3-9b, WQA1-1 (do in Batch 3), UXS-1 (variant branch, Batch 3), R60 (Yykiuy only), PXA-7 accept, PXA-8 keep, CF1-1 keep the deny, WQA1-5 (`lang: "en"` only), WQA1-6 skip. PRO1-1, PRO1-2, PRO1-4 and PRO1-5 are closed by the same plan.
