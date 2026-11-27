@@ -53,6 +53,17 @@ describe.each(['ninja-default', 'pob2-own'])('mini-calc accuracy: %s', (name) =>
     expect(out.CritMultiplier).toBeCloseTo(snap.playerStats.CritMultiplier!, 2)
   })
 
+  it('applies Ancestral Call II to Whirling Assault from its 3 s interval, as PoB (1 + attack time / 3)', async () => {
+    const snap = await readPobSnapshotFromCode(code)
+    const inputs = buildSkillInputs(snap, data())
+    const wa = inputs.find((s) => s.name === 'Whirling Assault')!
+    expect(wa.input!.skill.ancestralCallInterval).toBe(3)
+    const out = calcPass(wa.input!)
+    expect(out.AncestralCallDamageEffect).toBeCloseTo(1 + 1 / (out.Speed! * 3), 6)
+    // Storm Wave has no Ancestral Call.
+    expect(inputs.find((s) => s.name === 'Storm Wave')!.input!.skill.ancestralCallInterval).toBeUndefined()
+  })
+
   it('under own/none config lists only the main skill and the Full DPS rows, with no estimate (criterion 4)', async () => {
     const snap = await readPobSnapshotFromCode(code)
     const report = estimateOffence(snap, data(), { exactOnly: true })

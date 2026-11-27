@@ -39,6 +39,11 @@ export interface PassSkill {
   castTime: number
   /** Seconds added to the attack time after the speed modifiers (`total_attack_time_+_ms`), 0 for most skills. */
   extraAttackTime?: number
+  /**
+   * Seconds between Ancestral Call's boosted strikes (`ancestral_call_spirit_strike_interval_ms` / 1000) when the
+   * skill is supported by it; absent otherwise.
+   */
+  ancestralCallInterval?: number
   /** The skill's PoB types. */
   types?: readonly string[]
   /** `[from, to, percent]` conversions the skill itself carries. */
@@ -124,6 +129,19 @@ export function calcPass(input: PassInput): PassOutput {
     out[`${cap(t)}SummedMaxBase`] = sumMax[t]
   }
 
+  // Speed first (step 6 in PoB's order): Ancestral Call's uptime below depends on it, and nothing in it on damage.
+  // As PoB: 1 / (baseTime / round((1 + inc) × more, 2)).
+  const rate = (weapon?.attackRate ?? 1 / skill.castTime) * (1 + skill.attackSpeedMultiplier / 100)
+  const speedInc = 1 + list.sum(ctx, 'inc', 'speed') / 100
+  const baseTime = 1 / rate
+  out.Speed = 1 / (baseTime / round2(speedInc * list.more(ctx, 'speed')) + (skill.extraAttackTime ?? 0))
+
+  // Ancestral Call, as PoB2's calcAncestralBoost: one strike per interval is boosted (100% more, the multiplier PoB
+  // passes for it), so the average effect is 1 + min(attack time / interval, 1). PoB folds it into `allMult`, which
+  // scales every type before resistance and armour.
+  const interval = skill.ancestralCallInterval
+  out.AncestralCallDamageEffect = interval && interval > 0 ? 1 + Math.min(1 / out.Speed / interval, 1) : 1
+
   // 3 + 4. Increased and more by the final type, then the enemy's resistance minus penetration.
   let hit = 0
   // Physical before mitigation, and the enemy's flat reduction: armour is rolled again on the crit pass's bigger hit.
@@ -134,7 +152,7 @@ export function calcPass(input: PassInput): PassOutput {
   for (const t of DAMAGE_TYPES) {
     const inc = 1 + list.sum(ctx, 'inc', 'damage', t) / 100
     const more = list.more(ctx, 'damage', t)
-    const raw = ((sumMin[t] + sumMax[t]) / 2) * inc * more
+    const raw = ((sumMin[t] + sumMax[t]) / 2) * inc * more * out.AncestralCallDamageEffect
     let factor: number
     if (t === 'physical') {
       // PoB sizes the armour roll on this type's average hit after increased and more (the non-crit pass here).
@@ -162,12 +180,6 @@ export function calcPass(input: PassInput): PassOutput {
   const physCrit = physRaw * out.CritMultiplier * (1 - enemyPhysicalReduction(armour, physRaw * out.CritMultiplier, flatReduction) / 100) * taken
   const critHit = (hit - out.PhysicalHitAverage!) * out.CritMultiplier + physCrit
   out.AverageDamage = hit * (1 - c) + critHit * c
-
-  // 6. Speed, as PoB: 1 / (baseTime / round((1 + inc) × more, 2)).
-  const rate = (weapon?.attackRate ?? 1 / skill.castTime) * (1 + skill.attackSpeedMultiplier / 100)
-  const speedInc = 1 + list.sum(ctx, 'inc', 'speed') / 100
-  const baseTime = 1 / rate
-  out.Speed = 1 / (baseTime / round2(speedInc * list.more(ctx, 'speed')) + (skill.extraAttackTime ?? 0))
 
   // 7. DPS.
   out.TotalDPS = out.AverageDamage * out.Speed * (out.HitChance / 100)

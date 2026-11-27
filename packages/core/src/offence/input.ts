@@ -10,6 +10,7 @@
 import { parseModLine, type DamageType, type Mod } from './parse.js'
 import { zeroTypes, type TypeMap } from './conversion.js'
 import type { PassInput, PassSkill, Weapon } from './pass.js'
+import { typeExpressionMatches } from '../gems/catalog.js'
 import { activeConfigSet, activeItemSet, activeSkillSet, activeSpec, splitTree, type PobGem, type PobSnapshot } from '../pob/snapshot.js'
 
 export interface BaseRow {
@@ -31,6 +32,9 @@ export interface SupportRow {
   name: string
   effects: SupportEffect[]
   unmapped: { stat: string; value: number }[]
+  /** PoB's skill-type expressions the supported skill must match / must not match (`pob-skills.json`). */
+  require?: string[]
+  exclude?: string[]
 }
 export interface OffenceData {
   bases: Record<string, BaseRow>
@@ -232,6 +236,24 @@ const UNSIZED_ATTACK_BUFFS: Record<string, { line: string; on: (inputs: Readonly
   },
 }
 
+/**
+ * Seconds between Ancestral Call's boosted strikes when one of `sups` is an Ancestral Call that can support a skill of
+ * these types, else undefined. PoB2 skips the boost for Vaal, Channelling and proxy-used skills (CalcOffence).
+ */
+function ancestralCallOf(sups: readonly PobGem[], data: OffenceData, types: readonly string[]): number | undefined {
+  const set = new Set(types)
+  if (['Vaal', 'Channel', 'OtherThingUsesSkill'].some((t) => set.has(t))) return undefined
+  for (const s of sups) {
+    const sr = data.supports.find((x) => x.name === s.nameSpec)
+    const ms = sr?.unmapped.find((u) => u.stat === 'ancestral_call_spirit_strike_interval_ms')?.value
+    if (!sr || !ms) continue
+    if (sr.exclude?.length && typeExpressionMatches(sr.exclude, set)) continue
+    if (sr.require?.length && !typeExpressionMatches(sr.require, set)) continue
+    return ms / 1000
+  }
+  return undefined
+}
+
 const isActive = (g: PobGem): boolean => g.enabled && !(g.skillId ?? '').startsWith('Support')
 const isSupport = (g: PobGem): boolean => g.enabled && (g.skillId ?? '').startsWith('Support')
 
@@ -358,6 +380,8 @@ export function buildSkillInputs(snap: PobSnapshot, data: OffenceData): SkillInp
       isAttack: true, isSpell: false, melee, area: types.includes('Area'), projectile: types.includes('Projectile'), types,
       baseMultiplier, attackSpeedMultiplier, castTime: row.castTime, extraAttackTime: (row.constants.find(([k]) => k === 'total_attack_time_+_ms')?.[1] ?? 0) / 1000, conversion: conversionOf(row.constants),
     }
+    const ancestralCallInterval = ancestralCallOf(sups, data, types)
+    if (ancestralCallInterval) skill.ancestralCallInterval = ancestralCallInterval
     const supUnread: string[] = []
     const supMods: Mod[] = []
     for (const s of sups) {
