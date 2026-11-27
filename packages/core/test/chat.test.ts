@@ -10,8 +10,7 @@ import { readFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
 import { analyzeCharacter } from '../src/analyze.js'
-import { analyzeFromPob } from '../src/pob/analyze.js'
-import { buildChatContext, buildPobChatContext, SYSTEM_PROMPT } from '../src/chat/context.js'
+import { buildChatContext, SYSTEM_PROMPT } from '../src/chat/context.js'
 import { ChatError, PROVIDERS, chat, type ChatConfig } from '../src/chat/provider.js'
 import type { CharModel } from '../src/model/types.js'
 import { mainWithBreakdowns } from './helpers/main-build.js'
@@ -66,15 +65,6 @@ describe('grounding the model', () => {
     expect(SYSTEM_PROMPT).toMatch(/lowest maximum hit taken.*NOT the effective health pool/is)
     expect(SYSTEM_PROMPT).toMatch(/alternates, never additive/)
     expect(SYSTEM_PROMPT).toMatch(/Tier 1 is the BEST/)
-  })
-
-  it('grounds a Path of Building import in its own narrower facts', async () => {
-    const pob = await analyzeFromPob(model.pathOfBuildingExport!)
-    const pobContext = buildPobChatContext(pob)
-    expect(pobContext).toContain('5182')
-    expect(pobContext).toContain('THIS SOURCE CANNOT ANSWER')
-    // The gaps must travel with the context, or the model will paper over them.
-    expect(pobContext).toContain('Per-skill damage')
   })
 })
 

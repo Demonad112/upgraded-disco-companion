@@ -40,8 +40,29 @@ export interface OffenceData {
   supports: SupportRow[]
   /** Passive node id → `{ s: stat lines }`. */
   treeNodes: Record<string, { n?: string; s?: string[] }>
-  /** Enemy resistance in percent when the config does not give one. */
-  defaultResist: TypeMap
+  /** Enemy resistance in percent when the code's config gives none; `DEFAULT_ENEMY_RESIST` when omitted. */
+  defaultResist?: TypeMap
+}
+
+/** Enemy resistances when the code's config has neither a value nor a placeholder: the placeholders PoB2 saved in both reference codes. */
+export const DEFAULT_ENEMY_RESIST: Readonly<TypeMap> = Object.freeze({ physical: 0, lightning: 50, cold: 50, fire: 50, chaos: 0 })
+
+const ENEMY_RESIST_KEYS = { lightning: 'enemyLightningResist', cold: 'enemyColdResist', fire: 'enemyFireResist', chaos: 'enemyChaosResist' } as const
+
+/**
+ * The enemy the code was calculated against: each field as the player typed it, else the placeholder PoB saved beside
+ * it (the default it calculated with), else the game default. Armour Broken zeroes the armour, as PoB's config does.
+ */
+export function enemyFromConfig(snap: PobSnapshot, fallback: Readonly<TypeMap> = DEFAULT_ENEMY_RESIST): { resist: TypeMap; armour: number; physicalReduction: number } {
+  const set = activeConfigSet(snap)
+  const read = (key: string): number | null => {
+    const v = set?.inputs[key] ?? set?.placeholders[key]
+    return typeof v === 'number' && Number.isFinite(v) ? v : null
+  }
+  const resist: TypeMap = { ...fallback }
+  for (const [t, key] of Object.entries(ENEMY_RESIST_KEYS) as [keyof typeof ENEMY_RESIST_KEYS, string][]) resist[t] = read(key) ?? fallback[t]
+  const broken = set?.inputs.conditionEnemyArmourBroken === true
+  return { resist, armour: broken ? 0 : Math.max(0, read('enemyArmour') ?? 0), physicalReduction: read('enemyPhysicalReduction') ?? 0 }
 }
 
 export interface SkillInput {
@@ -271,6 +292,7 @@ export function buildSkillInputs(snap: PobSnapshot, data: OffenceData): SkillInp
   if (heralds.includes('Herald of Thunder')) conds.add('heraldThunder')
   if (heralds.includes('Herald of Ice')) conds.add('heraldIce')
   if (heralds.includes('Herald of Ash')) conds.add('heraldAsh')
+  const enemy = enemyFromConfig(snap, data.defaultResist)
   const out: SkillInput[] = []
   const groups = activeSkillSet(snap)?.groups ?? []
   // PoB applies a support's conditional "gain as extra damage" buff (Innervate, Blazing Critical, Ice Bite) from any
@@ -326,7 +348,7 @@ export function buildSkillInputs(snap: PobSnapshot, data: OffenceData): SkillInp
       ...base,
       gemLevel: level,
       unread: [...unread, ...supUnread],
-      input: { weapon: w.weapon, skill, mods: [...global, ...supMods, ...buffMods], conds, counters, enemy: { resist: data.defaultResist, takenInc } },
+      input: { weapon: w.weapon, skill, mods: [...global, ...supMods, ...buffMods], conds, counters, enemy: { ...enemy, takenInc } },
     })
   })
   return out

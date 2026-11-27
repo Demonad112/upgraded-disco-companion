@@ -77,3 +77,38 @@ describe.each(['ninja-default', 'pob2-own'])('mini-calc accuracy: %s', (name) =>
     }
   })
 })
+
+describe('the enemy the code was calculated against', () => {
+  const code = readFileSync(here('./reference/pob2-own/code.txt'), 'utf8').trim()
+  const withInputs = (snap: Awaited<ReturnType<typeof readPobSnapshotFromCode>>, inputs: Record<string, number | boolean>) => {
+    const set = snap.config.sets[0]!
+    return { ...snap, config: { activeConfigSet: set.id, sets: [{ ...set, inputs: { ...set.inputs, ...inputs } }] } }
+  }
+  const enemyOf = (snap: Awaited<ReturnType<typeof readPobSnapshotFromCode>>) => buildSkillInputs(snap, data()).find((s) => s.input)!.input!.enemy
+
+  it('reads armour and resistances from the code: its placeholders when the fields were left empty', async () => {
+    const enemy = enemyOf(await readPobSnapshotFromCode(code))
+    expect(enemy.armour).toBe(8063)
+    expect(enemy.resist).toEqual({ physical: 0, lightning: 50, cold: 50, fire: 50, chaos: 0 })
+  })
+
+  it('prefers what the player typed over the placeholder, and a broken armour is zero', async () => {
+    const snap = withInputs(await readPobSnapshotFromCode(code), { enemyFireResist: 75, enemyArmour: 1000, enemyPhysicalReduction: 15 })
+    const enemy = enemyOf(snap)
+    expect(enemy.resist.fire).toBe(75)
+    expect(enemy.resist.cold).toBe(50)
+    expect(enemy.armour).toBe(1000)
+    expect(enemy.physicalReduction).toBe(15)
+    expect(enemyOf(withInputs(snap, { conditionEnemyArmourBroken: true })).armour).toBe(0)
+  })
+
+  it('falls back to the game defaults when the code says nothing (no data.defaultResist needed)', async () => {
+    const snap = await readPobSnapshotFromCode(code)
+    const bare = { ...snap, config: { activeConfigSet: null, sets: [] } }
+    const { defaultResist: _omit, ...rest } = data()
+    const enemy = buildSkillInputs(bare, rest).find((s) => s.input)!.input!.enemy
+    expect(enemy.resist).toEqual({ physical: 0, lightning: 50, cold: 50, fire: 50, chaos: 0 })
+    expect(enemy.armour ?? 0).toBe(0)
+  })
+})
+

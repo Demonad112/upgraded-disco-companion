@@ -26,7 +26,6 @@ async function loadOffenceData(): Promise<{ data: OffenceData; catalog: SupportC
     skillTypes: skills.actives,
     supports: skills.supports,
     treeNodes: tree.nodes,
-    defaultResist: { physical: 0, lightning: 50, cold: 50, fire: 50, chaos: 0 },
   } }
 }
 

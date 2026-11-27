@@ -52,8 +52,27 @@ export interface PassInput {
   conds: ReadonlySet<string>
   /** Config counters (`combo`, `rage`, ...). */
   counters?: Readonly<Record<string, number>>
-  /** Enemy resistance per type, in percent. */
-  enemy: { resist: TypeMap; /** Increased damage the enemy takes (shock), in percent. */ takenInc?: number }
+  enemy: {
+    /** Enemy resistance per type, in percent. */
+    resist: TypeMap
+    /** Increased damage the enemy takes (shock), in percent. */
+    takenInc?: number
+    /** Enemy armour against physical hits (PoB's `enemyArmour`); 0 or absent: none. */
+    armour?: number
+    /** Flat enemy physical damage reduction in percent (PoB's `enemyPhysicalReduction`). */
+    physicalReduction?: number
+  }
+}
+
+/** PoB2 `data.misc.ArmourRatio`: armour mitigates `A / (A + 10 × hit)` of a physical hit (`calcs.armourReductionF`). */
+const ARMOUR_RATIO = 10
+/** PoB2 `data.monsterConstants["maximum_physical_damage_reduction_%"]`. */
+const ENEMY_PHYSICAL_REDUCTION_CAP = 75
+
+/** Percent of a physical hit the enemy mitigates, as PoB2's CalcOffence: armour plus flat reduction, capped. */
+export function enemyPhysicalReduction(armour: number, hit: number, flat = 0): number {
+  const fromArmour = armour > 0 && hit > 0 ? (armour / (armour + hit * ARMOUR_RATIO)) * 100 : 0
+  return Math.min(Math.max(-100, flat + fromArmour), ENEMY_PHYSICAL_REDUCTION_CAP)
 }
 
 export type PassOutput = Record<string, number>
@@ -107,15 +126,25 @@ export function calcPass(input: PassInput): PassOutput {
 
   // 3 + 4. Increased and more by the final type, then the enemy's resistance minus penetration.
   let hit = 0
+  // Physical before mitigation, and the enemy's flat reduction: armour is rolled again on the crit pass's bigger hit.
+  let physRaw = 0
+  const taken = 1 + (input.enemy.takenInc ?? 0) / 100
+  const armour = input.enemy.armour ?? 0
+  const flatReduction = input.enemy.physicalReduction ?? 0
   for (const t of DAMAGE_TYPES) {
     const inc = 1 + list.sum(ctx, 'inc', 'damage', t) / 100
     const more = list.more(ctx, 'damage', t)
-    let factor = 1
-    if (t !== 'physical') {
+    const raw = ((sumMin[t] + sumMax[t]) / 2) * inc * more
+    let factor: number
+    if (t === 'physical') {
+      // PoB sizes the armour roll on this type's average hit after increased and more (the non-crit pass here).
+      physRaw = raw
+      factor = 1 - enemyPhysicalReduction(armour, raw, flatReduction) / 100
+    } else {
       const pen = list.of(ctx, 'pen').filter((m) => m.dmg === t).reduce((a, m) => a + m.value, 0)
       factor = 1 - (input.enemy.resist[t] - pen) / 100
     }
-    const avg = ((sumMin[t] + sumMax[t]) / 2) * inc * more * factor * (1 + (input.enemy.takenInc ?? 0) / 100)
+    const avg = raw * factor * taken
     out[`${cap(t)}HitAverage`] = avg
     hit += avg
   }
@@ -129,7 +158,10 @@ export function calcPass(input: PassInput): PassOutput {
   const bonus = 100 * (1 + list.sum(ctx, 'inc', 'critBonus') / 100) * list.more(ctx, 'critBonus')
   out.CritMultiplier = 1 + Math.max(0, bonus) / 100
   const c = out.CritChance / 100
-  out.AverageDamage = hit * (1 - c + c * out.CritMultiplier)
+  // PoB's crit pass multiplies the hit before mitigation, so armour takes a smaller share of a crit's physical part.
+  const physCrit = physRaw * out.CritMultiplier * (1 - enemyPhysicalReduction(armour, physRaw * out.CritMultiplier, flatReduction) / 100) * taken
+  const critHit = (hit - out.PhysicalHitAverage!) * out.CritMultiplier + physCrit
+  out.AverageDamage = hit * (1 - c) + critHit * c
 
   // 6. Speed, as PoB: 1 / (baseTime / round((1 + inc) × more, 2)).
   const rate = (weapon?.attackRate ?? 1 / skill.castTime) * (1 + skill.attackSpeedMultiplier / 100)

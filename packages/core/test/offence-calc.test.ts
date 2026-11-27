@@ -116,3 +116,33 @@ describe('calcPass', () => {
     expect(calcPass(input({ enemy: { resist: { ...none }, takenInc: 27 } })).PhysicalHitAverage).toBeCloseTo(200 * 1.27)
   })
 })
+
+describe('enemy mitigation from the config (PoB2 CalcOffence: armour, physical reduction, resistances)', () => {
+  it('reduces a physical hit by enemy armour as PoB does: A / (A + 10 x hit), capped at 75%', () => {
+    // Staff 100 phys x base multiplier 2 = a 200 hit. 2000 armour: 2000 / (2000 + 10 x 200) = 50%.
+    expect(calcPass(input({ enemy: { resist: { ...none }, armour: 2000 } })).PhysicalHitAverage).toBeCloseTo(100)
+    // 1,000,000 armour would be ~99.8%; the monster cap holds it at 75%.
+    expect(calcPass(input({ enemy: { resist: { ...none }, armour: 1_000_000 } })).PhysicalHitAverage).toBeCloseTo(50)
+    // The config's flat physical damage reduction adds to the armour's.
+    expect(calcPass(input({ enemy: { resist: { ...none }, armour: 2000, physicalReduction: 10 } })).PhysicalHitAverage).toBeCloseTo(80)
+  })
+
+  it('rolls armour again on the crit pass, whose bigger hit armour mitigates less (PoB2 pass 1)', () => {
+    // 200 hit, always crit at x2: a 400 crit hit against 2000 armour loses 2000 / (2000 + 4000) = 1/3, not 50%.
+    const out = calcPass(input({ mods: mods('+100% to Critical Hit Chance'), enemy: { resist: { ...none }, armour: 2000 } }))
+    expect(out.CritChance).toBe(100)
+    expect(out.CritMultiplier).toBe(2)
+    expect(out.AverageDamage).toBeCloseTo(400 * (1 - 2000 / (2000 + 4000)))
+    // Rolled on the non-crit hit it would be 400 x 50% = 200: the over-mitigation this pass avoids.
+    expect(out.AverageDamage).not.toBeCloseTo(200)
+    // Without armour the crit pass is the plain multiplier, as before.
+    const bare = calcPass(input({ mods: mods('+100% to Critical Hit Chance') }))
+    expect(bare.AverageDamage).toBeCloseTo(200 * bare.CritMultiplier)
+  })
+
+  it('leaves elemental damage to resistance only', () => {
+    const out = calcPass(input({ weapon: { type: 'Staff', min: { ...none, fire: 100 }, max: { ...none, fire: 100 }, critChance: 5, attackRate: 1 }, enemy: { resist: { ...none, fire: 50 }, armour: 2000 } }))
+    expect(out.FireHitAverage).toBeCloseTo(100)
+  })
+})
+

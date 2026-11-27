@@ -337,6 +337,7 @@ export async function analyzeCharacter(
   let unmappedSlots: string[] = []
   let fromCodeLines: CodeBreakdowns | null = null
   let engineNote: EngineNote | null = null
+  let fullDpsRows = 0
   if (model.pathOfBuildingExport) {
     try {
       const snapshot = await readPobSnapshotFromCode(model.pathOfBuildingExport)
@@ -347,6 +348,7 @@ export async function analyzeCharacter(
       pobConfig = readPobConfig(snapshot)
       pobSkillGroups = readPobSkillGroups(snapshot)
       pobMinionStats = snapshot.minionStats
+      fullDpsRows = snapshot.fullDpsSkills.filter((r) => (r.value ?? 0) > 0).length
       unmappedSlots = snapshotItems(snapshot).unmapped
       if (fromCode && options.engine) {
         const applied = applyPobEngine(model, snapshot, pobStats, options.engine)
@@ -419,7 +421,7 @@ export async function analyzeCharacter(
             (n, it) => n + (it.itemData.textOnlyMods?.length ?? 0),
             0,
           ),
-        }, unreproduced?.map((c) => c.label))
+        }, unreproduced?.map((c) => c.label), { engine: engineNote !== null && !engineNote.loadError, fullDpsRows })
       : [],
     identity: {
       name: model.name ?? '',
