@@ -12,7 +12,12 @@ export function EngineStatus({ analysis: a }: { analysis: Analysis }) {
   let text: string
   let warn = false
   if (status.status === 'loading') {
-    text = 'Calculating every skill with Path of Building’s engine. This takes about 10 seconds.'
+    text =
+      status.where === 'server'
+        ? 'Calculating every skill with Path of Building’s engine. This takes about 10 seconds.'
+        : status.phase === 'calc'
+          ? 'Calculating every skill with Path of Building’s engine in your browser. This takes about 20 seconds.'
+          : 'Starting Path of Building’s engine in your browser (about 4 MB the first time, then cached).'
   } else if (status.status === 'error') {
     text = `Path of Building’s engine is unavailable (${status.message}). Only the main skill’s damage is shown.`
     warn = true

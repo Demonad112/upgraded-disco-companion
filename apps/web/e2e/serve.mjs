@@ -13,6 +13,9 @@ const port = Number(process.env.E2E_PORT ?? 4321)
 const TYPES = {
   '.html': 'text/html; charset=utf-8',
   '.js': 'text/javascript',
+  // The browser PoB engine (out/pob-calc/): module workers refuse .mjs without a JavaScript type, as Pages serves it.
+  '.mjs': 'text/javascript',
+  '.wasm': 'application/wasm',
   '.css': 'text/css',
   '.json': 'application/json',
   '.svg': 'image/svg+xml',

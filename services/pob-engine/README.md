@@ -46,7 +46,10 @@ docker build -f services/pob-engine/Dockerfile -t pob-engine .
 docker run --rm -p 8080:8080 pob-engine
 ```
 
-## Deploy (owner queue PE-1, deferred)
+## Deploy (owner queue PE-1, deferred; optional since 2026-11-27)
+
+Since 2026-11-27 the site runs PoB2 in the browser first (`apps/web/src/lib/pobEngineBrowser.ts`, `Demonad112/disco-pob-calc`). This service is the fallback: it serves devices the browser engine skips (iPhones, iPads, phones under 4 GB) and browsers where the wasm engine crashes. Deploy it only if those matter.
+
 
 Not deployed: the owner chose to leave it off for now (2026-11-26) and rules out anything needing a paid account. Cloud Run and Cloudflare Containers both need billing. A free host that fits the ~700 MB worker is a Hugging Face Space (Docker SDK, free CPU tier, no card, sleeps after 48 h idle). Any host works with the same image: set `NEXT_PUBLIC_POB_ENGINE_BASE` to its https URL in the Pages build env; `apps/web/scripts/csp-hashes.mjs` adds the origin to `connect-src`.
 
