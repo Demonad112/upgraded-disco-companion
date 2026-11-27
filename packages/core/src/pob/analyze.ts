@@ -7,6 +7,7 @@
  */
 
 import { pobSiteLink } from './export.js'
+import { resistCapAssumed } from './to-model.js'
 import { RES_CAP_DEFAULT } from '../defense/constants.js'
 
 /** What a Path of Building code cannot tell you, stated rather than filled in. */
@@ -128,11 +129,11 @@ export function pobCodeGaps(stats: Record<string, number>, gear?: GearReadState,
   if (num(stats, 'BlockChance') === null && num(stats, 'EffectiveBlockChance') === null) {
     gaps.push({ what: 'Block chance', why: 'Not among the exported PlayerStat values.' })
   }
-  const resists = Object.values(RESIST_STATS).filter((key) => num(stats, key) !== null)
-  if (resists.length && resists.every((key) => num(stats, `${key}OverCap`) === null)) {
+  const assumed = Object.entries(RESIST_STATS).filter(([, key]) => resistCapAssumed(stats, key))
+  if (assumed.length) {
     gaps.push({
       what: 'Raised maximum resistances',
-      why: `No over-cap stats were exported, so caps are assumed to be the game default of ${DEFAULT_RESIST_CAP}%. A build that raises its maximums will look closer to its cap than it is.`,
+      why: `The cap of ${assumed.map(([type]) => type).join(', ')} resistance is assumed to be the game default of ${DEFAULT_RESIST_CAP}%: the code states no maximum for it and its over-cap amount is zero or absent. A build that raises that maximum will look closer to its cap than it is.`,
     })
   }
   return gaps

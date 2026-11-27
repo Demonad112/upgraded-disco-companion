@@ -3,7 +3,8 @@
   "sourceGaps": [
     "Per-skill damage",
     "Stat attribution — which item or passive grants each point",
-    "Ward"
+    "Ward",
+    "Raised maximum resistances"
   ],
   "passives": {
     "main": 123,

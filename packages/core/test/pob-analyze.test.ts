@@ -25,6 +25,22 @@ describe('pobCodeGaps', () => {
     for (const gap of gaps) expect(gap.why.length).toBeGreaterThan(20)
   })
 
+  it('names each resistance whose cap was assumed, even when other resistances carry an over-cap stat', () => {
+    const gap = (s: Record<string, number>) => pobCodeGaps(s).find((g) => g.what === 'Raised maximum resistances')
+    // Fire is over the cap (its value is the cap); chaos is 53 with over-cap 0, so its cap is only assumed.
+    const mixed = { FireResist: 75, FireResistOverCap: 20, ColdResist: 75, ColdResistOverCap: 0, LightningResist: 75, LightningResistOverCap: 3, ChaosResist: 53, ChaosResistOverCap: 0 }
+    const why = gap(mixed)?.why ?? ''
+    expect(why).toMatch(/cold/i)
+    expect(why).toMatch(/chaos/i)
+    expect(why).not.toMatch(/fire|lightning/i)
+    // A stated maximum or an over-cap amount pins the cap: nothing assumed, no gap.
+    expect(gap({ FireResist: 80, FireResistMax: 80, ColdResist: 75, ColdResistOverCap: 5 })).toBeUndefined()
+    // A value above the default with nothing pinning it is left missing, not assumed.
+    expect(gap({ FireResist: 80 })).toBeUndefined()
+    // No over-cap stats at all: every resistance present is assumed.
+    expect(gap({ FireResist: 40, ColdResist: 30 })?.why).toMatch(/fire.*cold|cold.*fire/i)
+  })
+
   it('names the Full DPS rows a code carries, and drops the row once PoB\'s engine calculated every group', () => {
     const why = (damage: Parameters<typeof pobCodeGaps>[3]) => pobCodeGaps(stats, undefined, undefined, damage).find((g) => g.what === 'Per-skill damage')?.why
     expect(why({ fullDpsRows: 3 })).toBe('A code carries the damage of the skill it had selected and of the 3 skills ticked for Full DPS, not of every skill.')
