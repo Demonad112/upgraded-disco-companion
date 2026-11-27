@@ -148,6 +148,9 @@ self.addEventListener('fetch', (event) => {
   if (isLiveRequest(url)) return
   // Other origins are none of this worker's business.
   if (url.origin !== self.location.origin) return
+  // The browser PoB engine keeps its own Cache Storage keyed by content hash (pob-worker.js); caching its ~4 MB again
+  // per build here would only duplicate it.
+  if (url.pathname.includes('/pob-calc/')) return
 
   if (isDataRequest(url)) {
     event.respondWith(cacheFirst(request, DATA_CACHE))

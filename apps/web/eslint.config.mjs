@@ -12,6 +12,8 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // PoB2 browser engine, unpacked from a pinned disco-pob-calc release (scripts/fetch-pob-calc.mjs); not our source.
+    "public/pob-calc/**",
   ]),
 ]);
 

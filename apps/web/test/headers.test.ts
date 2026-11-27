@@ -38,6 +38,15 @@ describe('Cloudflare _headers', () => {
     expect(scriptSrc).not.toContain("'unsafe-inline'")
   })
 
+  // The browser PoB engine (src/lib/pobEngineBrowser.ts) compiles its WebAssembly; without this Chromium refuses it.
+  // 'wasm-unsafe-eval' allows WebAssembly compilation only, not JavaScript eval.
+  it("allows WebAssembly for the browser PoB engine, and no JavaScript eval", () => {
+    const scriptSrc = /script-src ([^;]+)/.exec(csp ?? '')?.[1].split(/\s+/) ?? []
+    expect(scriptSrc).toContain("'wasm-unsafe-eval'")
+    expect(scriptSrc).not.toContain("'unsafe-eval'")
+    expect(/worker-src ([^;]+)/.exec(csp ?? '')?.[1].split(/\s+/)).toContain("'self'")
+  })
+
   // CF-01: unhashed images and icons get a day of caching. The manifest and HTML stay on revalidate; data JSON is immutable (versioned URL).
   describe('cache rules', () => {
     const rules = new Map<string, string[]>()
@@ -58,6 +67,11 @@ describe('Cloudflare _headers', () => {
     // Data is fetched as <file>.json?v=<data fingerprint> (lib/basePath dataUrl), so a new deploy is a new URL.
     it('caches data JSON forever, as the fetch URL carries the data version', () => {
       expect(rules.get('/*.json')).toContain('Cache-Control: public, max-age=31536000, immutable')
+    })
+
+    // The folder is named by the release tarball's sha256 (scripts/fetch-pob-calc.mjs releaseId), so a new release is a new URL.
+    it('caches the browser PoB engine forever, as its folder carries the release hash', () => {
+      expect(rules.get('/pob-calc/*')).toContain('Cache-Control: public, max-age=31536000, immutable')
     })
   })
 })

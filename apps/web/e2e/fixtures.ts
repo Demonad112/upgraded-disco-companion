@@ -46,9 +46,15 @@ export async function openTab(page: Page, id: CharacterTabId) {
   await expect(page.locator(`#panel-${id}`)).toBeVisible({ timeout: 30_000 })
 }
 
-export const test = base.extend<{ errors: string[] }>({
+export const test = base.extend<{ errors: string[]; pobEngine: boolean }>({
+  /**
+   * The browser PoB engine (src/lib/pobEngineBrowser.ts) spends ~25 s and ~500 MB per pasted code. Specs that don't
+   * test it get its files refused (the page then shows its one-line "unavailable" status); `test.use({ pobEngine: true })`
+   * lets them through (e2e/pob-engine-browser.spec.ts).
+   */
+  pobEngine: [false, { option: true }],
   errors: [
-    async ({ page }, use) => {
+    async ({ page, pobEngine }, use) => {
       const errors: string[] = []
       page.on('pageerror', (e) => errors.push(`pageerror: ${e.message}`))
       page.on('console', (m) => {
@@ -65,6 +71,7 @@ export const test = base.extend<{ errors: string[] }>({
           await route.abort()
         }
       })
+      if (!pobEngine) await page.route(/\/pob-calc\//, (route) => route.fulfill({ status: 404, body: '' }))
       // Headless Chromium renders with SwiftShader, which auto effects read as Still; pin Full so every spec sees the
       // full site. Only when nothing is stored, so a spec's own pick (and a reload after it) wins. See fx-tier.spec.
       await page.addInitScript(() => {

@@ -17,7 +17,7 @@ Spec and plan: the V1 plan (deleted; `git show 2e9c146:docs/plans/simple-code-an
 | **Batches** | **1:** decode and sort into sections, with "missing" listed. **2:** Defence calcs, analysis and tips. **3:** Damage calcs, analysis and tips. Gear and stat-swap tips ride in 2 and 3 by stat type. The owner goes deeper per category afterwards. |
 | **Cleanup** | Delete the B9 spike and its plan; keep the `#pob=` share link. The oracles stay a CI-only test guard. One short plan doc replaces the CP, B9 and NJ plans. |
 | **Done when** | Both code types render every category (real data, "missing" or "≈ est.", never blank); the mini-calc is within 25% of the main skill's DPS on the owner's codes; a new player can follow the Overview. |
-| **Out of scope** | Tree analysis (shown, not calculated); flask and charm analysis (except the overkill flag); crafting odds and pricing; PoB in the browser or a calc server; a ladder fetch; name, league and timestamp beyond an optional typed name. |
+| **Out of scope** | Tree analysis (shown, not calculated); flask and charm analysis (except the overkill flag); crafting odds and pricing; PoB in the browser or a calc server (*superseded 2026-11-27, owner: PoB's engine runs in the browser, server as fallback; it only adds what a code lacks, as `pob-calc`*); a ladder fetch; name, league and timestamp beyond an optional typed name. |
 
 ## Interview record (the owner's answers)
 

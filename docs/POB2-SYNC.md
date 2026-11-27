@@ -38,6 +38,8 @@ CI job `pob2-oracle` (`ci.yml`) runs when `vendor/pob2`, `tools/pob2`, `scripts/
 
 `services/pob-engine` runs `tools/pob2/serve.lua` on `vendor/pob2` in a container and answers `POST /calc { code }` with PoB's snapshot and every skill group's main output (`services/pob-engine/README.md`). The site calls it for a pasted code when `NEXT_PUBLIC_POB_ENGINE_BASE` is set at build time. `@poe2/core`'s `applyPobEngine` keeps every figure the code carries and adds only what it lacks, labelled `pob-calc`. A bump changes the engine's numbers with the pin, so redeploy the service after `pob2:bump`. CI job `pob-engine` builds the image and checks it reproduces the reference TotalDPS.
 
+**Browser engine (2026-11-27).** The site's default transport is `Demonad112/disco-pob-calc` (same PoB2 on PUC Lua 5.2 in WebAssembly), pinned in `apps/web/pob-calc.lock.json`. `apps/web/scripts/fetch-pob-calc.mjs` fails the build when the lock's `pinCommit` differs from `PIN.json`, so a bump needs both repos: bump disco-pob-calc to the same commit (its README, "Bump PoB2"), tag `vX.Y.Z-1` there, then `node apps/web/scripts/fetch-pob-calc.mjs --update vX.Y.Z-1` in the same PR as `pob2:bump`.
+
 ## Data exporters (B4)
 
 The generated game data is dumped from PoB's own loaded tables, not parsed out of its Lua text. `tools/pob2/export/{mods,bases,skills,tree}.lua` load PoB headless (through `headless.lua`, so the same cwd, `LUA_PATH` and ModCache rules apply) and write one JSON document to stdout:

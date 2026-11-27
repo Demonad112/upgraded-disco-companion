@@ -73,7 +73,11 @@ Do them in the order shown; they are independent. The step numbers stay the same
   - Both have enough green runs (15 and 10 by 2026-11-27, none red). A skipped run counts as passing, so a PR that doesn't touch their paths isn't blocked.
   - Where: GitHub → Settings → Branches (or Rules) → the `main` rule → Require status checks → add `pob2-oracle` and `pob-engine`.
 
-- [ ] **17. Host the PoB engine on a free Hugging Face Space** (PE-1) (15 min, free, no card)
+- [ ] **18. Publish the browser PoB engine** (PE-3) (5 min, free)
+  - Push the tag `v0.23.1-1` on `main` of `Demonad112/disco-pob-calc` (only the tag: CI creates the release itself and fails if one already exists). From a clone: `git pull && git tag v0.23.1-1 && git push origin v0.23.1-1`. CI builds, tests, then attaches `pob-calc-7d6f530….tar.gz` and its `.sha256` to the release (~15 min).
+  - Then tell a session "pin the browser engine release v0.23.1-1": it runs `node apps/web/scripts/fetch-pob-calc.mjs --update v0.23.1-1` and opens the PR. Passes when the Damage tab of a pasted code says "Path of Building 0.23.1 calculated N more skills" on the preview.
+
+- [ ] **17. Host the PoB engine on a free Hugging Face Space** (PE-1) (15 min, free, no card; optional since 2026-11-27: only the fallback for phones the browser engine skips)
   - Sign up at huggingface.co. New Space → SDK **Docker**, blank template, hardware **CPU basic (free)**, any name (for example `pob-engine`).
   - Settings → Access Tokens → New token, type **Write**. In GitHub → Settings → Secrets and variables → Actions: add secret `HF_TOKEN` (the token) and variable `HF_SPACE` (`<your-hf-user>/pob-engine`).
   - GitHub → Actions → **pob-engine space** → Run workflow. Wait for the Space to show "Running", then open `https://<your-hf-user>-pob-engine.hf.space/health`. It passes if it shows `"pobVersion":"0.23.1"`.
