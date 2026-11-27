@@ -89,22 +89,30 @@ describe.each(['ninja-default', 'pob2-own'])('mini-calc accuracy: %s', (name) =>
   })
 })
 
-describe('buffs from other groups the estimate leaves out', () => {
-  const code = readFileSync(here('./reference/ninja-default/code.txt'), 'utf8').trim()
+describe.each(['ninja-default', 'pob2-own'])('Charged Staff from another group: %s', (name) => {
+  const code = readFileSync(here(`./reference/${name}/code.txt`), 'utf8').trim()
   const mainOf = (snap: Awaited<ReturnType<typeof readPobSnapshotFromCode>>) => buildSkillInputs(snap, data()).find((s) => s.group === snap.build.mainSocketGroup)!
+  const chargedStaff = (main: ReturnType<typeof mainOf>) => main.input!.mods.filter((m) => m.text.startsWith('Charged Staff'))
 
-  // PoB adds Charged Staff's per-Power-Charge Lightning to every attack while charges are used; the generated data has
-  // no per-level value for it, so the estimate names it (it is the whole main-skill gap on both reference codes).
-  it('names Charged Staff when power charges are used and the main hand is a quarterstaff', async () => {
+  // PoB adds Charged Staff's per-Power-Charge Lightning to every attack while charges are used (act_int.lua, stat set
+  // levels × RemovablePowerCharge): 1 to 27 per charge at the code's gem level, × 5 charges, on both reference codes.
+  it('adds its Lightning per consumed Power Charge when charges are used and the main hand is a quarterstaff', async () => {
     const main = mainOf(await readPobSnapshotFromCode(code))
-    expect(main.unread).toContain('Charged Staff (group 14): added Lightning damage per consumed Power Charge')
+    expect(chargedStaff(main)).toEqual([expect.objectContaining({ kind: 'add', stat: 'added', dmg: 'lightning', value: 5, max: 135, global: true, scope: 'attack' })])
+    expect(main.unread.some((l) => l.startsWith('Charged Staff'))).toBe(false)
+  })
+
+  it("brings the main skill's uncalibrated hit to PoB's (within 1%)", async () => {
+    const snap = await readPobSnapshotFromCode(code)
+    const out = calcPass(mainOf(snap).input!)
+    expect(out.AverageDamage / snap.playerStats.AverageDamage! - 1).toBeCloseTo(0, 2)
   })
 
   it('leaves it out when the config does not use power charges', async () => {
     const snap = await readPobSnapshotFromCode(code)
     const set = snap.config.sets[0]!
     const off = { ...snap, config: { activeConfigSet: set.id, sets: [{ ...set, inputs: { ...set.inputs, usePowerCharges: false } }] } }
-    expect(mainOf(off).unread.some((l) => l.startsWith('Charged Staff'))).toBe(false)
+    expect(chargedStaff(mainOf(off))).toEqual([])
   })
 })
 

@@ -284,3 +284,8 @@ NP1-1, NP1-4, NP1-5 are superseded by PoB-code import (`docs/plans/pob2-alignmen
 |---|---|---|---|
 | V1-1 | Sign off V1 criterion 5: is the Overview followable by a new player at 390 and 1440 px? | **Answered yes (owner, 2026-11-25).** Readability follow-ups go to the per-category deep dives | V1 closeout (#265) |
 | B2-4a | Grade the defence axis on the gear score's S–D bands (85/70/55/40) instead of the A–D build bands | **Answered: keep S–D (owner, 2026-11-25).** Shipped in `e343d46`; all three axes share one scale; the reference build reads Defence A (84%) | Batch 2.4, V1 closeout (#265) |
+
+## Closed 2026-11-27
+| ID | Question | Answer | Source |
+|---|---|---|---|
+| MC-1 | Let the mini-calc apply Charged Staff's buff: add its per-level per-stack added Lightning to `skill-levels.json` from `vendor/pob2` | **Answered: "Yes, do MC-1" (owner, 2026-11-27).** Done: the exporter writes each stat set's per-level values, `skill-levels.json` carries `buffStats` (flat values only), and `offence/input.ts` adds value × the code's Power Charges to the other attacks. Storm Wave and Staggering Palm are 1.000-1.002 of PoB on both reference codes (were ~0.87) | Mini-calc parity |
