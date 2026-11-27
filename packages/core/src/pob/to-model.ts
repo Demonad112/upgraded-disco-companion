@@ -92,6 +92,20 @@ function resistanceMax(stats: Record<string, number>, key: string, value: number
   return value <= RES_CAP_DEFAULT ? RES_CAP_DEFAULT : undefined
 }
 
+/**
+ * True when `resistanceMax` took the game-default cap for this resistance rather than reading it from the code:
+ * the value is present, no `…Max` stat states the cap, no over-cap amount pins it, and the value is within the
+ * default. `pobCodeGaps` names each such resistance, so the assumption is disclosed per resistance.
+ */
+export function resistCapAssumed(stats: Record<string, number>, key: string): boolean {
+  const value = num(stats, key)
+  if (value === undefined) return false
+  if (num(stats, `${key}Max`) !== undefined) return false
+  const over = num(stats, `${key}OverCap`)
+  if (over !== undefined && over > 0) return false
+  return value <= RES_CAP_DEFAULT
+}
+
 export function defensiveStatsFromPob(stats: Record<string, number>): NinjaDefensiveStats {
   const out: Record<string, number> = {}
   for (const [field, key] of DIRECT) {
