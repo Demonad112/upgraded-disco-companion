@@ -18,7 +18,7 @@ The loop:
 
 How a code flows through the site:
 
-1. `importPobExport` decodes the code (base64url, then zlib, then XML).
+1. `readPobSnapshotFromCode` decodes the code (base64url, then zlib, then XML) and reads it into a `PobSnapshot`.
 2. `pobToCharModel` (`packages/core/src/pob/to-model.ts`) builds a `CharModel` from the parts the code carries.
 3. `analyzeCharacter(model, { source: 'pob-export', tree, tiers, catalog, dataVersion })` runs the same analysis the poe.ninja import uses.
 4. The site is never reconciled against itself: a code is not compared with its own export.

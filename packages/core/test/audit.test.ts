@@ -11,7 +11,7 @@
 import { readFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
-import { importPobExport } from '../src/pob/export.js'
+import { readPlayerStats, readPobSnapshotFromCode } from '../src/pob/export.js'
 import { ModTiers, type ModTierData } from '../src/gear/tiers.js'
 import {
   MAX_GEM_QUALITY,
@@ -39,8 +39,8 @@ const tiers = new ModTiers(
     readFileSync(fileURLToPath(new URL('../../data/generated/mod-tiers.json', import.meta.url)), 'utf8'),
   ) as ModTierData,
 )
-const pob = await importPobExport(model.pathOfBuildingExport!)
-const audit = auditCharacter(model, tiers, pob.playerStats)
+const pobStats = readPlayerStats(await readPobSnapshotFromCode(model.pathOfBuildingExport!))
+const audit = auditCharacter(model, tiers, pobStats)
 
 describe('jewels', () => {
   it('resolves jewel modifiers, which the item-domain filter used to drop', () => {
@@ -181,7 +181,7 @@ describe('spirit reservation', () => {
 
 describe('degrading without data', () => {
   it('still checks what it can when the affix data is missing', () => {
-    const partial = auditCharacter(model, null, pob.playerStats)
+    const partial = auditCharacter(model, null, pobStats)
     expect(partial.jewels).toEqual([])
     expect(partial.unavailable.join(' ')).toMatch(/Jewel modifier tiers/)
     // Sockets, gem quality, attributes and spirit need no affix data.
