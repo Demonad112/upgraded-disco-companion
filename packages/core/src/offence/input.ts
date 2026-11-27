@@ -21,6 +21,8 @@ export interface SkillLevelRow {
   flags: string[]
   constants: [string, number][]
   levels: [number, number][]
+  /** A buff's per-level added damage per stack (min, max stats), indexed by gem level - 1. */
+  buffStats?: { stats: string[]; levels: number[][] }
 }
 export interface SupportEffect {
   stat: string
@@ -221,12 +223,14 @@ function conversionOf(constants: [string, number][]): [DamageType, DamageType, n
 }
 
 /**
- * Buff skills whose effect on other attacks PoB counts but this calc cannot size, and when PoB applies each.
- * Charged Staff: `charged_staff_attack_{minimum,maximum}_added_lightning_damage_per_stack` × consumed Power Charges
- * (vendor/pob2 Data/Skills/act_int.lua, effectCond `UsePowerCharges`); the buff needs a quarterstaff.
+ * Buff skills that add damage to the other attacks, and when PoB applies each.
+ * Charged Staff: `charged_staff_attack_{minimum,maximum}_added_lightning_damage_per_stack` (its `buffStats`) × consumed
+ * Power Charges (vendor/pob2 Data/Skills/act_int.lua: Multiplier `RemovablePowerCharge`, effectCond `UsePowerCharges`);
+ * the buff needs a quarterstaff.
  */
-const UNSIZED_ATTACK_BUFFS: Record<string, { line: string; on: (inputs: Readonly<Record<string, unknown>>, weapon: string | undefined) => boolean }> = {
+const ATTACK_BUFFS: Record<string, { dmg: DamageType; line: string; on: (inputs: Readonly<Record<string, unknown>>, weapon: string | undefined) => boolean }> = {
   'Charged Staff': {
+    dmg: 'lightning',
     line: 'added Lightning damage per consumed Power Charge',
     on: (inputs, weapon) => weapon === 'Staff' && inputs.usePowerCharges === true && inputs.overridePowerCharges !== 0,
   },
@@ -325,14 +329,31 @@ export function buildSkillInputs(snap: PobSnapshot, data: OffenceData): SkillInp
     }
   })
   const buffMods: Mod[] = [...buffBySupport.values()].flat()
-  // Buffs another group grants to attacks that PoB applies and this calc cannot size: their per-level values are not
-  // in the generated data. Each is named in the estimate's unread lines, not guessed.
-  const unsizedBuffs: { group: number; name: string; line: string }[] = []
+  // Buffs another group grants to attacks: the gem's per-level value per stack × the code's Power Charges (PoB's
+  // RemovablePowerCharge), the strongest copy once. Without the level data or the charge count it is named in the
+  // estimate's unread lines, not guessed.
+  const unsizedBuffs: { group: number; line: string }[] = []
+  const attackBuffs = new Map<string, { group: number; mod: Mod }>()
+  const charges = snap.playerStats.PowerCharges ?? (typeof cfgInputs.overridePowerCharges === 'number' ? cfgInputs.overridePowerCharges : undefined)
   groups.forEach((g, gi) => {
     if (!g.enabled) return
     for (const gem of g.gems.filter(isActive)) {
-      const what = UNSIZED_ATTACK_BUFFS[gem.nameSpec]
-      if (what && what.on(cfgInputs, w.weapon?.type)) unsizedBuffs.push({ group: gi + 1, name: gem.nameSpec, line: `${gem.nameSpec} (group ${gi + 1}): ${what.line}` })
+      const what = ATTACK_BUFFS[gem.nameSpec]
+      if (!what || !what.on(cfgInputs, w.weapon?.type)) continue
+      const buff = data.skillLevels[gem.nameSpec]?.buffStats
+      if (!buff?.levels.length || !charges) {
+        unsizedBuffs.push({ group: gi + 1, line: `${gem.nameSpec} (group ${gi + 1}): ${what.line}` })
+        continue
+      }
+      const types = data.skillTypes[gem.nameSpec] ?? []
+      const level = Math.min(buff.levels.length, Math.max(1, (gem.level ?? 1) + levelBonus(types.includes('Melee'), types.includes('Projectile'))))
+      const [min, max] = buff.levels[level - 1]!
+      const mod: Mod = {
+        kind: 'add', stat: 'added', value: min! * charges, max: max! * charges, dmg: what.dmg, global: true, scope: 'attack',
+        text: `${gem.nameSpec} (group ${gi + 1}): Adds ${min! * charges} to ${max! * charges} ${what.dmg[0]!.toUpperCase()}${what.dmg.slice(1)} damage (level ${level}, ${charges} Power Charges)`,
+      }
+      const prior = attackBuffs.get(gem.nameSpec)
+      if (!prior || (mod.value + (mod.max ?? 0)) > (prior.mod.value + (prior.mod.max ?? 0))) attackBuffs.set(gem.nameSpec, { group: gi + 1, mod })
     }
   })
   groups.forEach((g, i) => {
@@ -370,7 +391,7 @@ export function buildSkillInputs(snap: PobSnapshot, data: OffenceData): SkillInp
       ...base,
       gemLevel: level,
       unread: [...unread, ...supUnread, ...unsizedBuffs.filter((b) => b.group !== i + 1).map((b) => b.line)],
-      input: { weapon: w.weapon, skill, mods: [...global, ...supMods, ...buffMods], conds, counters, enemy: { ...enemy, takenInc } },
+      input: { weapon: w.weapon, skill, mods: [...global, ...supMods, ...buffMods, ...[...attackBuffs.values()].filter((b) => b.group !== i + 1).map((b) => b.mod)], conds, counters, enemy: { ...enemy, takenInc } },
     })
   })
   return out

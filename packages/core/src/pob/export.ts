@@ -25,7 +25,7 @@
  *  - The item NAME is the line AFTER the "Rarity:" line, not the first line.
  */
 
-import { activeSpec, readPobSnapshot, type PobSnapshot } from './snapshot.js'
+import { readPobSnapshot, type PobSnapshot } from './snapshot.js'
 
 export class PobDecodeError extends Error {
   override name = 'PobDecodeError'
@@ -157,37 +157,4 @@ export function readPlayerStats(source: PobSource): Record<string, number> {
   const out: Record<string, number> = {}
   for (const [key, value] of Object.entries(snapshotOf(source).playerStats)) if (Number.isFinite(value)) out[key] = value
   return out
-}
-
-export interface PobBuildInfo {
-  level: number | null
-  className: string | null
-  ascendClassName: string | null
-  /** PoB's own computed stats — the independent second opinion. */
-  playerStats: Record<string, number>
-  /** Every allocated node id of the active tree spec, weapon-set nodes included (PoB's `nodes`). */
-  treeNodeIds: number[]
-}
-
-/**
- * Extract the parts of a PoB document we actually use. Anything absent comes
- * back null rather than defaulted — a missing level must be reported, not
- * silently rendered as 0.
- */
-export function parsePobXml(source: PobSource): PobBuildInfo {
-  const snap = snapshotOf(source)
-  return {
-    level: snap.build.level,
-    className: snap.build.className,
-    ascendClassName: snap.build.ascendClassName,
-    playerStats: readPlayerStats(snap),
-    treeNodeIds: activeSpec(snap)?.nodes ?? [],
-  }
-}
-
-/** Convenience: decode and parse in one step. */
-export async function importPobExport(code: string): Promise<PobBuildInfo & { xml: string; snapshot: PobSnapshot }> {
-  const xml = await decodePobExport(code)
-  const snapshot = readPobSnapshot(xml)
-  return { ...parsePobXml(snapshot), xml, snapshot }
 }

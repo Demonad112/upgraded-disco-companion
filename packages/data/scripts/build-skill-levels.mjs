@@ -4,7 +4,10 @@
  * Output: generated/skill-levels.json
  *
  *   actives{}  skill name -> { castTime, flags (baseFlags), constants ([stat, value]), levels: [[baseMultiplier,
- *              attackSpeedMultiplier], ...] indexed by gem level - 1 }
+ *              attackSpeedMultiplier], ...] indexed by gem level - 1, buffStats? }
+ *   buffStats  { stats, levels: [[value per stat], ...] indexed by gem level - 1 }: a buff's per-level added damage per
+ *              stack (Charged Staff: `charged_staff_attack_{minimum,maximum}_added_lightning_damage_per_stack`), which
+ *              PoB adds to other attacks. Only flat values (statInterpolation 1) are kept; any other fails the build.
  *
  * Only skills whose first stat set is flagged `attack` are kept: an attack's hit is the weapon's damage times
  * `baseMultiplier`, so the table is all the calc needs. Spells, whose base damage is a per-level table of its own,
@@ -24,6 +27,19 @@ import { writeDataVersion } from './lib/version.mjs'
 
 const outDir = join(dirname(fileURLToPath(import.meta.url)), '..', 'generated')
 
+const PER_STACK = /_(minimum|maximum)_added_[a-z]+_damage_per_stack$/
+
+/** The stat set's per-stack added-damage stats and their per-level values, or undefined when it has none. */
+function buffStatsOf(name, set) {
+  const idx = set.stats.flatMap((s, i) => (PER_STACK.test(s) ? [i] : []))
+  if (!idx.length) return undefined
+  const levels = set.statLevels.map((l) => {
+    for (const i of idx) if (l.interpolation[i] !== 1) throw new Error(`${name} level ${l.level}: ${set.stats[i]} is not a flat value`)
+    return idx.map((i) => l.values[i])
+  })
+  return { stats: idx.map((i) => set.stats[i]), levels }
+}
+
 const exported = pobExport('skill-levels')
 const actives = {}
 for (const name of Object.keys(exported.actives).sort()) {
@@ -36,6 +52,8 @@ for (const name of Object.keys(exported.actives).sort()) {
     constants: set.constantStats,
     levels: a.levels.map((l) => [l.baseMultiplier ?? 1, l.attackSpeedMultiplier ?? 0]),
   }
+  const buffStats = buffStatsOf(name, set)
+  if (buffStats) actives[name].buffStats = buffStats
 }
 
 const out = {
