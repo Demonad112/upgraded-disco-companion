@@ -205,12 +205,12 @@ export interface ResolvedAllocation {
   /**
    * Connected groups within the live allocation, largest first.
    *
-   * More than one is NORMAL and must never be reported as a broken build. On
-   * the reference character the live allocation forms three groups: the main
-   * tree (105), the Deadeye ascendancy wheel (10), and a small cluster (4) this
-   * data set does not link to the rest. The game does not permit a genuinely
-   * disconnected tree, so extra groups mean the data is missing links — which
-   * is what gets said.
+   * More than one is NORMAL and must never be reported as a broken build. A
+   * group never crosses the ascendancy boundary, so the wheel is its own group
+   * even though the class start links it to the main tree. On the main
+   * reference code: the main tree (107, with the class start), the Martial
+   * Artist wheel (9), and 7 single notables a radius jewel (Controlled
+   * Metamorphosis) allocates without a link (PB-11).
    */
   components: AllocationComponent[]
 }
@@ -245,8 +245,11 @@ function findComponents(tree: PassiveTree, ids: number[]): AllocationComponent[]
     const stack = [start]
     while (stack.length) {
       const current = stack.pop()!
+      const onWheel = tree.node(current)!.ascendancy !== null
       for (const next of tree.neighbours(current)) {
         if (!remaining.has(next)) continue
+        // The class start links to the ascendancy wheel; keep the wheel a group of its own.
+        if ((tree.node(next)!.ascendancy !== null) !== onWheel) continue
         remaining.delete(next)
         group.push(next)
         stack.push(next)
@@ -257,11 +260,15 @@ function findComponents(tree: PassiveTree, ids: number[]): AllocationComponent[]
 
   groups.sort((a, b) => b.length - a.length)
 
-  return groups.map((nodes, index) => {
-    const ascendancy = nodes.find((n) => n.ascendancy !== null)?.ascendancy ?? null
-    // The largest non-ascendancy group is the main tree; anything else the data
-    // failed to link is `detached`, not broken.
-    const kind: AllocationComponent['kind'] = ascendancy ? 'ascendancy' : index === 0 ? 'main-tree' : 'detached'
+  // The main tree is the group holding a class start, else the largest non-ascendancy group. Any other
+  // non-ascendancy group is `detached`: a radius jewel that needs no link, or a link the data lacks; never broken.
+  const isWheel = (g: TreeNode[]) => g[0]!.ascendancy !== null
+  const main =
+    groups.find((g) => !isWheel(g) && g.some((n) => tree.classStarts.has(n.id))) ?? groups.find((g) => !isWheel(g))
+  const ordered = main ? [main, ...groups.filter((g) => g !== main)] : groups
+  return ordered.map((nodes) => {
+    const ascendancy = nodes[0]!.ascendancy
+    const kind: AllocationComponent['kind'] = ascendancy ? 'ascendancy' : nodes === main ? 'main-tree' : 'detached'
     return { kind, ascendancy, nodes }
   })
 }

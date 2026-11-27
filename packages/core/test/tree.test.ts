@@ -111,14 +111,18 @@ describe('resolving the real allocation', () => {
 
   it('explains the allocation groups instead of warning about a broken tree', () => {
     // V1 emitted "disconnected tree" warnings constantly. The game forbids a genuinely broken tree, so the groups
-    // are described rather than flagged. On the main code the largest group (116 nodes: the main tree joined to the
-    // ascendancy wheel) is labelled by its ascendancy, and 7 single nodes the code lists without their links are
-    // `detached` (PB-11 in REMAINING-WORK: the labelling of a joined wheel and those singles is not yet explained).
+    // are described rather than flagged. PB-11: the class start (Monk, 44683) is in the code's list and links the
+    // main tree to the Martial Artist wheel, so groups never cross the ascendancy boundary: the main tree (107, with
+    // the class start) and the wheel (9) are separate. The 7 single notables sit in the radius of Controlled
+    // Metamorphosis ("Passives in Radius can be Allocated without being connected to your tree"), so they are
+    // `detached` by design, not by missing data.
     expect(resolved.components.map((c) => [c.kind, c.nodes.length])).toEqual([
-      ['ascendancy', 116],
+      ['main-tree', 107],
+      ['ascendancy', 9],
       ...Array(7).fill(['detached', 1]),
     ])
-    expect(resolved.components[0]).toMatchObject({ kind: 'ascendancy', ascendancy: 'Martial Artist' })
+    expect(resolved.components[0]!.nodes.some((n) => n.id === 44683)).toBe(true)
+    expect(resolved.components[1]).toMatchObject({ kind: 'ascendancy', ascendancy: 'Martial Artist' })
 
     // Every allocated node belongs to exactly one group.
     const total = resolved.components.reduce((sum, c) => sum + c.nodes.length, 0)

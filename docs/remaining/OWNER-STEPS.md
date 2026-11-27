@@ -69,6 +69,17 @@ Do them in the order shown; they are independent. The step numbers stay the same
   - Follow `docs/plans/pob-character-analysis.md` §4: `node scripts/pob-sheet.mjs code.txt`, then send §5's prompt to your PoB2 MCP with the same code.
   - Paste both outputs into a session with "tune from the PoB comparison".
 
+- [ ] **16. Make `pob2-oracle` and `pob-engine` required checks** (PB-2a, PE-2) (3 min)
+  - Both have enough green runs (15 and 10 by 2026-11-27, none red). A skipped run counts as passing, so a PR that doesn't touch their paths isn't blocked.
+  - Where: GitHub → Settings → Branches (or Rules) → the `main` rule → Require status checks → add `pob2-oracle` and `pob-engine`.
+
+- [ ] **17. Host the PoB engine on a free Hugging Face Space** (PE-1) (15 min, free, no card)
+  - Sign up at huggingface.co. New Space → SDK **Docker**, blank template, hardware **CPU basic (free)**, any name (for example `pob-engine`).
+  - Settings → Access Tokens → New token, type **Write**. In GitHub → Settings → Secrets and variables → Actions: add secret `HF_TOKEN` (the token) and variable `HF_SPACE` (`<your-hf-user>/pob-engine`).
+  - GitHub → Actions → **pob-engine space** → Run workflow. Wait for the Space to show "Running", then open `https://<your-hf-user>-pob-engine.hf.space/health`. It passes if it shows `"pobVersion":"0.23.1"`.
+  - In Cloudflare Pages → the site → Settings → Environment variables (Production and Preview), add `NEXT_PUBLIC_POB_ENGINE_BASE` = `https://<your-hf-user>-pob-engine.hf.space`, then redeploy.
+  - Note: a free Space sleeps after 48 hours without visits; the first build after that waits about a minute while it wakes.
+
 ## Optional
 
 - [ ] **5. Trade site extras** (R43) (done 2026-11-08 except the console realm; only that check is left)
