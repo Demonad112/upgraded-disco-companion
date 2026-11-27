@@ -5,10 +5,10 @@ import { describe, expect, it } from 'vitest'
 import {
   PobDecodeError,
   decodePobExport,
-  importPobExport,
-  parsePobXml,
   readPlayerStats,
+  readPobSnapshotFromCode,
 } from '../src/pob/export.js'
+import { activeSpec, readPobSnapshot } from '../src/pob/snapshot.js'
 
 const xml =
   '<PathOfBuilding><Build level="97" className="Ranger" ascendClassName="Deadeye">' +
@@ -44,31 +44,31 @@ describe('decodePobExport', () => {
   })
 })
 
-describe('readPlayerStats / parsePobXml', () => {
+describe('readPlayerStats / snapshot build fields', () => {
   it('keeps finite numeric stats and drops the rest', () => {
     expect(readPlayerStats(xml)).toEqual({ TotalDPS: 109859.05, Mana: 12 })
   })
 
   it('reads level, class and valid tree node ids', () => {
-    const info = parsePobXml(xml)
-    expect(info.level).toBe(97)
-    expect(info.className).toBe('Ranger')
-    expect(info.ascendClassName).toBe('Deadeye')
-    expect(info.treeNodeIds).toEqual([1, 2, 7])
+    const snap = readPobSnapshot(xml)
+    expect(snap.build.level).toBe(97)
+    expect(snap.build.className).toBe('Ranger')
+    expect(snap.build.ascendClassName).toBe('Deadeye')
+    expect(activeSpec(snap)?.nodes).toEqual([1, 2, 7])
   })
 
   it('reports absent or non-numeric fields as null / empty, never a default', () => {
-    const bare = parsePobXml('<PathOfBuilding><Build level="x"/></PathOfBuilding>')
-    expect(bare.level).toBeNull()
-    expect(bare.className).toBeNull()
-    expect(bare.treeNodeIds).toEqual([])
-    expect(parsePobXml('<PathOfBuilding/>').level).toBeNull()
+    const bare = readPobSnapshot('<PathOfBuilding><Build level="x"/></PathOfBuilding>')
+    expect(bare.build.level).toBeNull()
+    expect(bare.build.className).toBeNull()
+    expect(activeSpec(bare)?.nodes ?? []).toEqual([])
+    expect(readPobSnapshot('<PathOfBuilding/>').build.level).toBeNull()
   })
 
-  it('importPobExport decodes and parses in one step', async () => {
-    const out = await importPobExport(encode(xml))
-    expect(out.xml).toBe(xml)
-    expect(out.level).toBe(97)
+  it('readPobSnapshotFromCode decodes and reads in one step', async () => {
+    const snap = await readPobSnapshotFromCode(encode(xml))
+    expect(snap.build.level).toBe(97)
+    expect(readPlayerStats(snap)).toEqual({ TotalDPS: 109859.05, Mana: 12 })
   })
 })
 
