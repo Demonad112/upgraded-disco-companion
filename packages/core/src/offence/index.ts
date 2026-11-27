@@ -12,7 +12,7 @@ import { FULL_DPS_HINT, applySelfCheck, type DamageMixShare, type RawEstimate, t
 import type { PassOutput } from './pass.js'
 
 export { parseModLine } from './parse.js'
-export type { OffenceData } from './input.js'
+export { DEFAULT_ENEMY_RESIST, enemyFromConfig, type OffenceData } from './input.js'
 export * from './self-check.js'
 
 const MIX_TYPES = ['physical', 'fire', 'cold', 'lightning', 'chaos'] as const

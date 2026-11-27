@@ -59,14 +59,15 @@ export function usePobEngine(code: string | null): PobEngineResult | null {
     }
     const ctrl = new AbortController()
     set({ status: 'loading' })
+    // A request this effect has given up on (the code changed) never writes the status: it belongs to the new code.
     fetchPobEngine(code, { baseUrl: POB_ENGINE_BASE, fetch: (i, init) => fetch(i, init), signal: ctrl.signal }).then(
       (result) => {
         answered.set(code, result)
         if (answered.size > 8) answered.delete(answered.keys().next().value!)
-        set({ status: 'ready', result })
+        if (!ctrl.signal.aborted) set({ status: 'ready', result })
       },
       (err: Error) => {
-        if (err.name !== 'AbortError') set({ status: 'error', message: err.message })
+        if (!ctrl.signal.aborted && err.name !== 'AbortError') set({ status: 'error', message: err.message })
       },
     )
     return () => ctrl.abort()

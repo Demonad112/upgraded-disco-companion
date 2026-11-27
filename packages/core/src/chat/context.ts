@@ -20,7 +20,6 @@
  */
 
 import type { Analysis } from '../analyze.js'
-import type { PobAnalysis } from '../pob/analyze.js'
 
 export const SYSTEM_PROMPT = `You are a Path of Exile 2 build analysis assistant embedded in a tool that reads a character's real, computed statistics.
 
@@ -160,35 +159,4 @@ export function buildChatContext(analysis: Analysis, options: ChatContextOptions
   }
 
   return parts.join('\n\n')
-}
-
-/** Render a Path-of-Building-sourced analysis. Fewer facts, same rules. */
-export function buildPobChatContext(analysis: PobAnalysis): string {
-  const d = analysis.defense
-  const shown = (v: number | null) => (v === null ? 'not exported' : String(v))
-  return [
-    '## CHARACTER',
-    `Level ${analysis.identity.level ?? '?'} ${analysis.identity.ascendancy ?? analysis.identity.className ?? ''}`,
-    'Source: a Path of Building export code. Every figure is Path of Building\'s own computation.',
-    '',
-    '## SURVIVABILITY',
-    `Lowest maximum hit taken: ${shown(d.lowestMaximumHit)}${d.lowestMaximumHitType ? ` ${d.lowestMaximumHitType}` : ''}`,
-    `Effective health pool (averaged — do NOT lead with this): ${shown(d.effectiveHealthPool)}`,
-    `Life ${shown(d.life)}, energy shield ${shown(d.energyShield)}, armour ${shown(d.armour)}, evasion ${shown(d.evasion)}`,
-    ...d.resistances.map(
-      (r) =>
-        `  ${r.type}: ${r.value}% of ${r.max}%` +
-        (r.overCap > 0 ? ` (+${r.overCap} over)` : '') +
-        (r.underCap > 0 ? ` (${r.underCap} UNDER cap)` : ''),
-    ),
-    '',
-    '## DAMAGE',
-    `Total DPS ${shown(analysis.damage.totalDps)} (for the skill Path of Building had selected — there is no per-skill breakdown in a code)`,
-    '',
-    '## PASSIVES',
-    `${analysis.passives.count} nodes allocated`,
-    '',
-    '## THIS SOURCE CANNOT ANSWER',
-    ...analysis.gaps.map((g) => `  - ${g.what}: ${g.why}`),
-  ].join('\n')
 }

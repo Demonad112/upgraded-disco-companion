@@ -105,6 +105,16 @@ describe('analysis with the engine', () => {
   })
 })
 
+describe('the per-skill damage gap', () => {
+  const gap = (a: { sourceGaps: { what: string }[] }) => a.sourceGaps.find((g) => g.what === 'Per-skill damage')
+  it('is dropped once the engine has calculated every group, and kept when it could not load the build', async () => {
+    const model = await pobToCharModel(CODE)
+    expect(gap(await analyzeCharacter(model, { source: 'pob-export' }))).toBeDefined()
+    expect(gap(await analyzeCharacter(model, { source: 'pob-export', engine: ENGINE }))).toBeUndefined()
+    expect(gap(await analyzeCharacter(model, { source: 'pob-export', engine: { ...ENGINE, snapshot: { loadError: 'boom' } } }))).toBeDefined()
+  })
+})
+
 describe('engineAgreement', () => {
   it('counts matches within 0.5% and lists the largest gaps', () => {
     const r = engineAgreement({ A: 100, B: 1000, C: 5, D: 7 }, { ...ENGINE, snapshot: { loadError: null, stats: { A: 100.4, B: 1100, C: 'inf', D: 9 } } })
@@ -138,6 +148,12 @@ describe('fetchPobEngine', () => {
     await expect(fetchPobEngine(CODE, { baseUrl: 'x', fetch: vi.fn(async () => { throw new TypeError('network') }) })).rejects.toBeInstanceOf(PobEngineError)
     const abort = Object.assign(new Error('aborted'), { name: 'AbortError' })
     await expect(fetchPobEngine(CODE, { baseUrl: 'x', fetch: vi.fn(async () => { throw abort }) })).rejects.toBe(abort)
+  })
+
+  it('rejects with the AbortError when the request is aborted while the answer is read', async () => {
+    const abort = Object.assign(new Error('aborted'), { name: 'AbortError' })
+    const f = vi.fn(async () => ({ ok: true, status: 200, headers: new Headers(), json: async () => { throw abort } }) as unknown as Response)
+    await expect(fetchPobEngine(CODE, { baseUrl: 'x', fetch: f })).rejects.toBe(abort)
   })
 
   it('rejects an unknown shape', () => {

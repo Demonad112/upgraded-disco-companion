@@ -31,11 +31,9 @@ import {
   PROVIDERS,
   SYSTEM_PROMPT,
   buildChatContext,
-  buildPobChatContext,
   chat,
   type Analysis,
   type ChatMessage,
-  type PobAnalysis,
   type ProviderId,
 } from '@poe2/core'
 import { readChatSettings, writeChatSettings } from '../lib/chatSettings'
@@ -50,7 +48,7 @@ const SUGGESTIONS = [
   'Explain why my effective health pool is misleading here.',
 ]
 
-export function Chat({ analysis, pob }: { analysis?: Analysis; pob?: PobAnalysis }) {
+export function Chat({ analysis }: { analysis?: Analysis }) {
   const [provider, setProvider] = useState<ProviderId>('gemini')
   const [apiKey, setApiKey] = useState('')
   const [showSettings, setShowSettings] = useState(false)
@@ -100,7 +98,7 @@ export function Chat({ analysis, pob }: { analysis?: Analysis; pob?: PobAnalysis
     setError(null)
 
     try {
-      const context = analysis ? buildChatContext(analysis) : pob ? buildPobChatContext(pob) : ''
+      const context = analysis ? buildChatContext(analysis) : ''
       const reply = await chat(
         { system: SYSTEM_PROMPT, context, messages: next },
         { provider, apiKey: apiKey || undefined, proxyUrl: PROXY || undefined },
@@ -117,7 +115,7 @@ export function Chat({ analysis, pob }: { analysis?: Analysis; pob?: PobAnalysis
     }
   }
 
-  if (!analysis && !pob) return null
+  if (!analysis) return null
 
   return (
     <Panel

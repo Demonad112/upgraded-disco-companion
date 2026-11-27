@@ -18,9 +18,7 @@
 
 import { useEffect, useState } from 'react'
 import { PassiveTree, type PassiveTreeData } from '@poe2/core'
-import { dataUrl } from '@/lib/basePath'
-
-const DATA_URL = dataUrl('passive-tree.json')
+import { loadDataFile } from '@/lib/useDataFile'
 
 export type PassiveTreeState =
   | { status: 'idle' }
@@ -29,18 +27,16 @@ export type PassiveTreeState =
   | { status: 'error'; message: string }
 
 // Module-level, so a remount does not refetch and the panel and the analysis
-// cannot end up holding two different parses of the same file.
+// cannot end up holding two different parses of the same file. The JSON comes
+// through `loadDataFile`, which the Damage tab's mini-calc reads it from too, so
+// the 0.6 MB file is fetched and parsed once per page load.
 let cached: PassiveTree | null = null
 let inFlight: Promise<PassiveTree> | null = null
 
-function loadPassiveTree(): Promise<PassiveTree> {
+export function loadPassiveTree(): Promise<PassiveTree> {
   if (cached) return Promise.resolve(cached)
   if (inFlight) return inFlight
-  inFlight = fetch(DATA_URL)
-    .then((r) => {
-      if (!r.ok) throw new Error(`the tree data returned ${r.status}`)
-      return r.json() as Promise<PassiveTreeData>
-    })
+  inFlight = loadDataFile<PassiveTreeData>('passive-tree.json')
     .then((data) => {
       cached = new PassiveTree(data)
       return cached

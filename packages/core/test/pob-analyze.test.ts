@@ -1,77 +1,42 @@
 /**
- * Analysis from a Path of Building code alone.
- *
- * The values asserted here are cross-checked against poe.ninja's own figures for
- * the same character. That agreement is the point: this is a second real source,
- * not an estimate, and it is what makes "Tier 3 estimation" unnecessary.
+ * What a Path of Building code cannot answer (`pobCodeGaps`), and recognising pasted text as a code.
  */
 
-import { readFileSync } from 'node:fs'
-import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
-import { analyzeCharacter } from '../src/analyze.js'
-import { analyzeFromPob, looksLikePobCode } from '../src/pob/analyze.js'
-import { pobSiteLink } from '../src/pob/export.js'
+import { looksLikePobCode, pobCodeGaps } from '../src/pob/analyze.js'
+import { pobSiteLink, readPlayerStats, readPobSnapshotFromCode } from '../src/pob/export.js'
 import type { CharModel } from '../src/model/types.js'
 import { mainPayload } from './helpers/main-build.js'
 
 const payload = mainPayload()
 const model: CharModel = payload.charModel ?? payload
-const ninja = await analyzeCharacter(payload)
-const pob = await analyzeFromPob(model.pathOfBuildingExport!)
+const stats = readPlayerStats(await readPobSnapshotFromCode(model.pathOfBuildingExport!))
 
-describe('analysing from a Path of Building code', () => {
-  it('reads the identity the code carries', () => {
-    expect(pob.identity).toMatchObject({ level: 90, className: 'Monk', ascendancy: 'Martial Artist' })
-    expect(pob.provenance).toBe('pob-export')
-  })
-
-  it('agrees with poe.ninja on the survivability headline', () => {
-    // The embedded model is read from the same code, so the two paths agree; the absolute figure is PoB's own
-    // PlayerStats for the main code (physical 5,182 lowest).
-    expect(pob.defense.lowestMaximumHit).toBe(5182)
-    expect(pob.defense.lowestMaximumHitType).toBe('physical')
-    expect(pob.defense.lowestMaximumHit).toBe(ninja.defense.lowestMaximumHit)
-    expect(pob.defense.lowestMaximumHitType).toBe(ninja.defense.lowestMaximumHitType)
-  })
-
-  it('agrees on pools, mitigation and resistances', () => {
-    expect(pob.defense.life).toBe(ninja.defense.life)
-    expect(pob.defense.energyShield).toBe(ninja.defense.energyShield)
-    expect(pob.defense.armour).toBe(ninja.defense.armour)
-    expect(Math.round(pob.defense.effectiveHealthPool!)).toBe(Math.round(ninja.defense.effectiveHealthPool!))
-
-    for (const res of pob.defense.resistances) {
-      const theirs = ninja.defense.resistances.find((r) => r.type === res.type)!
-      expect(res.value).toBe(theirs.value)
-    }
-  })
-
-  it('reports damage as PoB computed it', () => {
-    expect(pob.damage.totalDps).toBeCloseTo(186706.45241768, 1)
-    // poe.ninja rounds; PoB does not. Same number.
-    expect(Math.round(pob.damage.totalDps!)).toBe(Math.round(ninja.dps.primary!.dps))
-  })
-
-  it('recovers the allocated tree', () => {
-    expect(pob.passives.count).toBe(123)
-    expect(pob.passives.allocated).toContain(33866)
-  })
-
+describe('pobCodeGaps', () => {
   it('names what a code cannot answer instead of filling it in', () => {
-    const gaps = pob.gaps.map((g) => g.what.toLowerCase()).join(' | ')
-    // Per-skill damage genuinely is not in a code — PoB exports one TotalDPS.
-    expect(gaps).toContain('per-skill damage')
-    // Attribution needs poe.ninja's breakdowns, so gear analysis is unavailable.
-    expect(gaps).toContain('attribution')
+    const gaps = pobCodeGaps(stats)
+    const what = gaps.map((g) => g.what.toLowerCase()).join(' | ')
+    // A code stores the damage of its main skill group only.
+    expect(what).toContain('per-skill damage')
+    // Without breakdowns read from the code, no item is credited with a stat.
+    expect(what).toContain('attribution')
     // Ward is absent from the export, and absent is not zero.
-    expect(gaps).toContain('ward')
-    for (const gap of pob.gaps) expect(gap.why.length).toBeGreaterThan(20)
+    expect(what).toContain('ward')
+    for (const gap of gaps) expect(gap.why.length).toBeGreaterThan(20)
   })
 
-  it('exposes every PlayerStat, so the curated view hides nothing', () => {
-    expect(Object.keys(pob.playerStats).length).toBeGreaterThan(100)
-    expect(pob.playerStats.TotalDPS).toBeCloseTo(186706.45241768, 1)
+  it('names the Full DPS rows a code carries, and drops the row once PoB\'s engine calculated every group', () => {
+    const why = (damage: Parameters<typeof pobCodeGaps>[3]) => pobCodeGaps(stats, undefined, undefined, damage).find((g) => g.what === 'Per-skill damage')?.why
+    expect(why({ fullDpsRows: 3 })).toBe('A code carries the damage of the skill it had selected and of the 3 skills ticked for Full DPS, not of every skill.')
+    expect(why({ fullDpsRows: 1 })).toMatch(/of the 1 skill ticked for Full DPS/)
+    expect(why({ fullDpsRows: 0 })).toBe('A code carries the damage of the skill it had selected, not of every skill.')
+    expect(why({ engine: true, fullDpsRows: 3 })).toBeUndefined()
+  })
+
+  it('keeps the gear gap right after the per-skill row, or first when that row is dropped', () => {
+    const gear = { items: 0, unmapped: [], textOnly: 0 }
+    expect(pobCodeGaps(stats, gear).map((g) => g.what).slice(0, 2)).toEqual(['Per-skill damage', 'Gear findings and trade searches'])
+    expect(pobCodeGaps(stats, gear, undefined, { engine: true })[0]!.what).toBe('Gear findings and trade searches')
   })
 })
 

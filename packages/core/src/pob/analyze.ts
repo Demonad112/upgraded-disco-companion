@@ -1,36 +1,12 @@
 /**
- * Analyse a build from a Path of Building export code alone.
+ * What a Path of Building code cannot answer, and whether pasted text is a code at all.
  *
- * ## Why this exists instead of "Tier 3 estimation"
- *
- * The original plan called for an internal DPS estimator as a fallback, always
- * labelled `estimate`. Checked against the real data, that fallback has no
- * trigger and should not be built:
- *
- *   - The poe.ninja path resolves every damaging skill. On the reference
- *     character `dps.unresolved` is null and all four hit skills carry a
- *     computed figure; the two zeros are heralds, which genuinely only deal
- *     damage over time.
- *   - The paste path was rejecting Path of Building codes outright, with the
- *     claim that a code "does not carry the computed stats this tool reads".
- *     **That was wrong.** A code carries 106 `<PlayerStat>` values — TotalDPS
- *     109859.05, all five maximum-hit-taken figures, every resistance, life,
- *     energy shield, armour, evasion — every one of them computed by Path of
- *     Building's own engine.
- *
- * So the real gap was never a missing estimator. It was that a second source of
- * genuine numbers was being turned away at the door. Building an estimator to
- * fill a gap that does not exist would mean inventing numbers in a project whose
- * first rule is not to.
- *
- * Everything here is read, never derived. `provenance` is `pob-export` throughout
- * — these figures come from the stats block embedded in the export — so a
- * reader always knows which engine produced the figure, and `missing` names what
- * a code cannot supply rather than substituting a guess.
+ * A code carries Path of Building's own computed `<PlayerStat>` values (read as `pob-export` by `to-model.ts` and
+ * `analyze.ts`). `pobCodeGaps` names what it does not carry, rather than substituting a guess, so the analysis of a
+ * converted code (`Analysis.sourceGaps`) can say so.
  */
 
-import { importPobExport, pobSiteLink, type PobBuildInfo } from './export.js'
-import type { DamageType } from '../model/types.js'
+import { pobSiteLink } from './export.js'
 import { RES_CAP_DEFAULT } from '../defense/constants.js'
 
 /** What a Path of Building code cannot tell you, stated rather than filled in. */
@@ -39,76 +15,12 @@ export interface PobGap {
   why: string
 }
 
-export interface PobMaxHit {
-  type: DamageType
-  value: number
-}
-
-export interface PobResistance {
-  type: 'fire' | 'cold' | 'lightning' | 'chaos'
-  value: number
-  max: number
-  overCap: number
-  underCap: number
-}
-
-export interface PobAnalysis {
-  provenance: 'pob-export'
-  identity: {
-    level: number | null
-    className: string | null
-    ascendancy: string | null
-  }
-  defense: {
-    lowestMaximumHit: number | null
-    lowestMaximumHitType: DamageType | null
-    effectiveHealthPool: number | null
-    ehpOverstatementRatio: number | null
-    maxHits: PobMaxHit[]
-    resistances: PobResistance[]
-    /** Null when the code does not export the stat: absent, never 0. */
-    life: number | null
-    energyShield: number | null
-    mana: number | null
-    armour: number | null
-    evasion: number | null
-    physicalDamageReduction: number | null
-  }
-  damage: {
-    /** PoB's headline figure, for the skill it had selected. */
-    totalDps: number | null
-    combinedDps: number | null
-    totalDotDps: number | null
-    fullDps: number | null
-    averageDamage: number | null
-    speed: number | null
-    critChance: number | null
-    critMultiplier: number | null
-  }
-  passives: {
-    allocated: number[]
-    count: number
-  }
-  /** Every PlayerStat, so nothing is hidden behind the curated view above. */
-  playerStats: Record<string, number>
-  /** What this source cannot answer. */
-  gaps: PobGap[]
-}
-
-const MAX_HIT_STATS: Record<DamageType, string> = {
-  physical: 'PhysicalMaximumHitTaken',
-  fire: 'FireMaximumHitTaken',
-  cold: 'ColdMaximumHitTaken',
-  lightning: 'LightningMaximumHitTaken',
-  chaos: 'ChaosMaximumHitTaken',
-}
-
-const RESIST_STATS: Record<PobResistance['type'], string> = {
+const RESIST_STATS = {
   fire: 'FireResist',
   cold: 'ColdResist',
   lightning: 'LightningResist',
   chaos: 'ChaosResist',
-}
+} as const
 
 /**
  * Resistance cap.
@@ -179,17 +91,34 @@ function attributionGap(unreproduced: readonly string[] | undefined): PobGap | n
  * `unreproduced`: the labels of the stats a code's breakdown does not reproduce, when the breakdown was read
  * (`pob/code-breakdowns.ts`); omitted when it was not.
  */
-export function pobCodeGaps(stats: Record<string, number>, gear?: GearReadState, unreproduced?: readonly string[]): PobGap[] {
-  const gaps: PobGap[] = [
-    {
-      what: 'Per-skill damage',
-      why: 'A code carries the damage of the skill it had selected, not of every skill.',
-    },
-  ]
+/** Where the damage of skills other than the main one came from, for the per-skill damage gap. */
+export interface SkillDamageState {
+  /** PoB's engine loaded the build and calculated every skill group (`pob/engine.ts`). */
+  engine?: boolean
+  /** `<FullDPSSkill>` rows the code carries. */
+  fullDpsRows?: number
+}
+
+/** Null when PoB's engine calculated every group; else what the code alone carries. */
+function skillDamageGap(damage: SkillDamageState | undefined): PobGap | null {
+  if (damage?.engine) return null
+  const rows = damage?.fullDpsRows ?? 0
+  return {
+    what: 'Per-skill damage',
+    why: rows
+      ? `A code carries the damage of the skill it had selected and of the ${rows} skill${rows === 1 ? '' : 's'} ticked for Full DPS, not of every skill.`
+      : 'A code carries the damage of the skill it had selected, not of every skill.',
+  }
+}
+
+export function pobCodeGaps(stats: Record<string, number>, gear?: GearReadState, unreproduced?: readonly string[], damage?: SkillDamageState): PobGap[] {
+  const gaps: PobGap[] = []
+  const skillGap = skillDamageGap(damage)
+  if (skillGap) gaps.push(skillGap)
   const attribution = attributionGap(unreproduced)
   if (attribution) gaps.push(attribution)
   const gearGapRow = gearGap(gear)
-  if (gearGapRow) gaps.splice(1, 0, gearGapRow)
+  if (gearGapRow) gaps.splice(skillGap ? 1 : 0, 0, gearGapRow)
   if (num(stats, 'Ward') === null) {
     gaps.push({
       what: 'Ward',
@@ -207,86 +136,6 @@ export function pobCodeGaps(stats: Record<string, number>, gear?: GearReadState,
     })
   }
   return gaps
-}
-
-/**
- * Build an analysis from a Path of Building export code.
- *
- * Throws only when the code itself will not decode — a build with unusual stats
- * yields a report with more entries in `gaps`, never an error.
- */
-export async function analyzeFromPob(code: string): Promise<PobAnalysis> {
-  const build: PobBuildInfo & { xml: string } = await importPobExport(code)
-  const stats = build.playerStats
-
-  const maxHits: PobMaxHit[] = []
-  for (const [type, key] of Object.entries(MAX_HIT_STATS) as [DamageType, string][]) {
-    const value = num(stats, key)
-    if (value !== null && value > 0) maxHits.push({ type, value })
-  }
-  maxHits.sort((a, b) => a.value - b.value)
-  const lowest = maxHits[0] ?? null
-
-  const resistances: PobResistance[] = []
-  for (const [type, key] of Object.entries(RESIST_STATS) as [PobResistance['type'], string][]) {
-    const value = num(stats, key)
-    if (value === null) continue
-    // PoB emits its own over-cap stat; prefer it, since it accounts for maximum
-    // resistance modifiers this code cannot otherwise see.
-    const reportedOver = num(stats, `${key}OverCap`)
-    const overCap = reportedOver !== null ? Math.max(0, reportedOver) : Math.max(0, value - DEFAULT_RESIST_CAP)
-    resistances.push({
-      type,
-      value,
-      max: DEFAULT_RESIST_CAP,
-      overCap,
-      underCap: Math.max(0, DEFAULT_RESIST_CAP - value),
-    })
-  }
-
-  const ehp = num(stats, 'TotalEHP')
-
-  const gaps = pobCodeGaps(stats)
-
-  return {
-    provenance: 'pob-export',
-    identity: {
-      level: build.level ?? null,
-      className: build.className ?? null,
-      ascendancy: build.ascendClassName ?? null,
-    },
-    defense: {
-      lowestMaximumHit: lowest?.value ?? null,
-      lowestMaximumHitType: lowest?.type ?? null,
-      effectiveHealthPool: ehp,
-      ehpOverstatementRatio: ehp !== null && lowest && lowest.value > 0 ? Number((ehp / lowest.value).toFixed(2)) : null,
-      maxHits,
-      resistances,
-      life: num(stats, 'Life'),
-      energyShield: num(stats, 'EnergyShield'),
-      mana: num(stats, 'Mana'),
-      armour: num(stats, 'Armour'),
-      evasion: num(stats, 'Evasion'),
-      physicalDamageReduction: num(stats, 'PhysicalDamageReduction'),
-    },
-    damage: {
-      totalDps: num(stats, 'TotalDPS'),
-      combinedDps: num(stats, 'CombinedDPS'),
-      totalDotDps: num(stats, 'TotalDotDPS'),
-      // PoB writes 0 when no skill is set to count in Full DPS: that is "not computed", not a damage figure.
-      fullDps: (num(stats, 'FullDPS') ?? 0) > 0 ? num(stats, 'FullDPS') : null,
-      averageDamage: num(stats, 'AverageDamage'),
-      speed: num(stats, 'Speed'),
-      critChance: num(stats, 'CritChance'),
-      critMultiplier: num(stats, 'CritMultiplier'),
-    },
-    passives: {
-      allocated: build.treeNodeIds ?? [],
-      count: build.treeNodeIds?.length ?? 0,
-    },
-    playerStats: stats,
-    gaps,
-  }
 }
 
 /** True when a pasted string looks like a Path of Building code rather than JSON. */

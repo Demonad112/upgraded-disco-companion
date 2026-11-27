@@ -283,8 +283,9 @@ export async function fetchPobEngine(
   let body: unknown = null
   try {
     body = await res.json()
-  } catch {
-    // handled below
+  } catch (err) {
+    // Aborted while the answer was read: say so, or the caller takes it for a broken answer. Bad JSON is handled below.
+    if ((err as Error).name === 'AbortError') throw err
   }
   if (!res.ok) {
     const msg = (body as { error?: unknown } | null)?.error
