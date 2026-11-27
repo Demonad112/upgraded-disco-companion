@@ -1,7 +1,8 @@
 -- luajit tools/pob2/export/skill-levels.lua > skill-levels.json
 -- Per-level gem data for the damage mini-calc (Batch 3), for each active skill (the first definition of a name): the
 -- effect's castTime, per-level scalars (baseMultiplier, attackSpeedMultiplier, ...), and the first stat set's
--- constantStats, baseFlags, incrementalEffectiveness and stats. Only plain numbers, strings and booleans are kept.
+-- constantStats, baseFlags, incrementalEffectiveness, stats and per-level stat values (statLevels: { level, values,
+-- interpolation }, values in `stats` order). Only plain numbers, strings and booleans are kept.
 -- Feeds packages/data/scripts/build-skill-levels.mjs.
 local dir = debug.getinfo(1, "S").source:sub(2):match("^(.*)[/\\]") or "."
 local L = dofile(dir .. "/lib.lua")
@@ -57,11 +58,20 @@ local function effectRow(id, ge)
 		for _, c in ipairs(set.constantStats or {}) do
 			constants[#constants + 1] = { c[1], c[2] }
 		end
+		local statLevels = L.array()
+		for _, n in ipairs(L.sortedKeys(set.levels or {})) do
+			local lv = set.levels[n]
+			local values = type(n) == "number" and L.list(lv)
+			if values and #values > 0 then
+				statLevels[#statLevels + 1] = { level = n, values = values, interpolation = L.list(lv.statInterpolation) or L.array() }
+			end
+		end
 		row.statSet = {
 			incrementalEffectiveness = set.incrementalEffectiveness,
 			baseFlags = flagNames(set.baseFlags),
 			constantStats = constants,
 			stats = L.list(set.stats) or L.array(),
+			statLevels = statLevels,
 		}
 	end
 	return row
