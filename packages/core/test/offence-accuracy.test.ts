@@ -78,6 +78,25 @@ describe.each(['ninja-default', 'pob2-own'])('mini-calc accuracy: %s', (name) =>
   })
 })
 
+describe('buffs from other groups the estimate leaves out', () => {
+  const code = readFileSync(here('./reference/ninja-default/code.txt'), 'utf8').trim()
+  const mainOf = (snap: Awaited<ReturnType<typeof readPobSnapshotFromCode>>) => buildSkillInputs(snap, data()).find((s) => s.group === snap.build.mainSocketGroup)!
+
+  // PoB adds Charged Staff's per-Power-Charge Lightning to every attack while charges are used; the generated data has
+  // no per-level value for it, so the estimate names it (it is the whole main-skill gap on both reference codes).
+  it('names Charged Staff when power charges are used and the main hand is a quarterstaff', async () => {
+    const main = mainOf(await readPobSnapshotFromCode(code))
+    expect(main.unread).toContain('Charged Staff (group 14): added Lightning damage per consumed Power Charge')
+  })
+
+  it('leaves it out when the config does not use power charges', async () => {
+    const snap = await readPobSnapshotFromCode(code)
+    const set = snap.config.sets[0]!
+    const off = { ...snap, config: { activeConfigSet: set.id, sets: [{ ...set, inputs: { ...set.inputs, usePowerCharges: false } }] } }
+    expect(mainOf(off).unread.some((l) => l.startsWith('Charged Staff'))).toBe(false)
+  })
+})
+
 describe('the enemy the code was calculated against', () => {
   const code = readFileSync(here('./reference/pob2-own/code.txt'), 'utf8').trim()
   const withInputs = (snap: Awaited<ReturnType<typeof readPobSnapshotFromCode>>, inputs: Record<string, number | boolean>) => {

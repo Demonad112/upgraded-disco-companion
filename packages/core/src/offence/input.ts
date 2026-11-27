@@ -220,6 +220,18 @@ function conversionOf(constants: [string, number][]): [DamageType, DamageType, n
   return out
 }
 
+/**
+ * Buff skills whose effect on other attacks PoB counts but this calc cannot size, and when PoB applies each.
+ * Charged Staff: `charged_staff_attack_{minimum,maximum}_added_lightning_damage_per_stack` × consumed Power Charges
+ * (vendor/pob2 Data/Skills/act_int.lua, effectCond `UsePowerCharges`); the buff needs a quarterstaff.
+ */
+const UNSIZED_ATTACK_BUFFS: Record<string, { line: string; on: (inputs: Readonly<Record<string, unknown>>, weapon: string | undefined) => boolean }> = {
+  'Charged Staff': {
+    line: 'added Lightning damage per consumed Power Charge',
+    on: (inputs, weapon) => weapon === 'Staff' && inputs.usePowerCharges === true && inputs.overridePowerCharges !== 0,
+  },
+}
+
 const isActive = (g: PobGem): boolean => g.enabled && !(g.skillId ?? '').startsWith('Support')
 const isSupport = (g: PobGem): boolean => g.enabled && (g.skillId ?? '').startsWith('Support')
 
@@ -313,6 +325,16 @@ export function buildSkillInputs(snap: PobSnapshot, data: OffenceData): SkillInp
     }
   })
   const buffMods: Mod[] = [...buffBySupport.values()].flat()
+  // Buffs another group grants to attacks that PoB applies and this calc cannot size: their per-level values are not
+  // in the generated data. Each is named in the estimate's unread lines, not guessed.
+  const unsizedBuffs: { group: number; name: string; line: string }[] = []
+  groups.forEach((g, gi) => {
+    if (!g.enabled) return
+    for (const gem of g.gems.filter(isActive)) {
+      const what = UNSIZED_ATTACK_BUFFS[gem.nameSpec]
+      if (what && what.on(cfgInputs, w.weapon?.type)) unsizedBuffs.push({ group: gi + 1, name: gem.nameSpec, line: `${gem.nameSpec} (group ${gi + 1}): ${what.line}` })
+    }
+  })
   groups.forEach((g, i) => {
     if (!g.enabled) return
     const actives = g.gems.filter(isActive)
@@ -347,7 +369,7 @@ export function buildSkillInputs(snap: PobSnapshot, data: OffenceData): SkillInp
     out.push({
       ...base,
       gemLevel: level,
-      unread: [...unread, ...supUnread],
+      unread: [...unread, ...supUnread, ...unsizedBuffs.filter((b) => b.group !== i + 1).map((b) => b.line)],
       input: { weapon: w.weapon, skill, mods: [...global, ...supMods, ...buffMods], conds, counters, enemy: { ...enemy, takenInc } },
     })
   })
