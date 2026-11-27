@@ -1,7 +1,7 @@
 'use client'
 
 import { characterName } from '@/lib/characterName'
-import { snapshotKey } from '@poe2/core'
+import { checkTargets, snapshotKey } from '@poe2/core'
 import { Accordion } from '@/components/shared/Accordion'
 import { StatusChip } from '@/components/shared/Instruments'
 import { Chat } from '@/components/Chat'
@@ -12,6 +12,7 @@ import type { PanelProps } from './types'
 import type { CharacterHistory } from '@/lib/useCharacterHistory'
 import { Stat } from '../../ui'
 import { ImportTrail } from '../ImportTrail'
+import { TargetsCard, targetsSummary, useTargets } from '../TargetsCard'
 
 /** What moved since the last import, as four tiles. Opens the tab the way Defences opens with its glance card. */
 function SinceLastImport({ history }: { history: CharacterHistory }) {
@@ -43,9 +44,19 @@ function SinceLastImport({ history }: { history: CharacterHistory }) {
 }
 
 export default function ProgressTab({ analysis: a, history }: PanelProps) {
+  const targets = checkTargets(a, useTargets())
+  const short = targets.filter((r) => r.met === false).length
   return (
     <Panel id="progress" title="Progress">
       <SinceLastImport history={history} />
+      <Accordion
+        id="progress-targets"
+        title="Your targets"
+        summary={targetsSummary(targets)}
+        badge={short ? <StatusChip tone="danger">{`${short} not met`}</StatusChip> : undefined}
+      >
+        <TargetsCard analysis={a} />
+      </Accordion>
       <Accordion
         id="progress-history"
         title="Trends across imports"

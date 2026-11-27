@@ -61,6 +61,7 @@ Status is `done`, `answered` or `parked`. A parked row comes back only if the ow
 | R66 | Reallocation emitted cost kind 'free' though it needs a gear swap | S | PV1 | Closed by N4: `gear`, amount 1, tier `trivial`; text branches keyed on a `reallocated` flag. Goldens and two ranking assertions updated |
 | R67 | Stale "level 63" for Yykiuy | S | PV1 | Closed by N4: already fixed (PXD, before #138); no "level 63" left in the repo |
 | R63 | PoB2 MCP oracle: engine parity, proof stat per rec id, config robustness (Yykiuy, Athrynas) | M | PV1 | Closed 2026-11-13: the owner ran the PoB2 verification; `docs/plans/POB-VERIFY.md` removed |
+| GF1-8 | User-set targets (Life ≥ 5000, resistances ≥ max, …) checked against the analysed numbers from a PoB code, not poe.ninja (owner 2026-11-21) | S | GF1 item 8 | `docs/plans/pob-character-analysis.md` W2: `checkTargets` in core, seeded from `benchmarks.ts`, editable in Progress; a stat the code lacks is `missing` | done 2026-11-27: `checkTargets` in `packages/core/src/progress/targets.ts` (tests on the main reference build: life 1494 vs 5000 not met, chaos 53 vs its max 75 not met, block 0); defaults life ≥ 5000 and fire/cold/lightning ≥ 80 from `b-pinnacle-readiness`; editable "Your targets" list in the Progress tab, `poe2-targets` |
 
 ## PX programme closed in PXC (2026-11-13)
 Moved from `docs/remaining/REMAINING-WORK.md`. Full results: git history (PXC, PERF-PLAN items 4–8, PX10, PX11).
