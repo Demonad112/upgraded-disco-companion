@@ -2,7 +2,8 @@
 -- Per-level gem data for the damage mini-calc (Batch 3), for each active skill (the first definition of a name): the
 -- effect's castTime, per-level scalars (baseMultiplier, attackSpeedMultiplier, ...), and the first stat set's
 -- constantStats, baseFlags, incrementalEffectiveness, stats and per-level stat values (statLevels: { level, values,
--- interpolation }, values in `stats` order). Only plain numbers, strings and booleans are kept.
+-- interpolation }, values in `stats` order), and the gem's qualityStats. Only plain numbers, strings and booleans
+-- are kept.
 -- Feeds packages/data/scripts/build-skill-levels.mjs.
 local dir = debug.getinfo(1, "S").source:sub(2):match("^(.*)[/\\]") or "."
 local L = dofile(dir .. "/lib.lua")
@@ -52,6 +53,12 @@ local function effectRow(id, ge)
 	row.name = ge.name
 	row.castTime = ge.castTime
 	row.levels = levelRows(ge.levels)
+	-- Gem quality: { stat, value per 1% quality } (CalcTools buildSkillInstanceStats truncates stat x quality).
+	local quality = L.array()
+	for _, q in ipairs(ge.qualityStats or {}) do
+		quality[#quality + 1] = { q[1], q[2] }
+	end
+	row.qualityStats = quality
 	local set = ge.statSets and ge.statSets[1]
 	if set then
 		local constants = L.array()

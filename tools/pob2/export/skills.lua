@@ -61,7 +61,14 @@ end
 local function modRow(mod)
 	local tags = L.array()
 	for _, tag in ipairs(mod) do
-		tags[#tags + 1] = scalars(tag)
+		local t = scalars(tag)
+		-- A DistanceRamp's { distance, factor } points (ModStore EvalMod interpolates between them).
+		if type(tag.ramp) == "table" then
+			local ramp = L.array()
+			for _, p in ipairs(tag.ramp) do ramp[#ramp + 1] = { p[1], p[2] } end
+			t.ramp = ramp
+		end
+		tags[#tags + 1] = t
 	end
 	-- MinionModifier and similar wrap a mod in a LIST value: its tags (Condition, ...) gate the effect too.
 	local inner = type(mod.value) == "table" and mod.value.mod

@@ -39,6 +39,10 @@ export interface PassSkill {
   castTime: number
   /** Seconds added to the attack time after the speed modifiers (`total_attack_time_+_ms`), 0 for most skills. */
   extraAttackTime?: number
+  /** The gem level's cooldown in seconds; absent or 0: none. */
+  cooldown?: number
+  /** Uses the cooldown stores (the level's storedUses plus added uses); above 1 the cooldown is not tick-rounded. */
+  cooldownUses?: number
   /**
    * Seconds between Ancestral Call's boosted strikes (`ancestral_call_spirit_strike_interval_ms` / 1000) when the
    * skill is supported by it; absent otherwise.
@@ -67,6 +71,18 @@ export interface PassInput {
     /** Flat enemy physical damage reduction in percent (PoB's `enemyPhysicalReduction`). */
     physicalReduction?: number
   }
+}
+
+/** PoB2 `data.misc.ServerTickRate`: a single-use cooldown is rounded up to whole server ticks. */
+const SERVER_TICK_RATE = 1 / 0.033
+
+/**
+ * A skill's cooldown as PoB2's calcSkillCooldown: the base divided by (1 + increased cooldown recovery), rounded up
+ * to server ticks unless the skill stores more than one use.
+ */
+export function skillCooldown(base: number, incRecovery: number, uses = 1): number {
+  const cd = base / Math.max(0, 1 + incRecovery / 100)
+  return uses > 1 ? cd : Math.ceil(cd * SERVER_TICK_RATE) / SERVER_TICK_RATE
 }
 
 /** PoB2 `data.misc.ArmourRatio`: armour mitigates `A / (A + 10 × hit)` of a physical hit (`calcs.armourReductionF`). */
@@ -135,6 +151,11 @@ export function calcPass(input: PassInput): PassOutput {
   const speedInc = 1 + list.sum(ctx, 'inc', 'speed') / 100
   const baseTime = 1 / rate
   out.Speed = 1 / (baseTime / round2(speedInc * list.more(ctx, 'speed')) + (skill.extraAttackTime ?? 0))
+  // A cooldown caps the rate: PoB's Speed = min(speed, 1 / Cooldown).
+  if (skill.cooldown && skill.cooldown > 0) {
+    out.Cooldown = skillCooldown(skill.cooldown, list.sum(ctx, 'inc', 'cooldownRecovery'), skill.cooldownUses ?? 1)
+    out.Speed = Math.min(out.Speed, 1 / out.Cooldown)
+  }
 
   // Ancestral Call, as PoB2's calcAncestralBoost: one strike per interval is boosted (100% more, the multiplier PoB
   // passes for it), so the average effect is 1 + min(attack time / interval, 1). PoB folds it into `allMult`, which

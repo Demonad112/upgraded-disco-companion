@@ -44,6 +44,16 @@ const outDir = join(here, '..', 'generated')
  * One mod of a support's own statMap, in the artifact's shape. A mod is conditional when it carries a tag table
  * (a Condition, Multiplier, ...) or a computed value: it then applies only some of the time.
  */
+function tagOf(t) {
+  return {
+    type: t.type,
+    ...(typeof t.var === 'string' ? { var: t.var } : {}),
+    ...(t.neg === true ? { neg: true } : {}),
+    ...(typeof t.threshold === 'number' ? { threshold: t.threshold } : {}),
+    ...(Array.isArray(t.ramp) ? { ramp: t.ramp } : {}),
+  }
+}
+
 function toMod(m) {
   return {
     name: m.name,
@@ -53,6 +63,9 @@ function toMod(m) {
     // Any tag means the effect only applies some of the time.
     conditions: m.tags.filter((t) => typeof t.var === 'string').map((t) => t.var),
     conditional: m.tags.length > 0 || m.valueIsTable === true,
+    // The gates themselves, for a calc that can evaluate them: a Condition (negated when `neg`), a
+    // MultiplierThreshold (`threshold` of `var`) or a DistanceRamp (`ramp` of [distance, factor]).
+    ...(m.tags.length ? { tags: m.tags.map(tagOf) } : {}),
   }
 }
 

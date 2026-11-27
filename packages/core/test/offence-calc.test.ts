@@ -117,6 +117,24 @@ describe('calcPass', () => {
   })
 })
 
+describe('cooldown (PoB2 calcSkillCooldown)', () => {
+  it('caps speed at 1 / cooldown, rounded up to server ticks (1 / 0.033 s)', () => {
+    const out = calcPass(input({ skill: { ...input().skill, attackSpeedMultiplier: 200, cooldown: 0.5 } }))
+    expect(out.Cooldown).toBeCloseTo(Math.ceil(0.5 / 0.033) * 0.033, 9)
+    expect(out.Speed).toBeCloseTo(1 / out.Cooldown!, 9)
+  })
+
+  it('does not round the cooldown of a skill with more than one use', () => {
+    const out = calcPass(input({ skill: { ...input().skill, attackSpeedMultiplier: 200, cooldown: 0.5, cooldownUses: 2 } }))
+    expect(out.Cooldown).toBe(0.5)
+    expect(out.Speed).toBe(2)
+  })
+
+  it('leaves a slower attack alone', () => {
+    expect(calcPass(input({ skill: { ...input().skill, cooldown: 0.5 } })).Speed).toBeCloseTo(1)
+  })
+})
+
 describe('Ancestral Call (PoB2 CalcOffence calcAncestralBoost)', () => {
   it('doubles one hit per interval: damage × (1 + min(attack time / interval, 1)), before mitigation', () => {
     // 1 attack/s and a 3 s interval: one attack in three is boosted, 1 + 1/3.

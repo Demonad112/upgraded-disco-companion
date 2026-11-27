@@ -62,3 +62,9 @@ describe('parseModLine', () => {
     expect(parseModLine('28% chance to Daze on Hit')).toEqual([])
   })
 })
+
+describe('gem quality from items', () => {
+  it('reads "+10% to Quality of all Skills" as quality for every active skill gem', () => {
+    expect(parseModLine('+10% to Quality of all Skills')).toEqual([{ kind: 'quality', value: 10, text: '+10% to Quality of all Skills' }])
+  })
+})

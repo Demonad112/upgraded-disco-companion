@@ -3,8 +3,9 @@
  *
  * Output: generated/skill-levels.json
  *
- *   actives{}  skill name -> { castTime, flags (baseFlags), constants ([stat, value]), levels: [[baseMultiplier,
- *              attackSpeedMultiplier], ...] indexed by gem level - 1, buffStats? }
+ *   actives{}  skill name -> { castTime, flags (baseFlags), constants ([stat, value]), quality ([stat, value per 1%
+ *              quality], the gem's qualityStats), levels: [[baseMultiplier, attackSpeedMultiplier, cooldown,
+ *              storedUses], ...] indexed by gem level - 1 (cooldown in seconds, 0: none), buffStats? }
  *   buffStats  { stats, levels: [[value per stat], ...] indexed by gem level - 1 }: a buff's per-level added damage per
  *              stack (Charged Staff: `charged_staff_attack_{minimum,maximum}_added_lightning_damage_per_stack`), which
  *              PoB adds to other attacks. Only flat values (statInterpolation 1) are kept; any other fails the build.
@@ -50,7 +51,8 @@ for (const name of Object.keys(exported.actives).sort()) {
     castTime: a.castTime ?? 1,
     flags: set.baseFlags,
     constants: set.constantStats,
-    levels: a.levels.map((l) => [l.baseMultiplier ?? 1, l.attackSpeedMultiplier ?? 0]),
+    quality: a.qualityStats ?? [],
+    levels: a.levels.map((l) => [l.baseMultiplier ?? 1, l.attackSpeedMultiplier ?? 0, l.cooldown ?? 0, l.storedUses ?? 1]),
   }
   const buffStats = buffStatsOf(name, set)
   if (buffStats) actives[name].buffStats = buffStats

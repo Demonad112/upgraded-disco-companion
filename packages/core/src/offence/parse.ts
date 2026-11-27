@@ -33,8 +33,10 @@ export type ModKind =
   | 'pen'
   /** `+value` to the level of the skills in `scope`. */
   | 'skillLevel'
+  /** `+value`% to the quality of every active skill gem (PoB's GemProperty quality). */
+  | 'quality'
 
-export type StatName = 'damage' | 'critChance' | 'critBonus' | 'speed' | 'added'
+export type StatName = 'damage' | 'critChance' | 'critBonus' | 'speed' | 'added' | 'cooldownRecovery'
 
 export interface Mod {
   kind: ModKind
@@ -102,7 +104,7 @@ function condition(text: string): string | undefined {
 }
 
 /** A line is about offence when it names one of these; then it must be read in full or reported. */
-const OFFENCE_HINT = /damage|critical|speed|penetrat|as extra|^adds \d|level of all|^legacy of/i
+const OFFENCE_HINT = /damage|critical|speed|penetrat|as extra|^adds \d|level of all|quality of all skills|^legacy of/i
 /** ...unless it is about the defence side, the minions, or something else the calc never reads. */
 const NOT_OFFENCE =
   /movement speed|projectile speed|recovery|damage taken|taken as|damage reduction|reduction|from hits|minion|totem|trap|mine\b|charm|flask|leech|recoup|stun|ailment|thorns|reflect|per second|mana cost|accuracy|armour|evasion|energy shield|resistance|resistances(?! penet)|life|mana|spirit|daze on hit|knocks? back|chance to|duration|area of effect|skill effect|cooldown|rarity|charge|aura|curse|buff|warcry|banner|companion|reservation|regenerat/i
@@ -175,6 +177,9 @@ export function parseModLine(raw: string): Mod[] | null {
   // "+3 to Level of all Attack Skills", "+1 to Level of all Melee Skills"
   if ((m = /^\+(\d+) to level of all (attack|melee|spell|projectile) skills$/i.exec(text)))
     return [{ kind: 'skillLevel', value: Number(m[1]), scope: m[2]!.toLowerCase() === 'spell' ? 'spell' : 'attack', ...(m[2]!.toLowerCase() === 'melee' ? { melee: true as const } : {}), ...(m[2]!.toLowerCase() === 'projectile' ? { projectile: true as const } : {}), text }]
+
+  // "+10% to Quality of all Skills": PoB's GemProperty quality on every active skill gem.
+  if ((m = /^\+(\d+)% to quality of all skills$/i.exec(text))) return [{ kind: 'quality', value: Number(m[1]), text }]
 
   // "Adds 78 to 107 Cold Damage", "Adds 14 to 24 Cold damage to Attacks"
   if ((m = /^adds (\d+(?:\.\d+)?) to (\d+(?:\.\d+)?) (physical|fire|cold|lightning|chaos) damage( to attacks)?$/i.exec(text)))
