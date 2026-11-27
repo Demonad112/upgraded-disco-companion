@@ -201,13 +201,13 @@ Each difference becomes a line in this plan's §9 log (code hash, field, site, P
 6. **Golden diff:** `pob-code-athrynas-v43.expected.json` gains items and their findings. Grep `apps/web/e2e` for any PoB-paste spec that asserts "no gear".
 7. **Compare with the run:** the MCP `items` list against the site's Gear tab, slot by slot.
 
-### W2: GF1 item 8, user-set targets against PoB-code numbers
+### W2: GF1 item 8, user-set targets against PoB-code numbers (done 2026-11-27)
 
 - A "targets" list compared against the analysed numbers (from a code, or from poe.ninja when that works again). For example: Life ≥ 5000, every elemental resistance ≥ its max, chaos ≥ 30, lowest max hit ≥ X. This is arithmetic only, with no simulation and no poe.ninja dependency.
 - **Core:** `checkTargets(analysis, targets): TargetResult[]`, each result `{ id, stat, op, want, have | null, met | 'missing' }`. A stat the code does not carry is `missing`, never failed.
 - **Seed** from `apps/web/src/data/benchmarks.ts`. For example, `b-pinnacle-readiness` gives life ≥ 5000 and resistances ≥ 80; take the numbers from the label only where they are stated.
 - **Web:** an editable list in the Progress tab, stored in `localStorage` (`poe2-targets`). The copy follows `docs/COPY.md`.
-- **Test** on the Athrynas code: life 1448 against 5000 is not met; chaos 18 against 30 is not met; BlockChance is missing.
+- **Test** (Athrynas is gone, so on the main reference build, `packages/core/test/targets.test.ts`): life 1494 against 5000 is not met; chaos 53 against its max 75 is not met; block reads 0 from the code; a figure an import lacks is missing.
 
 ### W3: AL1-1, an Atlas leg on a no-op step
 
