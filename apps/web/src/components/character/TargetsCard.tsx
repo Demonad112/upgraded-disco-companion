@@ -8,7 +8,7 @@
 
 import { acceptsMax, checkTargets, TARGET_STATS, type Analysis, type Target, type TargetResult, type TargetStat } from '@poe2/core'
 import { useLocalStore } from '@/lib/localStore'
-import { DEFAULT_TARGETS, newTarget, patchTarget, removeTarget, targetsStore } from '@/lib/targets'
+import { newTarget, patchTarget, removeTarget, targetsStore } from '@/lib/targets'
 import { Button, Input, Select } from '@/components/shared/controls'
 import { StatusChip } from '@/components/shared/Instruments'
 import { fmt } from '../ui'
@@ -40,7 +40,7 @@ export function TargetsCard({ analysis }: { analysis: Analysis }) {
   return (
     <div>
       <p className="mb-3 max-w-prose text-xs text-ink-mute">
-        Set the numbers you&rsquo;re aiming for. Each is checked against this character&rsquo;s figures as read.
+        Set the numbers you&rsquo;re aiming for. Missing means the import didn&rsquo;t carry that figure.
       </p>
       {targets.length ? (
         <div className="overflow-x-auto border border-line">
@@ -75,15 +75,7 @@ export function TargetsCard({ analysis }: { analysis: Analysis }) {
                     </td>
                     <td className="px-3 py-1.5">
                       <span className="flex items-center gap-1">
-                        <Select
-                          aria-label="At least or at most"
-                          value={t.op}
-                          onChange={(e) => edit(t.id, { op: e.target.value as Target['op'] })}
-                          className="text-xs"
-                        >
-                          <option value=">=">≥</option>
-                          <option value="<=">≤</option>
-                        </Select>
+                        <span className="text-xs text-ink-mute">{t.op === '>=' ? '≥' : '≤'}</span>
                         {acceptsMax(t.stat) ? (
                           <Select
                             aria-label="Its max or a number"
@@ -133,15 +125,11 @@ export function TargetsCard({ analysis }: { analysis: Analysis }) {
           </table>
         </div>
       ) : null}
-      <div className="mt-3 flex flex-wrap gap-2">
+      <div className="mt-3">
         <Button size="sm" onClick={() => targetsStore.set((l) => [...l, newTarget()])}>
           Add target
         </Button>
-        <Button variant="ghost" size="sm" onClick={() => targetsStore.set(() => DEFAULT_TARGETS)}>
-          Reset to pinnacle targets
-        </Button>
       </div>
-      <p className="mt-2 text-xs text-ink-mute">&ldquo;Missing&rdquo; means the import didn&rsquo;t carry that figure. Saved in this browser.</p>
     </div>
   )
 }
