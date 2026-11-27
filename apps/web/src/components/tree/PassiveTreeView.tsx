@@ -258,7 +258,7 @@ export function PassiveTreeView({ tree, allocation, className = '' }: PassiveTre
         <p className="mt-2 text-[length:var(--fs-11)] leading-relaxed text-ink-mute">
           The allocation forms {resolved.components.length} groups:{' '}
           {resolved.components
-            .map((c) => `${c.nodes.length} ${c.kind === 'ascendancy' ? `on the ${c.ascendancy} wheel` : c.kind === 'main-tree' ? 'on the main tree' : 'in a cluster this data set does not link'}`)
+            .map((c) => `${c.nodes.length} ${c.kind === 'ascendancy' ? `on the ${c.ascendancy} wheel` : c.kind === 'main-tree' ? 'on the main tree' : 'allocated without a link, as some jewels allow'}`)
             .join(', ')}
           . Separate groups are normal and do not mean the tree is broken.
         </p>

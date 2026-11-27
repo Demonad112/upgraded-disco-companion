@@ -7,8 +7,9 @@ hand-written endgame guide content lives in `apps/web/src/data`.
 
 `mod-tiers.json`, `bases.json`, `pob-skills.json`, `skill-levels.json` and `passive-tree.json` are
 built from the **vendored Path of Building 2** (`vendor/pob2`, the owner's fork
-pinned in `vendor/pob2/PIN.json`): commit `601768b` (2026-11-10), PoB `0.23.1`,
-tree `0_5`, game patch **0.5.5**. They are not parsed out of PoB's Lua text.
+pinned in `vendor/pob2/PIN.json`): the v0.23.1 release commit `7d6f530` (2026-07-28),
+tree `0_5`. `version.json` says game patch 0.5.5, but this release predates 0.5.5 (2026-09-04): the pin
+follows the PoB release the codes are written by (`docs/POB2-SYNC.md`), so the data is that release's. They are not parsed out of PoB's Lua text.
 `tools/pob2/export/*.lua` load PoB headless and dump the tables PoB itself uses,
 and the build scripts read that JSON ([How the PoB artifacts are built](#how-the-pob-artifacts-are-built)).
 The earlier `mod-tiers.json` and `bases.json` came from PathOfBuilding-PoE2
@@ -27,14 +28,11 @@ The other artifacts were last generated on **2026-07-28**, before patch 0.5.5
 
 - **Soul Core entries.** 0.5.5 reworked about 20 Soul Cores and added 17 (13
   "Jiquani's Soul Core of …", 4 "Atziri's Soul Core of …"). `mod-tiers.json`
-  still carries Soul Core base tags and display-only mods from the RePoE build,
-  so the new bases are absent and reworked values are the old ones. Nothing
-  grades against these: socketed core text reaches the item view verbatim from
-  the character payload, and resistances are attributed from poe.ninja's
-  `breakdowns`. Limit checks read the item first and fall back to a table in
-  `packages/core/src/gear/audit.ts`. Open as DATA-2: PoB carries them
-  (`data.itemMods.Runes`, the soul core bases), so the next step is another
-  exporter field, not a new source.
+  takes its 33 cores from the pinned release, which has none of the 17 (the
+  fork's `dev` does). Nothing grades against them: socketed core text reaches
+  the item view verbatim, and limit checks read the item first and fall back
+  to a table in `packages/core/src/gear/audit.ts`. DATA-2 waits for a PoB2
+  release with 0.5.5 data; re-pinning then brings them in.
 
 ### How the PoB artifacts are built
 

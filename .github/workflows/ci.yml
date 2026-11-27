@@ -42,7 +42,7 @@ jobs:
           else
             echo "code=true" >> "$GITHUB_OUTPUT"
           fi
-          if git diff --name-only HEAD^1 HEAD | grep -qE '^(vendor/pob2|tools/pob2|packages/core/test/reference|scripts/pob2)/'; then
+          if git diff --name-only HEAD^1 HEAD | grep -qE '^((vendor/pob2|tools/pob2|packages/core/test/reference|scripts/pob2|packages/data/generated|packages/data/scripts)/|\.github/workflows/ci\.yml$)'; then
             echo "pob2=true" >> "$GITHUB_OUTPUT"
           else
             echo "pob2=false" >> "$GITHUB_OUTPUT"
@@ -162,7 +162,7 @@ jobs:
     # Real PoB2 headless (vendor/pob2) in PoB's own tests image, pinned by digest in vendor/pob2/PIN.json (testsImage).
     # The runner decodes the codes with @poe2/core (the image has no Node; PoB's headless Inflate is a stub) and every
     # Lua step runs in the image via docker run (scripts/pob2/run.mjs, repo mounted read-only, no network).
-    # Not a required check yet: REMAINING-WORK § Owner queue PB-2a (make it required after 5 green runs).
+    # PB-2a: 15 green runs by 2026-11-27; the owner adds it as a required check (a skipped run counts as passing).
     needs: changes
     if: needs.changes.outputs.pob2 == 'true'
     runs-on: ubuntu-latest
@@ -186,10 +186,16 @@ jobs:
         # Regenerates packages/core/test/reference/<name>/{oracle,groups.oracle}.json and fails on any byte diff;
         # the diff is printed in the log. Fix: npm run pob2:oracle, review, commit with the cause.
         run: npm run pob2:oracle -- --check
+      - name: Generated data matches PoB (PB-4a)
+        # Rebuilds mod-tiers, bases, pob-skills, skill-levels and the tree from vendor/pob2 and fails on any byte diff,
+        # so generated/ can't drift from the pin. Fix: npm run build:pob -w @poe2/data, commit with the cause.
+        run: |
+          npm run build:pob --workspace @poe2/data
+          git diff --exit-code -- packages/data/generated
 
   pob-engine:
     # services/pob-engine: its unit tests, then its Docker image built and asked to calculate the reference code, which
-    # must give the oracle's TotalDPS. Not a required check (owner queue).
+    # must give the oracle's TotalDPS. PE-2: 10 green runs by 2026-11-27; the owner adds it as a required check.
     needs: changes
     if: needs.changes.outputs.engine == 'true'
     runs-on: ubuntu-latest
