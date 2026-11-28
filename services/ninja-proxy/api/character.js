@@ -89,6 +89,9 @@ export async function readVersion(url, signal, { fetchImpl, firstFrameMs = FIRST
       if (done) break
       buffer += decoder.decode(value, { stream: true })
 
+      // poe.ninja names the miss: `event: notfound` with an empty `data:` line (measured 2026-11-22).
+      if (/^event:\s*notfound\s*$/m.test(buffer)) return { error: 'not-found' }
+
       const line = buffer.split('\n').find((l) => l.startsWith('data:'))
       if (!line) continue
 
