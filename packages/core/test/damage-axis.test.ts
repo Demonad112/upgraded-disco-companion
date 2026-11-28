@@ -4,7 +4,7 @@
  */
 
 import { describe, expect, it } from 'vitest'
-import { damageAxis, RARE_LIFE_MULT, ttkScore } from '../src/score/damage-axis.js'
+import { DAMAGE_BANDS, damageAxis, RARE_LIFE_MULT, ttkScore } from '../src/score/damage-axis.js'
 
 const life = { '79': 24852, '80': 31065 }
 
@@ -16,6 +16,13 @@ describe('ttkScore', () => {
     expect(ttkScore(100)).toBe(0)
     expect(Math.round(ttkScore(0.25))).toBe(80)
     expect(Math.round(ttkScore(0.5))).toBe(65)
+  })
+})
+
+describe('DAMAGE_BANDS', () => {
+  it('gives the time a base rare may take for each grade: each band a doubling, D beyond the last', () => {
+    expect(DAMAGE_BANDS.map((b) => [b.grade, b.maxTtk])).toEqual([['S', 0.2], ['A', 0.4], ['B', 0.8], ['C', 1.6], ['D', null]])
+    expect(damageAxis({ dps: 372908, life })!.bands).toBe(DAMAGE_BANDS)
   })
 })
 

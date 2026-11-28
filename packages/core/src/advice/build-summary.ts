@@ -5,13 +5,17 @@
  */
 
 import type { DamageAxis } from '../score/damage-axis.js'
-import type { DefenceAxis } from '../score/defence-axis.js'
+import type { DefenceAxis, DefenceTip } from '../score/defence-axis.js'
 import type { SkillDamage } from '../dps/index.js'
 import type { StatSwap } from './swaps.js'
 
 export interface NextStep {
   area: 'defence' | 'gear' | 'damage' | 'clear'
   text: string
+  /** For a defence step: the tip's kind and type, so the web can find the finding (and trade search) behind it. */
+  tip?: { kind: DefenceTip['kind']; type: DefenceTip['type'] }
+  /** For a step drawn from a ranked finding: its id, so the web can find it for the trade search. */
+  findingId?: string
 }
 
 export const NEXT_STEP_LIMIT = 3
@@ -27,13 +31,50 @@ export function buildSummary(i: { className: string | null; skill: Pick<SkillDam
   return `${who}${i.skill ? ` using ${i.skill.name}${mix}` : ''}${layers ? `, on ${layers}${layers === 'life' ? ' only' : ''}` : ''}.`
 }
 
-export function nextSteps(i: { defence: Pick<DefenceAxis, 'tips'> | null; swaps: readonly Pick<StatSwap, 'sentence'>[]; damage: Pick<DamageAxis, 'score' | 'sentence'> | null }): NextStep[] {
-  const tips = i.defence?.tips ?? []
+/** A ranked finding the step picker may draw on when the three fixed sources leave a gap. */
+export interface StepFinding {
+  id: string
+  area: 'defence' | 'gear' | 'damage'
+  /** The action's lead clause, whole. */
+  text: string
+  /** The stat it moves, when it has one (`chaosResistance`): a finding on a stat a defence tip already names is skipped. */
+  stat?: string
+}
+
+/**
+ * Up to three steps, always three when the build has enough to say. Order: the top defence tip, the top gear swap,
+ * the damage lever (when damage grades under an A), then a second defence tip on a different damage type (a chaos hit
+ * tip and a chaos resistance tip are one fix), then the engine's ranked gear and damage findings, then whatever
+ * defence tips are left.
+ */
+export function nextSteps(i: {
+  defence: Pick<DefenceAxis, 'tips'> | null
+  swaps: readonly Pick<StatSwap, 'sentence' | 'plain'>[]
+  damage: Pick<DamageAxis, 'score'> | null
+  damageLever?: string | null
+  findings?: readonly StepFinding[]
+}): NextStep[] {
+  // A weak hit type whose resistance is short is one fix, and the resistance is the concrete one (it has a trade search).
+  const all = i.defence?.tips ?? []
+  const tips = all.filter((t) => !(t.kind === 'weak-hit' && all.some((g) => g.kind !== 'weak-hit' && g.type === t.type)))
+  const defenceStep = (t: DefenceTip): NextStep => ({ area: 'defence', text: t.text, tip: { kind: t.kind, type: t.type } })
   const steps: NextStep[] = []
-  if (tips[0]) steps.push({ area: 'defence', text: tips[0].text })
-  if (i.swaps[0]) steps.push({ area: 'gear', text: i.swaps[0].sentence })
-  if (i.damage && i.damage.score < DAMAGE_STEP_BELOW) steps.push({ area: 'damage', text: `Raise damage. ${i.damage.sentence}` })
-  for (const t of tips.slice(1)) steps.push({ area: 'defence', text: t.text })
+  const has = (text: string) => steps.some((s) => s.text === text)
+  const tipTypes = () => new Set(steps.flatMap((s) => (s.tip ? [s.tip.type] : [])))
+  const full = () => steps.length >= NEXT_STEP_LIMIT
+  const push = (s: NextStep) => {
+    if (!full() && !has(s.text)) steps.push(s)
+  }
+  if (tips[0]) push(defenceStep(tips[0]))
+  if (i.swaps[0]) push({ area: 'gear', text: i.swaps[0].plain })
+  if (i.damage && i.damage.score < DAMAGE_STEP_BELOW && i.damageLever) push({ area: 'damage', text: `Raise damage: ${i.damageLever}` })
+  for (const t of tips.slice(1)) if (!tipTypes().has(t.type)) push(defenceStep(t))
+  const named = new Set(tips.map((t) => `${t.type}Resistance`))
+  for (const f of i.findings ?? []) {
+    if (f.area === 'defence' || (f.stat && named.has(f.stat))) continue
+    push({ area: f.area, text: f.text, findingId: f.id })
+  }
+  for (const t of tips.slice(1)) push(defenceStep(t))
   if (!steps.length) return [{ area: 'clear', text: 'Nothing urgent. Keep levelling and check again after your next upgrade.' }]
-  return steps.slice(0, NEXT_STEP_LIMIT)
+  return steps
 }

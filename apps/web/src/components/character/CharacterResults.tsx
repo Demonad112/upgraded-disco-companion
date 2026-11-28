@@ -1,11 +1,11 @@
 'use client'
 
-// The character page below the import box, as tabs (PX4). Overview is in this chunk, so the build card and Top 3 paint
+// The character page below the import box, as tabs (PX4). Overview is in this chunk, so the build card and Next 3 steps paint
 // without waiting for anything else; each other tab is its own chunk, fetched when the tab first opens (PX9).
 import { useEffect, useMemo } from 'react'
 import dynamic from 'next/dynamic'
 import type { Analysis, AnalyzeOptions } from '@poe2/core'
-import { buildSummary, defenceAxis, nextSteps } from '@poe2/core'
+import { defenceAxis, nextSteps } from '@poe2/core'
 import { useDamageAxis } from '@/lib/useDamageAxis'
 import { ProToggle } from '@/components/shared/ProToggle'
 import { BuildScore } from '@/components/BuildScore'
@@ -22,7 +22,8 @@ import { CopyLink } from './CopyLink'
 import { CouldntCheck } from './CouldntCheck'
 import { ShareCard } from './ShareCard'
 import { Showcase } from './Showcase'
-import { TopFixes, TopFixesPlaceholder } from './TopFixes'
+import { NextSteps } from './NextSteps'
+import { damageLever, stepFindings } from './topFixesData'
 import type { OutlineInput } from './CharacterSheet'
 import { Panel } from './tabs/Panel'
 import type { PanelProps } from './tabs/types'
@@ -60,7 +61,7 @@ function prefetchTabs() {
   void import('./tabs/AdvancedTab')
 }
 
-/** The Overview panel: build card, since-last-import, Top 3 (with all findings in place), grade explanation. */
+/** The Overview panel: build card with three grade chips, since-last-import, Next 3 steps (with all findings in place), grade explanation, what could not be checked. */
 function OverviewPanel({
   analysis: a,
   history,
@@ -75,23 +76,29 @@ function OverviewPanel({
   const returning = changedFor(a, history.snapshots).available
   const { proDetail } = usePrefs()
   const { review, ready } = useGearReview(a, tiersState, catalogState)
-  const { axis: damage } = useDamageAxis(a)
+  const { axis: damage, ready: damageReady } = useDamageAxis(a)
   const defAxis = useMemo(() => defenceAxis(a.assessment, a.defense), [a])
-  const summary = useMemo(() => buildSummary({ className: a.identity.className, skill: a.dps.primary, life: a.defense.life, energyShield: a.defense.energyShield }), [a])
-  const steps = useMemo(() => nextSteps({ defence: defAxis, swaps: review?.swaps ?? [], damage }), [defAxis, review, damage])
-  const gearState = ready ? 'ready' : catalogState.status === 'idle' ? 'closed' : 'loading'
+  const steps = useMemo(
+    () => nextSteps({ defence: defAxis, swaps: review?.swaps ?? [], damage, damageLever: damageLever(a.recommendations), findings: stepFindings(a.recommendations) }),
+    [a, defAxis, review, damage],
+  )
+  // Gear is graded on load: "grading…" until the affix data and the gem data are in (or either failed, then it is not graded).
+  const gearFailed = tiersState.status === 'error' || catalogState.status === 'error'
+  const gearState = ready || gearFailed ? 'ready' : 'loading'
+  const stepsReady = fixesReady && gearState === 'ready' && damageReady
   return (
     <Panel id="overview" title="Overview">
-      <Showcase analysis={a}>
+      <Showcase analysis={a} axes={{ gear: ready ? review?.axis.grade ?? null : null, gearState, damage }}>
         {sourceUrl || pobCode ? <CopyLink url={sourceUrl} code={pobCode} box={outlineInput?.box} config={outlineInput?.config} name={a.identity.name} /> : null}
         <ShareCard analysis={a} sourceUrl={sourceUrl} diff={history.diff} />
       </Showcase>
       {returning ? <ChangedSincePanel analysis={a} snapshots={history.snapshots} /> : null}
-      {fixesReady ? (
-      <TopFixes
+      <NextSteps
+        steps={steps}
         report={a.recommendations}
         league={a.identity.league}
         expand={expandFindings}
+        pending={!stepsReady}
         all={
           <>
             {/* Pro detail opens every finding's measured reasoning, cost and evidence by default. */}
@@ -99,14 +106,12 @@ function OverviewPanel({
               <ProToggle />
             </div>
             <Recommendations report={a.recommendations} />
+            <div className="mt-3">
+              <EasyWins analysis={a} tiersState={tiersState} proDetail={proDetail} />
+            </div>
           </>
         }
       />
-      ) : (
-        <TopFixesPlaceholder />
-      )}
-      {fixesReady ? <EasyWins analysis={a} tiersState={tiersState} proDetail={proDetail} /> : null}
-      <CouldntCheck analysis={a} />
       <BuildScore
         assessment={a.assessment}
         keystones={a.keystones}
@@ -114,9 +119,8 @@ function OverviewPanel({
         gear={review}
         gearState={gearState}
         damage={damage}
-        summary={summary}
-        steps={steps}
       />
+      <CouldntCheck analysis={a} />
     </Panel>
   )
 }
@@ -147,7 +151,7 @@ export function CharacterResults({
   treeState: PassiveTreeState
   catalogState: SupportCatalogState
   analysisOptions: AnalyzeOptions
-  /** False until the full analysis has run: the Top 3 are written once, from it, so a skeleton holds their place. */
+  /** False until the full analysis has run: the steps are written once, from it, so a skeleton holds their place. */
   fixesReady: boolean
   tab: TabId
   /** The hash id to scroll to once the tab's panel is mounted (an alias or an element inside a panel). */

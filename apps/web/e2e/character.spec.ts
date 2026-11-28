@@ -76,7 +76,7 @@ test('a blocked import offers the paste box in one click, and a PoB code pasted 
   await expect(box).toBeFocused()
   await box.fill(code)
   await page.getByRole('button', { name: 'Analyse pasted data' }).click()
-  await expect(page.getByRole('heading', { name: 'Path of Building build' })).toBeVisible({ timeout: 30_000 })
+  await expect(page.locator('#showcase-title')).toContainText(/^A .+ using /, { timeout: 30_000 })
   await expect(page.locator('.bc-top')).toContainText('From a Path of Building code')
 })
 
@@ -89,8 +89,9 @@ test('the poe.ninja PoB code pasted with a name: seven tabs, holding-up rows, na
   await expect(page.getByRole('heading', { name: /Main/ }).first()).toBeVisible({ timeout: 30_000 })
 
   // A resistance fix names the item to change (the reference code is 22% short on chaos).
-  const fixes = page.locator('[data-top-fixes]:not([data-pending])')
-  await expect(fixes.locator('li').filter({ hasText: 'Chaos resistance' }).first()).toContainText(/ on (Morbid Mantle|[A-Z]\w+ \w+)/, { timeout: 30_000 })
+  const fixes = page.locator('[data-next-steps]:not([data-pending])')
+  await fixes.getByRole('button', { name: /^Show all/ }).click({ timeout: 30_000 })
+  await expect(fixes.locator('#findings li').filter({ hasText: 'Chaos resistance' }).first()).toContainText(/ on (Morbid Mantle|[A-Z]\w+ \w+)/, { timeout: 30_000 })
 
   for (const id of PANEL_IDS) await openTab(page, id)
 
@@ -113,7 +114,7 @@ test('an empty rune socket shows as a fix (CP-2)', async ({ page }) => {
   await page.goto('character/')
   await page.getByLabel('Character model JSON or Path of Building code').fill(emptyRunesCode())
   await page.getByRole('button', { name: 'Analyse pasted data' }).click()
-  const fixes = page.locator('[data-top-fixes]:not([data-pending])')
+  const fixes = page.locator('[data-next-steps]:not([data-pending])')
   await fixes.getByRole('button', { name: /^Show all/ }).click({ timeout: 30_000 })
   await expect(fixes.getByText('Fill the 2 empty rune sockets in Skull Song.').first()).toBeVisible()
 })
@@ -220,10 +221,10 @@ test('clicking a tab moves the open tab into the URL hash', async ({ page }) => 
   await expect(page.locator('#panel-advanced')).toBeVisible()
 })
 
-test('Top-3 rows show their text in full at default: nothing is ellipsised or clamped', async ({ page }) => {
+test('Next-step rows show their text in full at default: nothing is ellipsised or clamped', async ({ page }) => {
   await page.goto(importUrl)
-  await expect(page.locator('[data-top-fixes] li').first()).toBeVisible({ timeout: 30_000 })
-  const clipped = await page.locator('[data-top-fixes] li, [data-top-fixes] li *').evaluateAll((els) =>
+  await expect(page.locator('[data-next-steps] li').first()).toBeVisible({ timeout: 30_000 })
+  const clipped = await page.locator('[data-next-steps] li, [data-next-steps] li *').evaluateAll((els) =>
     els
       .filter((el) => {
         const cs = getComputedStyle(el)
@@ -234,26 +235,26 @@ test('Top-3 rows show their text in full at default: nothing is ellipsised or cl
   expect(clipped).toEqual([])
 })
 
-test('the only trade label in Top fixes is "Find on trade", one per row', async ({ page }) => {
+test('the only trade label in Next steps is "Find on trade", one per row', async ({ page }) => {
   await page.goto(importUrl)
-  const rows = page.locator('[data-top-fixes] li')
+  const rows = page.locator('[data-next-steps] li[data-step-area]:not([data-step-area="clear"])')
   await expect(rows.first()).toBeVisible({ timeout: 30_000 })
-  const trade = page.locator('[data-top-fixes] a[data-trade]')
+  const trade = page.locator('[data-next-steps] a[data-trade]')
   await expect(trade).toHaveCount(await rows.count())
   for (const text of await trade.allTextContents()) expect(text.trim()).toBe('Find on trade')
-  const other = await page.locator('[data-top-fixes] a, [data-top-fixes] button').evaluateAll((els) =>
+  const other = await page.locator('[data-next-steps] a, [data-next-steps] button').evaluateAll((els) =>
     els.map((el) => el.textContent?.trim() ?? '').filter((t) => /trade/i.test(t) && t !== 'Find on trade'),
   )
   expect(other).toEqual([])
 })
 
-test('phone first screen: the Top fixes heading sits above the fold after import', async ({ page, isMobile }) => {
+test('phone first screen: the Next 3 steps heading sits above the fold after import', async ({ page, isMobile }) => {
   test.skip(!isMobile, 'phone first screen only')
   await page.setViewportSize({ width: 390, height: 844 })
   await page.goto(importUrl)
   // The pending and final cards share this id and the pending one is swapped out
   // once the fixes pass lands, so measure only the settled card.
-  const heading = page.locator('[data-top-fixes]:not([data-pending]) #top-fixes-title')
+  const heading = page.locator('[data-next-steps]:not([data-pending]) #next-steps-title')
   await expect(heading).toBeVisible({ timeout: 30_000 })
   await expect
     .poll(async () => {

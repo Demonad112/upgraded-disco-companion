@@ -64,9 +64,14 @@ test('a Path of Building code gets the full analysis, with what a code lacks nam
   await page.getByLabel('Character model JSON or Path of Building code').fill(code)
   await page.getByRole('button', { name: 'Analyse pasted data' }).click()
   // NP1-6: the same build card, grade and Top 3 as a poe.ninja import, labelled with its source.
-  await expect(page.getByRole('heading', { name: 'Path of Building build' })).toBeVisible({ timeout: 30_000 })
+  await expect(page.locator('#showcase-title')).toContainText(/^A .+ using /, { timeout: 30_000 })
   await expect(page.locator('.bc-top')).toContainText('Martial Artist · From a Path of Building code')
-  await expect(page.locator('[data-top-fixes]:not([data-pending]) li').first()).toBeVisible({ timeout: 30_000 })
+  await expect(page.locator('[data-next-steps]:not([data-pending]) li').first()).toBeVisible({ timeout: 30_000 })
+  // One quiet line by default; the list is behind Pro detail.
+  await expect(page.getByTestId('couldnt-check')).toContainText('What we couldn’t check')
+  await expect(page.getByTestId('couldnt-check').locator('li')).toHaveCount(0)
+  await page.getByRole('button', { name: 'Show all' }).first().click()
+  await page.getByRole('button', { name: 'Pro detail' }).first().click()
   const gaps = page.getByTestId('couldnt-check')
   await expect(gaps).toContainText('Per-skill damage')
   // Items are read from the code; what no mod id could be proven for is named, never hidden.

@@ -160,7 +160,7 @@ describe('companion tree', () => {
         { action: 'Is this intended?', category: 'question' },
         { action: 'Raise accuracy to 100% — worth 7% more damage', category: 'damage' },
       ]),
-    ).toEqual({ title: 'Raise accuracy to 100%', tab: 'top-fixes-title' })
+    ).toEqual({ title: 'Raise accuracy to 100%', tab: 'next-steps-title' })
     expect(topFixOf([])).toBeNull()
     expect(acceptRecent([{ url: 'u', key: 'k' }])).toBe(true)
     expect(acceptRecent([{ url: 'u', key: 'k', topFix: null }])).toBe(true)
